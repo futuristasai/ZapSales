@@ -95,13 +95,13 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await member.goto("/app/settings/profile");
     await member.getByLabel("Nome completo").fill("Rascunho não salvo");
     await login(other, emails[2]!);
-    await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
+    await expect(nav(member).getByRole("link", { name: "Riscos de Perda", exact: true })).toBeVisible();
     const framesBefore = realtime.length;
     await customize(page, emails[1]!);
     // Evento real precisa chegar; polling não pode aprovar a observação em tempo real.
     await expect.poll(() => realtime.length, { timeout: 15_000 }).toBeGreaterThan(framesBefore);
-    await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toHaveCount(0);
-    await expect(nav(other).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
+    await expect(nav(member).getByRole("link", { name: "Riscos de Perda", exact: true })).toHaveCount(0);
+    await expect(nav(other).getByRole("link", { name: "Riscos de Perda", exact: true })).toBeVisible();
     await expect(member.getByLabel("Nome completo")).toHaveValue("Rascunho não salvo");
     expect(member.url()).toContain("/app/settings/profile");
     await expect(member.getByTestId("alerts-bell")).toHaveCount(0);
@@ -115,10 +115,10 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     ).toBe(403);
     // Área oculta autorizada continua disponível diretamente.
     await member.goto("/app/radar");
-    await expect(member.getByRole("heading", { name: /Radar/ }).first()).toBeVisible();
+    await expect(member.getByRole("heading", { name: /Riscos de Perda/ }).first()).toBeVisible();
     await member.goto("/app/settings/profile");
     await customize(page, emails[1]!, "Produtos");
-    await expect(nav(member).getByRole("link", { name: "Inbox", exact: true })).toHaveCount(0);
+    await expect(nav(member).getByRole("link", { name: "Conversas", exact: true })).toHaveCount(0);
     await member.goto("/app");
     await member.waitForURL("**/app/products");
     await nav(member).getByRole("link", { name: "Ver tudo em CRM" }).click();
@@ -126,7 +126,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await expect(member.getByRole("link", { name: /Contatos/ })).toHaveCount(0);
     await member.keyboard.press("ControlOrMeta+k");
     await expect(member.getByRole("option").filter({ hasText: "Produtos" })).toBeVisible();
-    await expect(member.getByRole("option").filter({ hasText: "Inbox" })).toHaveCount(0);
+    await expect(member.getByRole("option").filter({ hasText: "Conversas" })).toHaveCount(0);
     await member.keyboard.press("Escape");
     mkdirSync(evidence, { recursive: true });
     await member.screenshot({ path: `${evidence}/interface-hub-only.png` });
@@ -154,7 +154,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await guest.goto(link);
     await guest.getByRole("button", { name: /aceitar/i }).click();
     await guest.waitForURL("**/app/tasks");
-    await expect(nav(guest).getByRole("link", { name: "Inbox", exact: true })).toHaveCount(0);
+    await expect(nav(guest).getByRole("link", { name: "Conversas", exact: true })).toHaveCount(0);
     await expect(nav(guest).getByRole("link", { name: "Tarefas", exact: true })).toBeVisible();
     await expect(guest.getByRole("heading", { name: "Tarefas", exact: true })).toBeVisible();
     await expect(guest.getByText("Nenhuma tarefa por aqui", { exact: true })).toBeVisible();

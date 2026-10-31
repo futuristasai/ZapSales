@@ -47,9 +47,9 @@ async function login(page: Page, email: string): Promise<void> {
 }
 
 async function gotoRadar(page: Page): Promise<void> {
-  await page.getByRole("link", { name: "Radar" }).click();
+  await page.getByRole("link", { name: "Riscos de Perda" }).click();
   await page.waitForURL(/\/app\/radar/);
-  await expect(page.getByRole("heading", { name: "Radar de risco" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Riscos de Perda" })).toBeVisible();
 }
 
 function radarItem(page: Page) {

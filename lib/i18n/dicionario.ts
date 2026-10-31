@@ -1234,6 +1234,16 @@ export const DICIONARIO: Traducoes = {
   Inbox: { es: "Inbox" },
   Agenda: { es: "Agenda" },
   Radar: { es: "Radar" },
+  // Nomes do menu trocados por decisão de produto (Inbox→Conversas, Radar→Riscos de
+  // Perda, Agenda→Compromissos, Casos→Aguardando Humano, CRM→Gestão de Clientes CRM).
+  // As chaves antigas continuam: outras telas ainda as usam.
+  "Gestão de Clientes CRM": { es: "Gestión de Clientes CRM" },
+  "Riscos de Perda": { es: "Riesgos de Pérdida" },
+  Compromissos: { es: "Compromisos" },
+  "Aguardando Humano": { es: "Esperando a una persona" },
+  "Os atendimentos que o agente conduziu, do início ao desfecho, com destaque para os que esperam uma pessoa. A aba Fila, em Conversas, lista as conversas; aqui ficam os casos.": {
+    es: "Las atenciones que el agente condujo, de principio a fin, destacando las que esperan a una persona. La pestaña Cola, en Conversaciones, lista las conversaciones; aquí están los casos.",
+  },
   // A porta do tema de extensão (#1095). `theme.apply` não abre tela — pinta o
   // produto; o label entra aqui para não degradar em silêncio no espanhol.
   "Seu tema na tela": { es: "Tu tema en pantalla" },
