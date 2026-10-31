@@ -12,6 +12,9 @@ playwright.config.ts
 *.log
 .lina
 docs
+# ...menos o manual do usuário, que a imagem do app serve em /manual (ver Dockerfile).
+!docs/manual/index.html
+!docs/manual/img
 tasks
 scratchpad
 .vercel

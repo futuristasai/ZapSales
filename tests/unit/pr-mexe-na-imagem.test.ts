@@ -32,8 +32,17 @@ describe("pr-mexe-na-imagem", () => {
     ["supabase/baseline.sql"],
     [".github/workflows/publish-image.yml"],
     [".github/algum/script.ts"],
+    // O manual do usuário vai na imagem do app (rota /manual): a página montada e os prints.
+    ["docs/manual/index.html"],
+    ["docs/manual/img/ia-agentes-lista.png"],
   ])("%s → constrói", (caminho) => {
     expect(responde(["docs/leia.md", caminho])).toBe("sim");
+  });
+
+  it("o resto do manual (conteúdo-fonte e ferramentas) continua pulando: não entra na imagem", () => {
+    expect(
+      responde(["docs/manual/conteudo/ia/agentes.html", "docs/manual/ferramentas/montar.mjs", "docs/manual/README.md"]),
+    ).toBe("nao");
   });
 
   it("entrada vazia constrói — não saber o que mudou nunca vira 'pula'", () => {
@@ -62,7 +71,8 @@ describe("pr-mexe-na-imagem", () => {
   const ignorados = readFileSync(".dockerignore", "utf-8")
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("#"));
+    // `!caminho` é EXCEÇÃO ao que está acima (re-inclui no contexto), não entrada que pule.
+    .filter((l) => l && !l.startsWith("#") && !l.startsWith("!"));
 
   // Um processo bash só, que chama o script por entrada (~50 execuções): menos
   // de um segundo numa máquina ociosa, 18 s numa com carga 90. O teto é para a

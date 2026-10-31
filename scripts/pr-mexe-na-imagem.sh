@@ -36,6 +36,9 @@ while IFS= read -r caminho || [ -n "$caminho" ]; do
     # barra casa só na RAIZ do contexto, e `*` de `case` atravessa `/`: por
     # isso todo padrão aqui começa pelo nome do diretório da raiz.
     evidence | .superpowers) ;;
+    # O manual do usuário entra na imagem do app (rota /manual): a página montada e
+    # os prints. Vem ANTES de `docs/*` — a primeira linha que casa decide.
+    docs/manual/index.html | docs/manual/img/*) echo sim; exit 0 ;;
     node_modules/* | .next/* | .git/* | test-results/* | tests/* | .lina/* \
       | docs/* | tasks/* | scratchpad/* | .vercel/* | .claude/* | .agents/* \
       | .agent/* | .codex/* | .cursor/* | .opencode/* | .specs/* | .changes/* \

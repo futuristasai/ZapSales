@@ -3,7 +3,14 @@ import Link from "next/link";
 import { useT } from "@/hooks/i18n/useT";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { ArrowRight, CaretDoubleLeft, CaretDoubleRight, CaretDown, Gear } from "@/lib/ui/icons";
+import {
+  ArrowRight,
+  BookOpen,
+  CaretDoubleLeft,
+  CaretDoubleRight,
+  CaretDown,
+  Gear,
+} from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { toggleSidebar } from "@/app/actions/shell/toggleSidebar";
 import { useAuth } from "@/hooks/auth/AuthProvider";
@@ -17,6 +24,9 @@ import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
 import { GRUPO_NO_RODAPE, ICONE_DO_HUB, sidebarGroups } from "@/lib/navigation/registry";
 
 const CHAVE_GRUPOS_FECHADOS = "sidebar-grupos-fechados";
+
+/** O manual do usuário, servido pela própria instalação (`app/manual`). */
+const ENDERECO_DO_MANUAL = "/manual/index.html";
 
 interface SidebarContentProps {
   collapsed: boolean;
@@ -362,26 +372,54 @@ export function SidebarContent({
             <span className={collapsed ? "sr-only" : "truncate"}>{t(rodape.label)}</span>
           </Link>
         )}
-        <VersionFooter collapsed={collapsed} onNavigate={onNavigate} />
-        {showCollapseControl && (
-          <button
-            type="button"
-            onClick={() => startTransition(() => toggleSidebar(collapsed))}
-            disabled={isPending}
+        {/*
+          O manual mora logo abaixo de Configurações, na MESMA linha do controle de
+          recolher o menu. Não é capricho: medido em produção a 1280x900, o menu
+          inteiro tem 19px de folga, e uma linha a mais no rodapé (32px) o faria
+          rolar — `navegacao.spec.ts` reprova isso. O controle de recolher, que
+          ocupava uma linha própria, virou o botão de ícone ao lado do Manual.
+        */}
+        <div
+          className={cn(
+            "flex gap-1",
+            collapsed ? "flex-col items-stretch" : "items-center",
+          )}
+        >
+          <a
+            href={ENDERECO_DO_MANUAL}
+            target="_blank"
+            rel="noopener"
+            title={collapsed ? t("Manual") : undefined}
+            onClick={onNavigate}
             className={cn(
-              "flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+              "flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground",
               collapsed && "justify-center px-2",
             )}
-            aria-label={collapsed ? t("Expandir sidebar") : t("Recolher sidebar")}
           >
-            {collapsed ? (
-              <CaretDoubleRight size={14} aria-hidden />
-            ) : (
-              <CaretDoubleLeft size={14} aria-hidden />
-            )}
-            {!collapsed && <span>{t("Recolher")}</span>}
-          </button>
-        )}
+            <BookOpen size={18} aria-hidden />
+            <span className={collapsed ? "sr-only" : "truncate"}>{t("Manual")}</span>
+          </a>
+          {showCollapseControl && (
+            <button
+              type="button"
+              onClick={() => startTransition(() => toggleSidebar(collapsed))}
+              disabled={isPending}
+              title={collapsed ? t("Expandir sidebar") : t("Recolher sidebar")}
+              className={cn(
+                "flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                collapsed ? "h-6 w-full" : "h-7 w-7",
+              )}
+              aria-label={collapsed ? t("Expandir sidebar") : t("Recolher sidebar")}
+            >
+              {collapsed ? (
+                <CaretDoubleRight size={14} aria-hidden />
+              ) : (
+                <CaretDoubleLeft size={14} aria-hidden />
+              )}
+            </button>
+          )}
+        </div>
+        <VersionFooter collapsed={collapsed} onNavigate={onNavigate} />
       </div>
     </>
   );
