@@ -92,7 +92,7 @@ export const IA_QUE_NAO_RESPONDEU = {
   titulo: "A IA deixou de responder uma mensagem de cliente",
   consequencia:
     "Um cliente escreveu e a IA não respondeu; se ele não escrever de novo, a conversa fica sem resposta. " +
-    "Abra o Inbox e responda as conversas que estão esperando.",
+    "Abra Conversas e responda as conversas que estão esperando.",
   rearme:
     "Enquanto este aviso estiver aberto, outras respostas da IA que pararem de tentar não abrem aviso novo: " +
     "depois de corrigida a causa, marque-o como resolvido para voltar a ser avisado.",
@@ -110,7 +110,7 @@ export const MENSAGEM_QUE_NAO_ENTROU = {
   titulo: "Uma mensagem de WhatsApp não entrou no CRM",
   consequencia:
     "Um cliente mandou mensagem, mas o banco de dados estava indisponível e ela não pôde ser gravada, mesmo depois de várias tentativas. " +
-    "Ela não aparece no Inbox e a IA não a respondeu: confira no celular do número as conversas recebidas nesse horário e responda por lá.",
+    "Ela não aparece em Conversas e a IA não a respondeu: confira no celular do número as conversas recebidas nesse horário e responda por lá.",
   rearme:
     "Enquanto este aviso estiver aberto, outras mensagens que também não entrarem não abrem aviso novo: " +
     "depois de conferir, marque-o como resolvido para voltar a ser avisado.",

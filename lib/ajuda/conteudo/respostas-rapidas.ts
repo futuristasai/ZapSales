@@ -11,7 +11,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Use Novo template para escrever uma resposta e dar a ela um nome fácil de achar.",
       "Escolha se ela é só sua ou se vale Compartilhar com a equipe.",
-      "Na Inbox, comece a mensagem com / e escolha a resposta pelo nome: o texto entra no campo para você ajustar antes de enviar.",
+      "Em Conversas, comece a mensagem com / e escolha a resposta pelo nome: o texto entra no campo para você ajustar antes de enviar.",
     ],
     termos: [
       { termo: "{{nome}} e {{primeiro_nome}}", significa: "Entram no texto como o nome do cliente da conversa. Sem nome conhecido, o texto fica como está, para você corrigir antes de enviar." },
@@ -24,7 +24,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Usa Nueva plantilla para escribir una respuesta y darle un nombre fácil de encontrar.",
       "Elige si es solo tuya o si conviene Compartir con el equipo.",
-      "En la Inbox, empieza el mensaje con / y elige la respuesta por su nombre: el texto entra en el campo para que lo ajustes antes de enviar.",
+      "En Conversaciones, empieza el mensaje con / y elige la respuesta por su nombre: el texto entra en el campo para que lo ajustes antes de enviar.",
     ],
     termos: [
       { termo: "{{nome}} y {{primeiro_nome}}", significa: "Entran en el texto como el nombre del cliente de la conversación. Si no se conoce el nombre, el texto queda como está, para que lo corrijas antes de enviar." },
@@ -37,7 +37,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Use New template to write a reply and give it a name that is easy to find.",
       "Choose whether it is just yours or whether to Share with the team.",
-      "In the Inbox, start the message with / and pick the reply by name: the text drops into the box so you can adjust it before sending.",
+      "In Conversations, start the message with / and pick the reply by name: the text drops into the box so you can adjust it before sending.",
     ],
     termos: [
       { termo: "{{nome}} and {{primeiro_nome}}", significa: "They become the name of the customer in the conversation. If the name is unknown, the text stays as written so you can fix it before sending." },

@@ -89,7 +89,7 @@ describe("drainTick — o despacho que morre abre `event_dead` na Central", () =
     });
     expect(titulo).toBe("A IA deixou de responder uma mensagem de cliente");
     expect(corpo).toContain(MOTIVO);
-    expect(corpo).toContain("Inbox");
+    expect(corpo).toContain("Conversas");
     // O corpo só pede o que a tela oferece: não há tela de eventos nem botão de
     // reprocessar.
     expect(corpo).not.toMatch(/reprocess/i);

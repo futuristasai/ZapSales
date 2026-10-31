@@ -41,7 +41,7 @@ export function ForcaDoAgenteFaixa({ forca, onIrPara }: Props) {
     personalidade: t("Sem personalidade, ele responde de um jeito genérico, igual para qualquer negócio."),
     acoes: t("Sem ações, ele só conversa: não registra o cliente nem avisa a equipe."),
     pessoa: t("Quando não souber, ele passa para a equipe em vez de arriscar uma resposta errada."),
-    nome: t("A equipe reconhece o agente pelo nome nas listas e na Inbox."),
+    nome: t("A equipe reconhece o agente pelo nome nas listas e em Conversas."),
     numero: t("Sem número ele não tem por onde atender: dá para salvar, mas não para publicar."),
     boas_vindas: t("É a primeira impressão: define como a conversa começa."),
     modelo: t("É a inteligência artificial que escreve as respostas."),
