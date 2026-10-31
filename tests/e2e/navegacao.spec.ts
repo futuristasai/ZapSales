@@ -160,8 +160,8 @@ test.describe("navegação agrupada", () => {
     // rodapé fixo — ver o teste de dobra abaixo.
     const titulos = sidebar(page).getByRole("heading");
     await expect(titulos).toHaveText([
-      "Atendimento",
-      "CRM",
+      "Leads",
+      "Gestão de Clientes CRM",
       "Agente de IA",
       "Canais",
       "Análise",
