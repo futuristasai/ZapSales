@@ -51,7 +51,8 @@ vi.mock("@/components/shell/VersionFooter", () => ({
   ),
 }));
 vi.mock("@/components/shell/CommandPalette", () => ({
-  CommandPalette: ({ open }: { open: boolean }) => (open ? <div role="dialog">Buscar telas</div> : null),
+  CommandPalette: ({ open }: { open: boolean }) =>
+    open ? <div role="dialog">Buscar telas</div> : null,
 }));
 
 const usuario = {
@@ -87,7 +88,8 @@ function renderizar(recolhido = false, marca: Branding = PADRAO) {
 }
 
 const faixa = () => screen.getByRole("navigation", { name: "Áreas do menu" });
-const botaoDaFaixa = (nome: string) => within(faixa()).getByRole("button", { name: new RegExp(`^${nome}`) });
+const botaoDaFaixa = (nome: string) =>
+  within(faixa()).getByRole("button", { name: new RegExp(`^${nome}`) });
 const painel = () => screen.queryByRole("navigation", { name: "Navegação principal" });
 
 beforeEach(() => {
@@ -139,13 +141,18 @@ describe("o painel abre em Todo dia", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Todo dia" })).toBeInTheDocument();
     const mesa = screen.getByTestId("mesa-de-trabalho");
     expect(within(mesa).getByRole("heading", { name: "Leads" })).toBeInTheDocument();
-    expect(within(mesa).getByRole("heading", { name: "Gestão de Clientes CRM" })).toBeInTheDocument();
+    expect(
+      within(mesa).getByRole("heading", { name: "Gestão de Clientes CRM" }),
+    ).toBeInTheDocument();
     const titulos = within(lista)
       .getAllByRole("heading", { level: 3 })
       .map((h) => h.textContent);
     expect(titulos).toEqual(["Leads", "Gestão de Clientes CRM", "Se a sua empresa usa"]);
     expect(within(mesa).queryByRole("heading", { name: "Se a sua empresa usa" })).toBeNull();
-    expect(within(lista).getByRole("link", { name: /Conversas/ })).toHaveAttribute("href", "/app/inbox");
+    expect(within(lista).getByRole("link", { name: /Conversas/ })).toHaveAttribute(
+      "href",
+      "/app/inbox",
+    );
   });
 
   it("os contadores existentes aparecem: a fila em Conversas e no ícone de Todo dia, os casos em Aguardando Humano", () => {
@@ -325,7 +332,9 @@ describe("recolher o painel", () => {
 
   it("recolhido, a faixa continua mostrando o contador da fila sobre o ícone de Todo dia", () => {
     renderizar(true);
-    const naFaixa = screen.getAllByTestId("marcador-fila").filter((f) => f.dataset.naFaixa === "true");
+    const naFaixa = screen
+      .getAllByTestId("marcador-fila")
+      .filter((f) => f.dataset.naFaixa === "true");
     expect(naFaixa).toHaveLength(1);
   });
 
@@ -402,14 +411,20 @@ describe("a marca na faixa", () => {
   });
 
   it("com logo do revendedor, o logo comprido NÃO entra nos 80px: fica a inicial (o logo vai ao topo)", () => {
-    renderizar(false, { name: "Vendas Turbo", logoUrl: "https://cdn.exemplo.test/logo.png", initial: "V" });
+    renderizar(false, {
+      name: "Vendas Turbo",
+      logoUrl: "https://cdn.exemplo.test/logo.png",
+      initial: "V",
+    });
     expect(faixa().querySelector("img")).toBeNull();
     expect(within(faixa()).getByText("V")).toBeInTheDocument();
   });
 
   it("com ícone subido pela instalação, desenha o ícone", () => {
     render(
-      <MarcaDaInstalacaoProvider marca={{ ...PADRAO, name: "Vendas Turbo", iconUrl: "https://cdn.exemplo.test/i.png" }}>
+      <MarcaDaInstalacaoProvider
+        marca={{ ...PADRAO, name: "Vendas Turbo", iconUrl: "https://cdn.exemplo.test/i.png" }}
+      >
         <Sidebar collapsed={false} />
       </MarcaDaInstalacaoProvider>,
     );
@@ -435,7 +450,9 @@ describe("a faixa não carrega valor de marca no código", () => {
   });
 
   it("a ilha escura usa o tema, não uma cor: data-theme=dark e fundo por token", () => {
-    const codigo = semComentario(readFileSync("components/shell/NavegacaoDoComputador.tsx", "utf8"));
+    const codigo = semComentario(
+      readFileSync("components/shell/NavegacaoDoComputador.tsx", "utf8"),
+    );
     expect(codigo).toMatch(/data-theme="dark"/);
     expect(codigo).toMatch(/bg-neutral-900 dark:bg-neutral-950/);
   });

@@ -37,12 +37,7 @@ export function MenuDaConta({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(className)}
-          aria-label={t("Você")}
-          aria-haspopup="menu"
-        >
+        <button type="button" className={cn(className)} aria-label={t("Você")} aria-haspopup="menu">
           <UserCheck size={24} aria-hidden />
           <span>{t("Você")}</span>
         </button>

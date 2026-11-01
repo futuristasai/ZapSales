@@ -18,8 +18,10 @@
  *   4. O selo mora DENTRO do item e não quebra a linha (a altura do item é a do
  *      vizinho sem selo) — medido por `getBoundingClientRect`, nunca a olho.
  *
- * Que o menu inteiro continua cabendo em 900px com "Casos" no lugar de
- * "Roteadores" é o `navegacao.spec.ts` que mede.
+ * Que nenhum bloco do menu some abaixo da dobra é o `navegacao.spec.ts` que mede.
+ *
+ * Desde a issue #188 o ícone de Todo dia, na faixa, mostra TAMBÉM a fila de conversas (e só ela:
+ * os casos ficam na lista do painel) — o mesmo número, e some junto quando zera.
  *
  * Semeia o PRÓPRIO estado pelo service role (canal, contato, conversa escalada
  * e caso) e apaga tudo no fim: a organização de teste é compartilhada, e uma
@@ -257,7 +259,7 @@ test.describe("contadores do menu", () => {
     expect(comOCaso, "o caso semeado entra na lista como esperando uma pessoa").toBe(antes + 1);
     await expect(seloDeCasos).toHaveText(String(comOCaso), { timeout: ESPERA });
 
-    const m = await medirSelo(page, "/app/ai/cases", "contador-de-casos", "/app/ai/agents");
+    const m = await medirSelo(page, "/app/ai/cases", "contador-de-casos", "/app/radar");
     expect(m.dentro, "o selo precisa morar dentro do item de Casos").toBe(true);
     expect(m.alturaDoItem, "o selo não pode quebrar a linha do item").toBe(m.alturaDoVizinho);
     expect(m.fundo, "o selo precisa ter fundo próprio para ser lido").not.toBe("rgba(0, 0, 0, 0)");
@@ -305,6 +307,10 @@ test.describe("contadores do menu", () => {
 
     const seloDaFila = itemDoMenu(page, "/app/inbox").getByTestId("contador-da-fila");
     await expect(seloDaFila).toHaveText(String(naAba), { timeout: ESPERA });
+    // O mesmo número sobre o ícone de Todo dia — e nenhum outro botão da faixa carrega contador.
+    const faixa = page.getByRole("navigation", { name: "Áreas do menu" });
+    await expect(faixa.getByTestId("contador-da-fila")).toHaveText(String(naAba), { timeout: ESPERA });
+    await expect(faixa.getByTestId("contador-de-casos")).toHaveCount(0);
 
     const m = await medirSelo(page, "/app/inbox", "contador-da-fila", "/app/radar");
     expect(m.dentro, "o selo precisa morar dentro do item de Inbox").toBe(true);
@@ -326,6 +332,9 @@ test.describe("contadores do menu", () => {
     if (depois === 0) {
       await expect(abaFila).toHaveText(/^Fila$/, { timeout: ESPERA });
       await expect(seloDaFila, "zero não desenha nada").toHaveCount(0, { timeout: ESPERA });
+      await expect(faixa.getByTestId("contador-da-fila"), "zero não desenha nada na faixa").toHaveCount(0, {
+        timeout: ESPERA,
+      });
     } else {
       await expect(abaFila).toHaveText(new RegExp(`^Fila\\s*${depois}$`), { timeout: ESPERA });
       await expect(seloDaFila).toHaveText(String(depois), { timeout: ESPERA });

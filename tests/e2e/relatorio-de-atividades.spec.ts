@@ -290,14 +290,14 @@ test.describe("Relatório de atividades — o período, pela tela", () => {
 
     await login(page, creds.users.manager!.email, creds.password);
 
-    // A porta é o hub do grupo ("Ver tudo em Análise"), e não o menu lateral:
-    // desde 2026-10-15 o menu cede o lugar a "Disparo em massa" (ele só cabe em
-    // 900 px com 15 itens — `navegacao.spec.ts` e `interface-por-empresa.test.ts`).
-    // Continua sendo porta de verdade: um clique no menu, outro no hub.
+    // A porta é a entrada Resultados da faixa (issue #188): um clique na faixa abre a lista no
+    // painel, e a tela está nela. Antes era o hub «Ver tudo em Análise».
     const sidebar = page.getByRole("navigation", { name: "Navegação principal" });
-    await sidebar.getByRole("link", { name: "Ver tudo em Análise" }).click({ timeout: 30_000 });
-    await page.waitForURL(/\/app\/analise/, { timeout: 30_000 });
-    const item = page.getByRole("main").getByRole("link", { name: /Atividades/ });
+    await page
+      .getByRole("navigation", { name: "Áreas do menu" })
+      .getByRole("button", { name: /^Resultados/ })
+      .click({ timeout: 30_000 });
+    const item = sidebar.getByRole("link", { name: /Atividades/ });
     await expect(item, "tela sem porta é tela que só existe para quem digita a URL").toBeVisible({
       timeout: 30_000,
     });
@@ -436,9 +436,11 @@ test.describe("Relatório de atividades — o período, pela tela", () => {
     // rota é `viewer` de propósito: um piso mais alto esconderia da pessoa as
     // atividades dela mesma.
     const sidebar = page.getByRole("navigation", { name: "Navegação principal" });
-    await sidebar.getByRole("link", { name: "Ver tudo em Análise" }).click({ timeout: 30_000 });
-    await page.waitForURL(/\/app\/analise/, { timeout: 30_000 });
-    await expect(page.getByRole("main").getByRole("link", { name: /Atividades/ })).toBeVisible({
+    await page
+      .getByRole("navigation", { name: "Áreas do menu" })
+      .getByRole("button", { name: /^Resultados/ })
+      .click({ timeout: 30_000 });
+    await expect(sidebar.getByRole("link", { name: /Atividades/ })).toBeVisible({
       timeout: 30_000,
     });
 

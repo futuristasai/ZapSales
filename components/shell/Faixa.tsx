@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
  * da marca resolvida, nunca um valor fixo.
  */
 const BOTAO =
-  "relative flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-xs leading-tight text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "relative flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-xs leading-tight text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
 function MarcaDaFaixa() {
   const { nome, marcaDoProduto, icone, inicial } = useMarcaDaBarra();
@@ -70,7 +70,7 @@ function BotaoDaEntrada({
         apertado && "bg-accent/25 font-bold text-foreground",
         // «Aqui», sem cor: uma barra no canto, além do `aria-current`.
         atual &&
-          "before:absolute before:-left-1.5 before:bottom-2 before:top-2 before:w-[3px] before:rounded-r-full before:bg-accent",
+          "before:absolute before:top-2 before:bottom-2 before:-left-1.5 before:w-[3px] before:rounded-r-full before:bg-accent",
       )}
     >
       <Icone size={24} weight={apertado ? "fill" : "regular"} aria-hidden />
@@ -127,8 +127,11 @@ export function Faixa({
       {faixa.todoDia ? botao(faixa.todoDia) : null}
       {faixa.configurar.length > 0 && (
         <>
-          <div role="separator" className="mx-2 mb-1.5 mt-2 h-px bg-white/15" />
-          <p id="faixa-configurar" className="mb-1 text-center text-xs font-bold text-muted-foreground">
+          <div role="separator" className="mx-2 mt-2 mb-1.5 h-px bg-white/15" />
+          <p
+            id="faixa-configurar"
+            className="mb-1 text-center text-xs font-bold text-muted-foreground"
+          >
             {t("Configurar")}
           </p>
           <div role="group" aria-labelledby="faixa-configurar" className="flex flex-col gap-0.5">

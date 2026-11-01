@@ -134,23 +134,24 @@ test("o menu da empresa encolhe pela tela — e a porta que desfaz continua lá"
   // deixaria a pessoa trancada do mesmo jeito. E o percurso é o de quem não sabe
   // a URL — que é justamente quem fica preso.
   //
-  // ⚠️ O grupo de Configurações NÃO mora dentro do `nav` que rola: o Sidebar o
-  // manda para um rodapé fixo (`GRUPO_NO_RODAPE`, `Sidebar.tsx:51-52`), como
-  // link do HUB (`/app/settings`). Procurá-lo dentro do `nav` devolve "não
-  // encontrado" com a porta intacta — foi assim que este caso reprovou na
-  // primeira rodada, e a mensagem acusava trancamento que não existia.
-  const portaDeVolta = page.getByRole("link", { name: /configurações/i }).last();
+  // A porta mora na área Empresa da faixa (issue #188): «Dados da empresa» é uma das portas
+  // essenciais, que a interface por empresa não pode esconder. Antes dela era o link
+  // «Configurações» do rodapé fixo; esse link saiu do menu, e a prova continua a mesma — a
+  // pessoa que não sabe a URL chega, clicando, à tela que desfaz a escolha.
+  await page
+    .getByRole("navigation", { name: "Áreas do menu" })
+    .getByRole("button", { name: /^Empresa/ })
+    .click();
+  const portaDeVolta = menuLateral(page).getByRole("link", { name: /Dados da empresa/ });
   await expect(
     portaDeVolta,
     "a empresa encolheu o menu e perdeu a porta que desfaz a escolha — trancada do lado de fora",
   ).toBeVisible();
   await portaDeVolta.click();
-  await page.waitForURL(/\/app\/settings/);
-  await page.getByRole("link", { name: /organização/i }).first().click();
   await page.waitForURL(new RegExp(CONFIGURACOES.replace(/\//g, "\\/")));
   await expect(
     page.getByText("Menu lateral", { exact: true }),
-    "chegou em Configurações → Organização e o card que desfaz a escolha não está lá",
+    "chegou em Dados da empresa e o card que desfaz a escolha não está lá",
   ).toBeVisible();
   await page.screenshot({ path: `${EVIDENCE}/1359-4-porta-de-volta.png`, fullPage: true });
 

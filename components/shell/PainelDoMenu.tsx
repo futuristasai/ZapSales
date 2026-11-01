@@ -8,20 +8,12 @@ import { cn } from "@/lib/utils";
 /** Os dois grupos que formam a «mesa de trabalho»; os demais de Todo dia ficam fora dela. */
 const GRUPOS_DA_MESA: readonly string[] = ["leads", "gestao-de-clientes"];
 
-function Subtitulo({
-  children,
-  daMesa,
-  id,
-}: {
-  children: string;
-  daMesa: boolean;
-  id: string;
-}) {
+function Subtitulo({ children, daMesa, id }: { children: string; daMesa: boolean; id: string }) {
   return (
     <h3
       id={id}
       className={cn(
-        "px-3 pb-1 pt-3 text-xs font-bold first:pt-1",
+        "px-3 pt-3 pb-1 text-xs font-bold first:pt-1",
         daMesa ? "text-foreground" : "text-text-subtle",
       )}
     >

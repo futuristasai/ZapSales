@@ -45,7 +45,7 @@ export function ItemDoMenu({
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate">{t(item.label)}</span>
         {item.menu.termo ? (
-          <span className="truncate text-[11px] font-normal leading-3 text-text-subtle">
+          <span className="truncate text-[11px] leading-3 font-normal text-text-subtle">
             {t(item.menu.termo)}
           </span>
         ) : null}

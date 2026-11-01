@@ -99,9 +99,20 @@ Phosphor; o item ativo do menu usa o peso `fill`, os hubs usam `duotone`.
 
 ## Menu
 
-Expandido por padrão (ícone + nome, com título de grupo); o trilho de 64 px é escolha da pessoa e fica no cookie
-`sidebar_collapsed`. O menu inteiro precisa caber em 1280×900 sem rolar (`navegacao.spec.ts`): grupo com mais de quatro
-telas ganha hub ("Ver tudo em …", cada um com ícone próprio), não densidade raspada.
+No computador, uma **faixa** de 80 px à esquerda (Todo dia; Vender, Agente, Conexões e Empresa sob o rótulo
+«Configurar»; Resultados; Buscar; Você) e, ao lado dela, o **painel**, que abre em Todo dia. Todo dia é a mesa de
+trabalho (Leads e Gestão de Clientes CRM, depois «Se a sua empresa usa»); Configurar e Resultados mostram no painel a
+lista das telas da área, agrupadas por tarefa. O painel pode ser recolhido (cookie `sidebar_collapsed`, lido no
+servidor para a primeira pintura); recolhido, ele abre por cima da tela e fecha com Esc, clique fora ou escolha de uma
+tela. A faixa é uma ilha escura nos dois temas (`data-theme="dark"` no miolo), com a cor de destaque da marca resolvida
+— nenhum valor de marca fixo no código. A marca por extenso (logo ou nome) mora no topo; na faixa ficam o símbolo, o
+ícone da instalação ou a inicial.
+
+**Não há mais limite de altura nem de itens.** A regra «o menu cabe em 1280×900 sem rolar, no máximo 15 itens» foi
+trocada por «nenhum bloco some abaixo da dobra» (`navegacao.spec.ts`): em cada entrada da faixa, todo título de grupo e
+toda tela está dentro da área visível do painel. Tela nova declara onde mora em `lib/navigation/catalogo.ts`
+(`menu: { grupo, ordem }`; bloco e área saem do grupo) e aparece na faixa, na busca e no celular sem editar mais nada.
+O menu de gaveta do celular segue como antes até o ticket do celular (#183).
 
 ## Linguagem
 

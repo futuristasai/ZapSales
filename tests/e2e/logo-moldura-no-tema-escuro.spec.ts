@@ -359,9 +359,12 @@ function anotar(nome: string, dado: unknown): void {
   fs.writeFileSync(evidencia(nome), JSON.stringify(dado, null, 2) + "\n", "utf8");
 }
 
-/** O cabeçalho da barra lateral: o primeiro filho do `<aside>` (`h-14`, `border-b`). */
+/**
+ * O cabeçalho do app, onde mora a marca por extenso (`h-14`, `border-b`). Era o primeiro filho do
+ * `<aside>` até a issue #188: a faixa do computador só comporta o símbolo, e o logo foi para o topo.
+ */
 function cabecalhoDaBarra(page: Page): Locator {
-  return page.locator("aside > div").first();
+  return page.locator("header").first();
 }
 
 async function medirCaixa(alvo: Locator): Promise<Caixa> {
@@ -412,7 +415,7 @@ test.describe("a moldura do logo no tema escuro", () => {
     await escolherTemaPelaTela(page, "dark");
     expect(await temaDaPagina(page), "o <html> não ficou no tema escuro").toBe("dark");
 
-    const logo = page.locator("aside img").first();
+    const logo = page.locator('[data-testid="marca-no-topo"] img').first();
     const m = await medirMoldura(logo);
     anotar("1-barra-escuro.json", m);
     await page.screenshot({ path: evidencia("1-barra-escuro.png") });
@@ -445,7 +448,7 @@ test.describe("a moldura do logo no tema escuro", () => {
     await escolherTemaPelaTela(page, "light");
     expect(await temaDaPagina(page)).toBe("light");
 
-    const m = await medirMoldura(page.locator("aside img").first());
+    const m = await medirMoldura(page.locator('[data-testid="marca-no-topo"] img').first());
     anotar("2-barra-claro.json", m);
     await page.screenshot({ path: evidencia("2-barra-claro.png") });
 
@@ -533,7 +536,7 @@ test.describe("a moldura do logo no tema escuro", () => {
     await escolherTemaPelaTela(page, "dark");
     expect(await temaDaPagina(page)).toBe("dark");
 
-    const barra = page.locator("aside").first();
+    const barra = page.getByTestId("marca-no-topo");
     await expect(
       barra.locator("img"),
       "ainda há um <img> na barra — o logo enviado não foi removido, e o caso mediria outra coisa",
@@ -551,7 +554,7 @@ test.describe("a moldura do logo no tema escuro", () => {
     const cadeia = await marca.evaluate((el) => {
       const saida: { tag: string; classe: string; fundo: string; padding: string }[] = [];
       let no = el as HTMLElement | null;
-      while (no && no.tagName.toLowerCase() !== "aside") {
+      while (no && no.tagName.toLowerCase() !== "header") {
         const cs = getComputedStyle(no);
         saida.push({
           tag: no.tagName.toLowerCase(),
@@ -632,7 +635,7 @@ test.describe("a moldura do logo no tema escuro", () => {
     await page.goto("/app/inbox");
     for (const tema of ["dark", "light"] as const) {
       await escolherTemaPelaTela(page, tema);
-      const logo = page.locator("aside img:visible").first();
+      const logo = page.locator('[data-testid="marca-no-topo"] img:visible').first();
       await expect(logo).toHaveAttribute("src", (tema === "dark" ? urlEscura : urlClara)!);
       expect(fundoETransparente((await medirMoldura(logo)).fundo)).toBe(true);
       await page.screenshot({ path: evidencia(`7-barra-${tema}.png`) });

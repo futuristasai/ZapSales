@@ -23,10 +23,16 @@ import { cn } from "@/lib/utils";
  */
 function MarcaNoTopo() {
   const { nome, logo, logoEscuro, marcaDoProduto } = useMarcaDaBarra();
-  if (marcaDoProduto) return <LogotipoDoProduto nome={nome} className="hidden h-9 w-auto md:block" />;
+  if (marcaDoProduto)
+    return (
+      <div data-testid="marca-no-topo" className="hidden md:block">
+        <LogotipoDoProduto nome={nome} className="h-9 w-auto" />
+      </div>
+    );
   if (logo || logoEscuro) {
     return (
       <div
+        data-testid="marca-no-topo"
         className={cn(
           "hidden rounded-md md:block",
           !logoEscuro && "dark:bg-white dark:px-2 dark:py-1 dark:shadow-sm",
@@ -56,7 +62,11 @@ function MarcaNoTopo() {
       </div>
     );
   }
-  return <span className="hidden font-semibold tracking-tight md:block">{nome}</span>;
+  return (
+    <span data-testid="marca-no-topo" className="hidden font-semibold tracking-tight md:block">
+      {nome}
+    </span>
+  );
 }
 
 export function TopBar() {

@@ -79,7 +79,9 @@ describe("as entradas da faixa", () => {
 
   it("Propostas só aparece em «Se a sua empresa usa» quando a empresa liga o recurso", () => {
     const itensDoGrupo = (f: ReturnType<typeof faixa>) =>
-      f.todoDia!.grupos.find((g) => g.label === "Se a sua empresa usa")?.itens.map((i) => i.label) ?? [];
+      f
+        .todoDia!.grupos.find((g) => g.label === "Se a sua empresa usa")
+        ?.itens.map((i) => i.label) ?? [];
     const sem = faixaDoMenu(menuDoPapel(false, "admin", undefined, MODULOS_OPCIONAIS, []));
     expect(itensDoGrupo(sem)).not.toContain("Propostas");
     expect(itensDoGrupo(faixa("admin"))).toContain("Propostas");
@@ -112,20 +114,23 @@ describe("nenhuma tela some", () => {
     ["interface simplificada", "admin", { preset: "simplificada" }, false],
   ];
 
-  it.each(casos)("%s: faixa + conta alcançam exatamente as telas que a regra de hoje libera", (_n, papel, settings, platform) => {
-    const esperado = destinosDaInterface(
-      settings,
-      platform,
-      papel,
-      MODULOS_OPCIONAIS,
-      CAPACIDADES_DA_ORGANIZACAO,
-    )
-      .map((d) => d.href)
-      .sort();
-    const obtido = hrefsDe(faixa(papel, settings, platform)).sort();
-    expect(obtido.length, "guarda de vacuidade").toBeGreaterThan(5);
-    expect(obtido).toEqual(esperado);
-  });
+  it.each(casos)(
+    "%s: faixa + conta alcançam exatamente as telas que a regra de hoje libera",
+    (_n, papel, settings, platform) => {
+      const esperado = destinosDaInterface(
+        settings,
+        platform,
+        papel,
+        MODULOS_OPCIONAIS,
+        CAPACIDADES_DA_ORGANIZACAO,
+      )
+        .map((d) => d.href)
+        .sort();
+      const obtido = hrefsDe(faixa(papel, settings, platform)).sort();
+      expect(obtido.length, "guarda de vacuidade").toBeGreaterThan(5);
+      expect(obtido).toEqual(esperado);
+    },
+  );
 });
 
 describe("a entrada onde a pessoa está", () => {

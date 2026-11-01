@@ -167,6 +167,12 @@ export function SidebarContent({
         )}
       </div>
       {/*
+        ⚠️ HISTÓRICO (issue #188). Este conteúdo é hoje só o menu de gaveta do CELULAR; no
+        computador a navegação é a faixa com o painel (`NavegacaoDoComputador`), e a regra
+        «o menu cabe em 1280×900 sem rolar» do `navegacao.spec.ts` foi trocada por «nenhum bloco
+        some abaixo da dobra». O texto abaixo conta por que a densidade foi medida e fica porque
+        o menu do celular ainda é este, até o ticket do celular.
+
         A DENSIDADE É MEDIDA, NÃO ESTÉTICA.
 
         O e2e `navegacao.spec.ts` exige que o menu inteiro caiba em 1280×900 sem

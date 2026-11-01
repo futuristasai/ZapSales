@@ -26,7 +26,7 @@ export function AvisoDeConexaoNaFaixa() {
       role="img"
       aria-label={rotulo}
       title={rotulo}
-      className="absolute right-2 top-1 flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-error text-white dark:text-neutral-900"
+      className="absolute top-1 right-2 flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-error text-white dark:text-neutral-900"
     >
       <Warning size={12} weight="fill" aria-hidden />
     </span>

@@ -142,10 +142,10 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
           className={cn(
             "flex h-full w-[20.5rem] flex-col border-r bg-card",
             recolhido &&
-              "absolute left-20 top-0 z-40 shadow-xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-left-2",
+              "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-left-2 absolute top-0 left-20 z-40 shadow-xl",
           )}
         >
-          <header className="flex items-start gap-1 px-3 pb-2 pt-4">
+          <header className="flex items-start gap-1 px-3 pt-4 pb-2">
             {escolhida.id !== "todo-dia" ? (
               <button
                 type="button"
@@ -158,7 +158,7 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
               </button>
             ) : null}
             <div className="min-w-0 flex-1 px-1">
-              <h2 className="text-base font-semibold leading-tight">{t(escolhida.label)}</h2>
+              <h2 className="text-base leading-tight font-semibold">{t(escolhida.label)}</h2>
               {faixa.configurar.some((e) => e.id === escolhida.id) ? (
                 <p className="text-xs text-muted-foreground">{t("Configurar")}</p>
               ) : null}

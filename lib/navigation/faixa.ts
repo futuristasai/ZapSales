@@ -102,7 +102,8 @@ export function entradaDaTela(faixa: FaixaProjetada, pathname: string): EntradaD
   // Uma tela do menu da conta é mais específica que qualquer área que a contenha como prefixo.
   for (const item of faixa.conta?.itens ?? []) {
     const dentro = pathname === item.href || pathname.startsWith(item.href + "/");
-    if (dentro && item.href.length > melhor.tamanho) melhor = { id: null, tamanho: item.href.length };
+    if (dentro && item.href.length > melhor.tamanho)
+      melhor = { id: null, tamanho: item.href.length };
   }
   return melhor.id;
 }
