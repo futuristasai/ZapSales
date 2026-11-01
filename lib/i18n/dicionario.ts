@@ -1234,6 +1234,34 @@ export const DICIONARIO: Traducoes = {
   Inbox: { es: "Inbox" },
   Agenda: { es: "Agenda" },
   Radar: { es: "Radar" },
+  // Nomes do menu trocados por decisão de produto (Inbox→Conversas, Radar→Riscos de
+  // Perda, Agenda→Compromissos, Casos→Aguardando Humano, CRM→Gestão de Clientes CRM).
+  // As chaves antigas continuam: outras telas ainda as usam.
+  "Voltar para Conversas": { es: "Volver a Conversaciones" },
+  "Como a sua equipe reconhece este agente nas listas e em Conversas. O cliente não vê esta parte.": { es: "Cómo tu equipo reconoce a este agente en las listas y en Conversaciones. El cliente no ve esta parte." },
+  "A equipe reconhece o agente pelo nome nas listas e em Conversas.": { es: "El equipo reconoce al agente por el nombre en las listas y en Conversaciones." },
+  "Ao iniciar, as empresas com telefone entram na fila. Cada uma entra no funil só quando for abordada. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem em Conversas. Uma mensagem já em transmissão pode concluir após a pausa.": { es: "Al iniciar, las empresas con teléfono entran a la cola. Cada una entra al embudo solo cuando se la contacta. Los contactos que ya existen se conservan. La cola hace un primer contacto y las respuestas llegan a Conversaciones. Un mensaje que ya está en transmisión puede completarse tras la pausa." },
+  "Ao iniciar, os contatos novos com telefone entram no funil. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem em Conversas. Uma mensagem já em transmissão pode concluir após a pausa.": { es: "Al iniciar, los contactos nuevos con teléfono entran al embudo y los que ya existen se conservan. La cola hace un primer contacto y las respuestas llegan a Conversaciones. Un mensaje que ya se está enviando puede terminar de salir después de la pausa." },
+  "Abrir em Conversas": { es: "Abrir en Conversaciones" },
+  "Responder pela tela Conversas numa conversa sem dono passa a assumi-la, e a IA fica calada até alguém devolver. Quando o cliente escreve numa conversa encerrada, ela volta direto para o último atendente, sem passar pela distribuição, se ele ainda faz parte da equipe.": { es: "Responder desde Conversaciones en una conversación sin responsable la asigna a quien responde, y la IA queda en silencio hasta que alguien la devuelva. Cuando el cliente escribe en una conversación cerrada, vuelve directo al último asesor, sin pasar por la distribución, si todavía forma parte del equipo." },
+  "Nenhuma etiqueta nesta organização ainda. Elas aparecem aqui conforme os agentes, as Conversas e o funil usarem.": { es: "Aún no hay ninguna etiqueta en esta organización. Aparecen aquí a medida que los agentes, Conversaciones y el embudo las usen." },
+  "As etiquetas que os agentes, as Conversas e o funil usam nesta organização. Renomear ou juntar corrige também as regras de agente que escrevem a etiqueta, na mesma operação.": { es: "Las etiquetas que usan los agentes, Conversaciones y el embudo en esta organización. Renombrar o unir corrige también las reglas de agente que escriben la etiqueta, en la misma operación." },
+  "As mensagens continuam chegando a Conversas, e sua equipe pode responder manualmente. Os testes são mensagens reais no WhatsApp, com os custos normais de uso.": { es: "Los mensajes siguen llegando a Conversaciones y tu equipo puede responder manualmente. Las pruebas son mensajes reales en WhatsApp, con los costos normales de uso." },
+  "Abrir conversa em Conversas": { es: "Abrir conversación en Conversaciones" },
+  "em Conversas": { es: "en Conversaciones" },
+  "Iniciar conversa em Conversas": { es: "Iniciar conversación en Conversaciones" },
+  "Abrir esta conversa em Conversas": { es: "Abrir esta conversación en Conversaciones" },
+  "A IA não respondeu nem vai responder sozinha às conversas que chegaram durante a suspensão. Abra Conversas e procure-as nas abas Fila e Automático.": { es: "La IA no respondió ni responderá sola a las conversaciones que llegaron durante la suspensión. Abre Conversaciones y búscalas en las pestañas Cola y Automático." },
+  "Abrir Conversas": { es: "Abrir Conversaciones" },
+  "Um cliente escreveu e a IA não respondeu; se ele não escrever de novo, a conversa fica sem resposta. Abra Conversas e responda as conversas que estão esperando.": { es: "Un cliente escribió y la IA no respondió; si no vuelve a escribir, la conversación queda sin respuesta. Abre Conversaciones y responde las conversaciones que están esperando." },
+  "Um cliente mandou mensagem, mas o banco de dados estava indisponível e ela não pôde ser gravada, mesmo depois de várias tentativas. Ela não aparece em Conversas e a IA não a respondeu: confira no celular do número as conversas recebidas nesse horário e responda por lá.": { es: "Un cliente envió un mensaje, pero la base de datos no estaba disponible y no se pudo guardar, incluso después de varios intentos. No aparece en Conversaciones y la IA no lo respondió: revisa en el teléfono del número las conversaciones recibidas en ese horario y responde desde allí." },
+  "Gestão de Clientes CRM": { es: "Gestión de Clientes CRM" },
+  "Riscos de Perda": { es: "Riesgos de Pérdida" },
+  Compromissos: { es: "Compromisos" },
+  "Aguardando Humano": { es: "Esperando a una persona" },
+  "Os atendimentos que o agente conduziu, do início ao desfecho, com destaque para os que esperam uma pessoa. A aba Fila, em Conversas, lista as conversas; aqui ficam os casos.": {
+    es: "Las atenciones que el agente condujo, de principio a fin, destacando las que esperan a una persona. La pestaña Cola, en Conversaciones, lista las conversaciones; aquí están los casos.",
+  },
   // A porta do tema de extensão (#1095). `theme.apply` não abre tela — pinta o
   // produto; o label entra aqui para não degradar em silêncio no espanhol.
   "Seu tema na tela": { es: "Tu tema en pantalla" },

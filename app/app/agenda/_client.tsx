@@ -480,9 +480,9 @@ export function AgendaClient({
       </React.Suspense>
 
       <CabecalhoDePagina
-        titulo={t("Agenda")}
+        titulo={t("Compromissos")}
         descricao={t("O que está marcado, com quem, e quem atende — seu e da equipe.")}
-        ajuda={<ComoFunciona chave="agenda" pagina={t("Agenda")} />}
+        ajuda={<ComoFunciona chave="agenda" pagina={t("Compromissos")} />}
         acoes={
           <>
           {/* "Hoje" é o hoje DA ORGANIZAÇÃO. Com `new Date()` o botão desfazia a

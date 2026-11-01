@@ -194,7 +194,7 @@ export function PainelDeTags({ tags, idioma }: { tags: LinhaDeVocabulario[]; idi
     return (
       <Card className="p-6 text-sm text-muted-foreground">
         {t(
-          "Nenhuma etiqueta nesta organização ainda. Elas aparecem aqui conforme os agentes, o Inbox e o funil usarem.",
+          "Nenhuma etiqueta nesta organização ainda. Elas aparecem aqui conforme os agentes, as Conversas e o funil usarem.",
         )}
       </Card>
     );

@@ -123,7 +123,7 @@ function AccessForm({ channelId, initial, onClose, phoneTesting }: { channelId: 
         </p>
       </div>}
       <p className="text-sm text-muted-foreground">
-        {phoneTesting ? t("As mensagens continuam chegando ao Inbox, e sua equipe pode responder manualmente. Os testes são mensagens reais no WhatsApp, com os custos normais de uso.") : t("As mensagens continuam chegando à caixa de entrada para sua equipe responder. Confira outras automações da conta antes de liberar a IA aqui.")}
+        {phoneTesting ? t("As mensagens continuam chegando a Conversas, e sua equipe pode responder manualmente. Os testes são mensagens reais no WhatsApp, com os custos normais de uso.") : t("As mensagens continuam chegando à caixa de entrada para sua equipe responder. Confira outras automações da conta antes de liberar a IA aqui.")}
       </p>
       <p className="text-sm text-muted-foreground">
         {t("O agente precisa estar publicado e vinculado a este canal. Bloqueios do contato e atendimento humano continuam sendo respeitados.")}

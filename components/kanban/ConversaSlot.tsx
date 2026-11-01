@@ -49,7 +49,7 @@ export function ConversaSlot({ conversa }: { conversa: Lead["conversa"] }) {
         "group/conversa mt-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[11px]",
         "text-text-muted transition-colors hover:bg-muted hover:text-foreground",
       )}
-      title={t("Abrir esta conversa no Inbox")}
+      title={t("Abrir esta conversa em Conversas")}
     >
       <ChatCircle size={12} weight="regular" className="shrink-0" aria-hidden />
       <span className="truncate">

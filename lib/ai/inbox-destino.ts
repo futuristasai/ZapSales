@@ -152,8 +152,8 @@ export const POLITICAS_DE_AVISO = {
   // quando a empresa não tem atendimento automático.
   org_reativada: {
     refs: [],
-    orientacao: "A IA não respondeu nem vai responder sozinha às conversas que chegaram durante a suspensão. Abra o Inbox e procure-as nas abas Fila e Automático.",
-    geral: { papel: "agent", href: "/app/inbox", rotulo: "Abrir o Inbox" },
+    orientacao: "A IA não respondeu nem vai responder sozinha às conversas que chegaram durante a suspensão. Abra Conversas e procure-as nas abas Fila e Automático.",
+    geral: { papel: "agent", href: "/app/inbox", rotulo: "Abrir Conversas" },
   },
   other: { refs: ["lead", "channel_session", "appointment", "ai_agent", "ai_provider_credential", "agent_case"], orientacao: "Confira a situação descrita neste aviso com a pessoa responsável." },
 } satisfies Record<InboxKind, Politica>;

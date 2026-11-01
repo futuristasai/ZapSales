@@ -288,7 +288,7 @@ test.describe("Lote 12 — #941 radar sem funil arquivado e #907 o nome escolhid
   }) => {
     await login(page, cc.users.manager!.email, cc.password);
     await page.goto("/app/radar");
-    await expect(page.getByRole("heading", { name: "Radar de risco" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: "Riscos de Perda" })).toBeVisible({ timeout: 60_000 });
     await page.waitForLoadState("networkidle").catch(() => {});
 
     const corpo = await page.locator("main").innerText();

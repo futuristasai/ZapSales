@@ -160,8 +160,8 @@ test.describe("navegação agrupada", () => {
     // rodapé fixo — ver o teste de dobra abaixo.
     const titulos = sidebar(page).getByRole("heading");
     await expect(titulos).toHaveText([
-      "Atendimento",
-      "CRM",
+      "Leads",
+      "Gestão de Clientes CRM",
       "Agente de IA",
       "Canais",
       "Análise",
@@ -358,7 +358,7 @@ test.describe("navegação agrupada", () => {
 
     // CANAIS é todo manager+/admin: o título não pode sobrar sozinho.
     await expect(sidebar(page).getByRole("heading", { name: "Canais" })).toHaveCount(0);
-    await expect(sidebar(page).getByRole("heading", { name: "Atendimento" })).toBeVisible();
+    await expect(sidebar(page).getByRole("heading", { name: "Leads" })).toBeVisible();
   });
 });
 

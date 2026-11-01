@@ -54,9 +54,9 @@ describe("CommandPalette", () => {
   it("busca também na descrição, não só no rótulo", async () => {
     const user = userEvent.setup();
     abrir();
-    // Ninguém procura "Radar" por esse nome; procura pelo problema que resolve.
+    // Ninguém procura "Riscos de Perda" por esse nome; procura pelo problema que resolve.
     await user.type(screen.getByRole("combobox"), "esfriou");
-    expect(screen.getByRole("option", { name: /Radar/ })).toBeTruthy();
+    expect(screen.getByRole("option", { name: /Riscos de Perda/ })).toBeTruthy();
   });
 
   it("acha o Disparo em massa por \"campanha\", o nome antigo da tela", async () => {
@@ -121,7 +121,7 @@ describe("CommandPalette", () => {
 
   it("sem texto, oferece o trabalho do dia em vez de tela vazia", () => {
     abrir();
-    expect(screen.getByRole("option", { name: /Inbox/ })).toBeTruthy();
+    expect(screen.getByRole("option", { name: /^Conversas/ })).toBeTruthy();
   });
 
   it("diz quando não achou, em vez de sumir sem explicação", async () => {
@@ -135,15 +135,15 @@ describe("CommandPalette", () => {
   it("permite filtrar por categorias através dos botões", async () => {
     const user = userEvent.setup();
     abrir();
-    const btnAtendimento = screen.getByRole("button", { name: /Atendimento/i });
-    expect(btnAtendimento).toBeTruthy();
-    await user.click(btnAtendimento);
-    // Ao filtrar por Atendimento, itens de CRM ou Funcionários não devem aparecer
-    expect(screen.getByRole("option", { name: /Inbox/ })).toBeTruthy();
+    const btnLeads = screen.getByRole("button", { name: /Leads/i });
+    expect(btnLeads).toBeTruthy();
+    await user.click(btnLeads);
+    // Ao filtrar por Leads, itens de CRM ou Funcionários não devem aparecer
+    expect(screen.getByRole("option", { name: /^Conversas/ })).toBeTruthy();
     expect(screen.queryByRole("option", { name: /Contatos/ })).toBeNull();
   });
 
-  it("no catálogo, abre em Atendimento e a seta segue a ordem da tela", async () => {
+  it("no catálogo, abre em Leads e a seta segue a ordem da tela", async () => {
     const user = userEvent.setup();
     abrir();
     // O catálogo começa por Prospecção (CRM): agrupar pela 1ª aparição punha

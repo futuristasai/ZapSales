@@ -250,8 +250,8 @@ export function ContactsTable({ contacts, orderBy, orderDir, onSort }: Props) {
                   <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                     <Link
                       href={`/app/inbox?id=${c.conversa.id}`}
-                      title={t("Abrir conversa no Inbox")}
-                      aria-label={`${t("Abrir conversa com")} ${displayName(c, t)} ${t("no Inbox")}`}
+                      title={t("Abrir conversa em Conversas")}
+                      aria-label={`${t("Abrir conversa com")} ${displayName(c, t)} ${t("em Conversas")}`}
                     >
                       <ChatCircle size={16} weight="regular" aria-hidden />
                       {c.conversa.unread > 0 && (
@@ -264,8 +264,8 @@ export function ContactsTable({ contacts, orderBy, orderDir, onSort }: Props) {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    title={t("Iniciar conversa no Inbox")}
-                    aria-label={`${t("Iniciar conversa com")} ${displayName(c, t)} ${t("no Inbox")}`}
+                    title={t("Iniciar conversa em Conversas")}
+                    aria-label={`${t("Iniciar conversa com")} ${displayName(c, t)} ${t("em Conversas")}`}
                     disabled={abrindo === c.id}
                     onClick={() => void iniciarConversa(c)}
                   >
