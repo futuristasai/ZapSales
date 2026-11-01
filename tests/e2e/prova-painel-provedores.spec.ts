@@ -181,8 +181,8 @@ test("as duas telas têm porta na navegação — pelo hub de IA", async ({ page
   // `feedback_agrupar_cria_overflow` — agrupar o menu o faz crescer). Elas
   // seguem o padrão das outras nove telas do grupo, todas alcançáveis daqui.
   await page.goto("/app/ai");
-  await expect(page.getByRole("link", { name: /Provedores/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Execuções/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Qual IA usar/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Histórico do agente/ })).toBeVisible();
 });
 
 test("instalação sem agente publicado: os dois pontos principais são EDITÁVEIS", async ({ page }) => {

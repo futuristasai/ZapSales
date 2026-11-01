@@ -118,7 +118,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await expect(member.getByRole("heading", { name: /Riscos de Perda/ }).first()).toBeVisible();
     await member.goto("/app/settings/profile");
     await customize(page, emails[1]!, "Produtos");
-    await expect(nav(member).getByRole("link", { name: "Conversas", exact: true })).toHaveCount(0);
+    await expect(nav(member).getByRole("link", { name: /^Conversas/ })).toHaveCount(0);
     await member.goto("/app");
     await member.waitForURL("**/app/products");
     await nav(member).getByRole("link", { name: "Ver tudo em CRM" }).click();
@@ -154,7 +154,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await guest.goto(link);
     await guest.getByRole("button", { name: /aceitar/i }).click();
     await guest.waitForURL("**/app/tasks");
-    await expect(nav(guest).getByRole("link", { name: "Conversas", exact: true })).toHaveCount(0);
+    await expect(nav(guest).getByRole("link", { name: /^Conversas/ })).toHaveCount(0);
     await expect(nav(guest).getByRole("link", { name: "Tarefas", exact: true })).toBeVisible();
     await expect(guest.getByRole("heading", { name: "Tarefas", exact: true })).toBeVisible();
     await expect(guest.getByText("Nenhuma tarefa por aqui", { exact: true })).toBeVisible();

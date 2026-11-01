@@ -103,8 +103,8 @@ describe("Sidebar agrupado", () => {
     expect(fila).toHaveLength(1);
     expect(casos[0]!.closest("a")).toHaveAttribute("href", "/app/ai/cases");
     expect(fila[0]!.closest("a")).toHaveAttribute("href", "/app/inbox");
-    // Roteadores saiu do menu para Casos caber (a folga era menos de uma linha).
-    expect(screen.queryByRole("link", { name: "Roteadores" })).toBeNull();
+    // «Quem atende cada conversa» (antes Roteadores) saiu do menu para Casos caber (a folga era menos de uma linha).
+    expect(screen.queryByRole("link", { name: /Quem atende cada conversa/ })).toBeNull();
     cleanup();
     // Recolhido, o contador vira ponto — é o componente que decide, com esta dica.
     render(<Sidebar collapsed />);
@@ -134,7 +134,7 @@ describe("Sidebar agrupado", () => {
     // #105, e Conexões é a porta.
     const hubAnalise = screen.getByRole("link", { name: /Ver tudo em Análise/ });
     expect(hubAnalise).toHaveAttribute("href", "/app/analise");
-    expect(screen.queryByRole("link", { name: /Auditoria/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Quem mexeu em quê/ })).toBeNull();
   });
 
   it("Configurações fica no rodapé, nunca dependendo de scroll", () => {

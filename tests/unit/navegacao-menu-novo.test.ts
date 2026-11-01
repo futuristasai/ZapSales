@@ -37,9 +37,9 @@ function resumo(blocos: readonly BlocoProjetado[]): string[] {
   return blocos.flatMap((b) =>
     b.id === "configurar"
       ? b.areas.flatMap((a) =>
-          a.grupos.map((g) => `${b.label} › ${a.label} › ${g.label}: ${g.itens.map((i) => i.menu.nome).join(", ")}`),
+          a.grupos.map((g) => `${b.label} › ${a.label} › ${g.label}: ${g.itens.map((i) => i.label).join(", ")}`),
         )
-      : b.grupos.map((g) => `${b.label} › ${g.label}: ${g.itens.map((i) => i.menu.nome).join(", ")}`),
+      : b.grupos.map((g) => `${b.label} › ${g.label}: ${g.itens.map((i) => i.label).join(", ")}`),
   );
 }
 
@@ -63,7 +63,7 @@ describe("posição de cada tela no catálogo", () => {
         !grupos.has(d.menu.grupo) ||
         !Number.isInteger(d.menu.ordem) ||
         d.menu.ordem < 1 ||
-        d.menu.nome.trim() === "",
+        d.label.trim() === "",
     ).map((d) => d.href);
     expect(ruins).toEqual([]);
   });
@@ -97,7 +97,7 @@ describe("o que cada papel vê no modelo novo", () => {
 
   it("Dono: a mesa de Todo dia está na ordem do protótipo 6", () => {
     const todoDia = bloco(menu(DONO), "todo-dia");
-    expect(gruposDe(todoDia).map((g) => [g.label, g.itens.map((i) => i.menu.nome)])).toEqual([
+    expect(gruposDe(todoDia).map((g) => [g.label, g.itens.map((i) => i.label)])).toEqual([
       ["Leads", ["Conversas", "Aguardando Humano", "Alertas", "Riscos de Perda", "Compromissos"]],
       ["Gestão de Clientes CRM", ["Funis", "Contatos", "Tarefas", "Disparo em massa"]],
       ["Se a sua empresa usa", ["Propostas", "Comandas", "Chamadas"]],
@@ -118,13 +118,13 @@ describe("o que cada papel vê no modelo novo", () => {
 
   it("Dono: Resultados tem três grupos e o menu da conta guarda Perfil, Segurança e Notificações", () => {
     expect(
-      gruposDe(bloco(menu(DONO), "resultados")).map((g) => [g.label, g.itens.map((i) => i.menu.nome)]),
+      gruposDe(bloco(menu(DONO), "resultados")).map((g) => [g.label, g.itens.map((i) => i.label)]),
     ).toEqual([
       ["Números do negócio", ["Desempenho", "Meta Ads", "Faturamento", "Honorários"]],
       ["Equipe e IA", ["Atividades", "Evolução da IA", "Sugestões da IA", "Uso e orçamento"]],
       ["Quando algo dá errado", ["Histórico do agente", "Quem mexeu em quê"]],
     ]);
-    expect(gruposDe(bloco(menu(DONO), "conta")).flatMap((g) => g.itens.map((i) => i.menu.nome))).toEqual([
+    expect(gruposDe(bloco(menu(DONO), "conta")).flatMap((g) => g.itens.map((i) => i.label))).toEqual([
       "Perfil",
       "Segurança",
       "Notificações",
@@ -147,7 +147,7 @@ describe("o que cada papel vê no modelo novo", () => {
 
   it("Atendente: só vê o que o papel dele permite; Agente desaparece", () => {
     const blocos = menu(ATENDENTE);
-    expect(gruposDe(bloco(blocos, "todo-dia")).map((g) => [g.label, g.itens.map((i) => i.menu.nome)])).toEqual([
+    expect(gruposDe(bloco(blocos, "todo-dia")).map((g) => [g.label, g.itens.map((i) => i.label)])).toEqual([
       ["Leads", ["Conversas", "Aguardando Humano", "Alertas", "Riscos de Perda", "Compromissos"]],
       ["Gestão de Clientes CRM", ["Funis", "Contatos", "Tarefas"]],
       ["Se a sua empresa usa", ["Propostas", "Comandas"]],
@@ -157,7 +157,7 @@ describe("o que cada papel vê no modelo novo", () => {
     // Conexões só sobra por "Dados de outro sistema", que QUALQUER papel vê quando o módulo está ligado.
     expect(configurar.areas.map((a) => a.label)).toEqual(["Vender", "Conexões", "Empresa"]);
     expect(
-      configurar.areas.find((a) => a.id === "conexoes")?.grupos.flatMap((g) => g.itens.map((i) => i.menu.nome)),
+      configurar.areas.find((a) => a.id === "conexoes")?.grupos.flatMap((g) => g.itens.map((i) => i.label)),
     ).toEqual(["Dados de outro sistema"]);
     expect(bloco(blocos, "resultados")?.id).toBe("resultados");
   });
@@ -224,7 +224,7 @@ describe("o que cada papel vê no modelo novo", () => {
     // Sem módulos nem capacidades, a mesa opcional encolhe: Propostas (capacidade) some, Comandas (sem porta fechada) fica.
     const nada = menuDoPapel(false, LEITOR, undefined, [], []).blocos;
     const opcional = gruposDe(bloco(nada, "todo-dia")).find((g) => g.id === "se-a-empresa-usa");
-    expect(opcional?.itens.map((i) => i.menu.nome)).toEqual(["Comandas"]);
+    expect(opcional?.itens.map((i) => i.label)).toEqual(["Comandas"]);
   });
 });
 

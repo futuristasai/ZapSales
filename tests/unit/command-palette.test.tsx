@@ -69,10 +69,10 @@ describe("CommandPalette", () => {
   it("acha o Jev pelo nome, embora ele não tenha tela própria", async () => {
     const user = userEvent.setup();
     abrir();
-    // O cartão dele mora em Provedores; sem o nome na descrição, quem ouviu
+    // O cartão dele mora em «Qual IA usar» (antes Provedores); sem o nome na descrição, quem ouviu
     // falar do Jev digitava "jev" e não achava nada.
     await user.type(screen.getByRole("combobox"), "jev");
-    const opcao = screen.getByRole("option", { name: /Provedores/ });
+    const opcao = screen.getByRole("option", { name: /Qual IA usar/ });
     // E VÊ o nome: a descrição longa cortava antes do "Jev" (medido em campo).
     const descricao = opcao.querySelector("p")!.textContent!;
     expect(descricao.indexOf("Jev"), descricao).toBeGreaterThanOrEqual(0);
@@ -98,7 +98,23 @@ describe("CommandPalette", () => {
     const user = userEvent.setup();
     abrir();
     await user.type(screen.getByRole("combobox"), "audit");
-    expect(screen.queryByRole("option", { name: /Auditoria/ })).toBeNull();
+    // O nome novo de "Auditoria". O papel continua decidindo: achar não é autorizar.
+    expect(screen.queryByRole("option", { name: /Quem mexeu em quê/ })).toBeNull();
+  });
+
+  it("acha a tela pelo nome que ela tinha antes («Webhooks») e pelo termo técnico", async () => {
+    const user = userEvent.setup();
+    abrir();
+    await user.type(screen.getByRole("combobox"), "Webhooks");
+    expect(screen.getByRole("option", { name: /Avisar outros sistemas/ })).toBeTruthy();
+  });
+
+  it("mostra o termo técnico ao lado do nome, no resultado", async () => {
+    const user = userEvent.setup();
+    abrir();
+    await user.type(screen.getByRole("combobox"), "api key");
+    const opcao = screen.getByRole("option", { name: /Chave da IA/ });
+    expect(opcao.textContent).toContain("API key");
   });
 
   it("Enter navega para o item destacado", async () => {

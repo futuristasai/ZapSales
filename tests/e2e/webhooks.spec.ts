@@ -125,10 +125,10 @@ test.describe("webhooks & automações — fluxo completo", () => {
     let pipelineId: string | undefined;
 
     try {
-      // --- Step 1: login como manager; sidebar mostra "Webhooks" ---
+      // --- Step 1: login como manager; sidebar mostra "Avisar outros sistemas" (antes Webhooks) ---
       await login(page, creds.users.manager!.email);
-      await expect(page.getByRole("link", { name: "Webhooks" })).toBeVisible();
-      await page.getByRole("link", { name: "Webhooks" }).click();
+      await expect(page.getByRole("link", { name: "Avisar outros sistemas" })).toBeVisible();
+      await page.getByRole("link", { name: "Avisar outros sistemas" }).click();
       await page.waitForURL(/\/app\/webhooks/);
 
       // --- Step 2: aba "Receber dados" — criar fonte ---
@@ -351,7 +351,7 @@ test.describe("webhooks & automações — fluxo completo", () => {
       const agentPage = await agentContext.newPage();
       try {
         await login(agentPage, creds.users.agent!.email);
-        await expect(agentPage.getByRole("link", { name: "Webhooks" })).toHaveCount(0);
+        await expect(agentPage.getByRole("link", { name: "Avisar outros sistemas" })).toHaveCount(0);
         await agentPage.goto(`${APP_URL}/app/webhooks`);
         await agentPage.waitForURL(/\/app\/inbox/);
         expect(agentPage.url()).toMatch(/\/app\/inbox/);

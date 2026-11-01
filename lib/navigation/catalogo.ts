@@ -106,11 +106,10 @@ export type GrupoDoMenuId = (typeof MENU_GRUPOS)[number]["id"];
 export interface PosicaoNoMenu {
   grupo: GrupoDoMenuId;
   /**
-   * O nome que o menu novo mostra. O de hoje (`label`) segue valendo no menu
-   * antigo e vira sinônimo de busca quando o novo entrar.
+   * O termo técnico, mostrado embaixo do nome ("webhooks", "API key") no menu, na
+   * dica e no hub, e buscável no ⌘K. O NOME é o `label`: um só, o mesmo nos dois
+   * menus (issue #187) — o nome de antes vira sinônimo de busca.
    */
-  nome: string;
-  /** O termo técnico, mostrado embaixo do nome ("webhooks", "API key"). */
   termo?: string;
   /** Posição dentro do grupo, a partir de 1. Única por grupo. */
   ordem: number;
@@ -236,7 +235,7 @@ export const NAV_CATALOG = [
     description: "Busque empresas e conduza abordagens graduais com IA.",
     icon: "Binoculars",
     group: "crm",
-    menu: { grupo: "vender-funil", ordem: 3, nome: "Prospecção" },
+    menu: { grupo: "vender-funil", ordem: 3 },
     minRole: "admin",
     section: "O dia a dia da venda",
   },
@@ -249,7 +248,7 @@ export const NAV_CATALOG = [
     sinonimos: ["inbox", "caixa de entrada"],
     icon: "Inbox",
     group: "atendimento",
-    menu: { grupo: "leads", ordem: 1, nome: "Conversas", termo: "inbox" },
+    menu: { grupo: "leads", ordem: 1, termo: "inbox" },
     sidebar: true,
     // Quantas conversas a IA passou para a equipe e esperam uma pessoa (aba Fila).
     contador: "fila",
@@ -262,7 +261,7 @@ export const NAV_CATALOG = [
     description: "Quem esfriou e ainda está aberto — o que corre risco de morrer sem resposta.",
     icon: "ClockCountdown",
     group: "atendimento",
-    menu: { grupo: "leads", ordem: 4, nome: "Riscos de Perda" },
+    menu: { grupo: "leads", ordem: 4 },
     sidebar: true,
   },
   {
@@ -285,7 +284,7 @@ export const NAV_CATALOG = [
     description: "O que está marcado, com quem, e quem atende — seu e da equipe.",
     icon: "CalendarBlank",
     group: "atendimento",
-    menu: { grupo: "leads", ordem: 5, nome: "Compromissos" },
+    menu: { grupo: "leads", ordem: 5 },
     sidebar: true,
   },
   {
@@ -297,7 +296,7 @@ export const NAV_CATALOG = [
     description: "Scripts salvos para responder mais rápido, seus ou da equipe.",
     icon: "Lightning",
     group: "atendimento",
-    menu: { grupo: "vender-equipe", ordem: 1, nome: "Respostas rápidas" },
+    menu: { grupo: "vender-equipe", ordem: 1 },
     sidebar: true,
   },
 
@@ -318,7 +317,7 @@ export const NAV_CATALOG = [
     description: "Seus funis de venda — clique em um para abrir o quadro de clientes.",
     icon: "FunilEmEtapas",
     group: "crm",
-    menu: { grupo: "gestao-de-clientes", ordem: 1, nome: "Funis" },
+    menu: { grupo: "gestao-de-clientes", ordem: 1 },
     section: "O dia a dia da venda",
     sidebar: true,
   },
@@ -345,7 +344,7 @@ export const NAV_CATALOG = [
     sinonimos: ["campanha", "campanhas", "envio em massa", "broadcast"],
     icon: "Megaphone",
     group: "crm",
-    menu: { grupo: "gestao-de-clientes", ordem: 4, nome: "Disparo em massa" },
+    menu: { grupo: "gestao-de-clientes", ordem: 4 },
     section: "O dia a dia da venda",
     minRole: "manager",
     sidebar: true,
@@ -356,7 +355,7 @@ export const NAV_CATALOG = [
     description: "As pessoas do outro lado da conversa e seu histórico.",
     icon: "Users",
     group: "crm",
-    menu: { grupo: "gestao-de-clientes", ordem: 2, nome: "Contatos" },
+    menu: { grupo: "gestao-de-clientes", ordem: 2 },
     section: "O dia a dia da venda",
     sidebar: true,
   },
@@ -366,7 +365,7 @@ export const NAV_CATALOG = [
     description: "Cadastro B2B — razão social, CNPJ e decisores.",
     icon: "Buildings",
     group: "crm",
-    menu: { grupo: "vender-cadastro", ordem: 2, nome: "Empresas", termo: "B2B" },
+    menu: { grupo: "vender-cadastro", ordem: 2, termo: "B2B" },
     section: "O dia a dia da venda",
     // SEM sidebar: o CRM já tem Funis/Contatos/Tarefas no menu diário; este trio
     // mora no hub "Ver tudo em CRM" para não reabrir a corrida por pixel.
@@ -380,7 +379,7 @@ export const NAV_CATALOG = [
     description: "Decisores e contatos ligados a empresas, com vários telefones.",
     icon: "UserList",
     group: "crm",
-    menu: { grupo: "vender-cadastro", ordem: 3, nome: "Pessoas", termo: "B2B" },
+    menu: { grupo: "vender-cadastro", ordem: 3, termo: "B2B" },
     section: "O dia a dia da venda",
     minRole: "viewer",
     // Módulo opcional da instalação, desligado por padrão (doc 68, #1621).
@@ -397,7 +396,7 @@ export const NAV_CATALOG = [
     description: "O que ficou combinado, com prazo — e o que já venceu sem ninguém fazer.",
     icon: "ListChecks",
     group: "crm",
-    menu: { grupo: "gestao-de-clientes", ordem: 3, nome: "Tarefas" },
+    menu: { grupo: "gestao-de-clientes", ordem: 3 },
     section: "O dia a dia da venda",
     sidebar: true,
   },
@@ -431,7 +430,7 @@ export const NAV_CATALOG = [
     description: "Histórico de ligações (voz por IA) com transcrição.",
     icon: "Phone",
     group: "crm",
-    menu: { grupo: "se-a-empresa-usa", ordem: 3, nome: "Chamadas" },
+    menu: { grupo: "se-a-empresa-usa", ordem: 3 },
     section: "O dia a dia da venda",
     minRole: "manager",
   },
@@ -454,7 +453,7 @@ export const NAV_CATALOG = [
     description: "O catálogo da loja, com o preço que o atendente de IA responde.",
     icon: "Storefront",
     group: "crm",
-    menu: { grupo: "vender-oferta", ordem: 1, nome: "Produtos" },
+    menu: { grupo: "vender-oferta", ordem: 1 },
     section: "Preparar a venda",
     // SEM `sidebar`: mora atrás de "Ver tudo em CRM".
     //
@@ -470,7 +469,7 @@ export const NAV_CATALOG = [
     description: "Lotes CSV/XLSX de empresas, pessoas e telefones.",
     icon: "UploadSimple",
     group: "crm",
-    menu: { grupo: "vender-cadastro", ordem: 1, nome: "Importações", termo: "CSV / XLSX" },
+    menu: { grupo: "vender-cadastro", ordem: 1, termo: "CSV / XLSX" },
     section: "Preparar a venda",
     minRole: "manager",
     // Módulo opcional da instalação, desligado por padrão (doc 68, #1621).
@@ -482,7 +481,7 @@ export const NAV_CATALOG = [
     description: "Rascunhe, revise e envie propostas comerciais — do orçamento ao aceite.",
     icon: "Signature",
     group: "crm",
-    menu: { grupo: "se-a-empresa-usa", ordem: 1, nome: "Propostas" },
+    menu: { grupo: "se-a-empresa-usa", ordem: 1 },
     section: "Fechar a venda",
     capacidade: "propostas",
   },
@@ -500,7 +499,7 @@ export const NAV_CATALOG = [
     description: "O que se pode marcar, quanto dura, onde acontece e quem atende.",
     icon: "CalendarCheck",
     group: "organizacao",
-    menu: { grupo: "vender-funil", ordem: 2, nome: "Tipos de agendamento" },
+    menu: { grupo: "vender-funil", ordem: 2 },
     // "Sua empresa", junto de Atendimento e Empresa: é configuração do NEGÓCIO,
     // não da conta de quem está logado. O gate `navegacao-registry` cobra a
     // seção em todo grupo que tem hub, e sem ela o destino não aparece no hub.
@@ -512,11 +511,12 @@ export const NAV_CATALOG = [
   },
   {
     href: "/app/settings/tenant/proposals",
-    label: "Propostas",
+    label: "Padrões de proposta",
+    sinonimos: ["propostas"],
     description: "Configure a validade padrão e condições para propostas comerciais.",
     icon: "Files",
     group: "organizacao",
-    menu: { grupo: "vender-oferta", ordem: 2, nome: "Padrões de proposta" },
+    menu: { grupo: "vender-oferta", ordem: 2 },
     section: "Sua empresa",
     minRole: "manager",
     // Doc 79: é aqui que a EMPRESA liga — então a porta depende só da chave da
@@ -531,7 +531,7 @@ export const NAV_CATALOG = [
     description: "Personalize os modelos da plataforma ou crie os da sua empresa, inclusive a partir de uma proposta que você já usa.",
     icon: "FileText",
     group: "organizacao",
-    menu: { grupo: "vender-oferta", ordem: 3, nome: "Modelos de proposta" },
+    menu: { grupo: "vender-oferta", ordem: 3 },
     section: "Sua empresa",
     minRole: "manager",
     capacidade: "propostas",
@@ -549,7 +549,7 @@ export const NAV_CATALOG = [
     description: "O que foi feito, por quem, e quanto o cliente paga.",
     icon: "Receipt",
     group: "crm",
-    menu: { grupo: "se-a-empresa-usa", ordem: 2, nome: "Comandas" },
+    menu: { grupo: "se-a-empresa-usa", ordem: 2 },
     section: "O dia a dia da venda",
     // ⚠️ FORA do sidebar, e isto foi MEDIDO, não escolhido por gosto. Com
     // `sidebar: true` o menu passou a rolar em 1280×900 e o e2e
@@ -577,7 +577,7 @@ export const NAV_CATALOG = [
     description: "Contas, formas de pagamento e como cada lançamento é classificado.",
     icon: "Wallet",
     group: "organizacao",
-    menu: { grupo: "empresa-dados", ordem: 3, nome: "Financeiro" },
+    menu: { grupo: "empresa-dados", ordem: 3 },
     section: "Sua empresa",
     // Leitura para a organização, escrita para manager+ (é a RLS que decide).
     // `viewer` aqui e não `manager`: quem só olha precisa conferir para onde o
@@ -599,7 +599,7 @@ export const NAV_CATALOG = [
     description: "As colunas de cada funil, o vocabulário do negócio e os motivos de perda.",
     icon: "Funnel",
     group: "crm",
-    menu: { grupo: "vender-funil", ordem: 1, nome: "Etapas do funil" },
+    menu: { grupo: "vender-funil", ordem: 1 },
     section: "Preparar a venda",
     minRole: "manager",
     // SEM `sidebar`: mora atrás de "Ver tudo em CRM".
@@ -621,7 +621,7 @@ export const NAV_CATALOG = [
     description: "Quem atende por você: instruções, modelo, ferramentas e publicação.",
     icon: "AgenteEmConversa",
     group: "ia",
-    menu: { grupo: "agente-montar", ordem: 1, nome: "Agentes" },
+    menu: { grupo: "agente-montar", ordem: 1 },
     section: "Montar o agente",
     minRole: "manager",
     sidebar: true,
@@ -632,7 +632,7 @@ export const NAV_CATALOG = [
     description: "Como o agente retoma uma conversa que esfriou, para nenhuma morrer no silêncio.",
     icon: "FlowArrow",
     group: "ia",
-    menu: { grupo: "agente-montar", ordem: 2, nome: "Follow-ups" },
+    menu: { grupo: "agente-montar", ordem: 2 },
     section: "Montar o agente",
     minRole: "manager",
     sidebar: true,
@@ -650,18 +650,19 @@ export const NAV_CATALOG = [
     description: "Perguntas que a IA conduz durante a conversa, com as respostas guardadas na ficha do cliente.",
     icon: "TreeStructure",
     group: "ia",
-    menu: { grupo: "agente-montar", ordem: 3, nome: "Fluxos de atendimento" },
+    menu: { grupo: "agente-montar", ordem: 3 },
     section: "Montar o agente",
     minRole: "manager",
     modulo: "fluxos_atendimento",
   },
   {
     href: "/app/ai/routers",
-    label: "Roteadores",
+    label: "Quem atende cada conversa",
+    sinonimos: ["roteadores"],
     description: "Qual agente pega qual conversa, e quando o humano assume.",
     icon: "PassagemParaHumano",
     group: "ia",
-    menu: { grupo: "agente-montar", ordem: 4, nome: "Quem atende cada conversa", termo: "roteadores" },
+    menu: { grupo: "agente-montar", ordem: 4, termo: "roteadores" },
     section: "Montar o agente",
     minRole: "manager",
     // Saiu do sidebar para dar lugar a Casos: roteador se configura poucas
@@ -670,7 +671,8 @@ export const NAV_CATALOG = [
   },
   {
     href: "/app/ai/credentials",
-    label: "Credenciais",
+    label: "Chave da IA",
+    sinonimos: ["credenciais"],
     description: "A chave do provedor de IA que os agentes usam para pensar.",
     icon: "Key",
     // VOLTOU para "ia"/"Montar o agente" na triagem, e a razão de quem tinha
@@ -680,7 +682,7 @@ export const NAV_CATALOG = [
     // cobra a entrada ali, inclusive em espanhol. Movê-la para "Sua empresa"
     // agora tiraria a tela do lugar onde o hub promete que ela está.
     group: "ia",
-    menu: { grupo: "agente-conectar", ordem: 2, nome: "Chave da IA", termo: "API key" },
+    menu: { grupo: "agente-conectar", ordem: 2, termo: "API key" },
     section: "Montar o agente",
     minRole: "manager",
   },
@@ -689,13 +691,14 @@ export const NAV_CATALOG = [
     // espalhada por três pilhas de código e sete variáveis de ambiente — não
     // havia onde responder "quem usa IA aqui, e com qual chave?".
     href: "/app/ai/providers",
-    label: "Provedores",
+    label: "Qual IA usar",
+    sinonimos: ["provedores"],
     // O "Jev" vem cedo: o ⌘K mostra só o começo da descrição, e a versão
     // longa cortava antes do nome — quem procurava "jev" achava, mas não via por quê.
     description: "Ligue o Jev para decisões rápidas e escolha qual inteligência atende cada parte do sistema.",
     icon: "Plugs",
     group: "ia",
-    menu: { grupo: "agente-conectar", ordem: 3, nome: "Qual IA usar", termo: "provedores" },
+    menu: { grupo: "agente-conectar", ordem: 3, termo: "provedores" },
     section: "Montar o agente",
     minRole: "manager",
     // SEM `sidebar: true`, como as outras nove telas deste grupo. Adicionar as
@@ -710,18 +713,18 @@ export const NAV_CATALOG = [
     description: "Os materiais que o agente consulta antes de responder sobre o seu negócio.",
     icon: "BookOpen",
     group: "ia",
-    menu: { grupo: "agente-ensinar", ordem: 1, nome: "Conhecimento", termo: "RAG" },
+    menu: { grupo: "agente-ensinar", ordem: 1, termo: "RAG" },
     section: "Ensinar o agente",
     minRole: "manager",
   },
   {
     href: "/app/ai/external-tools",
-    label: "Ferramentas externas",
+    label: "Conectar outros sistemas",
     description: "Consultas e ações em outro sistema (estoque, planilha, ERP) que o agente faz durante a conversa; as que alteram algo esperam a sua aprovação.",
-    sinonimos: ["webhook", "integração", "make", "n8n", "erp", "consulta externa", "mcp", "servidor mcp"],
+    sinonimos: ["webhook", "integração", "make", "n8n", "erp", "consulta externa", "mcp", "servidor mcp", "ferramentas externas"],
     icon: "Signpost",
     group: "ia",
-    menu: { grupo: "agente-conectar", ordem: 1, nome: "Conectar outros sistemas", termo: "MCP" },
+    menu: { grupo: "agente-conectar", ordem: 1, termo: "MCP" },
     section: "Montar o agente",
     minRole: "manager",
     // SEM `sidebar: true`: o menu lateral só cabe com 15 itens em 900 px (medido por
@@ -734,17 +737,18 @@ export const NAV_CATALOG = [
     description: "O que o agente já aprendeu sobre a sua operação e reaproveita.",
     icon: "Brain",
     group: "ia",
-    menu: { grupo: "agente-ensinar", ordem: 2, nome: "Memória" },
+    menu: { grupo: "agente-ensinar", ordem: 2 },
     section: "Ensinar o agente",
     minRole: "manager",
   },
   {
     href: "/app/ai/skills",
-    label: "Skills",
+    label: "O que o agente sabe fazer",
+    sinonimos: ["skills"],
     description: "As ações que o agente pode executar sozinho durante o atendimento.",
     icon: "MagicWand",
     group: "ia",
-    menu: { grupo: "agente-ensinar", ordem: 3, nome: "O que o agente sabe fazer", termo: "skills" },
+    menu: { grupo: "agente-ensinar", ordem: 3, termo: "skills" },
     section: "Ensinar o agente",
     minRole: "manager",
   },
@@ -752,12 +756,12 @@ export const NAV_CATALOG = [
     href: "/app/ai/cases",
     label: "Aguardando Humano",
     description:
-      "Os atendimentos que o agente conduziu, do início ao desfecho, com destaque para os que esperam uma pessoa. A aba Fila, em Conversas, lista as conversas; aqui ficam os casos.",
+      "Os casos em que a IA pediu ajuda e esperam uma pessoa — e o histórico dos que ela conduziu até o fim.",
     // O nome mudou de "Casos" para "Aguardando Humano"; quem procura pelo antigo ainda acha.
     sinonimos: ["casos", "caso", "esperando uma pessoa"],
     icon: "ClipboardText",
     group: "ia",
-    menu: { grupo: "leads", ordem: 2, nome: "Aguardando Humano" },
+    menu: { grupo: "leads", ordem: 2 },
     section: "Acompanhar o agente",
     minRole: "agent",
     // Uso diário: a IA abre caso quando precisa de uma pessoa e segue
@@ -772,7 +776,7 @@ export const NAV_CATALOG = [
     description: "O que a IA encontrou e precisa de uma decisão sua.",
     icon: "Flag",
     group: "ia",
-    menu: { grupo: "leads", ordem: 3, nome: "Alertas" },
+    menu: { grupo: "leads", ordem: 3 },
     section: "Acompanhar o agente",
   },
   {
@@ -786,7 +790,7 @@ export const NAV_CATALOG = [
     description: "Receber no WhatsApp quando o assistente abrir um caso.",
     icon: "PaperPlaneTilt",
     group: "ia",
-    menu: { grupo: "agente-conectar", ordem: 4, nome: "Aviso no WhatsApp" },
+    menu: { grupo: "agente-conectar", ordem: 4 },
     section: "Acompanhar o agente",
     // `admin` porque escolhe um número conectado e manda dado de cliente para um
     // celular — o mesmo gate da rota e da RLS de `config_aviso_de_caso`.
@@ -803,7 +807,7 @@ export const NAV_CATALOG = [
     description: "Melhorias que a IA sugere para si mesma, esperando sua decisão.",
     icon: "Lightbulb",
     group: "ia",
-    menu: { grupo: "resultados-equipe", ordem: 3, nome: "Sugestões da IA" },
+    menu: { grupo: "resultados-equipe", ordem: 3 },
     section: "Acompanhar o agente",
   },
   {
@@ -812,11 +816,12 @@ export const NAV_CATALOG = [
     // Antes da migration 0128 ela seria impossível de construir com honestidade
     // — llm_calls só registrava sucesso.
     href: "/app/ai/runs",
-    label: "Execuções",
+    label: "Histórico do agente",
+    sinonimos: ["execuções"],
     description: "O que a IA fez — e, quando falhou, o que aconteceu e o que fazer.",
     icon: "Pulse",
     group: "ia",
-    menu: { grupo: "resultados-erro", ordem: 1, nome: "Histórico do agente", termo: "logs" },
+    menu: { grupo: "resultados-erro", ordem: 1, termo: "logs" },
     section: "Acompanhar o agente",
     minRole: "manager",
     // Idem: fora da sidebar para o menu não passar da dobra. Quem vem para cá
@@ -828,7 +833,7 @@ export const NAV_CATALOG = [
     description: "Quanto a IA consumiu e qual é o teto de gasto do mês.",
     icon: "Gauge",
     group: "ia",
-    menu: { grupo: "resultados-equipe", ordem: 4, nome: "Uso e orçamento" },
+    menu: { grupo: "resultados-equipe", ordem: 4 },
     section: "Acompanhar o agente",
     minRole: "manager",
   },
@@ -845,18 +850,19 @@ export const NAV_CATALOG = [
       "Seus números de WhatsApp: por QR ou canal oficial da Meta, com saúde, reconexão e templates.",
     icon: "PlugsConnected",
     group: "canais",
-    menu: { grupo: "conexoes-whatsapp", ordem: 1, nome: "Conexões" },
+    menu: { grupo: "conexoes-whatsapp", ordem: 1 },
     minRole: "admin",
     sidebar: true,
     healthDot: true,
   },
   {
     href: "/app/webhooks",
-    label: "Webhooks",
+    label: "Avisar outros sistemas",
+    sinonimos: ["webhooks"],
     description: "Avise outros sistemas quando algo acontecer aqui dentro.",
     icon: "WebhooksLogo",
     group: "canais",
-    menu: { grupo: "conexoes-sistemas", ordem: 1, nome: "Avisar outros sistemas", termo: "webhooks" },
+    menu: { grupo: "conexoes-sistemas", ordem: 1, termo: "webhooks" },
     minRole: "manager",
     sidebar: true,
   },
@@ -893,7 +899,7 @@ export const NAV_CATALOG = [
     description: "Quanto entrou, de que forma, e quanto cada pessoa tem a receber.",
     icon: "CurrencyCircleDollar",
     group: "analise",
-    menu: { grupo: "resultados-negocio", ordem: 3, nome: "Faturamento" },
+    menu: { grupo: "resultados-negocio", ordem: 3 },
     section: "Dinheiro",
     minRole: "viewer",
   },
@@ -908,7 +914,7 @@ export const NAV_CATALOG = [
     description: "O modelo de cobrança de cada caso e o calendário de parcelas.",
     icon: "HandCoins",
     group: "analise",
-    menu: { grupo: "resultados-negocio", ordem: 4, nome: "Honorários" },
+    menu: { grupo: "resultados-negocio", ordem: 4 },
     section: "Dinheiro",
     minRole: "viewer",
     modulo: "honorarios",
@@ -919,7 +925,7 @@ export const NAV_CATALOG = [
     description: "Funil e performance por atendente nos últimos 30 dias.",
     icon: "ChartBar",
     group: "analise",
-    menu: { grupo: "resultados-negocio", ordem: 1, nome: "Desempenho" },
+    menu: { grupo: "resultados-negocio", ordem: 1 },
     section: "Os números do período",
     sidebar: true,
   },
@@ -932,7 +938,7 @@ export const NAV_CATALOG = [
     description: "Quanto custou cada resultado das campanhas que trazem gente para cá.",
     icon: "Target",
     group: "analise",
-    menu: { grupo: "resultados-negocio", ordem: 2, nome: "Meta Ads" },
+    menu: { grupo: "resultados-negocio", ordem: 2 },
     section: "Os números do período",
     // `manager`, e não o `viewer` de Desempenho: aqui não há recorte por
     // pessoa — orçamento e criativo são da empresa inteira. Mesmo grau dos
@@ -952,7 +958,7 @@ export const NAV_CATALOG = [
       "Relatório do que a equipe e os agentes fizeram no período: quanto, quem e de que tipo.",
     icon: "ClockCounterClockwise",
     group: "analise",
-    menu: { grupo: "resultados-equipe", ordem: 1, nome: "Atividades" },
+    menu: { grupo: "resultados-equipe", ordem: 1 },
     section: "Os números do período",
     // SEM `sidebar` desde 2026-10-15: foi o item que cedeu o lugar de "Disparo em
     // massa" no menu lateral. O dono do produto autorizou trocar um item para o
@@ -969,17 +975,18 @@ export const NAV_CATALOG = [
     description: "Se o agente está melhorando, onde ele erra e o que falta ensinar.",
     icon: "ChartLineUp",
     group: "analise",
-    menu: { grupo: "resultados-equipe", ordem: 2, nome: "Evolução da IA" },
+    menu: { grupo: "resultados-equipe", ordem: 2 },
     section: "O histórico que se consulta",
     minRole: "manager",
   },
   {
     href: "/app/audit",
-    label: "Auditoria",
+    label: "Quem mexeu em quê",
+    sinonimos: ["auditoria"],
     description: "Quem mudou o quê, e quando — o histórico que não se apaga.",
     icon: "ListMagnifyingGlass",
     group: "analise",
-    menu: { grupo: "resultados-erro", ordem: 2, nome: "Quem mexeu em quê", termo: "audit log" },
+    menu: { grupo: "resultados-erro", ordem: 2, termo: "audit log" },
     section: "O histórico que se consulta",
     minRole: "manager",
   },
@@ -991,7 +998,7 @@ export const NAV_CATALOG = [
     description: "Seu nome, idioma, fuso horário e avatar.",
     icon: "UserCircle",
     group: "organizacao",
-    menu: { grupo: "conta-voce", ordem: 1, nome: "Perfil" },
+    menu: { grupo: "conta-voce", ordem: 1 },
     section: "Sua conta",
   },
   {
@@ -1000,7 +1007,7 @@ export const NAV_CATALOG = [
     description: "Verificação em duas etapas, códigos de recuperação e sessões.",
     icon: "ShieldCheck",
     group: "organizacao",
-    menu: { grupo: "conta-voce", ordem: 2, nome: "Segurança", termo: "MFA" },
+    menu: { grupo: "conta-voce", ordem: 2, termo: "MFA" },
     section: "Sua conta",
   },
   {
@@ -1009,7 +1016,7 @@ export const NAV_CATALOG = [
     description: "Por onde e sobre o quê você quer ser avisado.",
     icon: "Bell",
     group: "organizacao",
-    menu: { grupo: "conta-voce", ordem: 3, nome: "Notificações" },
+    menu: { grupo: "conta-voce", ordem: 3 },
     section: "Sua conta",
   },
   {
@@ -1018,7 +1025,7 @@ export const NAV_CATALOG = [
     description: "Quem trabalha aqui, com qual papel e quanta conversa cada um aguenta.",
     icon: "UsersThree",
     group: "organizacao",
-    menu: { grupo: "empresa-equipe", ordem: 1, nome: "Equipe" },
+    menu: { grupo: "empresa-equipe", ordem: 1 },
     section: "Sua empresa",
   },
   {
@@ -1026,11 +1033,12 @@ export const NAV_CATALOG = [
     // visibilidade existiam inteiros no backend e não tinham NENHUMA tela — só
     // dava para ligar com UPDATE à mão no banco.
     href: "/app/settings/atendimento",
-    label: "Distribuição de atendimento",
+    label: "Revezamento da equipe",
+    sinonimos: ["distribuição de atendimento"],
     description: "Quem recebe cada cliente novo, e o que cada atendente enxerga.",
     icon: "Shuffle",
     group: "organizacao",
-    menu: { grupo: "empresa-equipe", ordem: 2, nome: "Revezamento da equipe", termo: "round-robin" },
+    menu: { grupo: "empresa-equipe", ordem: 2, termo: "round-robin" },
     section: "Sua empresa",
     minRole: "manager",
   },
@@ -1047,12 +1055,13 @@ export const NAV_CATALOG = [
     // quem monta a regra. Nada aqui apaga conversa ou muda dinheiro — o
     // alcance da operação é ao lado do de "Distribuição de atendimento".
     href: "/app/settings/tags",
-    label: "Tags",
+    label: "Etiquetas",
+    sinonimos: ["tags"],
     description:
       "O vocabulário de etiquetas da empresa: onde cada uma é usada e como renomear, juntar ou excluir.",
     icon: "Tag",
     group: "organizacao",
-    menu: { grupo: "vender-equipe", ordem: 2, nome: "Etiquetas", termo: "tags" },
+    menu: { grupo: "vender-equipe", ordem: 2, termo: "tags" },
     section: "Sua empresa",
     minRole: "manager",
   },
@@ -1065,7 +1074,7 @@ export const NAV_CATALOG = [
     description: "Tudo o que se liga e desliga, se está ligado e onde se ajusta.",
     icon: "ToggleRight",
     group: "organizacao",
-    menu: { grupo: "empresa-plano", ordem: 3, nome: "Recursos opcionais" },
+    menu: { grupo: "empresa-plano", ordem: 3 },
     section: "Sua empresa",
     // `manager`: o gerente decide metade das chaves da lista. Atendente e
     // leitor não ajustam nenhuma, e a tela redireciona os dois para /403.
@@ -1073,11 +1082,12 @@ export const NAV_CATALOG = [
   },
   {
     href: "/app/settings/tenant",
-    label: "Organização",
+    label: "Dados da empresa",
+    sinonimos: ["organização"],
     description: "Dados da empresa, retenção de dados e encarregado de LGPD.",
     icon: "Briefcase",
     group: "organizacao",
-    menu: { grupo: "empresa-dados", ordem: 1, nome: "Dados da empresa", termo: "organização" },
+    menu: { grupo: "empresa-dados", ordem: 1, termo: "organização" },
     section: "Sua empresa",
     minRole: "admin",
   },
@@ -1093,7 +1103,7 @@ export const NAV_CATALOG = [
       "Devolver ao anúncio as vendas que ele trouxe, e marcar a origem de quem chega pelo site.",
     icon: "TrendUp",
     group: "organizacao",
-    menu: { grupo: "conexoes-anuncios", ordem: 2, nome: "Conversões", termo: "CAPI" },
+    menu: { grupo: "conexoes-anuncios", ordem: 2, termo: "CAPI" },
     section: "Sua empresa",
     // `admin` pelo mesmo critério das vizinhas: o token grava na conta de
     // anúncios da empresa, e quem o troca decide para onde vai o dinheiro de
@@ -1109,11 +1119,14 @@ export const NAV_CATALOG = [
     // Uma tela só, com dois campos de token parecidos, é como se cola o token
     // errado no campo errado e se perde uma semana achando que quebrou.
     href: "/app/settings/meta-ads",
-    label: "Meta Ads",
+    label: "Conta de anúncios",
+    sinonimos: ["meta ads"],
     description: "Conectar a conta de anúncios para ler o desempenho das campanhas.",
-    icon: "Target",
+    // Ícone próprio: com o nome novo ("Conta de anúncios") a tela deixou de ser a "mesma
+    // coisa" do Meta Ads de Análise, e a regra é um ícone por destino.
+    icon: "IdentificationCard",
     group: "organizacao",
-    menu: { grupo: "conexoes-anuncios", ordem: 1, nome: "Conta de anúncios", termo: "Meta Ads" },
+    menu: { grupo: "conexoes-anuncios", ordem: 1, termo: "Meta Ads" },
     section: "Sua empresa",
     // `admin` pelo mesmo critério da vizinha, mesmo o token sendo só de
     // leitura: ele expõe orçamento e performance da conta inteira, e quem
@@ -1126,7 +1139,7 @@ export const NAV_CATALOG = [
     description: "O nome e a cor que sua empresa mostra dentro do sistema.",
     icon: "Palette",
     group: "organizacao",
-    menu: { grupo: "empresa-dados", ordem: 2, nome: "Marca" },
+    menu: { grupo: "empresa-dados", ordem: 2 },
     section: "Sua empresa",
     // `admin` pelo mesmo motivo da linha de cima: o que se edita ali é
     // identidade da empresa, e dá-lo a `manager` o colocaria abaixo de billing e
@@ -1142,7 +1155,7 @@ export const NAV_CATALOG = [
     description: "O plano contratado e as cobranças da sua empresa.",
     icon: "CreditCard",
     group: "organizacao",
-    menu: { grupo: "empresa-plano", ordem: 1, nome: "Plano e cobrança" },
+    menu: { grupo: "empresa-plano", ordem: 1 },
     section: "Sua empresa",
     minRole: "admin",
   },
@@ -1152,27 +1165,29 @@ export const NAV_CATALOG = [
     description: "Pedidos de exportação e exclusão de dados feitos por clientes.",
     icon: "ScalesSimple",
     group: "organizacao",
-    menu: { grupo: "empresa-plano", ordem: 2, nome: "LGPD" },
+    menu: { grupo: "empresa-plano", ordem: 2 },
     section: "Dados e acesso",
     minRole: "admin",
   },
   {
     href: "/app/settings/api-tokens",
-    label: "API Tokens",
+    label: "Chaves de acesso",
+    sinonimos: ["api tokens"],
     description: "Chaves para outro sistema conversar com o seu CRM.",
     icon: "Lock",
     group: "organizacao",
-    menu: { grupo: "conexoes-sistemas", ordem: 2, nome: "Chaves de acesso", termo: "API tokens" },
+    menu: { grupo: "conexoes-sistemas", ordem: 2, termo: "API tokens" },
     section: "Dados e acesso",
     minRole: "admin",
   },
   {
     href: "/app/settings/voip-trunk",
-    label: "Linha telefônica (SIP)",
+    label: "Linha telefônica",
+    sinonimos: ["linha telefônica (sip)"],
     description: "Os dados da operadora de telefonia para a IA fazer e receber chamadas.",
     icon: "PhoneTransfer",
     group: "organizacao",
-    menu: { grupo: "conexoes-whatsapp", ordem: 2, nome: "Linha telefônica", termo: "SIP" },
+    menu: { grupo: "conexoes-whatsapp", ordem: 2, termo: "SIP" },
     section: "Dados e acesso",
     minRole: "admin",
   },
@@ -1183,7 +1198,7 @@ export const NAV_CATALOG = [
       "Guias instalados para orientar o trabalho no CRM, com permissões e estado visíveis.",
     icon: "PuzzlePiece",
     group: "organizacao",
-    menu: { grupo: "empresa-plano", ordem: 4, nome: "Extensões" },
+    menu: { grupo: "empresa-plano", ordem: 4 },
     section: "Sua empresa",
   },
   {
@@ -1194,12 +1209,13 @@ export const NAV_CATALOG = [
     // editar conexão é `admin`. Gatear a leitura em `manager` esconderia do
     // atendente exatamente a fonte que responde o que o cliente pergunta.
     href: "/app/integracao-dados",
-    label: "Dados externos",
+    label: "Dados de outro sistema",
+    sinonimos: ["dados externos"],
     description:
       "Conecte um banco de dados de outro sistema para o agente consultar em tempo real.",
     icon: "Database",
     group: "organizacao",
-    menu: { grupo: "conexoes-sistemas", ordem: 3, nome: "Dados de outro sistema", termo: "banco externo" },
+    menu: { grupo: "conexoes-sistemas", ordem: 3, termo: "banco externo" },
     section: "Dados e acesso",
     // SEM `sidebar`: o menu de Organização já estourou a dobra uma vez e hub é
     // onde se agrupa por uso. Configurar fonte de dados é tarefa de uma vez.

@@ -21,6 +21,7 @@ import { VersionFooter } from "@/components/shell/VersionFooter";
 import { LogotipoDoProduto, SimboloDoProduto } from "@/components/branding/MarcaDoProduto";
 import { marcaEhADoProduto } from "@/lib/branding";
 import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
+import { dicaDoDestino } from "@/lib/navigation/dica";
 import { GRUPO_NO_RODAPE, ICONE_DO_HUB, sidebarGroups } from "@/lib/navigation/registry";
 
 const CHAVE_GRUPOS_FECHADOS = "sidebar-grupos-fechados";
@@ -300,7 +301,7 @@ export function SidebarContent({
                       <li key={item.href}>
                         <Link
                           href={item.href}
-                          title={collapsed ? t(item.label) : undefined}
+                          title={dicaDoDestino(item, t)}
                           aria-current={isActive ? "page" : undefined}
                           onClick={onNavigate}
                           className={cn(
@@ -315,7 +316,20 @@ export function SidebarContent({
                           {/* Recolhido, o nome continua no link para o leitor de tela: sem ele, o nome
                               acessível vinha do selo de dentro ("Nenhuma conexão",
                               "3 conversas esperando…") e não do destino. */}
-                          <span className={collapsed ? "sr-only" : "truncate"}>{t(item.label)}</span>
+                          <span className={collapsed ? "sr-only" : "flex min-w-0 flex-col"}>
+                            <span className={item.menu.termo ? "truncate leading-4" : "truncate"}>{t(item.label)}</span>
+                            {/* O termo técnico embaixo do nome (issue #187). Herda a cor do link, que troca
+                                no item ativo. Medido no navegador (getBoundingClientRect): a linha com
+                                termo tem 36px contra 28px, +8px por item. Hoje são DOIS no menu lateral
+                                (Conversas e Avisar outros sistemas): +16px contra os 19px de folga a
+                                1280x900, sobram ~3px. Um terceiro item com termo no menu lateral estoura
+                                a dobra — `navegacao.spec.ts` ("não rola") é quem reprova. */}
+                            {item.menu.termo && !collapsed ? (
+                              <span className="truncate text-[10px] leading-3">
+                                {t(item.menu.termo)}
+                              </span>
+                            ) : null}
+                          </span>
                           {item.healthDot && (
                             <ConnectionHealthDot
                               className={cn(collapsed ? "absolute top-1.5 right-1.5" : "ml-auto")}

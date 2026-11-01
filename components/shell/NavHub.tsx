@@ -115,7 +115,14 @@ export function NavHub({
                         <Icon size={22} weight="duotone" aria-hidden />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold">{traduzir(item.label, locale)}</span>
+                        <span className="flex items-baseline gap-2">
+                          <span className="text-sm font-semibold">{traduzir(item.label, locale)}</span>
+                          {item.menu.termo ? (
+                            <span className="truncate font-mono text-xs text-muted-foreground">
+                              {traduzir(item.menu.termo, locale)}
+                            </span>
+                          ) : null}
+                        </span>
                         <span className="mt-0.5 block text-sm text-muted-foreground">
                           {traduzir(item.description, locale)}
                         </span>

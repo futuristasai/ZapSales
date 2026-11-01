@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { DICIONARIO } from "@/lib/i18n/dicionario";
@@ -19,6 +22,41 @@ import { NAV_CATALOG, NAV_GROUPS } from "@/lib/navigation/catalogo";
 
 const temEspanhol = (texto: string): boolean => Boolean(DICIONARIO[texto]?.es);
 
+// O inglês mora num catálogo plano (`traducoes/en.json`) e já cobre o menu inteiro:
+// a mesma régua vale para ele (issue #187). O chinês ainda não cobre — ver a
+// DIVIDA do `zh-CN` em `catalogo-de-idioma-tem-forma`.
+const INGLES = JSON.parse(readFileSync(join(__dirname, "..", "..", "lib", "i18n", "traducoes", "en.json"), "utf8")) as Record<
+  string,
+  string
+>;
+const temIngles = (texto: string): boolean => Boolean(INGLES[texto]);
+
+/**
+ * Termos técnicos que se escrevem IGUAL nos três idiomas: "webhooks" é "webhooks"
+ * em português, espanhol e inglês, e a tela os mostra como são. Entram aqui um a
+ * um; um termo que é palavra portuguesa ("roteadores", "provedores") NÃO entra,
+ * e precisa de tradução como qualquer texto do menu.
+ */
+const TERMOS_IGUAIS_EM_TODOS_OS_IDIOMAS = new Set([
+  "inbox",
+  "B2B",
+  "CSV / XLSX",
+  "API key",
+  "API tokens",
+  "RAG",
+  "MCP",
+  "MFA",
+  "CAPI",
+  "SIP",
+  "webhooks",
+  "audit log",
+  "logs",
+  "skills",
+  "tags",
+  "round-robin",
+  "Meta Ads",
+]);
+
 interface TextoDoMenu {
   readonly onde: string;
   readonly campo: string;
@@ -35,6 +73,11 @@ function textosDoMenu(): TextoDoMenu[] {
   };
   for (const item of NAV_CATALOG as readonly Record<string, unknown>[]) {
     junta(String(item.href), item, ["label", "description", "section"]);
+    // O termo técnico embaixo do nome (issue #187): é texto do menu como o resto.
+    const termo = (item.menu as { termo?: string }).termo;
+    if (termo && !TERMOS_IGUAIS_EM_TODOS_OS_IDIOMAS.has(termo)) {
+      achados.push({ onde: String(item.href), campo: "menu.termo", texto: termo });
+    }
   }
   for (const grupo of NAV_GROUPS as unknown as readonly Record<string, unknown>[]) {
     junta(`grupo:${String(grupo.id)}`, grupo, ["label", "description"]);
@@ -71,6 +114,17 @@ describe("o catálogo do menu tem espanhol", () => {
       foraDaLista,
       `${foraDaLista.length} texto(s) do menu sem espanhol: quem escolheu espanhol vê isto em português. ` +
         'Conserto: uma linha em lib/i18n/dicionario.ts — "texto em português": { es: "texto en español" }.',
+    ).toEqual([]);
+  });
+
+  it("todo texto do menu tem inglês — o termo técnico que se escreve igual fica de fora, nomeado", () => {
+    const semIngles = textos
+      .filter((t) => !temIngles(t.texto))
+      .map((t) => `${t.onde} [${t.campo}] → ${JSON.stringify(t.texto)}`);
+    expect(
+      semIngles,
+      `${semIngles.length} texto(s) do menu sem inglês: quem usa a interface em inglês vê isto em português. ` +
+        'Conserto: uma linha em lib/i18n/traducoes/en.json — "texto em português": "English text".',
     ).toEqual([]);
   });
 
