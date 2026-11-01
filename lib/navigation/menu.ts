@@ -86,6 +86,16 @@ export function menuDoPapel(
   return { blocos };
 }
 
+/** Os grupos de um bloco projetado, com ou sem áreas — o achatamento que todo consumidor repete. */
+export function gruposDoBloco(b: BlocoProjetado): GrupoProjetado[] {
+  return b.id === "configurar" ? b.areas.flatMap((a) => a.grupos) : b.grupos;
+}
+
+/** Todas as telas de um menu projetado, na ordem em que aparecem. */
+export function itensDoMenu(blocos: readonly BlocoProjetado[]): NavDestination[] {
+  return blocos.flatMap((b) => gruposDoBloco(b).flatMap((g) => g.itens));
+}
+
 /**
  * AS OPÇÕES DO EDITOR DE INTERFACE (issue #191): o menu que o papel enxerga,
  * SEM as portas essenciais.

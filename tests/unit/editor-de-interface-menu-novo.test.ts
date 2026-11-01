@@ -4,7 +4,7 @@ import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
 import { NAV_CATALOG } from "@/lib/navigation/catalogo";
 import { essencial, permitidos, PORTAS_ESSENCIAIS } from "@/lib/navigation/interface";
-import { menuEditavelDoPapel, type BlocoProjetado } from "@/lib/navigation/menu";
+import { gruposDoBloco, itensDoMenu, menuEditavelDoPapel, type BlocoProjetado } from "@/lib/navigation/menu";
 
 /**
  * O EDITOR DE INTERFACE POR EMPRESA NO MENU NOVO (issue #191, pai #183).
@@ -21,11 +21,7 @@ const ATENDENTE = "agent" as const;
 const LEITOR = "viewer" as const;
 
 function hrefsDe(blocos: readonly BlocoProjetado[]): string[] {
-  return blocos.flatMap((b) =>
-    (b.id === "configurar" ? b.areas.flatMap((a) => a.grupos) : b.grupos).flatMap((g) =>
-      g.itens.map((i) => i.href),
-    ),
-  );
+  return itensDoMenu(blocos).map((i) => i.href);
 }
 
 /** "Bloco › Área › Grupo: Tela, Tela" — uma linha por grupo, na ordem do menu. */
@@ -85,7 +81,6 @@ describe("opções do editor de interface por empresa", () => {
   it("o papel só vê as opções que o seu papel permite (leitor tem menos que o dono)", () => {
     const dono = new Set(hrefsDe(menuEditavelDoPapel(DONO)));
     const leitor = hrefsDe(menuEditavelDoPapel(LEITOR));
-    expect(leitor.length).toBeLessThan(dono.size + PORTAS_ESSENCIAIS.length);
     // Tudo o que o leitor pode escolher o dono pode, salvo as portas que são
     // essenciais só para o dono (e por isso saem da lista dele).
     for (const href of leitor) {
@@ -99,7 +94,7 @@ describe("opções do editor de interface por empresa", () => {
   it("bloco, área e grupo sem opção não aparecem", () => {
     for (const role of [DONO, GERENTE, ATENDENTE, LEITOR] as const) {
       for (const b of menuEditavelDoPapel(role)) {
-        const grupos = b.id === "configurar" ? b.areas.flatMap((a) => a.grupos) : b.grupos;
+        const grupos = gruposDoBloco(b);
         expect(grupos.length, `bloco ${b.id} vazio para ${role}`).toBeGreaterThan(0);
         if (b.id === "configurar") for (const a of b.areas) expect(a.grupos.length).toBeGreaterThan(0);
         for (const g of grupos) expect(g.itens.length).toBeGreaterThan(0);

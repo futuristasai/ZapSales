@@ -9,7 +9,7 @@ import {
   lerInterface,
   type InterfaceSettings,
 } from "@/lib/navigation/interface";
-import { menuEditavelDoPapel, type GrupoProjetado } from "@/lib/navigation/menu";
+import { itensDoMenu, menuEditavelDoPapel, type GrupoProjetado } from "@/lib/navigation/menu";
 
 export function InterfaceEditor({
   value,
@@ -30,9 +30,7 @@ export function InterfaceEditor({
   // As opções são o menu novo (bloco › área › grupo, nomes novos) sem as portas
   // essenciais, que nunca se escondem: a mesma projeção do catálogo que desenha o menu.
   const blocos = menuEditavelDoPapel(role);
-  const options = blocos.flatMap((b) =>
-    (b.id === "configurar" ? b.areas.flatMap((a) => a.grupos) : b.grupos).flatMap((g) => g.itens),
-  );
+  const options = itensDoMenu(blocos);
 
   function grupo(g: GrupoProjetado) {
     return (
