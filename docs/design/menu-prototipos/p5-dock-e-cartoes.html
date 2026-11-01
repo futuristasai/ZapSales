@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu ZapSales — Protótipo 5 · Dock + cartões</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  .dk.p5 { flex-direction: column; position: relative; }
+  .dk.p5 .zs-miolo { padding-bottom: 92px; }
+  .p5-marca { position: absolute; left: 16px; top: 14px; z-index: 5; }
+  .dk.p5 .zs-pg { padding-top: 56px; }
+  .p5-dock { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 40; display: flex; align-items: stretch; gap: 2px; padding: 6px; background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: 22px; box-shadow: var(--sombra-flutuante); max-width: calc(100% - 24px); }
+  .p5-db { position: relative; width: 68px; padding: 8px 2px 6px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; line-height: 1.15; color: var(--color-muted); transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.15s var(--ease); }
+  .p5-db:hover { background: var(--color-elev); color: var(--color-text); transform: translateY(-2px); }
+  .p5-db[aria-pressed="true"], .p5-db[aria-current="page"] { background: var(--color-accent-soft); color: var(--color-accent-text); font-weight: 700; }
+  .p5-db .zs-ic svg { width: 26px; height: 26px; }
+  .p5-db .zs-n { position: absolute; top: 2px; right: 8px; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; }
+  .p5-sep { width: 1px; background: var(--color-border); margin: 6px 6px; }
+  .p5-fundo { position: absolute; inset: 0; z-index: 35; background: var(--color-overlay); }
+  .p5-pop { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 38; width: min(900px, calc(100% - 28px)); max-height: calc(100% - 124px); overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; box-shadow: var(--sombra-flutuante); padding: 18px; animation: sobe 0.2s var(--ease); }
+  .p5-pop > header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .p5-pop h2 { margin: 0; font-size: 18px; }
+  .p5-pop .frase { margin: 0; font-size: 13px; color: var(--color-muted); }
+  .p5-voltar { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 13px; color: var(--color-muted); }
+  .p5-voltar:hover { background: var(--color-elev); }
+  .p5-temas { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .p5-tema { text-align: left; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-bg); display: flex; flex-direction: column; gap: 6px; transition: border-color 0.15s var(--ease), background 0.15s var(--ease); }
+  .p5-tema:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
+  .p5-tema .quad { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--color-accent-soft); color: var(--color-accent-text); }
+  .p5-tema .quad svg { width: 24px; height: 24px; }
+  .p5-tema b { font-size: 15px; }
+  .p5-tema span.f { font-size: 13px; color: var(--color-muted); }
+  .p5-tema span.c { font-size: 12px; color: var(--color-subtle); margin-top: auto; }
+  .p5-itens { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 2px 18px; }
+  .p5-itens .zs-item { padding-block: 8px; }
+  /* Início */
+  .p5-in h2 { margin: 28px 0 10px; font-size: 16px; }
+  .p5-espera .linha { cursor: pointer; }
+  .p5-espera .linha:hover { background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
+  .p5-espera .ic { color: var(--color-funil); }
+  .p5-espera .go { margin-left: auto; color: var(--color-accent-text); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+  .p5-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .p5-tile { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-surface); font-size: 14.5px; transition: border-color 0.15s var(--ease), transform 0.15s var(--ease); text-align: left; }
+  .p5-tile:hover { border-color: var(--color-accent); transform: translateY(-1px); }
+  .p5-tile .zs-ic svg { width: 22px; height: 22px; color: var(--color-accent-text); }
+  .p5-tile .zs-n { margin-left: auto; }
+  .p5-mais { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .p5-mais button { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 12px; border: 1px dashed var(--color-border-strong); text-align: left; color: var(--color-muted); font-size: 13.5px; }
+  .p5-mais button:hover { border-style: solid; border-color: var(--color-accent); color: var(--color-text); }
+  .p5-mais b { display: block; color: var(--color-text); font-size: 15px; }
+  .mb.p5m .zs-miolo { padding-bottom: 66px; }
+  .p5-folha .zs-item { min-height: 44px; font-size: 15px; }
+  @container app (max-width: 760px) { .p5-tiles { grid-template-columns: repeat(2, 1fr); } .dk.p5 { display: none; } }
+</style>
+</head>
+<body>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/nucleo.js"></script>
+<script>
+const ui = { inicio: true, painel: null, tema: null, ultimo: null };
+document.addEventListener("zs-fechar", () => { ui.painel = null; ui.tema = null; });
+const CARET_E = '<svg viewBox="0 0 256 256" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M181.66 133.66l-80 80a8 8 0 0 1-11.32-11.32L164.69 128 90.34 53.66a8 8 0 0 1 11.32-11.32l80 80a8 8 0 0 1 0 11.32Z"/></svg>';
+ZS.iniciar({
+  titulo: "5 · Dock + cartões",
+  ideia: "A opção ousada: sem barra lateral. Uma tela inicial mostra o que espera você e todo o dia a dia; um dock flutuante leva às telas mais usadas. Configurar e Resultados abrem por cartões de tema e só depois mostram as telas. Risco: um clique a mais para chegar às telas de configuração.",
+  montar(tela, Z) {
+    const { h, ic } = Z, atual = Z.atual(), p = Z.papel();
+    if (ui.ultimo !== atual.id) { if (ui.ultimo !== null) ui.inicio = false; ui.ultimo = atual.id; }
+    const dia = Z.porTema("principal"), op = Z.porTema("opcional"), fx = Z.fixados();
+    const nome = p.pessoa.split(" ")[0];
+    const dd = (i) => dia.find((d) => d.id === i);
+
+    function inicio() {
+      const lin = [["/inbox", "Inbox", "conversas esperando uma pessoa"], ["/ai/cases", "Casos", "casos em que a IA pediu ajuda"], ["/ai/inbox", "Alertas", "alertas esperando a sua decisão"], ["/tasks", "Tarefas", "tarefas vencidas"]]
+        .map(([id, , frase]) => { const d = dd(id); return d && Z.D.CONTADORES[d.n] ? h("a", { class: "linha", href: "#" + id, onclick: (e) => { e.preventDefault(); Z.ir(id); } }, h("span", { class: "ic" }, ic(d.ic)), h("span", null, h("b", null, Z.D.CONTADORES[d.n]), " " + frase), h("span", { class: "go" }, d.rot, h("span", { html: CARET_E }))) : null; }).filter(Boolean);
+      const tile = (d) => h("a", { class: "p5-tile", href: "#" + d.id, title: d.desc, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } }, ic(d.ic), d.rot, d.n && Z.D.CONTADORES[d.n] ? h("span", { class: "zs-n" }, Z.D.CONTADORES[d.n]) : null);
+      const lanc = (b, rot, frase, icone) => Z.porBloco(b).length ? h("button", { type: "button", onclick: () => { ui.painel = b; ui.tema = null; Z.set({}); } }, ic(icone), h("span", null, h("b", null, rot), frase)) : null;
+      return h("div", { class: "zs-pg p5-in" },
+        h("h1", null, "Bom dia, " + nome),
+        h("p", { class: "zs-lede" }, lin.length ? "Estas coisas esperam por você. O resto do dia a dia está logo abaixo." : "Nada esperando por você agora. O dia a dia está logo abaixo."),
+        lin.length ? [h("h2", null, "Esperando você"), h("div", { class: "zs-painel p5-espera", style: "margin-top:0" }, lin)] : null,
+        h("h2", null, "Todo dia"), h("div", { class: "p5-tiles" }, dia.concat(op, fx).map(tile)),
+        h("h2", null, "Quando for ajustar ou conferir"), h("div", { class: "p5-mais" }, lanc("montar", "Configurar", "Agente, vendas, conexões e empresa", "Wrench"), lanc("acompanhar", "Resultados", "Resultados, equipe e IA, histórico", "ChartPieSlice")));
+    }
+    const miolo = () => ui.inicio ? h("main", { class: "zs-miolo" }, h("div", { class: "zs-scroll", "data-scroll": "pg" }, inicio())) : Z.conteudo();
+
+    function popover(bloco, dentroDaFolha) {
+      const b = Z.D.BLOCOS.find((x) => x.id === bloco), temas = Z.temasDe(bloco).filter((t) => Z.porTema(t.id).length);
+      const redesenhar = () => (dentroDaFolha ? Z.abrirFolha(popover(bloco, true)) : Z.set({}));
+      const tema = temas.find((t) => t.id === ui.tema);
+      if (tema) return h("div", { class: dentroDaFolha ? "p5-folha" : "" },
+        h("header", null, h("button", { class: "p5-voltar", type: "button", onclick: () => { ui.tema = null; redesenhar(); } }, h("span", { html: CARET_E, style: "transform:rotate(180deg);display:grid" }), "Voltar"), h("div", null, h("h2", null, tema.rot), h("p", { class: "frase" }, tema.frase))),
+        h("div", { class: "p5-itens" }, Z.lista(Z.porTema(tema.id), { pin: true, desc: true })));
+      return h("div", { class: dentroDaFolha ? "p5-folha" : "" },
+        h("header", null, h("div", null, h("h2", null, b.rot), h("p", { class: "frase" }, b.frase))),
+        h("div", { class: "p5-temas" }, temas.map((t) => h("button", { class: "p5-tema", type: "button", onclick: () => { ui.tema = t.id; redesenhar(); } },
+          h("span", { class: "quad", html: `<svg viewBox="0 0 256 256" fill="currentColor">${window.ZS_ICONES[t.ic].regular}</svg>` }), h("b", null, t.rot), h("span", { class: "f" }, t.frase), h("span", { class: "c" }, Z.porTema(t.id).length + " telas")))));
+    }
+
+    // ── Computador ──
+    const db = (d) => h("a", { class: "p5-db", href: "#" + d.id, "aria-current": !ui.inicio && d.id === atual.id ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } }, ic(d.ic, !ui.inicio && d.id === atual.id ? "fill" : "regular"), d.rot, d.n && Z.D.CONTADORES[d.n] ? h("span", { class: "zs-n" }, Z.D.CONTADORES[d.n]) : null);
+    const lanca = (id, rot, icone) => Z.porBloco(id).length ? h("button", { class: "p5-db", type: "button", "aria-pressed": String(ui.painel === id), onclick: () => { ui.painel = ui.painel === id ? null : id; ui.tema = null; Z.set({}); } }, ic(icone, ui.painel === id ? "fill" : "regular"), rot) : null;
+    const dock = h("nav", { class: "p5-dock", "aria-label": "Menu principal" },
+      h("button", { class: "p5-db", type: "button", "aria-pressed": String(ui.inicio), onclick: () => { ui.inicio = true; Z.fecharTudo(); Z.set({}); } }, ic("House", ui.inicio ? "fill" : "regular"), "Início"),
+      ["/inbox", "/kanban", "/ai/cases", "/tasks"].map(dd).filter(Boolean).map(db),
+      h("span", { class: "p5-sep", role: "separator" }), lanca("montar", "Configurar", "Wrench"), lanca("acompanhar", "Resultados", "ChartPieSlice"),
+      h("span", { class: "p5-sep", role: "separator" }),
+      h("button", { class: "p5-db", type: "button", onclick: Z.abrirBusca, "aria-label": "Buscar uma tela" }, ic("MagnifyingGlass"), "Buscar"),
+      h("button", { class: "p5-db", type: "button", onclick: () => { ui.painel = ui.painel === "conta" ? null : "conta"; Z.set({}); }, "aria-pressed": String(ui.painel === "conta") }, ic("UserCircle"), "Você"));
+    let pop = null;
+    if (ui.painel === "montar" || ui.painel === "acompanhar") pop = h("div", { class: "p5-pop", role: "dialog", "aria-label": ui.painel === "montar" ? "Configurar" : "Resultados" }, popover(ui.painel));
+    else if (ui.painel === "conta") pop = h("div", { class: "p5-pop", style: "width:300px;left:auto;right:16px;transform:none" }, h("header", null, h("div", null, h("h2", null, p.pessoa), h("p", { class: "frase" }, p.papel))), Z.lista(Z.porTema("conta")));
+    const dk = h("div", { class: "dk p5" }, h("div", { class: "p5-marca" }, Z.marca()), miolo(), pop ? h("div", { class: "p5-fundo", style: "background:transparent", onclick: Z.fecharTudo }) : null, pop, dock);
+
+    // ── Celular ──
+    const aba = (d) => h("a", { href: "#" + d.id, "aria-current": !ui.inicio && d.id === atual.id ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } }, ic(d.ic, !ui.inicio && d.id === atual.id ? "fill" : "regular"), d.rot, d.n && Z.D.CONTADORES[d.n] ? h("span", { class: "zs-n" }, Z.D.CONTADORES[d.n]) : null);
+    const maisFolha = () => Z.abrirFolha(h("div", { class: "p5-folha" },
+      h("h2", { style: "margin:4px 10px 10px;font-size:18px" }, "Mais"),
+      h("div", { class: "p5-mais", style: "padding:0 6px 10px" }, [["montar", "Configurar", "Agente, vendas, conexões e empresa", "Wrench"], ["acompanhar", "Resultados", "Resultados, equipe e IA, histórico", "ChartPieSlice"]].filter(([b]) => Z.porBloco(b).length).map(([b, r, f, i]) => h("button", { type: "button", onclick: () => { ui.painel = b; ui.tema = null; Z.abrirFolha(popover(b, true)); } }, ic(i), h("span", null, h("b", null, r), f)))),
+      h("div", { class: "zs-sub" }, "Você"), Z.lista(Z.porTema("conta"))));
+    const mb = h("div", { class: "mb p5m" },
+      h("header", { style: "display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--color-surface);border-bottom:1px solid var(--color-border)" }, Z.marca(), h("span", { style: "flex:1" }),
+        h("button", { class: "zs-eu", style: "width:auto;padding:6px", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass"))),
+      miolo(),
+      h("nav", { class: "zs-tabbar", "aria-label": "Menu" },
+        h("button", { type: "button", "aria-pressed": String(ui.inicio), onclick: () => { ui.inicio = true; Z.set({}); } }, ic("House", ui.inicio ? "fill" : "regular"), "Início"),
+        ["/inbox", "/kanban", "/ai/cases"].map(dd).filter(Boolean).map(aba),
+        h("button", { type: "button", onclick: maisFolha }, ic("List"), "Mais")));
+    tela.append(dk, mb);
+  }
+});
+</script>
+</body>
+</html>

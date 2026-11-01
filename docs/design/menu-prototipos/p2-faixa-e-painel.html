@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu ZapSales — Protótipo 2 · Faixa + painel</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  .p2-rail { width: 80px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; background: #151a2e; color: #a3abc6; z-index: 20; }
+  [data-theme="dark"] .p2-rail { background: #0f1322; border-right: 1px solid var(--color-border); }
+  .p2-rail .zs-logo { margin-bottom: 10px; } .p2-rail .zs-logo span { display: none; } .p2-rail .zs-logo svg { color: #9e8aff; width: 30px; height: 30px; }
+  .p2-rb { position: relative; width: 64px; padding: 8px 2px 6px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; line-height: 1.15; text-align: center; color: #a3abc6; transition: background 0.15s var(--ease), color 0.15s var(--ease); }
+  .p2-rb:hover { background: rgba(255, 255, 255, 0.07); color: #eef0f7; }
+  .p2-rb[aria-pressed="true"] { background: rgba(158, 138, 255, 0.22); color: #fff; font-weight: 700; }
+  .p2-rb .zs-ic svg { width: 24px; height: 24px; }
+  .p2-rb .zs-n { position: absolute; top: 2px; right: 6px; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; background: #f5a524; color: #151a2e; }
+  .p2-sep { width: 36px; height: 1px; background: rgba(255, 255, 255, 0.14); margin: 8px 0; }
+  .p2-rail .gap { flex: 1; }
+  .p2-rail .p2-rb.pequeno { padding: 8px 2px; }
+  .p2-painel { width: 316px; flex: none; background: var(--color-surface); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; min-height: 0; }
+  .p2-painel.sobre { position: absolute; left: 80px; top: 0; bottom: 0; z-index: 15; box-shadow: var(--sombra-flutuante); animation: entra 0.18s var(--ease); }
+  @keyframes entra { from { transform: translateX(-12px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  .p2-cab { padding: 16px 16px 10px; display: flex; gap: 8px; align-items: flex-start; }
+  .p2-cab h2 { margin: 0; font-size: 17px; }
+  .p2-cab p { margin: 2px 0 0; font-size: 13px; color: var(--color-muted); }
+  .p2-cab .fixa { margin-left: auto; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--color-subtle); }
+  .p2-cab .fixa:hover { background: var(--color-elev); color: var(--color-text); }
+  .p2-cab .fixa[aria-pressed="true"] { color: var(--color-accent-text); background: var(--color-accent-soft); }
+  .p2-lista { flex: 1; overflow: auto; padding: 0 8px 14px; }
+  .p2-lista .zs-item { padding-block: 8px; }
+  .p2-lista .zs-sub:first-child { margin-top: 2px; }
+  .p2-mob-topo { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+  .p2-mob-topo .espaco { flex: 1; }
+  .p2-mob-topo .zs-av { width: 34px; height: 34px; background: var(--color-accent-soft); color: var(--color-accent-text); }
+  .p2-btn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: var(--color-muted); }
+  .p2-folha .zs-item { min-height: 44px; font-size: 15px; }
+  .p2-folha h3 { margin: 4px 10px 8px; font-size: 17px; }
+</style>
+</head>
+<body>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/nucleo.js"></script>
+<script>
+const ui = { painel: "dia", fixo: true, ultimo: null, conta: false };
+document.addEventListener("zs-fechar", () => { ui.conta = false; if (!ui.fixo) ui.painel = null; });
+const GRUPOS = [
+  { id: "dia", rot: "Todo dia", ic: "House", temas: ["principal", "opcional"], frase: "O que se abre toda hora." },
+  { id: "vender", rot: "Vender", ic: "Storefront", temas: ["vender"], frase: "Funil, produtos, propostas e o que a equipe usa para vender." },
+  { id: "agente", rot: "Agente", ic: "Robot", temas: ["agente"], frase: "Configurar, ensinar e conectar o agente que atende por você." },
+  { id: "conexoes", rot: "Conexões", ic: "Plugs", temas: ["conexoes"], frase: "WhatsApp, anúncios e outros sistemas conversando com o seu." },
+  { id: "empresa", rot: "Empresa", ic: "Buildings", temas: ["empresa"], frase: "Quem trabalha aqui, plano, marca e regras da empresa." },
+  { id: "acompanhar", rot: "Resultados", ic: "ChartPieSlice", temas: ["resultados", "trabalho", "problemas"], frase: "Números, trabalho da equipe e da IA, e o que investigar." },
+];
+const grupoDe = (d) => (GRUPOS.find((g) => g.temas.includes(d.tema)) || {}).id || null;
+
+ZS.iniciar({
+  titulo: "2 · Faixa de ícones + painel",
+  ideia: "Uma faixa fina e fixa com seis entradas, e um painel ao lado que troca conforme a entrada. O painel pode ficar fixo (como aqui) ou só aparecer por cima quando você clicar, deixando a tela livre. As telas de montar viram quatro entradas próprias, por tema.",
+  montar(tela, Z) {
+    const { h, ic } = Z, atual = Z.atual();
+    if (ui.ultimo !== atual.id) { ui.ultimo = atual.id; const g = grupoDe(atual); if (g && ui.fixo) ui.painel = g; }
+    const grupos = GRUPOS.filter((g) => g.temas.some((t) => Z.porTema(t).length));
+    if (ui.painel && !grupos.some((g) => g.id === ui.painel)) ui.painel = grupos[0].id;
+
+    function conteudoDoGrupo(g, mobile) {
+      const nodes = [];
+      for (const tid of g.temas) {
+        const t = Z.D.TEMAS.find((x) => x.id === tid), ds = Z.porTema(tid);
+        if (!ds.length) continue;
+        const dia = g.id === "dia";
+        nodes.push(h("div", null, (g.id === "dia" ? tid === "opcional" : g.temas.length > 1) ? h("div", { class: "zs-sub" }, t.rot) : null, Z.lista(ds, { pin: !dia, desc: !dia })));
+      }
+      if (g.id === "dia" && Z.fixados().length) nodes.push(h("div", null, h("div", { class: "zs-sub" }, "Fixados por você"), Z.lista(Z.fixados(), { pin: true })));
+      return nodes;
+    }
+    const somaDia = Z.total(Z.porTema("principal"));
+    const botao = (g) => h("button", { class: "p2-rb", type: "button", "aria-pressed": String(ui.painel === g.id), "aria-label": g.rot, onclick: () => { ui.painel = (ui.painel === g.id && !ui.fixo) ? null : g.id; Z.set({}); } },
+      ic(g.ic, ui.painel === g.id ? "fill" : "regular"), h("span", null, g.rot), g.id === "dia" && somaDia ? h("span", { class: "zs-n", "aria-label": somaDia + " pendentes" }, somaDia) : null);
+
+    // ── Computador ──
+    const sepAntes = new Set(["vender", "acompanhar"]);
+    const rail = h("nav", { class: "p2-rail", "aria-label": "Menu principal" }, Z.marca(),
+      grupos.map((g) => [sepAntes.has(g.id) ? h("div", { class: "p2-sep", role: "separator" }) : null, botao(g)]),
+      h("div", { class: "gap" }),
+      h("button", { class: "p2-rb pequeno", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass"), h("span", null, "Buscar")),
+      h("button", { class: "p2-rb pequeno", type: "button", "aria-label": "Sua conta", "aria-pressed": String(ui.conta), onclick: () => { ui.conta = !ui.conta; Z.set({}); } }, ic("UserCircle"), h("span", null, "Você")));
+    const g = grupos.find((x) => x.id === ui.painel);
+    const painel = g ? h("section", { class: "p2-painel" + (ui.fixo ? "" : " sobre"), "aria-label": g.rot },
+      h("header", { class: "p2-cab" }, h("div", null, h("h2", null, g.rot), h("p", null, g.frase)),
+        h("button", { class: "fixa", type: "button", "aria-pressed": String(ui.fixo), title: ui.fixo ? "Painel fixo — clique para só abrir por cima" : "Fixar o painel ao lado", "aria-label": ui.fixo ? "Soltar o painel" : "Fixar o painel", onclick: () => { ui.fixo = !ui.fixo; Z.set({}); } }, ic(ui.fixo ? "CaretDoubleLeft" : "CaretDoubleRight", "regular", 18))),
+      h("div", { class: "p2-lista", "data-scroll": "lista" }, conteudoDoGrupo(g))) : null;
+    const conta = ui.conta ? h("div", { class: "zs-flutua", style: "left:88px;bottom:12px;z-index:30" }, Z.lista(Z.porTema("conta"))) : null;
+    const dk = h("div", { class: "dk", style: "position:relative" }, rail, painel, Z.conteudo(), conta);
+
+    // ── Celular ──
+    const abrir = (g) => Z.abrirFolha(h("div", { class: "p2-folha" }, h("h3", null, g.rot), conteudoDoGrupo(g, true)));
+    const inboxD = Z.porTema("principal").find((d) => d.id === "/inbox");
+    const tab = (g) => h("button", { type: "button", onclick: () => abrir(g) }, ic(g.ic), g.rot);
+    const porId = (id) => grupos.find((x) => x.id === id);
+    const mb = h("div", { class: "mb" },
+      h("header", { class: "p2-mob-topo" }, Z.marca(), h("span", { class: "espaco" }), h("button", { class: "p2-btn", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass")),
+        h("button", { class: "p2-btn", type: "button", "aria-label": "Sua conta", onclick: () => Z.abrirFolha(h("div", { class: "p2-folha" }, h("h3", null, "Você"), Z.lista(Z.porTema("conta")))) }, ic("UserCircle"))),
+      Z.conteudo(),
+      h("nav", { class: "zs-tabbar", "aria-label": "Menu" },
+        inboxD ? h("a", { href: "#/inbox", "aria-current": atual.id === "/inbox" ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir("/inbox"); } }, ic("Inbox", atual.id === "/inbox" ? "fill" : "regular"), inboxD.rot, Z.D.CONTADORES.fila ? h("span", { class: "zs-n" }, Z.D.CONTADORES.fila) : null) : null,
+        porId("dia") ? tab(porId("dia")) : null,
+        h("button", { type: "button", onclick: () => Z.abrirFolha(h("div", { class: "p2-folha" }, h("h3", null, "Configurar"), ["vender", "agente", "conexoes", "empresa"].map(porId).filter(Boolean).map((x) => [h("div", { class: "zs-sub" }, x.rot), conteudoDoGrupo(x, true)]))) }, ic("Wrench"), "Configurar"),
+        porId("acompanhar") ? tab(porId("acompanhar")) : null));
+    tela.append(dk, mb);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu ZapSales — Protótipo 6 · Faixa + Mesa</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  /* Faixa (vem do protótipo 2) */
+  .p6-rail { width: 80px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; background: #151a2e; color: #a3abc6; z-index: 20; }
+  [data-theme="dark"] .p6-rail { background: #0f1322; border-right: 1px solid var(--color-border); }
+  .p6-rail .zs-logo { margin-bottom: 10px; } .p6-rail .zs-logo span { display: none; } .p6-rail .zs-logo svg { color: #9e8aff; width: 30px; height: 30px; }
+  .p6-rb { position: relative; width: 64px; padding: 8px 2px 6px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; line-height: 1.15; text-align: center; color: #a3abc6; transition: background 0.15s var(--ease), color 0.15s var(--ease); }
+  .p6-rb:hover { background: rgba(255, 255, 255, 0.07); color: #eef0f7; }
+  .p6-rb[aria-pressed="true"] { background: rgba(158, 138, 255, 0.22); color: #fff; font-weight: 700; }
+  .p6-rb .zs-ic svg { width: 24px; height: 24px; }
+  .p6-rb .zs-n { position: absolute; top: 2px; right: 6px; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; background: #f5a524; color: #151a2e; }
+  .p6-sep { width: 36px; height: 1px; background: rgba(255, 255, 255, 0.14); margin: 8px 0 6px; }
+  .p6-grp { font-size: 11.5px; font-weight: 700; color: #9aa3c4; margin: 0 0 4px; }
+  .p6-rail .gap { flex: 1; }
+  /* Painel */
+  .p6-painel { width: 328px; flex: none; background: var(--color-surface); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; min-height: 0; }
+  .p6-painel.sobre { position: absolute; left: 80px; top: 0; bottom: 0; z-index: 15; box-shadow: var(--sombra-flutuante); animation: entra 0.18s var(--ease); }
+  .p6-painel.larga { width: min(700px, calc(100% - 96px)); border-radius: 0 16px 16px 0; }
+  @keyframes entra { from { transform: translateX(-12px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  .p6-fundo { position: absolute; inset: 0; z-index: 14; background: var(--color-overlay); }
+  .p6-cab { padding: 16px 14px 10px 16px; display: flex; gap: 8px; align-items: flex-start; }
+  .p6-cab h2 { margin: 0; font-size: 17px; }
+  .p6-cab p { margin: 2px 0 0; font-size: 13px; color: var(--color-muted); }
+  .p6-ib { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--color-subtle); }
+  .p6-ib:hover { background: var(--color-elev); color: var(--color-text); }
+  .p6-ib[aria-pressed="true"] { color: var(--color-accent-text); background: var(--color-accent-soft); }
+  .p6-ib.voltar { margin-left: -6px; margin-top: -1px; }
+  .p6-cab .esp { margin-left: auto; }
+  .p6-lista { flex: 1; overflow: auto; padding: 0 10px 14px; }
+  /* Mesa (vem do protótipo 1) */
+  .p6-mesa { background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-radius: 12px; padding: 6px 6px 8px; margin-bottom: 12px; }
+  .p6-mesa .p6-sub { margin: 10px 8px 4px; font-size: 13px; font-weight: 700; color: var(--color-accent-text); }
+  .p6-mesa .p6-sub:first-child { margin-top: 6px; }
+  .p6-mesa .zs-item { min-height: 38px; }
+  .p6-lista .zs-sub:first-child { margin-top: 2px; }
+  .p6-lista .zs-item { padding-block: 7px; }
+
+  /* ── Submenu: três estilos novos ── */
+  /* A · Lista limpa: uma linha por tela; a descrição aparece no rodapé ao passar o mouse */
+  .p6-ajuda { flex: none; border-top: 1px solid var(--color-border); padding: 12px 16px 14px; min-height: 104px; background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface)); }
+  .p6-ajuda .vazio { margin: 0; font-size: 13px; color: var(--color-subtle); }
+  .p6-ajuda .topo { display: flex; align-items: center; gap: 10px; }
+  .p6-ajuda .quad { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--color-accent-soft); color: var(--color-accent-text); }
+  .p6-ajuda .quad svg { width: 20px; height: 20px; }
+  .p6-ajuda b { font-size: 14.5px; }
+  .p6-ajuda p { margin: 6px 0 0; font-size: 13px; color: var(--color-muted); }
+  .p6-ajuda .zs-tec { margin-left: auto; }
+  /* B · Por tarefa: grupos com título, ícone em quadrado, descrição de uma linha */
+  .zs-item.rico { min-height: 54px; padding: 8px; align-items: center; }
+  .rico .zs-ic { width: 36px; height: 36px; border-radius: 10px; background: var(--color-accent-soft); color: var(--color-accent-text); flex: none; }
+  .rico .zs-ic svg { width: 20px; height: 20px; }
+  .rico .zs-desc { -webkit-line-clamp: 1; }
+  .rico[aria-current="page"] .zs-ic { background: var(--color-accent); color: var(--color-accent-fg); }
+  .p6-gtit { margin: 16px 8px 4px; font-size: 13px; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 8px; }
+  .p6-gtit::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
+  .p6-gtit:first-child { margin-top: 4px; }
+  /* C · Gaveta de duas colunas: o painel abre largo por cima da tela, com cartões de ação */
+  .p6-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+  .p6-grade .p6-gtit { grid-column: 1 / -1; margin-top: 12px; }
+  .p6-grade .p6-gtit:first-child { margin-top: 2px; }
+  .zs-item.tile { border: 1px solid var(--color-border); border-radius: 12px; padding: 12px; align-items: flex-start; background: var(--color-surface); min-height: 0; }
+  .tile:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
+  .tile .zs-ic { width: 36px; height: 36px; border-radius: 10px; background: var(--color-accent-soft); color: var(--color-accent-text); flex: none; }
+  .tile .zs-ic svg { width: 20px; height: 20px; }
+  .tile .zs-desc { -webkit-line-clamp: 3; }
+  .tile[aria-current="page"] { border-color: var(--color-accent); }
+  @container app (max-width: 1100px) { .p6-grade { grid-template-columns: 1fr; } }
+  /* Celular */
+  .p6-mtopo { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+  .p6-mtopo .espaco { flex: 1; }
+  .p6-btn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: var(--color-muted); }
+  .p6-folha .zs-item { min-height: 44px; font-size: 15px; }
+  .p6-folha h3 { margin: 4px 10px 8px; font-size: 17px; }
+  .p6-folha .p6-mesa { margin: 0 0 10px; }
+</style>
+</head>
+<body>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/nucleo.js"></script>
+<script>
+const ui = { painel: "dia", fixo: true, ultimo: null, conta: false };
+document.addEventListener("zs-fechar", () => { ui.conta = false; if (!ui.fixo) ui.painel = null; });
+const LEADS = ["/inbox", "/ai/cases", "/ai/inbox", "/radar", "/agenda"];
+const CRM = ["/kanban", "/contacts", "/tasks", "/campaigns"];
+const AREAS = [
+  { id: "dia", rot: "Todo dia", ic: "House", temas: ["principal", "opcional"], frase: "O que se abre toda hora." },
+  { id: "vender", rot: "Vender", ic: "Storefront", temas: ["vender"], frase: "Funil, produtos, propostas e o que a equipe usa para vender." },
+  { id: "agente", rot: "Agente", ic: "Robot", temas: ["agente"], frase: "Montar, ensinar e conectar o agente que atende por você." },
+  { id: "conexoes", rot: "Conexões", ic: "Plugs", temas: ["conexoes"], frase: "WhatsApp, anúncios e outros sistemas conversando com o seu." },
+  { id: "empresa", rot: "Empresa", ic: "Buildings", temas: ["empresa"], frase: "Quem trabalha aqui, plano, marca e regras da empresa." },
+  { id: "resultados", rot: "Resultados", ic: "ChartPieSlice", temas: ["resultados", "trabalho", "problemas"], frase: "Números, trabalho da equipe e da IA, e o que investigar." },
+];
+const CONFIG = ["vender", "agente", "conexoes", "empresa"];
+/* Grupos por tarefa, usados nos estilos B e C (e como títulos no A). Telas que não constem aqui caem em "Outros". */
+const SUB = {
+  vender: [["O seu funil", ["/settings/tenant/pipelines", "/settings/tenant/agenda", "/prospecting"]], ["O que você vende", ["/products", "/settings/tenant/proposals", "/settings/tenant/proposals/modelos"]], ["Como a equipe vende", ["/templates", "/settings/tags"]], ["Cadastro de empresas", ["/imports", "/companies", "/people"]]],
+  agente: [["Montar o agente", ["/ai/agents", "/ai/followups", "/ai/atendimento", "/ai/routers"]], ["Ensinar o agente", ["/ai/knowledge/sources", "/ai/memory", "/ai/skills"]], ["Conectar a IA", ["/ai/external-tools", "/ai/credentials", "/ai/providers", "/ai/cases/avisos"]]],
+  conexoes: [["WhatsApp e telefone", ["/connections", "/settings/voip-trunk"]], ["Outros sistemas", ["/webhooks", "/settings/api-tokens", "/integracao-dados"]], ["Anúncios", ["/settings/meta-ads", "/settings/conversoes"]]],
+  empresa: [["Equipe", ["/team", "/settings/atendimento"]], ["A empresa", ["/settings/tenant", "/settings/marca", "/settings/tenant/financeiro"]], ["Plano e regras", ["/settings/billing", "/lgpd/requests", "/settings/recursos", "/extensions"]]],
+};
+const areaDe = (d) => (AREAS.find((g) => g.temas.includes(d.tema)) || {}).id || null;
+
+ZS.iniciar({
+  titulo: "6 · Faixa + Mesa (híbrido)",
+  ideia: "A faixa azul-noite do protótipo 2 com a mesa de trabalho do protótipo 1: o painel abre sempre em Todo dia, com Leads e Gestão de Clientes CRM, contadores e Fixados. As áreas de Configurar e Resultados trocam o painel. Use o seletor “Submenu” para comparar o estilo atual com três novos.",
+  extras: [{ rot: "Submenu", chave: "sub", opcoes: [["atual", "Atual"], ["a", "A · Limpa"], ["b", "B · Por tarefa"], ["c", "C · Gaveta"]] }],
+  montar(tela, Z) {
+    const { h, ic } = Z, atual = Z.atual(), sub = Z.estado().sub;
+    const larga = (id) => sub === "c" && id !== "dia";
+    if (ui.ultimo !== atual.id) { ui.ultimo = atual.id; const a = areaDe(atual); if (a && ui.fixo) ui.painel = larga(a) ? "dia" : a; }
+    const vis = (a) => a.temas.some((t) => Z.porTema(t).length);
+    const areas = AREAS.filter(vis);
+    if (ui.painel && !areas.some((a) => a.id === ui.painel)) ui.painel = "dia";
+    const ver = (id) => areas.find((a) => a.id === id);
+
+    function mesa() {
+      const dia = Z.porTema("principal"), por = (ids) => ids.map((id) => dia.find((d) => d.id === id)).filter(Boolean);
+      const leads = por(LEADS), crm = por(CRM), op = Z.porTema("opcional"), fx = Z.fixados();
+      return [
+        h("section", { class: "p6-mesa", "aria-label": "Mesa de trabalho" },
+          leads.length ? [h("div", { class: "p6-sub" }, "Leads"), Z.lista(leads)] : null,
+          crm.length ? [h("div", { class: "p6-sub" }, "Gestão de Clientes CRM"), Z.lista(crm)] : null),
+        op.length ? [h("div", { class: "zs-sub" }, "Se a sua empresa usa"), Z.lista(op)] : null,
+        fx.length ? [h("div", { class: "zs-sub" }, "Fixados por você"), Z.lista(fx, { pin: true })] : null,
+      ];
+    }
+    /* grupos de telas visíveis de uma área: [[título, [destinos]]] */
+    function grupos(a) {
+      const todos = a.temas.flatMap((t) => Z.porTema(t)), ids = new Set(todos.map((d) => d.id)), usados = new Set();
+      let gs;
+      if (SUB[a.id]) {
+        gs = SUB[a.id].map(([t, lista]) => [t, lista.filter((id) => ids.has(id)).map((id) => { usados.add(id); return todos.find((d) => d.id === id); })]);
+        const resto = todos.filter((d) => !usados.has(d.id)); if (resto.length) gs.push(["Outros", resto]);
+      } else gs = a.temas.map((tid) => [Z.D.TEMAS.find((x) => x.id === tid).rot, Z.porTema(tid)]);
+      return gs.filter(([, l]) => l.length);
+    }
+    const rico = (d, cls) => { const it = Z.item(d, { pin: true, desc: true }); it.classList.add(cls); return it; };
+
+    /* Estilo atual (o da imagem que você enviou) */
+    function areaAtual(a) {
+      return a.temas.map((tid) => {
+        const t = Z.D.TEMAS.find((x) => x.id === tid), ds = Z.porTema(tid);
+        return ds.length ? h("div", null, a.temas.length > 1 ? h("div", { class: "zs-sub" }, t.rot) : null, Z.lista(ds, { pin: true, desc: true })) : null;
+      });
+    }
+    /* A · Lista limpa + ajuda no rodapé */
+    function areaA(a) {
+      const ajuda = h("div", { class: "p6-ajuda", "aria-live": "polite" });
+      const mostrar = (d) => {
+        if (!d) { ajuda.replaceChildren(h("p", { class: "vazio" }, "Passe o mouse sobre uma tela para ver o que ela faz.")); return; }
+        ajuda.replaceChildren(h("div", { class: "topo" }, h("span", { class: "quad", html: `<svg viewBox="0 0 256 256" fill="currentColor">${window.ZS_ICONES[d.ic].regular}</svg>` }), h("b", null, d.rot), d.tec ? h("span", { class: "zs-tec" }, d.tec) : null), h("p", null, d.desc));
+      };
+      mostrar(null);
+      const corpo = grupos(a).map(([t, ds]) => h("div", null, h("div", { class: "zs-sub" }, t), ds.map((d) => { const it = Z.item(d, { pin: true }); it.addEventListener("mouseenter", () => mostrar(d)); it.addEventListener("focus", () => mostrar(d)); return it; })));
+      return { corpo, rodape: ajuda };
+    }
+    /* B · Por tarefa */
+    const areaB = (a) => grupos(a).map(([t, ds]) => h("div", null, h("div", { class: "p6-gtit" }, t), ds.map((d) => rico(d, "rico"))));
+    /* C · Gaveta de duas colunas */
+    const areaC = (a) => h("div", { class: "p6-grade" }, grupos(a).map(([t, ds]) => [h("div", { class: "p6-gtit" }, t), ds.map((d) => rico(d, "tile"))]));
+    function conteudoArea(a, mobile) {
+      if (sub === "atual") return { corpo: areaAtual(a) };
+      if (mobile || sub === "b") return { corpo: areaB(a) };
+      if (sub === "a") return areaA(a);
+      return { corpo: areaC(a) };
+    }
+    const fila = Z.D.CONTADORES.fila && Z.porTema("principal").some((d) => d.id === "/inbox") ? Z.D.CONTADORES.fila : 0;
+
+    // ── Computador ──
+    const botao = (a) => h("button", { class: "p6-rb", type: "button", "aria-pressed": String(ui.painel === a.id), "aria-label": a.rot, onclick: () => { ui.painel = (ui.painel === a.id && (!ui.fixo || larga(a.id))) ? (larga(a.id) ? "dia" : null) : a.id; Z.set({}); } },
+      ic(a.ic, ui.painel === a.id ? "fill" : "regular"), h("span", null, a.rot), a.id === "dia" && fila ? h("span", { class: "zs-n", "aria-label": fila + " conversas na fila" }, fila) : null);
+    const cfg = CONFIG.map(ver).filter(Boolean);
+    const rail = h("nav", { class: "p6-rail", "aria-label": "Menu principal" }, Z.marca(),
+      ver("dia") ? botao(ver("dia")) : null,
+      cfg.length ? [h("div", { class: "p6-sep", role: "separator" }), h("div", { class: "p6-grp" }, "Configurar"), cfg.map(botao)] : null,
+      ver("resultados") ? [h("div", { class: "p6-sep", role: "separator" }), botao(ver("resultados"))] : null,
+      h("div", { class: "gap" }),
+      h("button", { class: "p6-rb", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass"), h("span", null, "Buscar")),
+      h("button", { class: "p6-rb", type: "button", "aria-label": "Sua conta", "aria-pressed": String(ui.conta), onclick: () => { ui.conta = !ui.conta; Z.set({}); } }, ic("UserCircle"), h("span", null, "Você")));
+    const g = areas.find((x) => x.id === ui.painel);
+    const gaveta = g && larga(g.id);
+    let painel = null;
+    if (g) {
+      const c = g.id === "dia" ? { corpo: mesa() } : conteudoArea(g, false);
+      painel = h("section", { class: "p6-painel" + (ui.fixo && !gaveta ? "" : " sobre") + (gaveta ? " larga" : ""), "aria-label": g.rot },
+        h("header", { class: "p6-cab" },
+          g.id !== "dia" ? h("button", { class: "p6-ib voltar", type: "button", "aria-label": "Voltar para Todo dia", title: "Voltar para Todo dia", onclick: () => { ui.painel = "dia"; Z.set({}); } }, ic("CaretLeft", "regular", 18)) : null,
+          h("div", null, h("h2", null, g.rot), h("p", null, (CONFIG.includes(g.id) ? "Configurar · " : "") + g.frase)),
+          gaveta ? h("button", { class: "p6-ib esp", type: "button", "aria-label": "Fechar", title: "Fechar", onclick: () => { ui.painel = "dia"; Z.set({}); } }, ic("X", "regular", 18))
+            : h("button", { class: "p6-ib esp", type: "button", "aria-pressed": String(ui.fixo), title: ui.fixo ? "Recolher o painel (fica só a faixa)" : "Fixar o painel ao lado", "aria-label": ui.fixo ? "Recolher o painel" : "Fixar o painel", onclick: () => { ui.fixo = !ui.fixo; if (ui.fixo) ui.painel = areaDe(atual) || "dia"; Z.set({}); } }, ic(ui.fixo ? "CaretDoubleLeft" : "CaretDoubleRight", "regular", 18))),
+        h("div", { class: "p6-lista", "data-scroll": "lista" }, c.corpo), c.rodape || null);
+    }
+    const conta = ui.conta ? h("div", { class: "zs-flutua", style: "left:88px;bottom:12px;z-index:30" }, Z.lista(Z.porTema("conta"))) : null;
+    const fundo = gaveta ? h("div", { class: "p6-fundo", onclick: () => { ui.painel = "dia"; Z.set({}); } }) : null;
+    const dk = h("div", { class: "dk", style: "position:relative" }, rail, fundo, painel, Z.conteudo(), conta);
+
+    // ── Celular ──
+    const abrir = (a) => Z.abrirFolha(h("div", { class: "p6-folha" }, h("h3", null, a.rot), a.id === "dia" ? mesa() : conteudoArea(a, true).corpo));
+    const abrirConfig = () => Z.abrirFolha(h("div", { class: "p6-folha" }, h("h3", null, "Configurar"), cfg.map((a) => [h("div", { class: "zs-sub" }, a.rot), conteudoArea(a, true).corpo])));
+    const conv = Z.porTema("principal").find((d) => d.id === "/inbox");
+    const mb = h("div", { class: "mb" },
+      h("header", { class: "p6-mtopo" }, Z.marca(), h("span", { class: "espaco" }), h("button", { class: "p6-btn", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass")),
+        h("button", { class: "p6-btn", type: "button", "aria-label": "Sua conta", onclick: () => Z.abrirFolha(h("div", { class: "p6-folha" }, h("h3", null, "Você"), Z.lista(Z.porTema("conta")))) }, ic("UserCircle"))),
+      Z.conteudo(),
+      h("nav", { class: "zs-tabbar", "aria-label": "Menu" },
+        conv ? h("a", { href: "#/inbox", "aria-current": atual.id === "/inbox" ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir("/inbox"); } }, ic("Inbox", atual.id === "/inbox" ? "fill" : "regular"), conv.rot, fila ? h("span", { class: "zs-n" }, fila) : null) : null,
+        ver("dia") ? h("button", { type: "button", onclick: () => abrir(ver("dia")) }, ic("House"), "Todo dia") : null,
+        cfg.length ? h("button", { type: "button", onclick: abrirConfig }, ic("Wrench"), "Configurar") : null,
+        ver("resultados") ? h("button", { type: "button", onclick: () => abrir(ver("resultados")) }, ic("ChartPieSlice"), "Resultados") : null));
+    tela.append(dk, mb);
+  }
+});
+</script>
+</body>
+</html>
