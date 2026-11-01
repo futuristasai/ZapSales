@@ -3045,7 +3045,6 @@ export const DICIONARIO: Traducoes = {
   "Obrigatório": { es: "Obligatorio" },
   "Chave muito curta": { es: "Clave demasiado corta" },
   Casos: { es: "Casos" },
-  "Aguardando Humano": { es: "Esperando a una persona" },
   "Quando a IA trava em algo que só um humano resolve, ela abre um caso aqui — e continua conversando com o cliente enquanto espera sua resposta. A lista abre nos casos que esperam você; em Todos, veja também os que esperam o cliente e os já concluídos.":
     {
       es: "Cuando la IA se atora con algo que solo una persona puede resolver, abre un caso aquí y sigue conversando con el cliente mientras espera tu respuesta. La lista abre en los casos que te esperan; en Todos, ve también los que esperan al cliente y los ya concluidos.",
@@ -3056,7 +3055,6 @@ export const DICIONARIO: Traducoes = {
     es: "Los casos que abra la IA, esperando a alguien o ya concluidos, quedan aquí.",
   },
   Abertos: { es: "Abiertos" },
-  "Concluídos": { es: "Concluidos" },
   "Quando a IA precisar de você, aparece aqui.": { es: "Cuando la IA te necesite, lo verás aquí." },
   "Contato sem nome": { es: "Contacto sin nombre" },
   "Selecione um caso à esquerda": { es: "Selecciona un caso a la izquierda" },
