@@ -151,9 +151,9 @@ test.describe("o painel recolhido, por escolha da pessoa", () => {
     await expect(sidebar(page)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Recolher o painel" })).toHaveCount(0);
 
-    await entrada(page, "Agente").click();
+    await entrada(page, "Todo dia").click();
     await expect(sidebar(page)).toBeVisible();
-    await expect(sidebar(page).getByRole("link", { name: /Agentes/ })).toBeVisible();
+    await expect(sidebar(page).getByRole("link", { name: /Conversas/ })).toBeVisible();
 
     // Por cima da tela, e não empurrando: a faixa segue com 80px de largura de coluna.
     const largura = await page.evaluate(
@@ -163,7 +163,12 @@ test.describe("o painel recolhido, por escolha da pessoa", () => {
 
     await page.keyboard.press("Escape");
     await expect(sidebar(page)).toHaveCount(0);
-    await expect(entrada(page, "Agente")).toBeFocused();
+    await expect(entrada(page, "Todo dia")).toBeFocused();
+
+    // Recolhido, uma área de Configurar abre a gaveta (issue #189), e não o painel.
+    await entrada(page, "Agente").click();
+    await expect(gaveta(page).getByRole("link", { name: /Agentes/ })).toBeVisible();
+    await expect(sidebar(page)).toHaveCount(0);
   });
 
   test("«Fixar o painel ao lado» devolve o painel, e a escolha vale no próximo acesso", async ({

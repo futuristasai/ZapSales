@@ -68,16 +68,14 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
       if (error) throw error;
       orgs.push(data.id);
     }
-    const membership = await db
-      .from("user_organizations")
-      .insert(
-        users.map((user_id, i) => ({
-          user_id,
-          organization_id: i === 3 ? orgs[1] : orgs[0],
-          role: i === 0 ? "admin" : "agent",
-          accepted_at: new Date().toISOString(),
-        })),
-      );
+    const membership = await db.from("user_organizations").insert(
+      users.map((user_id, i) => ({
+        user_id,
+        organization_id: i === 3 ? orgs[1] : orgs[0],
+        role: i === 0 ? "admin" : "agent",
+        accepted_at: new Date().toISOString(),
+      })),
+    );
     if (membership.error) throw membership.error;
     const member = await memberContext.newPage();
     const other = await otherContext.newPage();
@@ -95,13 +93,19 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await member.goto("/app/settings/profile");
     await member.getByLabel("Nome completo").fill("Rascunho não salvo");
     await login(other, emails[2]!);
-    await expect(nav(member).getByRole("link", { name: "Riscos de Perda", exact: true })).toBeVisible();
+    await expect(
+      nav(member).getByRole("link", { name: "Riscos de Perda", exact: true }),
+    ).toBeVisible();
     const framesBefore = realtime.length;
     await customize(page, emails[1]!);
     // Evento real precisa chegar; polling não pode aprovar a observação em tempo real.
     await expect.poll(() => realtime.length, { timeout: 15_000 }).toBeGreaterThan(framesBefore);
-    await expect(nav(member).getByRole("link", { name: "Riscos de Perda", exact: true })).toHaveCount(0);
-    await expect(nav(other).getByRole("link", { name: "Riscos de Perda", exact: true })).toBeVisible();
+    await expect(
+      nav(member).getByRole("link", { name: "Riscos de Perda", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      nav(other).getByRole("link", { name: "Riscos de Perda", exact: true }),
+    ).toBeVisible();
     await expect(member.getByLabel("Nome completo")).toHaveValue("Rascunho não salvo");
     expect(member.url()).toContain("/app/settings/profile");
     await expect(member.getByTestId("alerts-bell")).toHaveCount(0);
@@ -121,9 +125,21 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await expect(nav(member).getByRole("link", { name: /^Conversas/ })).toHaveCount(0);
     await member.goto("/app");
     await member.waitForURL("**/app/products");
-    // Com só Produtos liberado, Todo dia some da faixa e o painel abre direto na área Vender, onde
-    // Produtos mora (issue #188) — não há mais hub «Ver tudo em CRM» no menu do computador.
-    await expect(nav(member).getByRole("link", { name: /Produtos/ })).toBeVisible();
+    // Com só Produtos liberado, Todo dia some da faixa; Produtos mora na área Vender, que abre a
+    // gaveta (issues #188 e #189) — não há mais hub «Ver tudo em CRM» no menu do computador.
+    await expect(
+      member
+        .getByRole("navigation", { name: "Áreas do menu" })
+        .getByRole("button", { name: /^Todo dia/ }),
+    ).toHaveCount(0);
+    await member
+      .getByRole("navigation", { name: "Áreas do menu" })
+      .getByRole("button", { name: /^Vender/ })
+      .click();
+    await expect(
+      member.getByRole("dialog", { name: "Vender" }).getByRole("link", { name: /Produtos/ }),
+    ).toBeVisible();
+    await member.keyboard.press("Escape");
     await expect(member.getByRole("link", { name: /Contatos/ })).toHaveCount(0);
     await member.keyboard.press("ControlOrMeta+k");
     await expect(member.getByRole("option").filter({ hasText: "Produtos" })).toBeVisible();
@@ -182,7 +198,12 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await page.getByRole("option", { name: "Gerente", exact: true }).click();
     await expect(page.getByText("Papel atualizado.", { exact: true })).toBeVisible();
     await other.goto("/app/team");
-    await expect(other.getByRole("row").filter({ hasText: emails[2] }).getByText("Personalizada", { exact: true })).toBeVisible();
+    await expect(
+      other
+        .getByRole("row")
+        .filter({ hasText: emails[2] })
+        .getByText("Personalizada", { exact: true }),
+    ).toBeVisible();
   } finally {
     await memberContext.close();
     await otherContext.close();
