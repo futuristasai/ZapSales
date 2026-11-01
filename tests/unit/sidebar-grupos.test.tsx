@@ -69,7 +69,13 @@ describe("Sidebar agrupado", () => {
       .filter(Boolean);
     // Organização não tem título aqui: seu hub (Configurações) vive no rodapé
     // fixo, fora da área que rola — medido, ele caía fora da dobra até em 1080px.
-    expect(titulos).toEqual(["Atendimento", "CRM", "Agente de IA", "Canais", "Análise"]);
+    expect(titulos).toEqual([
+      "Leads",
+      "Gestão de Clientes CRM",
+      "Agente de IA",
+      "Canais",
+      "Análise",
+    ]);
   });
 
   it("leva às Etapas do funil pelo CRM, e não por Configurações", () => {
@@ -88,7 +94,7 @@ describe("Sidebar agrupado", () => {
     expect(screen.queryByRole("link", { name: "Etapas do funil" })).toBeNull();
   });
 
-  it("o número de Casos mora no item de Casos, e o da Fila no item de Inbox", () => {
+  it("o número de Aguardando Humano mora no item de Aguardando Humano, e o da Fila no item de Conversas", () => {
     comoPapel("admin");
     render(<Sidebar collapsed={false} />);
     const casos = screen.getAllByTestId("marcador-casos");
@@ -147,7 +153,7 @@ describe("Sidebar agrupado", () => {
     render(<Sidebar collapsed={false} />);
     const titulos = screen.getAllByRole("heading").map((el) => el.textContent?.trim());
     expect(titulos).not.toContain("Canais");
-    expect(titulos).toContain("Atendimento");
+    expect(titulos).toContain("Leads");
   });
 
   it("oferece o hub dos grupos que têm um", () => {
@@ -160,13 +166,13 @@ describe("Sidebar agrupado", () => {
     comoPapel("admin");
     render(<Sidebar collapsed />);
     expect(screen.queryAllByRole("heading")).toHaveLength(0);
-    expect(screen.getByRole("link", { name: /Inbox/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Conversas/ })).toBeTruthy();
   });
 
   it("marca a rota atual com aria-current", () => {
     comoPapel("admin");
     render(<Sidebar collapsed={false} />);
-    expect(screen.getByRole("link", { name: /Inbox/ })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: /Conversas/ })).toHaveAttribute("aria-current", "page");
     // "Kanban" saiu da interface; o item da mesma URL agora se chama "Funis".
     expect(screen.getByRole("link", { name: "Funis" })).not.toHaveAttribute("aria-current");
   });

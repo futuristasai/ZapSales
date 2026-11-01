@@ -21,8 +21,8 @@ export default async function CasesPage() {
   return (
     <CorpoDaPagina>
       <CabecalhoDePagina
-        titulo={traduzir("Casos", idioma)}
-        ajuda={<ComoFunciona chave="casos" pagina={traduzir("Casos", idioma)} />}
+        titulo={traduzir("Aguardando Humano", idioma)}
+        ajuda={<ComoFunciona chave="casos" pagina={traduzir("Aguardando Humano", idioma)} />}
         descricao={traduzir(
             "Quando a IA trava em algo que só um humano resolve, ela abre um caso aqui — e continua conversando com o cliente enquanto espera sua resposta.",
             idioma,
