@@ -50,6 +50,14 @@ export async function registrarEstimativaDoEnvio(
     telefone: string;
     categoria: CategoriaDePreco;
     tabela: readonly LinhaDePreco[];
+    /**
+     * O relógio da rodada. A linha nasce com ele, e não com o `now()` do banco, porque
+     * o teto mensal soma só as linhas de `created_at >= início do mês de agora`: se os
+     * dois relógios caírem em meses diferentes (virada do mês, ou um relógio injetado
+     * nos testes), o envio que acabou de sair deixaria de contar contra o teto.
+     * Em produção os dois coincidem; sem ele, vale o do banco.
+     */
+    agora?: Date;
   },
 ): Promise<void> {
   const linha = precoPara(entrada.telefone, entrada.categoria, entrada.tabela);
@@ -65,6 +73,7 @@ export async function registrarEstimativaDoEnvio(
     unit_price_cents: linha?.unit_price_cents ?? null,
     cost_cents: linha?.unit_price_cents ?? null,
     currency: linha?.currency ?? "BRL",
+    ...(entrada.agora ? { created_at: entrada.agora.toISOString() } : {}),
   });
   // 23505: o webhook chegou primeiro e a linha já é real — a estimativa sobra.
   if (error && !ehDuplicada(error)) {
