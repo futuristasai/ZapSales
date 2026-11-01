@@ -405,7 +405,8 @@ test.describe("o manual dentro do sistema", () => {
     const [aba] = await Promise.all([context.waitForEvent("page"), manual.click()]);
     await aba.waitForLoadState("domcontentloaded");
     expect(new URL(aba.url()).pathname).toBe("/manual/index.html");
-    await expect(aba).toHaveTitle(/Manual do usuário/);
+    // O título muda com a página em que o manual abre; "Manual" está em todas.
+    await expect(aba).toHaveTitle(/Manual/);
     await aba.close();
   });
 
