@@ -150,9 +150,9 @@ async function abrirCasos(page: Page, casoVisivel: boolean): Promise<void> {
   for (let tentativa = 1; tentativa <= 3; tentativa++) {
     await page.goto("/app/ai/cases");
     try {
-      // "Abertos (N)" só aparece com a lista CARREGADA — antes disso, contar
+      // "Aguardando você (N)" só aparece com a lista CARREGADA — antes disso, contar
       // itens mediria o esqueleto.
-      await expect(page.getByRole("tab", { name: /^Abertos \(\d+\)$/ })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole("tab", { name: /^Aguardando você \(\d+\)$/ })).toBeVisible({ timeout: 20_000 });
       const alvo = page.getByTestId("case-item").filter({ hasText: TITULO_DO_CASO });
       await expect(alvo).toHaveCount(casoVisivel ? 1 : 0, { timeout: 20_000 });
       return;

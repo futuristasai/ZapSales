@@ -9,34 +9,59 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCases, type CaseListItem } from "@/hooks/ai/useCases";
-import { STATUS_BADGE_VARIANT, STATUS_LABEL, tipoDeCasoLabel } from "@/lib/ai/case-copy";
+import {
+  STATUS_BADGE_VARIANT,
+  STATUS_LABEL,
+  casosEsperandoUmaPessoa,
+  tipoDeCasoLabel,
+} from "@/lib/ai/case-copy";
 import { Robot } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/i18n/useT";
 import { CaseDetail } from "./CaseDetail";
 
+type Aba = "esperando" | "todos";
+
 export function CaseList() {
   const t = useT();
-  const [tab, setTab] = useState<"open" | "resolved">("open");
+  // A tela abre nos casos que esperam uma PESSOA — o que está parado por causa
+  // de quem atende. "Todos" é o histórico (inclusive os resolvidos), a um clique.
+  const [aba, setAba] = useState<Aba>("esperando");
   // Deep link: o aviso "um atendimento espera decisão" na Central manda para cá
   // com o id do caso. Sem isto ele abriria a LISTA, e quem clicou teria que
   // caçar de qual caso o aviso falava — um aviso que não leva ao seu assunto é
   // meio aviso. Só o valor INICIAL: clicar na lista continua mandando, e a URL
-  // não vira estado a sincronizar.
+  // não vira estado a sincronizar. O detalhe busca o caso pelo id, então um
+  // caso resolvido abre mesmo fora da aba padrão.
   // `?.` porque o hook devolve null fora de um contexto de navegação (o que
   // acontece em teste e em render estático). Sem a guarda, a tela inteira
   // quebra com "Cannot read properties of null".
   const idDaUrl = useSearchParams()?.get("caso") ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(idDaUrl);
-  const { data, isLoading } = useCases(tab);
+  // A MESMA consulta (e a mesma chave) do contador do menu: abrir a tela e
+  // olhar o menu não dobram a leitura, e os dois números saem da mesma lista.
+  const abertos = useCases("open");
+  const resolvidos = useCases("resolved", { enabled: aba === "todos" });
+
+  const esperando = casosEsperandoUmaPessoa(abertos.data?.cases ?? []);
+  const todos = [...(abertos.data?.cases ?? []), ...(resolvidos.data?.cases ?? [])].sort(
+    (x, y) => Date.parse(y.opened_at) - Date.parse(x.opened_at),
+  );
+
+  const isLoading = aba === "esperando" ? abertos.isLoading : abertos.isLoading || resolvidos.isLoading;
+  const casos = aba === "esperando" ? esperando : todos;
+  const temDados = aba === "esperando" ? !!abertos.data : !!abertos.data && !!resolvidos.data;
 
   return (
     <div className="flex min-h-0 flex-1 gap-6">
       <div className="flex w-full max-w-xs shrink-0 flex-col gap-4">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "open" | "resolved")}>
+        <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)}>
           <TabsList>
-            <TabsTrigger value="open">{t("Abertos")}{data ? ` (${data.open_count})` : ""}</TabsTrigger>
-            <TabsTrigger value="resolved">{t("Concluídos")}</TabsTrigger>
+            <TabsTrigger value="esperando">
+              {t("Aguardando você")}
+              {abertos.data ? ` (${esperando.length})` : ""}
+            </TabsTrigger>
+            <TabsTrigger value="todos">{t("Todos")}</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -45,21 +70,21 @@ export function CaseList() {
             <Skeleton className="h-16 w-full" />
             <Skeleton className="h-16 w-full" />
           </div>
-        ) : !data || data.cases.length === 0 ? (
+        ) : !temDados || casos.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
             <Robot size={28} className="text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium">
-              {tab === "open" ? t("Nenhum caso aberto") : t("Nenhum caso concluído")}
+              {aba === "esperando" ? t("Nenhum caso esperando você") : t("Nenhum caso ainda")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {tab === "open"
+              {aba === "esperando"
                 ? t("Quando a IA precisar de você, aparece aqui.")
-                : t("Casos concluídos, cancelados ou repassados ficam aqui.")}
+                : t("Os casos que a IA abrir, esperando alguém ou já concluídos, ficam aqui.")}
             </p>
           </div>
         ) : (
           <ul className="divide-y divide-border rounded-lg border border-border">
-            {data.cases.map((c) => (
+            {casos.map((c) => (
               <CaseRow
                 key={c.id}
                 item={c}

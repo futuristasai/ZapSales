@@ -1,8 +1,8 @@
 import type { AjudaDaPagina } from "../tipos";
 
 /**
- * Os nomes de aba, botão e selo aqui são os que a tela mostra em cada idioma (`Abertos` / `Abiertos` /
- * `Open`, `Concluí` / `Concluí` / `Complete`, `Preciso de info do cliente` / `Necesito info del cliente` /
+ * Os nomes de aba, botão e selo aqui são os que a tela mostra em cada idioma (`Aguardando você` / `Esperando tu respuesta` /
+ * `Waiting for you`, `Concluí` / `Concluí` / `Complete`, `Preciso de info do cliente` / `Necesito info del cliente` /
  * `I need info from the customer`). Mudou o rótulo na tela, muda aqui.
  */
 const ajuda: AjudaDaPagina = {
@@ -10,7 +10,7 @@ const ajuda: AjudaDaPagina = {
     oQueMostra:
       "Aqui ficam os casos que o assistente abriu quando travou em algo que só uma pessoa resolve. Ele continua conversando com o cliente enquanto espera a sua resposta. A tela é para quem é Atendente ou tem papel acima.",
     passos: [
-      "À esquerda, escolha um caso. Em Abertos estão os que esperam alguém; em Concluídos ficam os encerrados, cancelados ou repassados.",
+      "À esquerda, escolha um caso. A lista abre em Aguardando você, com os que esperam a sua equipe; em Todos aparecem também os que esperam o cliente e os concluídos, cancelados ou repassados.",
       "À direita, leia O que o cliente precisa e Por que a IA travou.",
       "Em dúvida, escreva em Conversar sobre o caso e use Perguntar. As perguntas prontas só preenchem o campo, não enviam sozinhas. Cada pergunta é uma chamada de IA, paga na sua conta do provedor.",
       "Em O que você quer fazer?, marque uma opção: Concluí, Preciso de info do cliente ou Não consigo — passar pra humano. Nenhuma vem marcada. Escreva sua resposta e use Enviar. Isso só funciona com o caso em Aguardando você.",
@@ -27,7 +27,7 @@ const ajuda: AjudaDaPagina = {
     oQueMostra:
       "Aquí están los casos que el asistente abrió cuando se trabó en algo que solo una persona resuelve. Sigue conversando con el cliente mientras espera tu respuesta. La pantalla es para quien es Asesor o tiene un rol superior.",
     passos: [
-      "A la izquierda, elige un caso. En Abiertos están los que esperan a alguien; en Concluidos quedan los cerrados, cancelados o derivados.",
+      "A la izquierda, elige un caso. La lista abre en Esperando tu respuesta, con los que esperan a tu equipo; en Todos aparecen también los que esperan al cliente y los concluidos, cancelados o derivados.",
       "A la derecha, lee Qué necesita el cliente y Por qué se atoró la IA.",
       "Si tienes dudas, escribe en Conversar sobre el caso y usa Preguntar. Las preguntas listas solo llenan el campo, no se envían solas. Cada pregunta es una llamada de IA, que se paga en tu cuenta del proveedor.",
       "En ¿Qué quieres hacer?, marca una opción: Concluí, Necesito info del cliente o No puedo: pasar a una persona. Ninguna viene marcada. Escribe tu respuesta y usa Enviar. Esto solo funciona con el caso en Esperando tu respuesta.",
@@ -44,7 +44,7 @@ const ajuda: AjudaDaPagina = {
     oQueMostra:
       "This is where the cases the assistant opened live, when it got stuck on something only a person can solve. It keeps talking to the customer while it waits for your answer. The screen is for people with the Agent role or higher.",
     passos: [
-      "On the left, pick a case. Open holds the ones waiting on someone; Completed holds the ones that were closed, canceled or handed off.",
+      "On the left, pick a case. The list opens on Waiting for you, with the ones waiting on your team; All also shows the ones waiting on the customer and the ones completed, canceled or handed off.",
       "On the right, read What the customer needs and Why the AI got stuck.",
       "If you are unsure, write in Discuss the case and use Ask. The ready-made questions only fill in the field; they do not send by themselves. Each question is an AI call, paid on your own provider account.",
       "Under What do you want to do?, mark one option: Complete, I need info from the customer or I can't — hand off to a human. None comes marked. Write your answer and use Send. This only works while the case is Waiting for you.",

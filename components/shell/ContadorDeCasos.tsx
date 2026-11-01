@@ -2,6 +2,7 @@
 
 import { useT } from "@/hooks/i18n/useT";
 import { useCases } from "@/hooks/ai/useCases";
+import { casosEsperandoUmaPessoa } from "@/lib/ai/case-copy";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 export function ContadorDeCasos({ compacto }: { compacto: boolean }) {
   const t = useT();
   const { data } = useCases("open");
-  const pendentes = (data?.cases ?? []).filter((c) => c.status === "awaiting_human").length;
+  const pendentes = casosEsperandoUmaPessoa(data?.cases ?? []).length;
   if (pendentes === 0) return null;
   const rotulo = pendentes === 1 ? t("1 caso esperando você") : `${pendentes} ${t("casos esperando você")}`;
   return (

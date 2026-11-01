@@ -88,9 +88,13 @@ export interface CaseDetailData {
 }
 
 /** Lista de casos humanos (spec 15 §9). Polling 60s — casos nascem no worker. */
-export function useCases(status: "open" | "resolved" = "open") {
+export function useCases(
+  status: "open" | "resolved" = "open",
+  opcoes: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: ["ai-cases", status],
+    enabled: opcoes.enabled ?? true,
     refetchInterval: 60_000,
     queryFn: () =>
       apiClient.get<{ data: CaseListData }>(`/api/v1/ai/cases?status=${status}`).then((r) => r.data),
