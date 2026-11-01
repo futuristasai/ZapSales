@@ -3,15 +3,16 @@
  *
  * "Avisar outros sistemas" diz ao dono leigo o que a tela faz; "webhooks" embaixo
  * diz ao técnico que é a tela que ele procura. O nome é um só (`label`); o termo
- * aparece no menu lateral, no hub e na dica — e não some quando o nome some.
+ * aparece na lista do menu, no hub e na dica — e não some quando o nome some.
  *
  * Quem vê o quê é do registro (`navegacao-registry.test.ts`); aqui é a superfície.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { NavHub } from "@/components/shell/NavHub";
-import { SidebarContent } from "@/components/shell/Sidebar";
+import { BarraDeBaixo } from "@/components/shell/BarraDeBaixo";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 
 const authRef: { user: Pick<AuthUser, "is_platform_admin">; activeOrg: ActiveOrg | null } = {
@@ -29,15 +30,20 @@ vi.mock("@/components/connections/ConnectionHealthDot", () => ({
 }));
 vi.mock("@/components/shell/ContadorDeCasos", () => ({ ContadorDeCasos: () => null }));
 vi.mock("@/components/shell/ContadorDaFila", () => ({ ContadorDaFila: () => null }));
-vi.mock("@/app/actions/shell/toggleSidebar", () => ({ toggleSidebar: vi.fn() }));
 vi.mock("@/components/shell/VersionFooter", () => ({ VersionFooter: () => null }));
 
 afterEach(cleanup);
 
-describe("menu lateral", () => {
-  it("mostra o termo técnico embaixo do nome", () => {
-    render(<SidebarContent collapsed={false} />);
-    const link = screen.getByRole("link", { name: /Avisar outros sistemas/ });
+describe("a lista do menu (folha do celular e painel do computador)", () => {
+  async function abrirConfigurar() {
+    render(<BarraDeBaixo />);
+    await userEvent.click(screen.getByRole("button", { name: /^Configurar/ }));
+    return screen.getByRole("dialog", { name: "Configurar" });
+  }
+
+  it("mostra o termo técnico embaixo do nome", async () => {
+    const folha = await abrirConfigurar();
+    const link = within(folha).getByRole("link", { name: /Avisar outros sistemas/ });
     const [nome, termo] = Array.from(link.querySelectorAll("span > span")).map(
       (s) => s.textContent,
     );
@@ -45,26 +51,21 @@ describe("menu lateral", () => {
     expect(termo).toBe("webhooks");
   });
 
-  it("a tela sem termo técnico não ganha linha vazia", () => {
-    render(<SidebarContent collapsed={false} />);
-    const link = screen.getByRole("link", { name: /Riscos de Perda/ });
+  it("a tela sem termo técnico não ganha linha vazia", async () => {
+    render(<BarraDeBaixo />);
+    await userEvent.click(screen.getByRole("button", { name: /^Todo dia/ }));
+    const link = within(screen.getByRole("dialog")).getByRole("link", { name: /Riscos de Perda/ });
     expect(link.querySelectorAll("span > span")).toHaveLength(1);
   });
 
-  it("a dica traz a descrição e o termo técnico", () => {
-    render(<SidebarContent collapsed={false} />);
-    const dica = screen.getByRole("link", { name: /Avisar outros sistemas/ }).getAttribute("title");
+  it("a dica traz a descrição e o termo técnico", async () => {
+    const folha = await abrirConfigurar();
+    const dica = within(folha)
+      .getByRole("link", { name: /Avisar outros sistemas/ })
+      .getAttribute("title");
     expect(dica).toBe(
       "Avisar outros sistemas (webhooks) — Avise outros sistemas quando algo acontecer aqui dentro.",
     );
-  });
-
-  it("recolhido, o termo não desenha texto na barra estreita, mas a dica continua", () => {
-    render(<SidebarContent collapsed />);
-    const link = screen.getByRole("link", { name: /Avisar outros sistemas/ });
-    // Só o nome (sr-only) fica no link; a linha do termo não é desenhada.
-    expect(link.textContent).toBe("Avisar outros sistemas");
-    expect(link.getAttribute("title")).toContain("(webhooks)");
   });
 });
 

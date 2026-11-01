@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 const BOTAO =
   "relative flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-xs leading-tight text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
-function MarcaDaFaixa() {
+export function MarcaDaFaixa() {
   const { nome, marcaDoProduto, icone, inicial } = useMarcaDaBarra();
   // O logo comprido do revendedor não cabe em 80px: ele mora no topo da tela
   // (`TopBar`). Aqui fica o que cabe — o símbolo do produto, o ícone que a

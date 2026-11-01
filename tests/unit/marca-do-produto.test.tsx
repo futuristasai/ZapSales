@@ -3,7 +3,8 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import { SidebarContent } from "@/components/shell/Sidebar";
+import { MarcaDaFaixa } from "@/components/shell/Faixa";
+import { MarcaNoTopo } from "@/components/shell/TopBar";
 import { CLASSES_DE_COR, LogotipoDoProduto, SimboloDoProduto } from "@/components/branding/MarcaDoProduto";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import { DEFAULT_APP_NAME, marcaEhADoProduto, type Branding } from "@/lib/branding";
@@ -50,7 +51,7 @@ const PADRAO: Branding = { name: DEFAULT_APP_NAME, logoUrl: null, initial: "Z" }
 function renderSidebar(marca: Branding, collapsed: boolean) {
   return render(
     <MarcaDaInstalacaoProvider marca={marca}>
-      <SidebarContent collapsed={collapsed} />
+      {collapsed ? <MarcaDaFaixa /> : <MarcaNoTopo />}
     </MarcaDaInstalacaoProvider>,
   );
 }
@@ -76,7 +77,7 @@ describe("marcaEhADoProduto", () => {
   });
 });
 
-describe("o desenho na barra lateral", () => {
+describe("o desenho no topo e na faixa", () => {
   it("aberta e sem marca própria, mostra o logotipo do produto (SVG, não <img>)", () => {
     renderSidebar(PADRAO, false);
     const logotipo = screen.getByRole("img", { name: DEFAULT_APP_NAME });
@@ -90,7 +91,9 @@ describe("o desenho na barra lateral", () => {
 
   it("recolhida, mostra só o símbolo — e não a inicial em texto", () => {
     renderSidebar(PADRAO, true);
-    expect(screen.getByRole("img", { name: DEFAULT_APP_NAME }).tagName.toLowerCase()).toBe("svg");
+    // Na faixa o símbolo é decorativo (o nome da marca já está escrito no topo da tela).
+    expect(document.querySelector("svg[aria-hidden='true']")).not.toBeNull();
+    expect(screen.queryByRole("img")).toBeNull();
     expect(screen.queryByText("D")).toBeNull();
   });
 

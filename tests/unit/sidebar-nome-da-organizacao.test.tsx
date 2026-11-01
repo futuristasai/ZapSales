@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-import { SidebarContent } from "@/components/shell/Sidebar";
+import { MarcaDaFaixa } from "@/components/shell/Faixa";
+import { MarcaNoTopo } from "@/components/shell/TopBar";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import type { Branding } from "@/lib/branding";
 import { MarcaDaInstalacaoProvider } from "@/lib/branding/contexto";
@@ -61,7 +62,8 @@ let marcaDaInstalacao: Branding = {
 function renderSidebar(props: { collapsed: boolean }) {
   return render(
     <MarcaDaInstalacaoProvider marca={marcaDaInstalacao}>
-      <SidebarContent collapsed={props.collapsed} />
+      {/* Aberta é a marca por extenso no topo; recolhida é o símbolo da faixa (80 px). */}
+      {props.collapsed ? <MarcaDaFaixa /> : <MarcaNoTopo />}
     </MarcaDaInstalacaoProvider>,
   );
 }

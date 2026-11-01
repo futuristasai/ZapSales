@@ -19,7 +19,10 @@ export function SearchTrigger() {
       <Button
         variant="outline"
         size="sm"
-        className="gap-2 text-muted-foreground"
+        // No celular o texto some e sobra o ícone: o nome vem do aria-label, e o alvo de toque
+        // tem 44 px também na largura (#190).
+        aria-label={t("Buscar...")}
+        className="gap-2 text-muted-foreground max-md:min-w-11"
         onClick={() => setOpen(true)}
       >
         <MagnifyingGlass size={14} aria-hidden />

@@ -195,6 +195,34 @@
       "col": 7,
       "type": "lib",
       "label": "lib/audit/rotulo-da-acao.ts (código vira frase; sem frase, fica o código)"
+    },
+    {
+      "id": "celular",
+      "lane": "dados",
+      "col": 3,
+      "type": "lib",
+      "label": "lib/navigation/celular.ts (menu do papel reagrupado em quatro abas)"
+    },
+    {
+      "id": "barra",
+      "lane": "ui",
+      "col": 3,
+      "type": "frontend",
+      "label": "BarraDeBaixo + FolhaDoMenu (celular, < 768 px)"
+    },
+    {
+      "id": "rodape",
+      "lane": "ui",
+      "col": 4,
+      "type": "lib",
+      "label": "lib/ui/rodape-ocupado.tsx (o que as peças fixas ocupam)"
+    },
+    {
+      "id": "e2e_celular",
+      "lane": "prova",
+      "col": 4,
+      "type": "service",
+      "label": "navegacao.spec.ts (mobile): alvos, folha na janela, sem overflow"
     }
   ],
   "edges": [
@@ -365,6 +393,36 @@
       "from": "rotulo_auditoria",
       "to": "tela",
       "label": "Auditoria mostra frase, nome de quem fez e o código ao lado"
+    },
+    {
+      "id": "28",
+      "from": "registro",
+      "to": "celular",
+      "label": "destinos visíveis ao papel viram Conversas, Todo dia, Configurar, Resultados"
+    },
+    {
+      "id": "29",
+      "from": "celular",
+      "to": "barra",
+      "label": "abas e folhas"
+    },
+    {
+      "id": "30",
+      "from": "barra",
+      "to": "rodape",
+      "label": "declara os 56 px que ocupa; a casca e o Inbox os descontam"
+    },
+    {
+      "id": "31",
+      "from": "barra",
+      "to": "tela",
+      "label": "cada linha da folha leva à tela de sempre"
+    },
+    {
+      "id": "32",
+      "from": "e2e_celular",
+      "to": "barra",
+      "label": "mede no navegador"
     }
   ]
 }

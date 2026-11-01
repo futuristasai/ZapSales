@@ -50,7 +50,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { relativoEmBarraNormal } from "./helpers/caminho";
 
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { SidebarContent } from "@/components/shell/Sidebar";
+import { MarcaNoTopo } from "@/components/shell/TopBar";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import { MarcaDaInstalacaoProvider } from "@/lib/branding/contexto";
 
@@ -126,9 +126,9 @@ afterEach(() => {
 });
 
 describe("a marca não diverge entre o SSR e a hidratação", () => {
-  it("a barra lateral renderiza IGUAL com e sem a marca no ambiente do navegador", () => {
-    const noServidor = renderComAmbiente(undefined, <SidebarContent collapsed={false} />);
-    const noNavegador = renderComAmbiente(PUBLIC_ENV_DO_NAVEGADOR, <SidebarContent collapsed={false} />);
+  it("a marca no topo renderiza IGUAL com e sem a marca no ambiente do navegador", () => {
+    const noServidor = renderComAmbiente(undefined, <MarcaNoTopo />);
+    const noNavegador = renderComAmbiente(PUBLIC_ENV_DO_NAVEGADOR, <MarcaNoTopo />);
 
     expect(
       noServidor,
@@ -154,7 +154,7 @@ describe("a marca não diverge entre o SSR e a hidratação", () => {
     // Sem este caso, os dois de cima passariam num componente que nunca mostra
     // logo nenhum — dois vazios são iguais. O que se afirma aqui é que a marca
     // do contexto ALCANÇA a tela: o `<img>` do banco está no HTML dos dois lados.
-    const noServidor = renderComAmbiente(undefined, <SidebarContent collapsed={false} />);
+    const noServidor = renderComAmbiente(undefined, <MarcaNoTopo />);
 
     expect(noServidor).toContain(`src="${MARCA_DO_BANCO.logoUrl}"`);
     expect(noServidor).toContain(`alt="${MARCA_DO_BANCO.name}"`);

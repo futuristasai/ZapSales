@@ -3792,10 +3792,33 @@ histórico.
 | Número do WhatsApp caído acende o aviso no ícone de Conexões | `[P1]` | unitário (`AvisoDeConexaoNaFaixa` só desenha com a conexão em `down`); **prova pela tela com uma conexão derrubada: a fazer na VPS** |
 | Recolher o painel, abrir por cima, Esc/clique fora/escolher tela fecham, e a preferência vale no F5 | `[P1]` | unitário + `navegacao.spec.ts` («Fixar o painel ao lado» seguido de reload) |
 | Marca: símbolo/ícone/inicial na faixa, logo por extenso no topo, nos dois temas | `[P1]` | `marca-logo.spec.ts` e `logo-moldura-no-tema-escuro.spec.ts` (agora medem `marca-no-topo`) |
-| Menu do celular não regride | `[P1]` | `navegacao.spec.ts` (caso mobile, inalterado) e os unitários que agora exercitam `SidebarContent` |
+| Menu do celular: barra de baixo e folhas (issue #190) | `[P0]` | ver a seção «A barra de baixo no celular» abaixo; a gaveta lateral e o `SidebarContent` deixaram de existir |
 
 **Vitrine local (sem Docker), 2026-11-01:** faixa e painel conferidos no navegador, tema claro e escuro, painel fixado e
 recolhido aberto por cima, Dono e Atendente. Tudo em tela com rede sem servidor (os 401 de contadores são esperados). **Não
 substitui** a prova em ambiente fresco estilo VPS com os três papéis e os recursos opcionais ligados e desligados — essa
 vem do CI do PR (`e2e`) e da prova em produção depois do merge.
 
+
+## A barra de baixo no celular (2026-11-01, issue #190)
+
+Origem: o menu de gaveta lateral do celular (`MobileSidebar` → `SidebarContent`) foi **substituído** pela barra de baixo
+com Conversas, Todo dia, Configurar e Resultados e suas folhas (pai #183). **Substitui a linha «Menu do celular não
+regride»** da seção da faixa, e a regra «o menu cabe em 900 px sem rolar» no celular por «nenhum bloco some».
+
+| caso | prioridade | estado |
+|---|---|---|
+| A barra tem as quatro abas, só com o que o papel permite (dono, gerente, atendente, leitor; interface enxuta) | `[P0]` | unitários `barra-de-baixo-do-menu.test.ts` (projeção) e `barra-de-baixo.test.tsx` (superfície) |
+| Todo dia, Configurar e Resultados abrem a folha certa; escolher uma tela fecha; Esc fecha e o foco volta à aba | `[P0]` | `barra-de-baixo.test.tsx` e `navegacao.spec.ts` (mobile) — **a rodar no CI** |
+| Alvos de toque ≥ 44 px, folha dentro da janela, último link alcançável, sem rolagem horizontal | `[P0]` | `navegacao.spec.ts` (mobile, por `getBoundingClientRect`) — **a rodar no CI**; medido à mão na vitrine local |
+| A última linha da tela não fica por baixo da barra (a barra declara o que ocupa no contrato do rodapé) | `[P1]` | `barra-de-baixo.test.tsx` (reserva de 56 px no celular, zero no computador) e `navegacao.spec.ts` |
+| Menu da conta no topo: Perfil, Segurança, Notificações e Sair, com 44 px | `[P1]` | `menu-da-conta-no-celular.test.tsx` e `navegacao.spec.ts` |
+| Nomes longos («Esperando a una persona», «Customer Management CRM») não quebram o layout, em es e en | `[P1]` | medido na vitrine local; sem overflow em 360 e 390 px |
+
+**Vitrine local (sem Docker), 2026-11-01**, janela de 390×844 com toque, Chrome: Dono (claro e escuro, recursos opcionais
+ligados e desligados, pt-BR), Atendente (es, claro) e Leitor (en, escuro). Medido: abas de 98×56 px; menor alvo da folha
+44 px (13, 33 e 11 alvos em Todo dia, Configurar e Resultados do Dono); `scrollWidth` igual ao `clientWidth`; folha de
+topo 101–226 px até o fundo da janela; reserva do rodapé 57 px no celular e 0 px a partir de 768 px; a última linha da tela
+termina exatamente no topo da barra; Esc fecha e o foco volta ao botão da aba. Capturas em
+`docs/testing/evidencias/barra-de-baixo-do-celular/`. **Não substitui** a prova em ambiente fresco estilo VPS com os
+recursos opcionais ligados e desligados nos três papéis — essa vem do CI do PR (`e2e`) e da prova em produção depois do merge.

@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
+import { BarraDeBaixo } from "@/components/shell/BarraDeBaixo";
 import { BarraDeProgressoNavegacao } from "@/components/shell/BarraDeProgressoNavegacao";
 import { useSinalDePresenca } from "@/hooks/atendimento/useSinalDePresenca";
 import { useInboundMessageAlerts } from "@/hooks/notifications/useInboundMessageAlerts";
@@ -84,6 +85,8 @@ export function AppShell({ sidebarCollapsed, podeAtender, children }: AppShellPr
           {children}
         </main>
       </div>
+      {/* O menu do celular (issue #190): fixa embaixo, escondida a partir de 768 px. */}
+      <BarraDeBaixo />
     </div>
   );
 }

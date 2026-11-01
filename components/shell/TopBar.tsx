@@ -1,7 +1,7 @@
 "use client";
 import { AlertsBell } from "./AlertsBell";
 import { AvisoDePropostaEmDestaque } from "./AvisoDePropostaEmDestaque";
-import { MobileSidebar } from "./MobileSidebar";
+import { MarcaDaFaixa } from "./Faixa";
 import { TenantSwitcher } from "./TenantSwitcher";
 import { UserMenu } from "./UserMenu";
 import { SearchTrigger } from "./SearchTrigger";
@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
  *    tema escuro quando existe e a proteção de contraste quando não existe;
  *  - só nome → o nome em texto.
  *
- * Só no computador: no celular o topo é apertado e o menu de gaveta tem a sua marca.
+ * Só no computador: no celular o topo é apertado e fica só o símbolo (`SimboloNoCelular`).
  */
-function MarcaNoTopo() {
+export function MarcaNoTopo() {
   const { nome, logo, logoEscuro, marcaDoProduto } = useMarcaDaBarra();
   if (marcaDoProduto)
     return (
@@ -69,11 +69,27 @@ function MarcaNoTopo() {
   );
 }
 
+/**
+ * No celular a navegação é a barra de baixo (issue #190), e o topo guarda a marca, a busca e o
+ * menu da conta. O símbolo é o mesmo da faixa do computador (`MarcaDaFaixa`): o logo comprido do
+ * revendedor não cabe em 390 px ao lado dos botões.
+ */
+function SimboloNoCelular() {
+  return (
+    <div
+      data-testid="marca-no-celular"
+      className="flex h-9 w-9 shrink-0 items-center justify-center md:hidden"
+    >
+      <MarcaDaFaixa />
+    </div>
+  );
+}
+
 export function TopBar() {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-3 backdrop-blur md:gap-4 md:px-6">
       <div className="flex min-w-0 items-center gap-3">
-        <MobileSidebar />
+        <SimboloNoCelular />
         <MarcaNoTopo />
         <TenantSwitcher />
       </div>

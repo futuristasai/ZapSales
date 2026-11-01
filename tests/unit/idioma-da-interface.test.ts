@@ -184,12 +184,15 @@ describe("os elos que somem sem barulho", () => {
     }
   });
 
-  it("a barra lateral traduz — ela aparece em TODA tela", () => {
+  it("o menu (a lista do painel e a barra de baixo do celular) traduz — ele aparece em TODA tela", () => {
     // Sem ela, escolher espanhol não mudaria nada visível no primeiro clique, e
     // o operador concluiria que a opção segue sendo decorativa.
-    const fonte = readFileSync("components/shell/Sidebar.tsx", "utf8");
-    expect(fonte).toMatch(/const t = useT\(\);/);
-    expect(fonte).toMatch(/\{t\(item\.label\)\}/);
+    const item = readFileSync("components/shell/ItemDoMenu.tsx", "utf8");
+    expect(item).toMatch(/const t = useT\(\);/);
+    expect(item).toMatch(/\{t\(item\.label\)\}/);
+    const barra = readFileSync("components/shell/BarraDeBaixo.tsx", "utf8");
+    expect(barra).toMatch(/const t = useT\(\);/);
+    expect(barra).toMatch(/\{t\(aba\.label\)\}/);
   });
 
   it("o inbox traduz o que se usa o dia inteiro", () => {

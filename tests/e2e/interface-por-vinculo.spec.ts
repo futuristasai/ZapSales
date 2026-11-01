@@ -132,8 +132,14 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     mkdirSync(evidence, { recursive: true });
     await member.screenshot({ path: `${evidence}/interface-hub-only.png` });
     await member.setViewportSize({ width: 390, height: 844 });
-    await member.getByRole("button", { name: "Abrir navegação" }).click();
-    await expect(member.getByRole("link", { name: "Ver tudo em CRM" }).last()).toBeVisible();
+    // No celular o menu é a barra de baixo (issue #190): sem Conversas nem Todo dia liberados, a
+    // barra só tem Configurar, e a folha dele traz o que o vínculo liberou.
+    const barra = member.getByRole("navigation", { name: "Menu do celular" });
+    await expect(barra.getByRole("link", { name: /Conversas/ })).toHaveCount(0);
+    await barra.getByRole("button", { name: /^Configurar/ }).click();
+    await expect(
+      member.getByRole("dialog", { name: "Configurar" }).getByRole("link", { name: /Produtos/ }),
+    ).toBeVisible();
     expect(
       await member.evaluate(
         () => document.body.scrollWidth <= document.documentElement.clientWidth + 1,
