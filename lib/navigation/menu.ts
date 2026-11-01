@@ -66,8 +66,8 @@ export function menuDoPapel(
     ),
   })).filter((g) => g.itens.length > 0);
 
-  const doBloco = (bloco: BlocoDoMenu): GrupoProjetado[] =>
-    gruposComTelas.filter((g) => g.bloco === bloco).map(({ id, label, itens }) => ({ id, label, itens }));
+  const projeta = (grupos: typeof gruposComTelas): GrupoProjetado[] =>
+    grupos.map(({ id, label, itens }) => ({ id, label, itens }));
 
   const blocos: BlocoProjetado[] = [];
   for (const { id, label } of MENU_BLOCOS) {
@@ -75,13 +75,11 @@ export function menuDoPapel(
       const areas = MENU_AREAS.map((a) => ({
         id: a.id,
         label: a.label,
-        grupos: gruposComTelas
-          .filter((g) => g.bloco === "configurar" && g.area === a.id)
-          .map(({ id: gid, label: glabel, itens }) => ({ id: gid, label: glabel, itens })),
+        grupos: projeta(gruposComTelas.filter((g) => g.bloco === "configurar" && g.area === a.id)),
       })).filter((a) => a.grupos.length > 0);
       if (areas.length > 0) blocos.push({ id, label, areas });
     } else {
-      const grupos = doBloco(id);
+      const grupos = projeta(gruposComTelas.filter((g) => g.bloco === id));
       if (grupos.length > 0) blocos.push({ id, label, grupos });
     }
   }

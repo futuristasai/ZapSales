@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
-import { NAV_CATALOG } from "@/lib/navigation/catalogo";
+import { MENU_GRUPOS, NAV_CATALOG } from "@/lib/navigation/catalogo";
 import { destinosDaInterface } from "@/lib/navigation/interface";
 import { menuDoPapel, type BlocoProjetado } from "@/lib/navigation/menu";
 
@@ -32,6 +32,17 @@ function hrefsDe(blocos: readonly BlocoProjetado[]): string[] {
   );
 }
 
+/** "Bloco › Área › Grupo: Tela, Tela" — uma linha por grupo visível, na ordem do menu. */
+function resumo(blocos: readonly BlocoProjetado[]): string[] {
+  return blocos.flatMap((b) =>
+    b.id === "configurar"
+      ? b.areas.flatMap((a) =>
+          a.grupos.map((g) => `${b.label} › ${a.label} › ${g.label}: ${g.itens.map((i) => i.menu.nome).join(", ")}`),
+        )
+      : b.grupos.map((g) => `${b.label} › ${g.label}: ${g.itens.map((i) => i.menu.nome).join(", ")}`),
+  );
+}
+
 function bloco(blocos: readonly BlocoProjetado[], id: BlocoProjetado["id"]) {
   return blocos.find((b) => b.id === id);
 }
@@ -45,11 +56,16 @@ const menu = (role: typeof DONO | typeof GERENTE | typeof ATENDENTE | typeof LEI
   menuDoPapel(false, role, undefined, TODOS_OS_MODULOS, TODAS_AS_CAPACIDADES).blocos;
 
 describe("posição de cada tela no catálogo", () => {
-  it("toda tela declara posição, num grupo que existe, com ordem inteira positiva", () => {
-    const sem = NAV_CATALOG.filter(
-      (d) => !(d as { menu?: unknown }).menu,
+  it("toda tela declara posição, num grupo que existe, com ordem inteira positiva e nome", () => {
+    const grupos = new Set<string>(MENU_GRUPOS.map((g) => g.id));
+    const ruins = NAV_CATALOG.filter(
+      (d) =>
+        !grupos.has(d.menu.grupo) ||
+        !Number.isInteger(d.menu.ordem) ||
+        d.menu.ordem < 1 ||
+        d.menu.nome.trim() === "",
     ).map((d) => d.href);
-    expect(sem).toEqual([]);
+    expect(ruins).toEqual([]);
   });
 
   it("nenhuma posição se repete: um grupo não tem duas telas na mesma ordem", () => {
@@ -152,12 +168,46 @@ describe("o que cada papel vê no modelo novo", () => {
     expect(configurar.areas.map((a) => a.label)).toEqual(["Vender", "Empresa"]);
   });
 
-  it("Leitor: menu mais curto que o do Atendente, sem nenhuma tela que peça mais que viewer", () => {
-    const hrefs = hrefsDe(menu(LEITOR));
-    expect(hrefs).not.toContain("/app/ai/cases");
-    expect(hrefs).not.toContain("/app/campaigns");
-    expect(hrefs).not.toContain("/app/connections");
-    expect(hrefs.length).toBeLessThan(hrefsDe(menu(ATENDENTE)).length);
+  it("Gerente: tudo o que o Atendente vê, mais disparo, chamadas e a montagem do agente — sem o que é só do Dono", () => {
+    expect(resumo(menu(GERENTE))).toEqual([
+      "Todo dia › Leads: Conversas, Aguardando Humano, Alertas, Riscos de Perda, Compromissos",
+      "Todo dia › Gestão de Clientes CRM: Funis, Contatos, Tarefas, Disparo em massa",
+      "Todo dia › Se a sua empresa usa: Propostas, Comandas, Chamadas",
+      "Configurar › Vender › O seu funil: Etapas do funil, Tipos de agendamento",
+      "Configurar › Vender › O que você vende: Produtos, Padrões de proposta, Modelos de proposta",
+      "Configurar › Vender › Como a equipe vende: Respostas rápidas, Etiquetas",
+      "Configurar › Vender › Cadastro de empresas: Importações, Empresas, Pessoas",
+      "Configurar › Agente › Montar o agente: Agentes, Follow-ups, Fluxos de atendimento, Quem atende cada conversa",
+      "Configurar › Agente › Ensinar o agente: Conhecimento, Memória, O que o agente sabe fazer",
+      "Configurar › Agente › Conectar a IA: Conectar outros sistemas, Chave da IA, Qual IA usar",
+      "Configurar › Conexões › Outros sistemas: Avisar outros sistemas, Dados de outro sistema",
+      "Configurar › Empresa › Equipe: Equipe, Revezamento da equipe",
+      "Configurar › Empresa › A empresa: Financeiro",
+      "Configurar › Empresa › Plano e regras: Recursos opcionais, Extensões",
+      "Resultados › Números do negócio: Desempenho, Meta Ads, Faturamento, Honorários",
+      "Resultados › Equipe e IA: Atividades, Evolução da IA, Sugestões da IA, Uso e orçamento",
+      "Resultados › Quando algo dá errado: Histórico do agente, Quem mexeu em quê",
+      "Você › Você: Perfil, Segurança, Notificações",
+    ]);
+  });
+
+  it("Leitor: só consulta — menu exato, sem nenhuma tela que peça mais que viewer", () => {
+    expect(resumo(menu(LEITOR))).toEqual([
+      "Todo dia › Leads: Conversas, Alertas, Riscos de Perda, Compromissos",
+      "Todo dia › Gestão de Clientes CRM: Funis, Contatos, Tarefas",
+      "Todo dia › Se a sua empresa usa: Propostas, Comandas",
+      "Configurar › Vender › O seu funil: Tipos de agendamento",
+      "Configurar › Vender › O que você vende: Produtos",
+      "Configurar › Vender › Como a equipe vende: Respostas rápidas",
+      "Configurar › Vender › Cadastro de empresas: Empresas, Pessoas",
+      "Configurar › Conexões › Outros sistemas: Dados de outro sistema",
+      "Configurar › Empresa › Equipe: Equipe",
+      "Configurar › Empresa › A empresa: Financeiro",
+      "Configurar › Empresa › Plano e regras: Extensões",
+      "Resultados › Números do negócio: Desempenho, Faturamento, Honorários",
+      "Resultados › Equipe e IA: Atividades, Sugestões da IA",
+      "Você › Você: Perfil, Segurança, Notificações",
+    ]);
   });
 
   it("bloco, área ou grupo sem tela visível não aparece", () => {
