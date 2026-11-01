@@ -541,6 +541,7 @@ async function enviarUm(
           telefone: endereco,
           categoria: categoriaDoModelo(modelo.category),
           tabela,
+          agora,
         });
       }
       // `.eq("status","sending")`: o ack pode ter chegado antes desta linha, e o
