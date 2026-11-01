@@ -423,6 +423,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="inicio--como-esta-organizado">Como o manual está organizado</h2>
 <p>O índice, na coluna da esquerda, segue <strong>o mesmo caminho do menu do sistema</strong>: Atendimento, CRM, Agente de IA, Canais, Análise e Organização. Se você sabe onde a tela fica no menu, sabe onde ela está aqui.</p>
+<p>Dentro do ZapSales, este manual abre pelo link <span class="ui">Manual</span>, no rodapé do menu lateral, logo abaixo de <span class="ui">Configurações</span>. Ele é a cópia que veio com a sua instalação e só abre para quem está logado.</p>
 <p>Cada tela do sistema tem uma página própria, sempre com a mesma estrutura:</p>
 <ol class="passos">
   <li><strong>A ficha</strong>, no topo: onde a tela fica no menu, quem pode usar e o endereço dela.</li>
@@ -579,15 +580,15 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>Toda tela do ZapSales tem a mesma moldura: o <strong>menu lateral</strong> à esquerda, a <strong>barra do topo</strong> em cima e, no meio, o conteúdo da tela em que você está.</p>
 <figure class="print">
   <img src="img/navegacao-visao.png" alt="Tela de Funis com o menu lateral e a barra do topo numerados de 1 a 11" loading="lazy">
-  <figcaption>O menu lateral (1 a 6) e a barra do topo (7 a 11), vistos na tela de Funis.</figcaption>
+  <figcaption>O menu lateral (1 a 6) e a barra do topo (7 a 11), vistos na tela de Funis. O rodapé do menu mudou depois deste print: logo abaixo de Configurações há agora o link <span class="ui">Manual</span>, e o botão <span class="ui">Recolher</span> virou só a setinha, na mesma linha dele.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome do grupo do menu.</strong> O menu é dividido em grupos (Atendimento, CRM, Agente de IA, Canais e Análise; o grupo Organização fica no rodapé, como <em>Configurações</em>). Clique no nome do grupo para recolher ou abrir a lista dele.</li>
   <li><strong>Item do menu.</strong> Cada item leva a uma tela. O item da tela em que você está fica destacado (na cor de destaque da marca; roxo no padrão). O número vermelho ao lado do <span class="ui">Inbox</span> é a quantidade de conversas esperando alguém atender.</li>
   <li><strong>“Ver tudo em…”.</strong> O menu mostra só o que se usa todo dia. Esse item abre uma página com <em>todas</em> as telas do grupo, organizadas por tarefa.</li>
   <li><strong>Bolinha vermelha.</strong> Aviso de saúde. Em <span class="ui">Conexões</span> ela acende quando há um problema com o número de WhatsApp — por exemplo, quando ainda não há nenhum conectado.</li>
-  <li><strong>Configurações.</strong> Sempre fixo no rodapé do menu. Reúne a sua conta, a equipe e as regras da empresa.</li>
-  <li><strong>Recolher.</strong> Encolhe o menu para mostrar só os ícones e dar mais espaço ao conteúdo. Clique de novo para abrir.</li>
+  <li><strong>Configurações.</strong> Sempre fixo no rodapé do menu. Reúne a sua conta, a equipe e as regras da empresa. Logo abaixo dele fica o link <span class="ui">Manual</span>, que abre este manual numa aba nova; ele aparece para todos os papéis e só abre para quem está com a sessão aberta.</li>
+  <li><strong>Recolher.</strong> O botão só com a setinha, na mesma linha do <span class="ui">Manual</span>. Encolhe o menu para mostrar só os ícones e dar mais espaço ao conteúdo. Clique de novo para abrir; com o menu recolhido, o <span class="ui">Manual</span> também vira só o ícone de um livro.</li>
   <li><strong>Busca ⌘K.</strong> Abre a busca de telas (veja abaixo).</li>
   <li><strong>Sino: Central de avisos.</strong> Leva à tela <span class="ui">Alertas</span>: o que a IA encontrou e precisa de uma decisão sua. Um número aparece no sino quando há avisos em aberto (99+ quando passam de 99). Se a empresa escondeu a tela Alertas do menu, o sino também some.</li>
   <li><strong>Idioma.</strong> Troca o idioma do sistema para você: português, espanhol ou inglês (o chinês ainda está em construção e não aparece na lista). Veja <a href="#navegacao--topo">os detalhes do topo</a>.</li>
@@ -643,7 +644,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ul>
 
 <h2 id="navegacao--no-celular">No celular</h2>
-<p>No celular, o menu lateral vira um botão de menu (as três barrinhas) no canto superior esquerdo. Toque nele para abrir a lista de telas.</p>
+<p>No celular, o menu lateral vira um botão de menu (as três barrinhas) no canto superior esquerdo. Toque nele para abrir a lista de telas; o link <span class="ui">Manual</span> está lá, abaixo de Configurações.</p>
   </div>
 </article>
 
@@ -8966,7 +8967,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 31 de outubro de 2026 a partir do código na revisão <code>4b1b78a</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 01 de novembro de 2026 a partir do código na revisão <code>24c3acf</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>
