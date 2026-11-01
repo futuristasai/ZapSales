@@ -197,9 +197,18 @@ async function medirSelo(page: Page, href: string, testId: string, vizinho: stri
       const l = link.getBoundingClientRect();
       const s = selo.getBoundingClientRect();
       const o = outro.getBoundingClientRect();
+      // O próprio item com e sem o selo: se o selo quebrasse a linha, a altura mudaria. Não dá
+      // para comparar com o vizinho quando o item leva o termo técnico embaixo do nome (#187):
+      // a linha dele tem outra altura por desenho.
+      const comSelo = Math.round(l.height);
+      const antes = (selo as HTMLElement).style.display;
+      (selo as HTMLElement).style.display = "none";
+      const semSelo = Math.round(link.getBoundingClientRect().height);
+      (selo as HTMLElement).style.display = antes;
       return {
         dentro: s.left >= l.left && s.right <= l.right + 0.5 && s.top >= l.top && s.bottom <= l.bottom + 0.5,
-        alturaDoItem: Math.round(l.height),
+        alturaDoItem: comSelo,
+        alturaSemSelo: semSelo,
         alturaDoVizinho: Math.round(o.height),
         fundo: getComputedStyle(selo).backgroundColor,
       };
@@ -299,7 +308,7 @@ test.describe("contadores do menu", () => {
 
     const m = await medirSelo(page, "/app/inbox", "contador-da-fila", "/app/radar");
     expect(m.dentro, "o selo precisa morar dentro do item de Inbox").toBe(true);
-    expect(m.alturaDoItem, "o selo não pode quebrar a linha do item").toBe(m.alturaDoVizinho);
+    expect(m.alturaDoItem, "o selo não pode quebrar a linha do item").toBe(m.alturaSemSelo);
     await captura(page, "03-inbox-com-contador-da-fila");
     gravarMedidas("medidas-fila", { viewport: "1280x900", fila_na_aba: naAba, selo: m });
 
