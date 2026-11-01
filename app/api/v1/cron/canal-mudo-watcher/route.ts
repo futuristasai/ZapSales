@@ -50,7 +50,7 @@ const LIMITE = 500;
 /** O que o corpo do aviso diz a quem abre a Central. Sem jargão e com a saída. */
 const CORPO_DO_AVISO =
   "Este canal está em modo de teste e não tem nenhum número autorizado, " +
-  "então a IA não responde a ninguém nele — as mensagens chegam no Inbox e " +
+  "então a IA não responde a ninguém nele — as mensagens chegam em Conversas e " +
   "ficam sem resposta automática. Em Conexões, autorize os números de teste " +
   "ou abra o canal ao público.";
 

@@ -9,7 +9,7 @@ import { traduzir } from "@/lib/i18n/dicionario";
 import { RiskRadarList } from "./_components/RiskRadarList";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Radar" };
+export const metadata: Metadata = { title: "Riscos de Perda" };
 
 export default async function RadarPage() {
   const user = await requireAuth();
@@ -24,8 +24,8 @@ export default async function RadarPage() {
   return (
     <CorpoDaPagina>
       <CabecalhoDePagina
-        titulo={t("Radar de risco")}
-        ajuda={<ComoFunciona chave="radar" pagina={t("Radar de risco")} />}
+        titulo={t("Riscos de Perda")}
+        ajuda={<ComoFunciona chave="radar" pagina={t("Riscos de Perda")} />}
         descricao={t(
             "Demandas abertas que esfriaram e precisam de você. Se o assistente já agendou um retorno, aparece como “em voo”; sem próximo passo, é risco de perder o cliente.",
           )}

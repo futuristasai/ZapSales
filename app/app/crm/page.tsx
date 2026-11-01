@@ -10,7 +10,7 @@ import { capacidadesDaOrganizacao } from "@/lib/organizacao/capacidades";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "CRM" };
+export const metadata: Metadata = { title: "Gestão de Clientes CRM" };
 
 /**
  * Hub do CRM.
@@ -63,7 +63,7 @@ export default async function CrmHubPage() {
       role={activeOrg?.role ?? null}
       interfaceSettings={activeOrg?.interface_settings}
       modulosLigados={await modulosLigados(createAdminClient())}
-      title={traduzir("CRM", idioma)}
+      title={traduzir("Gestão de Clientes CRM", idioma)}
       subtitle={traduzir(
         "Onde a venda acontece — e o que você define uma vez para ela funcionar.",
         idioma,

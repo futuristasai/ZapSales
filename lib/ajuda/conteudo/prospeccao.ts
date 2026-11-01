@@ -13,7 +13,7 @@ const ajuda: AjudaDaPagina = {
       "Na primeira vez, informe a Chave da Apify, o serviço de fora que faz a busca, e use Salvar chave. Para trocá-la depois, use Configurar busca.",
       "Em 1. Encontrar empresas, preencha Público ou segmento e Cidade ou região, defina Até quantas empresas e o Teto da busca (US$) e use Buscar empresas. A busca gasta o seu saldo da Apify e ainda não manda mensagem para ninguém.",
       "Em Suas campanhas, clique numa busca para abri-la. Quando ela terminar e achar empresas, aparece 2. Preparar a abordagem: escolha o agente de IA (ou crie um com Configurar por conversa), a conexão de saída, o funil, o Máximo em 24 horas e o Intervalo mínimo (minutos). Depois, use Iniciar abordagens com IA.",
-      "Em 3. Acompanhar resultados, a tabela mostra cada Empresa, as Informações achadas, o Progresso e a Conversa. Use Marcar todas e Desmarcar todas para escolher quem entra na fila, e Abrir no Inbox para ver a conversa de quem respondeu.",
+      "Em 3. Acompanhar resultados, a tabela mostra cada Empresa, as Informações achadas, o Progresso e a Conversa. Use Marcar todas e Desmarcar todas para escolher quem entra na fila, e Abrir em Conversas para ver a conversa de quem respondeu.",
       "Com a campanha em andamento, Pausar abordagens interrompe as mensagens novas. Pausada, dá para usar Editar ritmo e Retomar fila.",
     ],
     termos: [
@@ -30,7 +30,7 @@ const ajuda: AjudaDaPagina = {
       "La primera vez, informa la Clave de Apify, el servicio externo que hace la búsqueda, y usa Guardar clave. Para cambiarla después, usa Configurar búsqueda.",
       "En 1. Encontrar empresas, completa Público o segmento y Ciudad o región, define Máximo de empresas y el Límite de la búsqueda (US$) y usa Buscar empresas. La búsqueda gasta tu saldo de Apify y todavía no le manda mensaje a nadie.",
       "En Tus campañas, haz clic en una búsqueda para abrirla. Cuando termine y encuentre empresas, aparece 2. Preparar el contacto: elige el agente de IA (o crea uno con Configurar conversando), la conexión de salida, el embudo, el Máximo en 24 horas y el Intervalo mínimo (minutos). Después, usa Iniciar contactos con IA.",
-      "En 3. Seguimiento de resultados, la tabla muestra cada Empresa, la Información encontrada, el Progreso y la Conversación. Usa Marcar todas y Desmarcar todas para elegir quién entra en la cola, y Abrir en Inbox para ver la conversación de quien respondió.",
+      "En 3. Seguimiento de resultados, la tabla muestra cada Empresa, la Información encontrada, el Progreso y la Conversación. Usa Marcar todas y Desmarcar todas para elegir quién entra en la cola, y Abrir en Conversaciones para ver la conversación de quien respondió.",
       "Con la campaña en curso, Pausar contactos detiene los mensajes nuevos. Ya pausada, puedes usar Editar ritmo y Reanudar cola.",
     ],
     termos: [
@@ -47,7 +47,7 @@ const ajuda: AjudaDaPagina = {
       "The first time, enter the Apify key, the outside service that runs the search, and use Save key. To change it later, use Configure search.",
       "Under 1. Find businesses, fill in Audience or segment and City or region, set Up to how many businesses and the Search cap (US$) and use Search businesses. The search spends your Apify balance and does not message anyone yet.",
       "Under Your campaigns, click a search to open it. When it finishes and finds companies, 2. Prepare the outreach appears: choose the AI agent (or create one with Configure via conversation), the outbound connection, the pipeline, the Maximum in 24 hours and the Minimum interval (minutes). Then use Start AI outreach.",
-      "Under 3. Track results, the table shows each Business, the Information found, the Progress and the Conversation. Use Check all and Uncheck all to choose who goes into the queue, and Open in Inbox to see the conversation of anyone who replied.",
+      "Under 3. Track results, the table shows each Business, the Information found, the Progress and the Conversation. Use Check all and Uncheck all to choose who goes into the queue, and Open in Conversations to see the conversation of anyone who replied.",
       "While the campaign is running, Pause outreach stops new messages. Once paused, you can use Edit pace and Resume queue.",
     ],
     termos: [

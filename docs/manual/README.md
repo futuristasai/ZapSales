@@ -4,6 +4,8 @@ Manual em HTML, com índice, busca e prints anotados, que explica cada menu, cad
 
 **Para ler:** abra [`index.html`](index.html) no navegador. Não precisa de servidor nem de internet.
 
+**Dentro do sistema:** a instalação serve o manual em `/manual/index.html` (rota `app/manual/[[...arquivo]]/route.ts`, só para quem está logado), pelo link **Manual** do menu lateral. A imagem de produção leva só `index.html` e `img/` — o `.dockerignore` e o `Dockerfile` re-incluem esses dois caminhos, e o resto desta pasta (conteúdo-fonte, ferramentas) não vai. Mudou o manual, a imagem muda: o PR que altera `index.html` ou `img/` constrói as imagens.
+
 ## Como está organizado
 
 | Caminho                    | O que é                                                                                                                           |

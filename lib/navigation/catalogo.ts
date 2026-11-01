@@ -181,8 +181,8 @@ export interface NavMetadata {
  * mesma conversa para a sexta tela.
  */
 export const NAV_GROUPS: NavGroup[] = [
-  { id: "atendimento", label: "Atendimento" },
-  { id: "crm", label: "CRM", hub: { href: "/app/crm", label: "Ver tudo em CRM" } },
+  { id: "atendimento", label: "Leads" },
+  { id: "crm", label: "Gestão de Clientes CRM", hub: { href: "/app/crm", label: "Ver tudo em CRM" } },
   { id: "ia", label: "Agente de IA", hub: { href: "/app/ai", label: "Ver tudo em IA" } },
   { id: "canais", label: "Canais" },
   { id: "analise", label: "Análise", hub: { href: "/app/analise", label: "Ver tudo em Análise" } },
@@ -243,8 +243,10 @@ export const NAV_CATALOG = [
   // ---- Atendimento — onde o operador passa o dia ----
   {
     href: "/app/inbox",
-    label: "Inbox",
+    label: "Conversas",
     description: "As conversas de WhatsApp, com você e a IA atendendo lado a lado.",
+    // O nome mudou de "Inbox" para "Conversas"; quem procura pelo antigo ainda acha.
+    sinonimos: ["inbox", "caixa de entrada"],
     icon: "Inbox",
     group: "atendimento",
     menu: { grupo: "leads", ordem: 1, nome: "Conversas", termo: "inbox" },
@@ -254,7 +256,9 @@ export const NAV_CATALOG = [
   },
   {
     href: "/app/radar",
-    label: "Radar",
+    label: "Riscos de Perda",
+    // O nome mudou de "Radar" para "Riscos de Perda"; quem procura pelo antigo ainda acha.
+    sinonimos: ["radar", "risco", "esfriou"],
     description: "Quem esfriou e ainda está aberto — o que corre risco de morrer sem resposta.",
     icon: "ClockCountdown",
     group: "atendimento",
@@ -275,7 +279,9 @@ export const NAV_CATALOG = [
     // tela, quando o que faltava era o CAMINHO até ela. O aviso da Agenda agora
     // aponta para `/app/team?aba=atendimento`.
     href: "/app/agenda",
-    label: "Agenda",
+    label: "Compromissos",
+    // O nome mudou de "Agenda" para "Compromissos"; quem procura pelo antigo ainda acha.
+    sinonimos: ["agenda", "calendário", "agendamentos"],
     description: "O que está marcado, com quem, e quem atende — seu e da equipe.",
     icon: "CalendarBlank",
     group: "atendimento",
@@ -744,8 +750,11 @@ export const NAV_CATALOG = [
   },
   {
     href: "/app/ai/cases",
-    label: "Casos",
-    description: "Os atendimentos que o agente conduziu, do início ao desfecho.",
+    label: "Aguardando Humano",
+    description:
+      "Os atendimentos que o agente conduziu, do início ao desfecho, com destaque para os que esperam uma pessoa. A aba Fila, em Conversas, lista as conversas; aqui ficam os casos.",
+    // O nome mudou de "Casos" para "Aguardando Humano"; quem procura pelo antigo ainda acha.
+    sinonimos: ["casos", "caso", "esperando uma pessoa"],
     icon: "ClipboardText",
     group: "ia",
     menu: { grupo: "leads", ordem: 2, nome: "Aguardando Humano" },

@@ -13,7 +13,7 @@ const ajuda: AjudaDaPagina = {
       "No alto, caixas de aviso aparecem quando existem demandas abertas sem próximo passo, propostas vencidas sem retomada ou propostas esperando revisão. Cada uma explica o que fazer.",
       "Os três contadores (crítico, em risco e em voo) mostram quantas demandas há em cada situação. A lista vem ordenada com as mais graves primeiro.",
       "Em cada linha você vê o título, o contato, há quanto tempo está parada, quem cuida dela e o próximo passo: Assistente retorna em um prazo, ou Sem próximo passo agendado.",
-      "Clique na linha para abrir a conversa na Inbox. Se não houver conversa, abre o funil da demanda.",
+      "Clique na linha para abrir a conversa em Conversas. Se não houver conversa, abre o funil da demanda.",
       "Use Assumir quando a demanda ainda não tem atendente. O botão só aparece se há conversa e nenhuma pessoa cuida dela.",
     ],
     termos: [
@@ -30,7 +30,7 @@ const ajuda: AjudaDaPagina = {
       "Arriba aparecen cuadros de aviso cuando hay casos abiertos sin siguiente paso, propuestas vencidas sin retomar o propuestas esperando revisión. Cada uno explica qué hacer.",
       "Los tres contadores (crítico, en riesgo y en seguimiento) muestran cuántos casos hay en cada situación. La lista viene ordenada con los más graves primero.",
       "En cada fila ves el título, el contacto, hace cuánto está detenida, quién se ocupa de ella y el siguiente paso: El asistente dará seguimiento en un plazo, o Sin próximo paso programado.",
-      "Haz clic en la fila para abrir la conversación en la Inbox. Si no hay conversación, abre el embudo del caso.",
+      "Haz clic en la fila para abrir la conversación en Conversaciones. Si no hay conversación, abre el embudo del caso.",
       "Usa Asumir cuando el caso aún no tiene asesor. El botón solo aparece si hay conversación y ninguna persona se ocupa de ella.",
     ],
     termos: [
@@ -47,7 +47,7 @@ const ajuda: AjudaDaPagina = {
       "At the top, notice boxes appear when there are open cases with no next step, expired proposals not followed up, or proposals awaiting review. Each one explains what to do.",
       "The three counters (critical, at risk and in follow-up) show how many cases are in each situation. The list is sorted with the most severe first.",
       "On each row you see the title, the contact, how long it has been stalled, who is handling it and the next step: Assistant follows up in a given time, or No next step scheduled.",
-      "Click the row to open the conversation in the Inbox. If there is no conversation, it opens the case's pipeline.",
+      "Click the row to open the conversation in Conversations. If there is no conversation, it opens the case's pipeline.",
       "Use Take over when the case has no agent yet. The button only appears if there is a conversation and no person is handling it.",
     ],
     termos: [

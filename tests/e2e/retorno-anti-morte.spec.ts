@@ -76,7 +76,7 @@ test("o retorno marcado pelo agente aparece no Radar e na linha do tempo", async
   await login(page, creds.users.manager!.email);
 
   await page.goto("/app/radar");
-  await expect(page.getByRole("heading", { name: "Radar de risco" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Riscos de Perda" })).toBeVisible();
 
   const linha = page.locator('[data-testid="radar-item"]', { hasText: creds.retorno.lead_title });
   await expect(linha).toBeVisible();

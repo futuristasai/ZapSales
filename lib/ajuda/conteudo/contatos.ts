@@ -12,7 +12,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Use a busca para achar alguém pelo nome, e-mail ou telefone.",
       "Filtre por tag (as etiquetas que você põe nos contatos) e por origem, que é por onde a pessoa chegou: WhatsApp, site, planilha ou anúncio.",
-      "Clique no nome para abrir a ficha completa. O balão ao lado abre a conversa direto na Inbox.",
+      "Clique no nome para abrir a ficha completa. O balão ao lado abre a conversa direto em Conversas.",
       "Novo contato cadastra uma pessoa à mão. Importar CSV traz uma planilha inteira de uma vez.",
       "Duplicados mostra quem foi cadastrado duas vezes, para você juntar os dois numa ficha só.",
     ],
@@ -28,7 +28,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Usa la búsqueda para encontrar a alguien por nombre, correo o teléfono.",
       "Filtra por tag (las etiquetas que pones a los contactos) y por origen, que es por dónde llegó la persona: WhatsApp, sitio, planilla o anuncio.",
-      "Haz clic en el nombre para abrir la ficha completa. El globo de al lado abre la conversación directo en la Inbox.",
+      "Haz clic en el nombre para abrir la ficha completa. El globo de al lado abre la conversación directo en Conversaciones.",
       "Nuevo contacto registra a una persona a mano. Importar CSV trae una planilla entera de una vez.",
       "Duplicados muestra a quienes se registraron dos veces, para que los unas en una sola ficha.",
     ],
@@ -44,7 +44,7 @@ const ajuda: AjudaDaPagina = {
     passos: [
       "Use search to find someone by name, email or phone.",
       "Filter by tag (the labels you put on contacts) and by source, which is how the person reached you: WhatsApp, website, spreadsheet or ad.",
-      "Click the name to open the full record. The bubble next to it opens the conversation straight in the Inbox.",
+      "Click the name to open the full record. The bubble next to it opens the conversation straight in Conversations.",
       "New contact adds a person by hand. Import CSV brings in a whole spreadsheet at once.",
       "Duplicates shows who was added twice, so you can merge the two into a single record.",
     ],

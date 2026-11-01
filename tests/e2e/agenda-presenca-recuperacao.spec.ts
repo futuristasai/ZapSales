@@ -512,7 +512,7 @@ test("ir para a Agenda pelo menu apaga o cliente da conversa — \"Novo agendame
   await page.keyboard.press("Escape");
   await expect(page.getByTestId("painel-de-marcacao")).toBeHidden();
 
-  await page.getByRole("link", { name: "Agenda", exact: true }).first().click();
+  await page.getByRole("link", { name: "Compromissos", exact: true }).first().click();
   await expect(page).toHaveURL(/\/app\/agenda$/);
   await page.getByRole("button", { name: /novo agendamento/i }).click();
   await expect(page.getByTestId("painel-de-marcacao")).toBeVisible();
