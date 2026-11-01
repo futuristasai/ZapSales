@@ -12,7 +12,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import { Sidebar } from "@/components/shell/Sidebar";
+import { SidebarContent } from "@/components/shell/Sidebar";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 
 const authRef: { user: Pick<AuthUser, "is_platform_admin">; activeOrg: ActiveOrg | null } = {
@@ -62,7 +62,7 @@ afterEach(cleanup);
 describe("Sidebar agrupado", () => {
   it("renderiza os títulos de grupo na ordem de uso", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const titulos = screen
       .getAllByRole("heading")
       .map((el) => el.textContent?.trim())
@@ -80,7 +80,7 @@ describe("Sidebar agrupado", () => {
 
   it("leva às Etapas do funil pelo CRM, e não por Configurações", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     // ⚠️ O CAMINHO MUDOU, A PROPRIEDADE NÃO. Etapas do funil saiu do menu para
     // dentro do hub do CRM quando Tarefas virou o quinto destino do grupo e o
     // menu passou a rolar. A porta continua sendo CRM — "Ver tudo em CRM" leva
@@ -96,7 +96,7 @@ describe("Sidebar agrupado", () => {
 
   it("o número de Aguardando Humano mora no item de Aguardando Humano, e o da Fila no item de Conversas", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const casos = screen.getAllByTestId("marcador-casos");
     const fila = screen.getAllByTestId("marcador-fila");
     expect(casos).toHaveLength(1);
@@ -107,19 +107,19 @@ describe("Sidebar agrupado", () => {
     expect(screen.queryByRole("link", { name: /Quem atende cada conversa/ })).toBeNull();
     cleanup();
     // Recolhido, o contador vira ponto — é o componente que decide, com esta dica.
-    render(<Sidebar collapsed />);
+    render(<SidebarContent collapsed />);
     expect(screen.getByTestId("marcador-casos")).toHaveAttribute("data-compacto", "true");
   });
 
   it("e os dois itens de funil não disputam o mesmo nome", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     expect(screen.getByRole("link", { name: "Funis" })).toHaveAttribute("href", "/app/kanban");
   });
 
   it("desenterra Audit Log", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     // ⚠️ O CAMINHO MUDOU, A PROPRIEDADE NÃO. O que esta linha sempre prendeu é
     // que Audit Log deixou de existir só como card enterrado em Configurações.
     // Quando Atividades (PR #583) virou o quinto destino do grupo Análise e o
@@ -139,7 +139,7 @@ describe("Sidebar agrupado", () => {
 
   it("Configurações fica no rodapé, nunca dependendo de scroll", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const config = screen.getByRole("link", { name: /Configurações/ });
     expect(config).toHaveAttribute("href", "/app/settings");
     // Fora da <nav> que rola.
@@ -150,7 +150,7 @@ describe("Sidebar agrupado", () => {
   it("não deixa cabeçalho órfão quando a permissão esvazia o grupo", () => {
     // CANAIS é todo manager+/admin. Um agent não pode ver o título sozinho.
     comoPapel("agent");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const titulos = screen.getAllByRole("heading").map((el) => el.textContent?.trim());
     expect(titulos).not.toContain("Canais");
     expect(titulos).toContain("Leads");
@@ -158,20 +158,20 @@ describe("Sidebar agrupado", () => {
 
   it("oferece o hub dos grupos que têm um", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     expect(screen.getByRole("link", { name: /Ver tudo em IA/ })).toHaveAttribute("href", "/app/ai");
   });
 
   it("colapsado esconde os títulos mas mantém os links", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed />);
+    render(<SidebarContent collapsed />);
     expect(screen.queryAllByRole("heading")).toHaveLength(0);
     expect(screen.getByRole("link", { name: /Conversas/ })).toBeTruthy();
   });
 
   it("marca a rota atual com aria-current", () => {
     comoPapel("admin");
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     expect(screen.getByRole("link", { name: /Conversas/ })).toHaveAttribute("aria-current", "page");
     // "Kanban" saiu da interface; o item da mesma URL agora se chama "Funis".
     expect(screen.getByRole("link", { name: "Funis" })).not.toHaveAttribute("aria-current");

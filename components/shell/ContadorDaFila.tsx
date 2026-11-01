@@ -15,7 +15,20 @@ import { cn } from "@/lib/utils";
  * procurando; pediu para "ver as transferências no menu". Reusa a MESMA
  * contagem das abas do Inbox (sem filtros, a chave do React Query é a mesma).
  */
-export function ContadorDaFila({ compacto }: { compacto: boolean }) {
+export function ContadorDaFila({
+  compacto,
+  naFaixa = false,
+}: {
+  compacto: boolean;
+  /**
+   * O número sobre o ícone de Todo dia na faixa (issue #188). Mesmo dado, mesma
+   * regra — zero não desenha nada —, só que pousado no canto do botão em vez de
+   * empurrado para a ponta da linha. Vale `compacto` ou não: a faixa nunca mostra
+   * só um ponto, porque "tem alguém esperando" e "tem 3 esperando" são avisos
+   * diferentes.
+   */
+  naFaixa?: boolean;
+}) {
   const t = useT();
   const { activeOrg } = useAuth();
   const { data } = useConversationCounts(activeOrg?.orgId ?? null);
@@ -29,11 +42,17 @@ export function ContadorDaFila({ compacto }: { compacto: boolean }) {
       aria-label={rotulo}
       title={rotulo}
       className={cn(
-        "rounded-full bg-error text-[10px] font-semibold leading-none text-white tabular-nums",
-        compacto ? "absolute top-1 right-1 h-2 w-2" : "ml-auto px-1.5 py-0.5",
+        // Texto claro no tema claro e escuro no tema escuro: o vermelho do escuro é
+        // mais claro, e branco sobre ele não chega ao contraste mínimo.
+        "rounded-full bg-error text-[10px] font-semibold leading-none text-white tabular-nums dark:text-neutral-900",
+        naFaixa
+          ? "absolute right-2 top-1 min-w-[1.125rem] px-1 py-[3px] text-center"
+          : compacto
+            ? "absolute top-1 right-1 h-2 w-2"
+            : "ml-auto px-1.5 py-0.5",
       )}
     >
-      {compacto ? null : esperando}
+      {compacto && !naFaixa ? null : esperando}
     </span>
   );
 }
