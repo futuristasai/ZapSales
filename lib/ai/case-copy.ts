@@ -70,6 +70,18 @@ export const STATUS_LABEL: Record<CaseStatus, string> = {
   cancelled: "Cancelado",
 };
 
+/**
+ * Os casos que esperam uma PESSOA — a definição única de "Aguardando você".
+ *
+ * A aba padrão da tela e o número ao lado dela no menu leem daqui. Eram duas
+ * contas: a aba somava `open_count` (que inclui quem espera o CLIENTE) e o menu
+ * filtrava `awaiting_human`, então os dois números discordavam. Caso esperando o
+ * cliente não pede nada de quem opera; contá-lo ensinaria a ignorar o número.
+ */
+export function casosEsperandoUmaPessoa<T extends { status: CaseStatus }>(casos: readonly T[]): T[] {
+  return casos.filter((c) => c.status === "awaiting_human");
+}
+
 export const STATUS_BADGE_VARIANT: Record<CaseStatus, "warning" | "info" | "success" | "neutral"> = {
   awaiting_human: "warning",
   awaiting_lead: "info",

@@ -125,7 +125,7 @@ async function captura(page: Page, nome: string): Promise<void> {
  * Quando o serviço de autenticação engasga, ele devolve
  * `504 Processing this request timed out` e o produto trata a requisição como
  * NÃO AUTENTICADA (`[auth] getUser falhou — tratando como não autenticado`).
- * A consulta da fila volta vazia e a tela mostra "Nenhum caso aberto", que é
+ * A consulta da fila volta vazia e a tela mostra "Nenhum caso esperando você", que é
  * indistinguível de "não há casos" para quem está olhando — e para um
  * localizador também.
  *
@@ -394,7 +394,7 @@ test.describe("conversar com a IA que abriu o caso", () => {
     // não uma cópia da regra em TypeScript.
     await definirVisibilidade("own");
     await page.goto("/app/ai/cases");
-    await expect(page.getByText("Nenhum caso aberto")).toBeVisible({ timeout: ESPERA });
+    await expect(page.getByText("Nenhum caso esperando você")).toBeVisible({ timeout: ESPERA });
     expect(
       await page.getByTestId("case-item").count(),
       "com visibility_mode='own' o agente que não é dono não pode ver o caso na fila",

@@ -3045,18 +3045,17 @@ export const DICIONARIO: Traducoes = {
   "Obrigatório": { es: "Obligatorio" },
   "Chave muito curta": { es: "Clave demasiado corta" },
   Casos: { es: "Casos" },
-  "Quando a IA trava em algo que só um humano resolve, ela abre um caso aqui — e continua conversando com o cliente enquanto espera sua resposta.":
+  "Quando a IA trava em algo que só um humano resolve, ela abre um caso aqui — e continua conversando com o cliente enquanto espera sua resposta. A lista abre nos casos que esperam você; em Todos, veja também os que esperam o cliente e os já concluídos.":
     {
-      es: "Cuando la IA se atora con algo que solo una persona puede resolver, abre un caso aquí y sigue conversando con el cliente mientras espera tu respuesta.",
+      es: "Cuando la IA se atora con algo que solo una persona puede resolver, abre un caso aquí y sigue conversando con el cliente mientras espera tu respuesta. La lista abre en los casos que te esperan; en Todos, ve también los que esperan al cliente y los ya concluidos.",
     },
-  Abertos: { es: "Abiertos" },
-  "Concluídos": { es: "Concluidos" },
-  "Nenhum caso aberto": { es: "Ningún caso abierto" },
-  "Nenhum caso concluído": { es: "Ningún caso concluido" },
-  "Quando a IA precisar de você, aparece aqui.": { es: "Cuando la IA te necesite, lo verás aquí." },
-  "Casos concluídos, cancelados ou repassados ficam aqui.": {
-    es: "Los casos concluidos, cancelados o transferidos quedan aquí.",
+  "Nenhum caso esperando você": { es: "Ningún caso esperándote" },
+  "Nenhum caso ainda": { es: "Ningún caso todavía" },
+  "Os casos que a IA abrir, esperando alguém ou já concluídos, ficam aqui.": {
+    es: "Los casos que abra la IA, esperando a alguien o ya concluidos, quedan aquí.",
   },
+  Abertos: { es: "Abiertos" },
+  "Quando a IA precisar de você, aparece aqui.": { es: "Cuando la IA te necesite, lo verás aquí." },
   "Contato sem nome": { es: "Contacto sin nombre" },
   "Selecione um caso à esquerda": { es: "Selecciona un caso a la izquierda" },
   "Os detalhes e a resposta aparecem aqui.": { es: "Los detalles y la respuesta aparecen aquí." },
