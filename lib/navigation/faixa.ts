@@ -76,34 +76,44 @@ export function faixaDoMenu(menu: MenuProjetado): FaixaProjetada {
   return { todoDia, configurar, resultados, conta };
 }
 
+function estaDentro(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
 /**
- * A entrada que guarda a tela em que a pessoa está, ou `null` (uma tela do menu
- * da conta, ou uma página que não é destino do menu).
+ * O endereço da tela do menu em que a pessoa está, ou `null` (uma página que não é destino do
+ * menu). A tela mais específica vence: em `/app/settings/tenant/pipelines` a atual são as Etapas
+ * do funil, e não os Dados da empresa (`/app/settings/tenant`), que são o prefixo dela. Prefixo
+ * só vale em fronteira de segmento — `/app/inboxes` não é filho de `/app/inbox`.
  *
- * A tela mais específica vence: `/app/settings/tenant/pipelines` é das Etapas do
- * funil (Vender), e não dos Dados da empresa (Empresa), que é o prefixo dela.
- * Prefixo só vale em fronteira de segmento — `/app/inboxes` não é filho de
- * `/app/inbox`.
+ * É daqui que saem a marca «tela atual» da lista e a entrada da faixa: uma só medida, para os dois
+ * nunca discordarem.
  */
-export function entradaDaTela(faixa: FaixaProjetada, pathname: string): EntradaDaFaixaId | null {
-  let melhor: { id: EntradaDaFaixaId | null; tamanho: number } = { id: null, tamanho: 0 };
-  const candidatas = [faixa.todoDia, ...faixa.configurar, faixa.resultados];
-  for (const e of candidatas) {
-    if (!e) continue;
-    for (const g of e.grupos) {
-      for (const item of g.itens) {
-        const dentro = pathname === item.href || pathname.startsWith(item.href + "/");
-        if (dentro && item.href.length > melhor.tamanho) {
-          melhor = { id: e.id, tamanho: item.href.length };
-        }
+export function telaAtual(faixa: FaixaProjetada, pathname: string): string | null {
+  let melhor: string | null = null;
+  const grupos = [
+    ...[faixa.todoDia, ...faixa.configurar, faixa.resultados].flatMap((e) => e?.grupos ?? []),
+    ...(faixa.conta ? [faixa.conta] : []),
+  ];
+  for (const g of grupos) {
+    for (const item of g.itens) {
+      if (estaDentro(pathname, item.href) && item.href.length > (melhor?.length ?? 0)) {
+        melhor = item.href;
       }
     }
   }
-  // Uma tela do menu da conta é mais específica que qualquer área que a contenha como prefixo.
-  for (const item of faixa.conta?.itens ?? []) {
-    const dentro = pathname === item.href || pathname.startsWith(item.href + "/");
-    if (dentro && item.href.length > melhor.tamanho)
-      melhor = { id: null, tamanho: item.href.length };
-  }
-  return melhor.id;
+  return melhor;
+}
+
+/**
+ * A entrada que guarda a tela em que a pessoa está, ou `null` (uma tela do menu da conta, ou uma
+ * página que não é destino do menu).
+ */
+export function entradaDaTela(faixa: FaixaProjetada, pathname: string): EntradaDaFaixaId | null {
+  const href = telaAtual(faixa, pathname);
+  if (!href) return null;
+  const entrada = [faixa.todoDia, ...faixa.configurar, faixa.resultados].find((e) =>
+    e?.grupos.some((g) => g.itens.some((i) => i.href === href)),
+  );
+  return entrada?.id ?? null;
 }

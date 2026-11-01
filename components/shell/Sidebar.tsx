@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/auth/AuthProvider";
 import { ConnectionHealthDot } from "@/components/connections/ConnectionHealthDot";
 import { ContadorDeCasos } from "@/components/shell/ContadorDeCasos";
 import { ContadorDaFila } from "@/components/shell/ContadorDaFila";
-import { ENDERECO_DO_MANUAL } from "@/components/shell/MenuDaConta";
+import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import { NavegacaoDoComputador } from "@/components/shell/NavegacaoDoComputador";
 import { VersionFooter } from "@/components/shell/VersionFooter";
 import { LogotipoDoProduto, SimboloDoProduto } from "@/components/branding/MarcaDoProduto";

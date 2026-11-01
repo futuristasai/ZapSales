@@ -64,14 +64,15 @@ function Grupo({
  */
 export function PainelDoMenu({
   entrada,
-  pathname,
+  hrefAtual,
   aoNavegar,
 }: {
   entrada: EntradaDaFaixa;
-  pathname: string;
+  /** O endereço da tela atual (`telaAtual`): uma só, a mais específica. */
+  hrefAtual: string | null;
   aoNavegar?: () => void;
 }) {
-  const atual = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const atual = (href: string) => href === hrefAtual;
 
   if (entrada.id !== "todo-dia") {
     return (

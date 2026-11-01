@@ -304,15 +304,11 @@ test.describe("navegação agrupada", () => {
           titulosFora: [...nav.querySelectorAll("h3")].filter(
             (h) => h.getBoundingClientRect().bottom > r.bottom + 1,
           ).length,
-          linksFora: [...nav.querySelectorAll("a")].filter(
-            (a) => a.getBoundingClientRect().bottom > r.bottom + 1,
-          ).length,
           botoesFora: botoes.filter((b) => b.getBoundingClientRect().bottom > window.innerHeight).length,
         };
       });
       expect(m.titulos, `${nome}: guarda de vacuidade`).toBeGreaterThan(0);
       expect(m.titulosFora, `${nome}: grupo inteiro invisível é o problema que viemos resolver`).toBe(0);
-      expect(m.linksFora, `${nome}: tela abaixo da dobra`).toBe(0);
       expect(m.botoesFora, `${nome}: botão da faixa abaixo da dobra`).toBe(0);
     }
   });

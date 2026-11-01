@@ -10,12 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/hooks/i18n/useT";
+import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import type { GrupoProjetado } from "@/lib/navigation/menu";
 import { BookOpen, UserCheck } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
-
-/** O manual do usuário, servido pela própria instalação (`app/manual`). */
-export const ENDERECO_DO_MANUAL = "/manual/index.html";
 
 /**
  * O menu da conta, o botão «Você» da faixa (issue #188): Perfil, Segurança e

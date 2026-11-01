@@ -230,6 +230,21 @@ describe("as áreas de Configurar e Resultados", () => {
     ).toEqual(["Números do negócio", "Equipe e IA", "Quando algo dá errado"]);
   });
 
+  it("uma sub-rota marca UMA tela só: as Etapas do funil, e não os Dados da empresa que são o prefixo dela", async () => {
+    const u = userEvent.setup();
+    rota.atual = "/app/settings/tenant/pipelines";
+    renderizar();
+    await u.click(botaoDaFaixa("Vender"));
+    expect(within(painel()!).getByRole("link", { name: /Etapas do funil/ })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await u.click(botaoDaFaixa("Empresa"));
+    expect(within(painel()!).getByRole("link", { name: /Dados da empresa/ })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
   it("a entrada que guarda a tela atual ganha aria-current mesmo sem estar à vista", async () => {
     rota.atual = "/app/ai/agents";
     renderizar();
@@ -349,6 +364,13 @@ describe("recolher o painel", () => {
     expect(secao.className).toMatch(/\babsolute\b/);
     expect(secao.className).not.toMatch(/\bfixed\b/);
     expect(botaoDaFaixa("Agente")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("aberto por cima, o painel recebe o foco (o teclado não atravessa a faixa inteira)", async () => {
+    const u = userEvent.setup();
+    renderizar(true);
+    await u.click(botaoDaFaixa("Agente"));
+    expect(painel()!.contains(document.activeElement)).toBe(true);
   });
 
   it("o painel por cima fecha com Esc e devolve o foco ao botão que o abriu", async () => {

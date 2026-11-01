@@ -4,13 +4,14 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { toggleSidebar } from "@/app/actions/shell/toggleSidebar";
 import { Faixa } from "@/components/shell/Faixa";
-import { ENDERECO_DO_MANUAL } from "@/components/shell/MenuDaConta";
+import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import { PainelDoMenu } from "@/components/shell/PainelDoMenu";
 import { VersionFooter } from "@/components/shell/VersionFooter";
 import { useAuth } from "@/hooks/auth/AuthProvider";
 import { useT } from "@/hooks/i18n/useT";
 import {
   entradaDaTela,
+  telaAtual,
   faixaDoMenu,
   type EntradaDaFaixa,
   type EntradaDaFaixaId,
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
  * O painel abre em Todo dia e mostra a lista da entrada que a pessoa escolhe na
  * faixa. Pode ser RECOLHIDO — sobra só a faixa — e então a escolha de uma entrada
  * abre o painel POR CIMA da tela, até a pessoa escolher uma tela, apertar Esc ou
- * clicar fora. Nenhum caminho deixa de existir por causa do recolhimento: as 63
+ * clicar fora. Nenhum caminho deixa de existir por causa do recolhimento: todas as
  * telas continuam a um clique.
  *
  * ⚠️ HIDRATAÇÃO. `painelRecolhido` vem do servidor (o cookie, lido no layout) e é o
@@ -74,6 +75,7 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
   const [sobre, setSobre] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const gatilho = useRef<HTMLElement | null>(null);
+  const lista = useRef<HTMLElement>(null);
 
   // A entrada que sumiu (o papel mudou, o módulo foi desligado) cai em Todo dia.
   const escolhida = entradas.find((e) => e.id === escolhidaId) ?? entradas[0] ?? null;
@@ -99,6 +101,12 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
     setSobre(false);
     startTransition(() => toggleSidebar(estavaRecolhido));
   }
+
+  // Aberto por cima da tela, o painel recebe o foco: no DOM ele vem DEPOIS da faixa inteira, e quem
+  // usa só o teclado passaria por Buscar e Você antes de chegar à lista. Esc devolve o foco ao botão.
+  useEffect(() => {
+    if (recolhido && sobre) lista.current?.querySelector<HTMLElement>("a")?.focus();
+  }, [recolhido, sobre, escolhidaId]);
 
   // O painel por cima da tela fecha com Esc e com um clique fora dele.
   useEffect(() => {
@@ -180,10 +188,15 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
             </button>
           </header>
           <nav
+            ref={lista}
             aria-label={t("Navegação principal")}
             className="min-h-0 flex-1 overflow-y-auto px-2 pb-3"
           >
-            <PainelDoMenu entrada={escolhida} pathname={pathname} aoNavegar={aoNavegar} />
+            <PainelDoMenu
+              entrada={escolhida}
+              hrefAtual={telaAtual(faixa, pathname)}
+              aoNavegar={aoNavegar}
+            />
           </nav>
           <footer className="border-t p-2">
             <a
