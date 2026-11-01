@@ -2,15 +2,14 @@
 import { useT } from "@/hooks/i18n/useT";
 import { useId } from "react";
 import type { Role } from "@/lib/auth/types";
-import { NAV_GROUPS, type NavDestinationId } from "@/lib/navigation/catalogo";
+import type { NavDestinationId } from "@/lib/navigation/catalogo";
 import {
   destinosDaInterface,
-  essencial,
   interfaceTemDestino,
   lerInterface,
-  permitidos,
   type InterfaceSettings,
 } from "@/lib/navigation/interface";
+import { menuEditavelDoPapel, type GrupoProjetado } from "@/lib/navigation/menu";
 
 export function InterfaceEditor({
   value,
@@ -28,7 +27,46 @@ export function InterfaceEditor({
   const selected = new Set<string>(
     value.destinos ?? destinosDaInterface(value, false, role).map((d) => d.href),
   );
-  const options = permitidos(false, role).filter((d) => !essencial(d, role));
+  // As opções são o menu novo (bloco › área › grupo, nomes novos) sem as portas
+  // essenciais, que nunca se escondem: a mesma projeção do catálogo que desenha o menu.
+  const blocos = menuEditavelDoPapel(role);
+  const options = blocos.flatMap((b) =>
+    (b.id === "configurar" ? b.areas.flatMap((a) => a.grupos) : b.grupos).flatMap((g) => g.itens),
+  );
+
+  function grupo(g: GrupoProjetado) {
+    return (
+      <fieldset key={g.id} className="space-y-2">
+        <legend className="mb-2 text-xs font-medium text-muted-foreground">{t(g.label)}</legend>
+        {g.itens.map((d) => (
+          <label key={d.href} className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={selected.has(d.href)}
+              onChange={(e) => {
+                const next = new Set(
+                  options.filter((option) => selected.has(option.href)).map((option) => option.href),
+                );
+                if (e.target.checked) next.add(d.href);
+                else next.delete(d.href);
+                onChange({
+                  preset: value.preset,
+                  destinos: [...next] as NavDestinationId[],
+                });
+              }}
+              className="mt-1"
+            />
+            <span>
+              {t(d.label)}
+              {d.menu.termo ? (
+                <span className="block text-[11px] leading-tight text-muted-foreground">{t(d.menu.termo)}</span>
+              ) : null}
+            </span>
+          </label>
+        ))}
+      </fieldset>
+    );
+  }
   return (
     <fieldset disabled={disabled} className="space-y-3 rounded-md border p-4">
       <legend className="px-1 text-sm font-medium">{t("Interface")}</legend>
@@ -51,41 +89,20 @@ export function InterfaceEditor({
         <summary className="cursor-pointer text-sm font-medium">
           {t("Personalizar áreas visíveis")}{value.destinos ? t(" (personalizada)") : ""}
         </summary>
-        <div className="mt-3 max-h-64 space-y-4 overflow-y-auto">
-          {NAV_GROUPS.map((group) => {
-            const items = options.filter((d) => d.group === group.id);
-            if (!items.length) return null;
-            return (
-              <fieldset key={group.id} className="space-y-2">
-                <legend className="mb-2 text-xs font-medium text-muted-foreground uppercase">
-                  {t(group.label)}
-                </legend>
-                {items.map((d) => (
-                  <label key={d.href} className="flex items-start gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(d.href)}
-                      onChange={(e) => {
-                        const next = new Set(
-                          options
-                            .filter((option) => selected.has(option.href))
-                            .map((option) => option.href),
-                        );
-                        if (e.target.checked) next.add(d.href);
-                        else next.delete(d.href);
-                        onChange({
-                          preset: value.preset,
-                          destinos: [...next] as NavDestinationId[],
-                        });
-                      }}
-                      className="mt-1"
-                    />
-                    {t(d.label)}
-                  </label>
-                ))}
-              </fieldset>
-            );
-          })}
+        <div className="mt-3 max-h-96 space-y-5 overflow-y-auto">
+          {blocos.map((b) => (
+            <section key={b.id} className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase text-muted-foreground">{t(b.label)}</h3>
+              {b.id === "configurar"
+                ? b.areas.map((a) => (
+                    <div key={a.id} className="space-y-2 border-l pl-3">
+                      <h4 className="text-sm font-medium">{t(a.label)}</h4>
+                      {a.grupos.map(grupo)}
+                    </div>
+                  ))
+                : b.grupos.map(grupo)}
+            </section>
+          ))}
         </div>
       </details>
       {!interfaceTemDestino(value, role) || value.destinos?.length === 0 ? (

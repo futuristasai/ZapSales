@@ -10,7 +10,7 @@ import {
   type BlocoDoMenu,
   type GrupoDoMenuId,
 } from "./catalogo";
-import { destinosDaInterface, type InterfaceSettings } from "./interface";
+import { destinosDaInterface, essencial, type InterfaceSettings } from "./interface";
 import { NAV_DESTINATIONS, type NavDestination } from "./registry";
 
 /**
@@ -84,4 +84,39 @@ export function menuDoPapel(
     }
   }
   return { blocos };
+}
+
+/**
+ * AS OPÇÕES DO EDITOR DE INTERFACE (issue #191): o menu que o papel enxerga,
+ * SEM as portas essenciais.
+ *
+ * O editor em que se escolhe quais telas a empresa (ou a pessoa) mostra lista as
+ * telas pelos mesmos blocos, áreas e grupos do menu, com os mesmos nomes. As
+ * essenciais saem da lista porque a escolha nunca as esconde — oferecê-las seria
+ * uma caixa que não faz nada. `modulos`/`capacidades` ausentes não filtram, como
+ * no menu. Bloco, área e grupo que ficam sem tela somem junto.
+ */
+export function menuEditavelDoPapel(
+  role: Role | null,
+  modulos?: readonly ModuloOpcional[],
+  capacidades?: readonly CapacidadeDaOrganizacao[],
+): BlocoProjetado[] {
+  const semEssenciais = (grupos: GrupoProjetado[]): GrupoProjetado[] =>
+    grupos
+      .map((g) => ({ ...g, itens: g.itens.filter((d) => !essencial(d, role)) }))
+      .filter((g) => g.itens.length > 0);
+
+  const blocos: BlocoProjetado[] = [];
+  for (const b of menuDoPapel(false, role, undefined, modulos, capacidades).blocos) {
+    if (b.id === "configurar") {
+      const areas = b.areas
+        .map((a) => ({ ...a, grupos: semEssenciais(a.grupos) }))
+        .filter((a) => a.grupos.length > 0);
+      if (areas.length > 0) blocos.push({ ...b, areas });
+    } else {
+      const grupos = semEssenciais(b.grupos);
+      if (grupos.length > 0) blocos.push({ ...b, grupos });
+    }
+  }
+  return blocos;
 }

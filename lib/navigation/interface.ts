@@ -51,7 +51,7 @@ export const PORTAS_ESSENCIAIS = [
  */
 const ESSENCIAIS_DE_ADMIN: readonly string[] = ["/app/team", "/app/settings/tenant"];
 
-export function essencial(d: NavMetadata, role: Role | null, platform = false): boolean {
+export function essencial(d: Pick<NavMetadata, "href">, role: Role | null, platform = false): boolean {
   // Por PERTENCIMENTO à lista, nunca por índice: a versão anterior enumerava
   // `[0]`, `[1]` e `[2]`, então acrescentar uma quarta porta não teria efeito
   // nenhum e a lista passaria a mentir sobre o que ela garante.
