@@ -9,7 +9,10 @@ import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import { DEFAULT_APP_NAME, type Branding } from "@/lib/branding";
 import { MarcaDaInstalacaoProvider } from "@/lib/branding/contexto";
 import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
+import { faixaDoMenu } from "@/lib/navigation/faixa";
 import { destinosDaInterface } from "@/lib/navigation/interface";
+import { menuDoPapel } from "@/lib/navigation/menu";
+import { NAV_DESTINATIONS } from "@/lib/navigation/registry";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
 
 /**
@@ -188,35 +191,48 @@ describe("o painel abre em Todo dia", () => {
   });
 });
 
-describe("as áreas de Configurar e Resultados", () => {
-  it("clicar numa área troca a lista do painel pela lista simples das telas dela", async () => {
+describe("as áreas de Configurar e Resultados abrem a gaveta", () => {
+  const gaveta = () => screen.getByRole("dialog");
+
+  it("clicar numa área abre um diálogo com o nome dela, e o painel segue em Todo dia", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    const botao = botaoDaFaixa("Vender");
+    expect(botao).toHaveAttribute("aria-haspopup", "dialog");
+    await u.click(botao);
+    expect(screen.getByRole("dialog", { name: "Vender" })).toBeInTheDocument();
+    // Aberta, a gaveta deixa o resto da tela fora da árvore de acessibilidade.
+    expect(botao).toHaveAttribute("aria-expanded", "true");
+    // O painel de baixo não troca de lista: a gaveta é por cima dele.
+    expect(screen.getByRole("heading", { level: 2, hidden: true, name: "Todo dia" })).toBeTruthy();
+    expect(screen.queryByRole("button", { hidden: true, name: "Voltar para Todo dia" })).toBeNull();
+  });
+
+  it("agrupa as telas por tarefa, com a descrição e o termo técnico de cada uma", async () => {
     const u = userEvent.setup();
     renderizar();
     await u.click(botaoDaFaixa("Vender"));
-    expect(screen.getByRole("heading", { level: 2, name: "Vender" })).toBeInTheDocument();
-    const lista = painel()!;
-    expect(
-      within(lista)
-        .getAllByRole("heading", { level: 3 })
-        .map((h) => h.textContent),
-    ).toEqual(["O seu funil", "O que você vende", "Como a equipe vende", "Cadastro de empresas"]);
-    expect(within(lista).getByRole("link", { name: /Etapas do funil/ })).toHaveAttribute(
-      "href",
-      "/app/settings/tenant/pipelines",
-    );
-    expect(botaoDaFaixa("Vender")).toHaveAttribute("aria-pressed", "true");
-    expect(botaoDaFaixa("Todo dia")).toHaveAttribute("aria-pressed", "false");
-  });
+    const g = within(gaveta());
+    expect(g.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "O seu funil",
+      "O que você vende",
+      "Como a equipe vende",
+      "Cadastro de empresas",
+    ]);
+    const etapas = g.getByRole("link", { name: /Etapas do funil/ });
+    expect(etapas).toHaveAttribute("href", "/app/settings/tenant/pipelines");
+    const etapasDestino = NAV_DESTINATIONS.find(
+      (d) => d.href === "/app/settings/tenant/pipelines",
+    )!;
+    expect(etapas).toHaveTextContent(etapasDestino.description);
 
-  it("Voltar para Todo dia, e apertar a mesma área de novo, devolvem a mesa", async () => {
-    const u = userEvent.setup();
-    renderizar();
-    await u.click(botaoDaFaixa("Agente"));
-    await u.click(screen.getByRole("button", { name: "Voltar para Todo dia" }));
-    expect(screen.getByRole("heading", { level: 2, name: "Todo dia" })).toBeInTheDocument();
-    await u.click(botaoDaFaixa("Empresa"));
-    await u.click(botaoDaFaixa("Empresa"));
-    expect(screen.getByRole("heading", { level: 2, name: "Todo dia" })).toBeInTheDocument();
+    await u.keyboard("{Escape}");
+    await u.click(botaoDaFaixa("Conexões"));
+    const hooks = within(gaveta()).getByRole("link", { name: /Avisar outros sistemas/ });
+    expect(hooks).toHaveTextContent("webhooks");
+    expect(hooks).toHaveTextContent(
+      NAV_DESTINATIONS.find((d) => d.href === hooks.getAttribute("href"))!.description,
+    );
   });
 
   it("Resultados lista os três grupos", async () => {
@@ -224,46 +240,126 @@ describe("as áreas de Configurar e Resultados", () => {
     renderizar();
     await u.click(botaoDaFaixa("Resultados"));
     expect(
-      within(painel()!)
+      within(gaveta())
         .getAllByRole("heading", { level: 3 })
         .map((h) => h.textContent),
     ).toEqual(["Números do negócio", "Equipe e IA", "Quando algo dá errado"]);
   });
 
-  it("uma sub-rota marca UMA tela só: as Etapas do funil, e não os Dados da empresa que são o prefixo dela", async () => {
+  it("fecha com o ×, e o painel continua em Todo dia", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Agente"));
+    await u.click(within(gaveta()).getByRole("button", { name: "Fechar" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Todo dia" })).toBeInTheDocument();
+  });
+
+  it("fecha com Esc e devolve o foco ao botão que a abriu", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Empresa"));
+    await u.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(botaoDaFaixa("Empresa")).toHaveFocus();
+  });
+
+  it("fecha com um clique fora dela", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Resultados"));
+    // O fundo escurecido é irmão da gaveta, e é onde a pessoa clica.
+    await u.click(gaveta().previousElementSibling!);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("fecha ao escolher uma tela", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Vender"));
+    await u.click(within(gaveta()).getByRole("link", { name: /Produtos/ }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Todo dia" })).toBeInTheDocument();
+  });
+
+  it("prende o foco: aberta, o foco está dentro dela e o Tab não sai", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Agente"));
+    expect(gaveta().contains(document.activeElement)).toBe(true);
+    const voltas = within(gaveta()).getAllByRole("link").length + 3;
+    for (let i = 0; i < voltas; i++) {
+      await u.tab();
+      expect(gaveta().contains(document.activeElement), `Tab ${i + 1}`).toBe(true);
+    }
+    await u.tab({ shift: true });
+    expect(gaveta().contains(document.activeElement)).toBe(true);
+  });
+
+  it("marca a tela atual com aria-current, e uma sub-rota marca UMA só: as Etapas, e não os Dados da empresa", async () => {
     const u = userEvent.setup();
     rota.atual = "/app/settings/tenant/pipelines";
     renderizar();
     await u.click(botaoDaFaixa("Vender"));
-    expect(within(painel()!).getByRole("link", { name: /Etapas do funil/ })).toHaveAttribute(
+    expect(within(gaveta()).getByRole("link", { name: /Etapas do funil/ })).toHaveAttribute(
       "aria-current",
       "page",
     );
+    await u.keyboard("{Escape}");
     await u.click(botaoDaFaixa("Empresa"));
-    expect(within(painel()!).getByRole("link", { name: /Dados da empresa/ })).not.toHaveAttribute(
+    expect(within(gaveta()).getByRole("link", { name: /Dados da empresa/ })).not.toHaveAttribute(
       "aria-current",
     );
   });
 
-  it("a entrada que guarda a tela atual ganha aria-current mesmo sem estar à vista", async () => {
+  it("a entrada que guarda a tela atual ganha aria-current mesmo sem a gaveta aberta", () => {
     rota.atual = "/app/ai/agents";
     renderizar();
     expect(botaoDaFaixa("Agente")).toHaveAttribute("aria-current", "true");
-    expect(botaoDaFaixa("Agente")).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("NENHUMA tela some: Todo dia + áreas + Resultados + Você alcançam todas as que a regra libera", async () => {
+  it("grupo que o papel esvaziou não aparece na gaveta", async () => {
+    const u = userEvent.setup();
+    comoPapel("viewer");
+    renderizar();
+    await u.click(botaoDaFaixa("Vender"));
+    const titulos = within(gaveta())
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    const esperados = faixaDoMenu(
+      menuDoPapel(false, "viewer", undefined, MODULOS_OPCIONAIS, CAPACIDADES_DA_ORGANIZACAO),
+    )
+      .configurar.find((e) => e.id === "vender")!
+      .grupos.map((g) => g.label);
+    expect(titulos.length, "guarda de vacuidade").toBeGreaterThan(0);
+    expect(titulos).toEqual(esperados);
+  });
+
+  it("sem animação com movimento reduzido: toda animação é `motion-safe:`", async () => {
+    const u = userEvent.setup();
+    renderizar();
+    await u.click(botaoDaFaixa("Vender"));
+    const classes = [gaveta(), gaveta().previousElementSibling]
+      .flatMap((e) => (e?.className ?? "").split(/\s+/))
+      .filter((c) => /(^|:)animate-|(^|:)transition/.test(c));
+    expect(classes.length, "guarda de vacuidade: a gaveta anima").toBeGreaterThan(0);
+    expect(classes.filter((c) => !c.startsWith("motion-safe:"))).toEqual([]);
+  });
+
+  it("NENHUMA tela some: Todo dia + gavetas + Você alcançam todas as que a regra libera", async () => {
     const u = userEvent.setup();
     renderizar();
     const vistas = new Set<string>();
-    const colher = () =>
-      within(painel()!)
+    const colher = (raiz: HTMLElement) =>
+      within(raiz)
         .getAllByRole("link")
         .forEach((a) => vistas.add(a.getAttribute("href")!));
-    colher();
+    colher(painel()!);
     for (const nome of ["Vender", "Agente", "Conexões", "Empresa", "Resultados"]) {
       await u.click(botaoDaFaixa(nome));
-      colher();
+      colher(gaveta());
+      await u.keyboard("{Escape}");
     }
     await u.click(within(faixa()).getByRole("button", { name: "Você" }));
     const menu = await screen.findByRole("menu");
@@ -282,6 +378,22 @@ describe("as áreas de Configurar e Resultados", () => {
     ).map((d) => d.href);
     expect(esperadas.length, "guarda de vacuidade").toBeGreaterThan(50);
     expect(esperadas.filter((h) => !vistas.has(h))).toEqual([]);
+  });
+});
+
+describe("papel sem nenhuma tela em Todo dia", () => {
+  it("mantém o painel fixado (recolher, Manual) sem a lista, e a gaveta continua abrindo", async () => {
+    const u = userEvent.setup();
+    comoPapel("admin", {
+      interface_settings: { preset: "simplificada", destinos: ["/app/connections"] },
+    });
+    renderizar();
+    expect(within(faixa()).queryByRole("button", { name: /^Todo dia/ })).toBeNull();
+    expect(painel()).toBeNull();
+    expect(screen.getByRole("button", { name: "Recolher o painel" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Manual" })).toBeInTheDocument();
+    await u.click(botaoDaFaixa("Conexões"));
+    expect(screen.getByRole("dialog", { name: "Conexões" })).toBeInTheDocument();
   });
 });
 
@@ -356,37 +468,37 @@ describe("recolher o painel", () => {
   it("recolhido, escolher uma entrada abre o painel por cima da tela", async () => {
     const u = userEvent.setup();
     renderizar(true);
-    await u.click(botaoDaFaixa("Agente"));
+    await u.click(botaoDaFaixa("Todo dia"));
     const lista = painel()!;
-    expect(within(lista).getByRole("link", { name: /Agentes/ })).toBeInTheDocument();
+    expect(within(lista).getByRole("link", { name: /Conversas/ })).toBeInTheDocument();
     // Por cima: fora do fluxo, dentro da caixa da barra (nunca `fixed`).
     const secao = lista.closest("section")!;
     expect(secao.className).toMatch(/\babsolute\b/);
     expect(secao.className).not.toMatch(/\bfixed\b/);
-    expect(botaoDaFaixa("Agente")).toHaveAttribute("aria-pressed", "true");
+    expect(botaoDaFaixa("Todo dia")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("aberto por cima, o painel recebe o foco (o teclado não atravessa a faixa inteira)", async () => {
     const u = userEvent.setup();
     renderizar(true);
-    await u.click(botaoDaFaixa("Agente"));
+    await u.click(botaoDaFaixa("Todo dia"));
     expect(painel()!.contains(document.activeElement)).toBe(true);
   });
 
   it("o painel por cima fecha com Esc e devolve o foco ao botão que o abriu", async () => {
     const u = userEvent.setup();
     renderizar(true);
-    await u.click(botaoDaFaixa("Agente"));
+    await u.click(botaoDaFaixa("Todo dia"));
     expect(painel()).not.toBeNull();
     await u.keyboard("{Escape}");
     expect(painel()).toBeNull();
-    expect(botaoDaFaixa("Agente")).toHaveFocus();
+    expect(botaoDaFaixa("Todo dia")).toHaveFocus();
   });
 
   it("fecha com um clique fora", async () => {
     const u = userEvent.setup();
     renderizar(true);
-    await u.click(botaoDaFaixa("Empresa"));
+    await u.click(botaoDaFaixa("Todo dia"));
     expect(painel()).not.toBeNull();
     fireEvent.pointerDown(document.body);
     expect(painel()).toBeNull();
@@ -403,9 +515,31 @@ describe("recolher o painel", () => {
   it("apertar de novo o botão da mesma entrada fecha o painel por cima", async () => {
     const u = userEvent.setup();
     renderizar(true);
-    await u.click(botaoDaFaixa("Resultados"));
-    await u.click(botaoDaFaixa("Resultados"));
+    await u.click(botaoDaFaixa("Todo dia"));
+    await u.click(botaoDaFaixa("Todo dia"));
     expect(painel()).toBeNull();
+  });
+
+  it("recolhido, uma área de Configurar abre a gaveta, e não o painel", async () => {
+    const u = userEvent.setup();
+    renderizar(true);
+    await u.click(botaoDaFaixa("Agente"));
+    expect(screen.getByRole("dialog", { name: "Agente" })).toBeInTheDocument();
+    expect(painel()).toBeNull();
+    await u.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(botaoDaFaixa("Agente")).toHaveFocus();
+  });
+
+  it("recolhido, abrir a gaveta fecha o painel que estava por cima da tela", async () => {
+    const u = userEvent.setup();
+    renderizar(true);
+    await u.click(botaoDaFaixa("Todo dia"));
+    expect(painel()).not.toBeNull();
+    fireEvent.pointerDown(document.body);
+    await u.click(botaoDaFaixa("Empresa"));
+    expect(painel()).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Empresa" })).toBeInTheDocument();
   });
 
   it("«Fixar o painel ao lado» devolve o painel ao fluxo e grava a preferência", async () => {
@@ -459,6 +593,7 @@ describe("a faixa não carrega valor de marca no código", () => {
     "components/shell/Faixa.tsx",
     "components/shell/NavegacaoDoComputador.tsx",
     "components/shell/PainelDoMenu.tsx",
+    "components/shell/GavetaDaArea.tsx",
     "components/shell/ItemDoMenu.tsx",
     "components/shell/MenuDaConta.tsx",
     "components/shell/AvisoDeConexaoNaFaixa.tsx",
