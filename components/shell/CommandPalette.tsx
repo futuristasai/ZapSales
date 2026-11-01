@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/auth/AuthProvider";
 import { useT } from "@/hooks/i18n/useT";
 import { MagnifyingGlass } from "@/lib/ui/icons";
+import { casaComABusca, normalizarBusca } from "@/lib/navigation/busca";
 import { NAV_GROUPS, searchable, type NavDestination, type NavGroupId } from "@/lib/navigation/registry";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +19,6 @@ import { cn } from "@/lib/utils";
  * v1 busca só NAVEGAÇÃO — os destinos do registro. Contato, conversa e lead têm
  * outra fonte de dados e são outra feature.
  */
-
-/** Sem acento e sem caixa: ninguém digita "orçamento" com cedilha às pressas. */
-function normalizar(texto: string): string {
-  return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-}
 
 const ROTULO_GRUPO = new Map(NAV_GROUPS.map((g) => [g.id, g.label]));
 const ORDEM_GRUPO = new Map(NAV_GROUPS.map((g, i) => [g.id, i]));
@@ -82,14 +78,13 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
   }, [visiveis]);
 
   const resultados = useMemo(() => {
-    const termo = normalizar(busca.trim());
+    const termo = normalizarBusca(busca.trim());
     const filtrados = visiveis.filter((d) => {
       const casaCategoria = categoriaAtiva === "todos" || d.group === categoriaAtiva;
       if (!casaCategoria) return false;
-      if (!termo) return true;
-      return normalizar(
-        `${d.label} ${d.description} ${ROTULO_GRUPO.get(d.group) ?? ""} ${(d.sinonimos ?? []).join(" ")}`,
-      ).includes(termo);
+      // Nome novo, nome antigo, termo técnico, descrição e grupo — e o texto na
+      // língua que a pessoa vê (`t`). Ver `lib/navigation/busca.ts`.
+      return casaComABusca(d, termo, ROTULO_GRUPO.get(d.group) ?? "", t);
     });
     if (termo) return filtrados;
     // O catálogo não é contíguo por grupo (a Prospecção, de CRM, vem antes do
@@ -97,7 +92,7 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
     // andam por este array, pulariam de uma seção para outra. Ordenado pelo
     // NAV_GROUPS, a ordem do array é a ordem da tela. O sort é estável.
     return [...filtrados].sort((a, b) => (ORDEM_GRUPO.get(a.group) ?? 0) - (ORDEM_GRUPO.get(b.group) ?? 0));
-  }, [busca, visiveis, categoriaAtiva]);
+  }, [busca, visiveis, categoriaAtiva, t]);
 
   // Agrupamento para exibição visual estruturada quando não há busca específica digitada
   const resultadosAgrupados = useMemo(() => {
@@ -268,6 +263,9 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-semibold leading-tight">{t(d.label)}</p>
+                          {d.menu.termo ? (
+                            <p className={cn("truncate text-[10px] leading-tight", secundario)}>{t(d.menu.termo)}</p>
+                          ) : null}
                           <p className={cn("mt-0.5 line-clamp-2 text-[11px] leading-snug", secundario)}>
                             {t(d.description)}
                           </p>
@@ -322,6 +320,9 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="text-sm font-medium">{t(d.label)}</span>
+                    {d.menu.termo ? (
+                      <span className={cn("truncate font-mono text-[11px]", secundario)}>{t(d.menu.termo)}</span>
+                    ) : null}
                     <span className={cn("truncate text-[10px] font-medium tracking-wider uppercase", secundario)}>
                       {t(ROTULO_GRUPO.get(d.group) ?? "")}
                     </span>

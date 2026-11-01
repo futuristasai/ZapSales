@@ -78,7 +78,7 @@ test.describe("distribuição de atendimento — a tela que liga o rodízio e a 
     // 1. A tela é ALCANÇÁVEL pela navegação — não só pela URL digitada. É o
     //    defeito da issue: a feature existia e não tinha porta.
     await page.goto("/app/settings");
-    const porta = page.getByRole("link", { name: /Distribuição de atendimento/i });
+    const porta = page.getByRole("link", { name: /Revezamento da equipe/i });
     await expect(porta).toBeVisible();
     await porta.click();
     await page.waitForURL(/\/app\/settings\/atendimento/);

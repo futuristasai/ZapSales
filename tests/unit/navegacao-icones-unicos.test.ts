@@ -6,8 +6,9 @@
  * Importações, Propostas ×2, Modelos de proposta), `ChartBar` em quatro (Financeiro, Faturamento,
  * Honorários, Desempenho), `ListChecks` em quatro, e a mesma seta nos três "Ver tudo em …".
  *
- * A única repetição aceita é entre destinos que têm o MESMO rótulo (hoje, o Meta Ads de Análise e o
- * de Configurações): ali o ícone repetido diz que é a mesma coisa vista de dois lugares.
+ * A única repetição aceita é entre destinos que têm o MESMO rótulo: ali o ícone repetido diz que é a
+ * mesma coisa vista de dois lugares. Hoje não há nenhum — o Meta Ads de Análise e o de Configurações
+ * deixaram de ter o mesmo nome (este virou «Conta de anúncios», issue #187) e ganharam ícones distintos.
  */
 import { describe, expect, it } from "vitest";
 

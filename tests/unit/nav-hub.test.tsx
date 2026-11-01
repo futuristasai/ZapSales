@@ -78,10 +78,10 @@ describe("NavHub", () => {
     expect(screen.getByRole("link", { name: /Agentes/ })).toBeTruthy();
   });
 
-  it("o viewer vê Extensões e Dados externos; a seção aparece filtrada, sem API Tokens nem LGPD", () => {
+  it("o viewer vê Extensões e Dados de outro sistema; a seção aparece filtrada, sem Chaves de acesso nem LGPD", () => {
     /**
      * Esta asserção dizia `not.toContain("Dados e acesso")`, e passava porque os
-     * DOIS destinos daquela seção eram `admin`. "Dados externos" entrou nela sem
+     * DOIS destinos daquela seção eram `admin`. "Dados de outro sistema" entrou nela sem
      * `minRole` (o banco externo é lido por qualquer autenticado — decisão do
      * dono no #1130), e a seção passou a existir para o `viewer`.
      *
@@ -102,23 +102,23 @@ describe("NavHub", () => {
       "href",
       "/app/extensions",
     );
-    expect(screen.getByRole("link", { name: /Dados externos/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Dados de outro sistema/ })).toHaveAttribute(
       "href",
       "/app/integracao-dados",
     );
-    expect(screen.queryByRole("link", { name: /API Tokens/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Chaves de acesso/ })).toBeNull();
     expect(screen.queryByRole("link", { name: /LGPD/ })).toBeNull();
   });
 
   it("a porta do banco externo só existe com o módulo ligado na instalação (doc 37)", () => {
     // Desligado: some para TODO papel, inclusive o admin da empresa — quem liga
     // é quem administra o servidor. Para o viewer, a seção inteira some junto,
-    // porque "Dados externos" era a única porta dela ao alcance dele.
+    // porque "Dados de outro sistema" era a única porta dela ao alcance dele.
     render(
       <NavHub group="organizacao" isPlatformAdmin={false} role="admin" title="Org" subtitle="" modulosLigados={[]} />,
     );
-    expect(screen.queryByRole("link", { name: /Dados externos/ })).toBeNull();
-    expect(screen.getByRole("link", { name: /API Tokens/ })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /Dados de outro sistema/ })).toBeNull();
+    expect(screen.getByRole("link", { name: /Chaves de acesso/ })).toBeTruthy();
     cleanup();
 
     render(
@@ -138,7 +138,7 @@ describe("NavHub", () => {
         modulosLigados={["banco_externo"]}
       />,
     );
-    expect(screen.getByRole("link", { name: /Dados externos/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Dados de outro sistema/ })).toHaveAttribute(
       "href",
       "/app/integracao-dados",
     );
@@ -169,7 +169,7 @@ describe("NavHub", () => {
     render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
     const ensinar = screen.getByRole("region", { name: "Ensinar o agente" });
     expect(within(ensinar).getByRole("link", { name: /Memória/ })).toBeTruthy();
-    expect(within(ensinar).queryByRole("link", { name: /Credenciais/ })).toBeNull();
+    expect(within(ensinar).queryByRole("link", { name: /Chave da IA/ })).toBeNull();
   });
 
   it("traduz o conteúdo do hub quando a página entrega o idioma", () => {
@@ -193,7 +193,7 @@ describe("NavHub", () => {
       "Supervisar al agente",
     ]);
     expect(
-      screen.getByRole("link", { name: /Credenciales.*La clave del proveedor de IA/ }),
+      screen.getByRole("link", { name: /Clave de la IA.*La clave del proveedor de IA/ }),
     ).toBeTruthy();
   });
 
