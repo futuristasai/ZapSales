@@ -127,6 +127,11 @@ ENV APP_VERSION=$APP_VERSION
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# O manual do usuário (rota /manual, só para quem está logado). Vai SÓ o que a rota
+# serve — a página montada e os prints —, e não o conteúdo-fonte nem as ferramentas.
+# O `.dockerignore` exclui `docs` e re-inclui exatamente estes dois caminhos.
+COPY --from=build --chown=nextjs:nodejs /app/docs/manual/index.html ./docs/manual/index.html
+COPY --from=build --chown=nextjs:nodejs /app/docs/manual/img ./docs/manual/img
 USER nextjs
 EXPOSE 3000
 # server.js é o entrypoint gerado pelo output standalone.

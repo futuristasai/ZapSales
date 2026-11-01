@@ -361,3 +361,94 @@ test.describe("navegação agrupada", () => {
     await expect(sidebar(page).getByRole("heading", { name: "Atendimento" })).toBeVisible();
   });
 });
+
+/**
+ * O manual do usuário, dentro do próprio sistema: o link no rodapé do menu, logo
+ * abaixo de Configurações, e a rota `/manual` por trás dele.
+ *
+ * Duas coisas só se provam no navegador contra o servidor de verdade: que o
+ * rodapé com mais uma linha NÃO faz o menu rolar (a 900px a folga é de 19px, e
+ * o teste de "em 900px o menu não rola" acima continua valendo para a tela
+ * inteira), e que a imagem do manual — que o `proxy` deixa passar por terminar
+ * em `.png` — não é pública.
+ */
+test.describe("o manual dentro do sistema", () => {
+  test.beforeEach(async ({ context, baseURL }) => {
+    await menuExpandido(context, baseURL);
+  });
+
+  test("o link 'Manual' fica logo abaixo de 'Configurações' e abre o manual numa aba nova", async ({
+    page,
+    context,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await loginAdmin(page);
+
+    const configuracoes = page.getByRole("link", { name: "Configurações", exact: true });
+    const manual = page.getByRole("link", { name: "Manual", exact: true });
+    await expect(manual).toBeVisible();
+    await expect(manual).toHaveAttribute("href", "/manual/index.html");
+    await expect(manual).toHaveAttribute("target", "_blank");
+
+    const [c, m] = await Promise.all([configuracoes.boundingBox(), manual.boundingBox()]);
+    expect(c && m, "os dois links têm caixa na tela").toBeTruthy();
+    expect(m!.y, "o Manual está abaixo de Configurações").toBeGreaterThan(c!.y + c!.height - 1);
+    expect(m!.y - (c!.y + c!.height), "e logo abaixo, sem outro item no meio").toBeLessThan(12);
+
+    // O rodapé com a linha nova não pode empurrar o menu para dentro da rolagem.
+    const rola = await page.evaluate(() => {
+      const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
+      return nav.scrollHeight > Math.round(nav.getBoundingClientRect().height) + 1;
+    });
+    expect(rola, "em 900px o menu inteiro tem de continuar cabendo sem scroll").toBe(false);
+
+    const [aba] = await Promise.all([context.waitForEvent("page"), manual.click()]);
+    await aba.waitForLoadState("domcontentloaded");
+    expect(new URL(aba.url()).pathname).toBe("/manual/index.html");
+    // O título muda com a página em que o manual abre; "Manual" está em todas.
+    await expect(aba).toHaveTitle(/Manual/);
+    await aba.close();
+  });
+
+  test("logado, a página e um print do manual chegam; sem login, nenhum dos dois", async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
+    await loginAdmin(page);
+
+    const pagina = await page.request.get("/manual/index.html");
+    expect(pagina.status()).toBe(200);
+    expect(pagina.headers()["content-type"]).toContain("text/html");
+    const html = await pagina.text();
+    expect(html).toContain("Manual do usuário");
+
+    const print = /src="(img\/[^"]+\.png)"/.exec(html)?.[1];
+    expect(print, "o manual tem ao menos um print").toBeTruthy();
+    const imagem = await page.request.get(`/manual/${print}`);
+    expect(imagem.status()).toBe(200);
+    expect(imagem.headers()["content-type"]).toBe("image/png");
+    expect((await imagem.body()).byteLength).toBeGreaterThan(1000);
+
+    const semLogin = await browser.newContext({ baseURL });
+    try {
+      const paginaSemLogin = await semLogin.request.get("/manual/index.html", { maxRedirects: 0 });
+      expect([307, 308], "sem sessão a página manda para o login").toContain(paginaSemLogin.status());
+      expect(paginaSemLogin.headers()["location"] ?? "").toContain("/login");
+
+      // O caminho que o proxy NÃO guarda: é a rota que tem de recusar.
+      const imagemSemLogin = await semLogin.request.get(`/manual/${print}`, { maxRedirects: 0 });
+      expect(imagemSemLogin.status()).toBe(401);
+    } finally {
+      await semLogin.close();
+    }
+  });
+
+  test("o que não é a página nem um print não sai de lá", async ({ page }) => {
+    await loginAdmin(page);
+    for (const caminho of ["/manual/README.md", "/manual/modelo.html", "/manual/conteudo/ia/agentes.html"]) {
+      const r = await page.request.get(caminho);
+      expect(r.status(), caminho).toBe(404);
+    }
+  });
+});
