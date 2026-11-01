@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 
 import { NavHub } from "@/components/shell/NavHub";
-import { Sidebar } from "@/components/shell/Sidebar";
+import { SidebarContent } from "@/components/shell/Sidebar";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 
 const authRef: { user: Pick<AuthUser, "is_platform_admin">; activeOrg: ActiveOrg | null } = {
@@ -36,7 +36,7 @@ afterEach(cleanup);
 
 describe("menu lateral", () => {
   it("mostra o termo técnico embaixo do nome", () => {
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const link = screen.getByRole("link", { name: /Avisar outros sistemas/ });
     const [nome, termo] = Array.from(link.querySelectorAll("span > span")).map(
       (s) => s.textContent,
@@ -46,13 +46,13 @@ describe("menu lateral", () => {
   });
 
   it("a tela sem termo técnico não ganha linha vazia", () => {
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const link = screen.getByRole("link", { name: /Riscos de Perda/ });
     expect(link.querySelectorAll("span > span")).toHaveLength(1);
   });
 
   it("a dica traz a descrição e o termo técnico", () => {
-    render(<Sidebar collapsed={false} />);
+    render(<SidebarContent collapsed={false} />);
     const dica = screen.getByRole("link", { name: /Avisar outros sistemas/ }).getAttribute("title");
     expect(dica).toBe(
       "Avisar outros sistemas (webhooks) — Avise outros sistemas quando algo acontecer aqui dentro.",
@@ -60,7 +60,7 @@ describe("menu lateral", () => {
   });
 
   it("recolhido, o termo não desenha texto na barra estreita, mas a dica continua", () => {
-    render(<Sidebar collapsed />);
+    render(<SidebarContent collapsed />);
     const link = screen.getByRole("link", { name: /Avisar outros sistemas/ });
     // Só o nome (sr-only) fica no link; a linha do termo não é desenhada.
     expect(link.textContent).toBe("Avisar outros sistemas");

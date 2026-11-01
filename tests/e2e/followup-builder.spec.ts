@@ -232,7 +232,7 @@ test.describe("followup flow builder — canvas visual (Task 6.2)", () => {
   // Canvas grande: com 4+ nós o fitView inicial pode chegar a zoom 2x (maxZoom
   // default) — um viewport pequeno deixa nós fora da área visível, e
   // coordenadas de handle fora do viewport quebram os drags de conexão.
-  test.use({ viewport: { width: 1600, height: 900 } });
+  test.use({ viewport: { width: 1800, height: 900 } });
 
   test("manager cria um fluxo, clica na linha e o canvas React Flow abre", async ({ page }) => {
     await login(page, creds.users.manager!.email);
@@ -648,7 +648,7 @@ test.describe("followup flow builder — canvas visual (Task 6.2)", () => {
 });
 
 test.describe("followup flow builder — editor de condição de aresta / ai_classify (Task 6.3)", () => {
-  test.use({ viewport: { width: 1600, height: 900 } });
+  test.use({ viewport: { width: 1800, height: 900 } });
 
   /**
    * The palette's default add-position grid (`addNodeAt` in FlowCanvas) lays

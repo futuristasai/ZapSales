@@ -84,88 +84,115 @@ async function expectSemOverflowHorizontal(page: Page, contexto: string): Promis
 // testes que já estavam verdes passaram a estourar 30 s.
 test.describe.configure({ timeout: 120_000 });
 
-// ── O padrão é o menu expandido ──────────────────────────────────────────────
-// Desde 14/10/2026 quem nunca mexeu no menu o vê EXPANDIDO: ícone + nome, com os títulos de grupo.
-// (Entre 07 e 14/10 o padrão era o trilho de ícones; sem o nome, os três "Ver tudo" eram a mesma
-// seta e ninguém sabia para onde cada ícone levava.) Este caso mede o padrão sem cookie nenhum; o
-// trilho é escolha da pessoa e é medido logo abaixo, com o cookie gravado antes do login.
-test.describe("o menu nasce expandido", () => {
-  test("sem preferência salva, o sidebar mostra ícone e nome, com títulos de grupo", async ({ page }) => {
-    await loginAdmin(page);
-    const nav = sidebar(page);
-    await expect(nav).toBeVisible();
+// ── O padrão é a faixa com o painel aberto em Todo dia ───────────────────────
+// Desde a issue #188 o computador não tem mais a barra lateral de 240px: tem a FAIXA (80px, com as
+// entradas Todo dia, as quatro áreas de Configurar e Resultados) e, ao lado dela, o PAINEL, que
+// abre em Todo dia. Quem nunca mexeu vê os dois; recolher o painel é escolha da pessoa e fica
+// gravada no cookie `sidebar_collapsed` ("1"), que o servidor lê para a primeira pintura.
+const faixa = (page: Page) => page.getByRole("navigation", { name: "Áreas do menu" });
+const entrada = (page: Page, nome: string) =>
+  faixa(page).getByRole("button", { name: new RegExp(`^${nome}`) });
 
-    const m = await nav.evaluate((el) => {
-      const aside = el.closest("aside") ?? el;
-      const links = [...el.querySelectorAll("a")];
+test.describe("a faixa e o painel nascem abertos", () => {
+  test("sem preferência salva, há a faixa de 80px e o painel em Todo dia", async ({ page }) => {
+    await loginAdmin(page);
+    await expect(faixa(page)).toBeVisible();
+    await expect(sidebar(page)).toBeVisible();
+
+    const m = await page.evaluate(() => {
+      const rail = document.querySelector('nav[aria-label="Áreas do menu"]')!;
+      const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
       return {
-        largura: aside.getBoundingClientRect().width,
-        links: links.length,
-        semTexto: links.filter((a) => !a.textContent?.trim()).length,
-        titulos: el.querySelectorAll("h2").length,
+        faixa: rail.getBoundingClientRect().width,
+        links: nav.querySelectorAll("a").length,
+        semTexto: [...nav.querySelectorAll("a")].filter((a) => !a.textContent?.trim()).length,
+        titulo: document.querySelector("section[aria-label] h2")?.textContent?.trim(),
       };
     });
-    expect(m.largura, "o menu expandido tem 240px (w-60)").toBeGreaterThanOrEqual(224);
-    expect(m.links, "guarda de vacuidade: o menu tem destinos").toBeGreaterThan(4);
-    expect(m.semTexto, "todo destino mostra o próprio nome").toBe(0);
-    expect(m.titulos, "expandido mostra os títulos de grupo").toBeGreaterThan(0);
-    await expect(page.getByRole("button", { name: "Recolher sidebar" })).toBeVisible();
+    expect(m.faixa, "a faixa tem 80px (w-20)").toBeGreaterThanOrEqual(76);
+    expect(m.faixa, "a faixa tem 80px (w-20)").toBeLessThanOrEqual(84);
+    expect(m.links, "guarda de vacuidade: o painel tem destinos").toBeGreaterThan(4);
+    expect(m.semTexto, "toda tela mostra o próprio nome").toBe(0);
+    expect(m.titulo).toBe("Todo dia");
+    await expect(page.getByRole("button", { name: "Recolher o painel" })).toBeVisible();
+  });
+
+  test("a faixa tem Todo dia, as quatro áreas de Configurar, Resultados, Buscar e Você", async ({ page }) => {
+    await loginAdmin(page);
+    const nomes = await faixa(page).getByRole("button").allTextContents();
+    // O número da fila (quando há) vem colado ao nome do botão de Todo dia: «Todo dia6».
+    expect(nomes.map((n) => n.trim().replace(/\d+$/, ""))).toEqual([
+      "Todo dia",
+      "Vender",
+      "Agente",
+      "Conexões",
+      "Empresa",
+      "Resultados",
+      "Buscar",
+      "Você",
+    ]);
   });
 });
 
-test.describe("o menu recolhido, por escolha da pessoa", () => {
+test.describe("o painel recolhido, por escolha da pessoa", () => {
   test.beforeEach(async ({ context, baseURL }) => {
     await menuRecolhido(context, baseURL);
   });
 
-  test("é um trilho de ícones com nome acessível, e os três 'Ver tudo' têm ícones diferentes", async ({ page }) => {
+  test("sobra só a faixa; escolher uma entrada abre o painel por cima, e Esc o fecha", async ({ page }) => {
     await loginAdmin(page);
-    const nav = sidebar(page);
-    await expect(nav).toBeVisible();
+    await expect(faixa(page)).toBeVisible();
+    await expect(sidebar(page)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Recolher o painel" })).toHaveCount(0);
 
-    const m = await nav.evaluate((el) => {
-      const aside = el.closest("aside") ?? el;
-      const links = [...el.querySelectorAll("a")];
-      const verTudo = links.filter((a) => /^Ver tudo em /.test(a.getAttribute("title") ?? ""));
-      return {
-        largura: aside.getBoundingClientRect().width,
-        links: links.length,
-        semNome: links.filter((a) => !(a.getAttribute("title") || a.getAttribute("aria-label") || a.textContent?.trim())).length,
-        titulos: el.querySelectorAll("h2").length,
-        verTudo: verTudo.length,
-        iconesDistintos: new Set(verTudo.map((a) => a.querySelector("svg")?.outerHTML ?? "")).size,
-      };
-    });
-    expect(m.largura, "o trilho recolhido tem 64px (w-16)").toBeLessThanOrEqual(72);
-    expect(m.links, "guarda de vacuidade: o trilho tem destinos").toBeGreaterThan(4);
-    expect(m.semNome, "todo destino do trilho precisa de nome (title)").toBe(0);
-    expect(m.titulos, "recolhido não mostra títulos de grupo").toBe(0);
-    expect(m.verTudo, "guarda de vacuidade: há links 'Ver tudo em …'").toBeGreaterThanOrEqual(3);
-    expect(m.iconesDistintos, "cada 'Ver tudo' tem o seu ícone, não a mesma seta").toBe(m.verTudo);
-    await expect(page.getByRole("button", { name: "Expandir sidebar" })).toBeVisible();
+    await entrada(page, "Agente").click();
+    await expect(sidebar(page)).toBeVisible();
+    await expect(sidebar(page).getByRole("link", { name: /Agentes/ })).toBeVisible();
+
+    // Por cima da tela, e não empurrando: a faixa segue com 80px de largura de coluna.
+    const largura = await page.evaluate(
+      () => document.querySelector("aside")!.getBoundingClientRect().width,
+    );
+    expect(largura, "o painel por cima não ocupa lugar na linha").toBeLessThanOrEqual(84);
+
+    await page.keyboard.press("Escape");
+    await expect(sidebar(page)).toHaveCount(0);
+    await expect(entrada(page, "Agente")).toBeFocused();
+  });
+
+  test("«Fixar o painel ao lado» devolve o painel, e a escolha vale no próximo acesso", async ({
+    page,
+    context,
+  }) => {
+    await loginAdmin(page);
+    await entrada(page, "Todo dia").click();
+    await page.getByRole("button", { name: "Fixar o painel ao lado" }).click();
+    await expect(sidebar(page)).toBeVisible();
+    // A preferência é gravada por uma ação do servidor, em segundo plano: recarregar antes dela
+    // terminar mediria o cookie de ANTES. Espera-se o estado (o cookie), não um relógio.
+    await expect
+      .poll(async () => (await context.cookies()).find((c) => c.name === "sidebar_collapsed")?.value)
+      .toBe("0");
+    await page.reload();
+    await expect(sidebar(page)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Recolher o painel" })).toBeVisible();
   });
 });
 
 test.describe("navegação agrupada", () => {
-  // O menu EXPANDIDO é o que estes casos medem: a preferência gravada por
-  // `toggleSidebar` ("0" = expandido) vem antes do login.
+  // O painel ABERTO é o que estes casos medem: a preferência gravada por
+  // `toggleSidebar` ("0" = aberto) vem antes do login.
   test.beforeEach(async ({ context, baseURL }) => {
     await menuExpandido(context, baseURL);
   });
 
-  test("o sidebar tem hierarquia: grupos na ordem de uso", async ({ page }) => {
+  test("Todo dia é uma mesa: Leads e Gestão de Clientes CRM, nessa ordem", async ({ page }) => {
     await loginAdmin(page);
 
-    // Organização não aparece como título aqui: seu hub (Configurações) vive no
-    // rodapé fixo — ver o teste de dobra abaixo.
-    const titulos = sidebar(page).getByRole("heading");
-    await expect(titulos).toHaveText([
-      "Leads",
-      "Gestão de Clientes CRM",
-      "Agente de IA",
-      "Canais",
-      "Análise",
-    ]);
+    const titulos = sidebar(page).getByRole("heading", { level: 3 });
+    await expect(titulos.first()).toHaveText("Leads");
+    await expect(titulos.nth(1)).toHaveText("Gestão de Clientes CRM");
+    await expect(sidebar(page).getByRole("link", { name: /Conversas/ })).toBeVisible();
 
     await page.screenshot({
       path: path.join(EVIDENCE, "nav-sidebar-agrupado.png"),
@@ -173,82 +200,64 @@ test.describe("navegação agrupada", () => {
     });
   });
 
-  test("chega nas Etapas do funil pelo CRM, sem passar por Configurações", async ({ page }) => {
+  test("chega nas Etapas do funil por Vender, sem passar por Configurações", async ({ page }) => {
     await loginAdmin(page);
 
     // O caso que originou tudo: o usuário não sabia que esta tela existia.
     //
-    // ⚠️ O ITEM MUDOU DE NOME, e o nome antigo ("Funis") passou para o VIZINHO —
-    // a lista de funis, em /app/kanban. Um teste que continuasse clicando em
-    // "Funis" seguiria verde medindo a outra tela; por isso a asserção de URL
-    // abaixo é específica (`settings/tenant/pipelines`) e não o antigo
-    // /pipelines/, que casa com as duas.
-    //
-    // ⚠️ E O CAMINHO MUDOU: com Tarefas (PR #546), o CRM chegou a cinco telas e
-    // o menu passou a rolar em 900px. A resposta foi o hub do grupo, como o
-    // comentário de densidade do `Sidebar.tsx` já mandava — então esta tela
-    // agora mora atrás de "Ver tudo em CRM". Este teste percorre o caminho
-    // INTEIRO em vez de checar um link: hub → tela. Que a porta existe no grupo
-    // certo do sidebar é o unitário `sidebar-grupos` que prende.
-    await sidebar(page).getByRole("link", { name: "Ver tudo em CRM" }).click();
-    await page.waitForURL(/\/app\/crm$/);
-    await expect(page.getByRole("heading", { name: "O dia a dia da venda" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Preparar a venda" })).toBeVisible();
+    // ⚠️ "Funis" é o VIZINHO — a lista de funis, em /app/kanban. Um teste que clicasse
+    // em "Funis" seguiria verde medindo a outra tela; por isso a asserção de URL é
+    // específica (`settings/tenant/pipelines`).
+    await entrada(page, "Vender").click();
+    await expect(page.getByRole("heading", { level: 2, name: "Vender" })).toBeVisible();
+    await page.screenshot({ path: path.join(EVIDENCE, "nav-area-vender.png"), fullPage: true });
 
-    await page.screenshot({ path: path.join(EVIDENCE, "nav-hub-crm.png"), fullPage: true });
-
-    await page.getByRole("link", { name: /Etapas do funil/ }).click();
+    await sidebar(page).getByRole("link", { name: /Etapas do funil/ }).click();
     await page.waitForURL(/settings\/tenant\/pipelines/);
     await expect(page.getByRole("heading", { name: "Etapas do funil", level: 1 })).toBeVisible();
   });
 
-  test("e Produtos, que saiu do menu, continua alcançável pelo mesmo hub", async ({ page }) => {
-    // Tirar do sidebar não pode virar tela órfã: DoD 14 cobra porta, e a porta
-    // passou a ser o hub. Sem este caso, o item "some do menu" ficaria provado
-    // e o "continua alcançável" ficaria só escrito no comentário.
+  test("Produtos, que não está na mesa, continua alcançável por Vender", async ({ page }) => {
+    // Tirar da mesa não pode virar tela órfã: DoD 14 cobra porta.
     await loginAdmin(page);
 
     await expect(sidebar(page).getByRole("link", { name: "Produtos" })).toHaveCount(0);
 
-    await sidebar(page).getByRole("link", { name: "Ver tudo em CRM" }).click();
-    await page.waitForURL(/\/app\/crm$/);
-    await page.getByRole("link", { name: /Produtos/ }).click();
+    await entrada(page, "Vender").click();
+    await sidebar(page).getByRole("link", { name: /Produtos/ }).click();
     await page.waitForURL(/\/app\/products/);
   });
 
-  test("e a lista de funis é o item vizinho, com nome próprio", async ({ page }) => {
+  test("e a lista de funis é a tela da mesa, com nome próprio", async ({ page }) => {
     await loginAdmin(page);
     await sidebar(page).getByRole("link", { name: "Funis", exact: true }).click();
     await page.waitForURL(/\/app\/kanban/);
     await expect(page.getByRole("heading", { name: "Funis", level: 1 })).toBeVisible();
   });
 
-  test("chega em Conhecimento, que só existia atrás das abas de IA", async ({ page }) => {
+  test("chega em Conhecimento, que só existia atrás das abas de IA, pela área Agente", async ({ page }) => {
     await loginAdmin(page);
 
-    await sidebar(page).getByRole("link", { name: "Ver tudo em IA" }).click();
-    await page.waitForURL(/\/app\/ai$/);
+    await entrada(page, "Agente").click();
+    await expect(sidebar(page).getByRole("heading", { name: "Montar o agente" })).toBeVisible();
+    await expect(sidebar(page).getByRole("heading", { name: "Ensinar o agente" })).toBeVisible();
+    await expect(sidebar(page).getByRole("heading", { name: "Conectar a IA" })).toBeVisible();
 
-    // O hub organiza por jornada, não numa grade solta.
-    await expect(page.getByRole("heading", { name: "Montar o agente" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Ensinar o agente" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Acompanhar o agente" })).toBeVisible();
+    await page.screenshot({ path: path.join(EVIDENCE, "nav-area-agente.png"), fullPage: true });
 
-    await page.screenshot({ path: path.join(EVIDENCE, "nav-hub-ia.png"), fullPage: true });
-
-    await page.getByRole("link", { name: /Conhecimento/ }).click();
+    await sidebar(page).getByRole("link", { name: /Conhecimento/ }).click();
     await page.waitForURL(/knowledge\/sources/);
   });
 
   /**
    * O canal oficial saiu de Configurações no PR #105 e virou aba de Conexões.
-   * A porta, portanto, é Conexões — que agora vive no grupo CANAIS do sidebar,
-   * e não mais como um card perdido em Configurações.
+   * A porta, portanto, é Conexões — que agora vive na área Conexões da faixa.
    */
-  test("chega ao canal oficial pelo grupo Canais, não por Configurações", async ({ page }) => {
+  test("chega ao canal oficial pela área Conexões, não por Configurações", async ({ page }) => {
     await loginAdmin(page);
 
-    await sidebar(page).getByRole("link", { name: "Conexões" }).click();
+    await entrada(page, "Conexões").click();
+    await sidebar(page).getByRole("link", { name: /^Conexões/ }).click();
     await page.waitForURL(/\/app\/connections/);
     await expect(page.getByRole("tab", { name: /oficial/i })).toBeVisible();
   });
@@ -280,31 +289,49 @@ test.describe("navegação agrupada", () => {
   });
 
   /**
-   * Agrupar cria um risco que a lista plana não tinha: o menu cresce e passa a
-   * exigir scroll. Na primeira versão desta mudança, medido em 1280×768, o
-   * conteúdo dava 1019px contra 663px visíveis — SETE links e os grupos Análise
-   * e Organização ficavam fora da dobra. Trocar "17 itens sem hierarquia" por
-   * "20 itens que não cabem" seria recriar o problema em outra forma.
+   * A garantia que SUBSTITUI "o menu cabe em 900px sem rolar, no máximo 15 itens" (issue #188).
    *
-   * Medido por ferramenta, nunca a olho.
+   * O menu agora cresce: o painel lista as telas de uma entrada por vez e pode rolar. O que não
+   * pode acontecer é um bloco inteiro — um título de grupo, um botão da faixa — ficar abaixo da
+   * dobra, indistinguível de um bloco que não existe. É isso que se mede, por ferramenta e nunca a
+   * olho: em cada entrada da faixa, todo título de grupo está dentro da área visível do painel, e
+   * todo botão da faixa está dentro da janela.
    */
-  test("nenhum grupo fica fora da dobra, e em 900px o menu não rola", async ({ page }) => {
+  test("nenhum bloco some abaixo da dobra, em nenhuma entrada da faixa", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginAdmin(page);
 
-    const m = await page.evaluate(() => {
-      const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
-      const r = nav.getBoundingClientRect();
-      return {
-        rola: nav.scrollHeight > Math.round(r.height) + 1,
-        titulosFora: [...nav.querySelectorAll("h2")].filter(
-          (h) => h.getBoundingClientRect().bottom > r.bottom,
-        ).length,
-      };
-    });
+    const entradas = ["Todo dia", "Vender", "Agente", "Conexões", "Empresa", "Resultados"];
+    for (const nome of entradas) {
+      await entrada(page, nome).click();
+      const m = await page.evaluate(() => {
+        const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
+        const r = nav.getBoundingClientRect();
+        const botoes = [...document.querySelectorAll('nav[aria-label="Áreas do menu"] button')];
+        return {
+          titulos: nav.querySelectorAll("h3").length,
+          titulosFora: [...nav.querySelectorAll("h3")].filter(
+            (h) => h.getBoundingClientRect().bottom > r.bottom + 1,
+          ).length,
+          botoesFora: botoes.filter((b) => b.getBoundingClientRect().bottom > window.innerHeight).length,
+        };
+      });
+      expect(m.titulos, `${nome}: guarda de vacuidade`).toBeGreaterThan(0);
+      expect(m.titulosFora, `${nome}: grupo inteiro invisível é o problema que viemos resolver`).toBe(0);
+      expect(m.botoesFora, `${nome}: botão da faixa abaixo da dobra`).toBe(0);
+    }
+  });
 
-    expect(m.titulosFora, "grupo inteiro invisível é o problema que viemos resolver").toBe(0);
-    expect(m.rola, "em 900px o menu inteiro tem de caber sem scroll").toBe(false);
+  test("em 768px a faixa inteira continua à vista", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 768 });
+    await loginAdmin(page);
+    const fora = await page.evaluate(
+      () =>
+        [...document.querySelectorAll('nav[aria-label="Áreas do menu"] button')].filter(
+          (b) => b.getBoundingClientRect().bottom > window.innerHeight,
+        ).length,
+    );
+    expect(fora, "botão da faixa abaixo da dobra em 1280x768").toBe(0);
   });
 
   test.describe("mobile", () => {
@@ -336,40 +363,31 @@ test.describe("navegação agrupada", () => {
     });
   });
 
-  test("Configurações fica fixo no rodapé, fora da área que rola", async ({ page }) => {
+  test("as telas de Empresa continuam alcançáveis: Dados da empresa, Equipe e Plano", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 768 });
     await loginAdmin(page);
 
-    const config = page.getByRole("link", { name: "Configurações" });
-    await expect(config).toBeVisible();
-
-    const dentroDaNav = await page.evaluate(() => {
-      const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
-      const link = [...document.querySelectorAll("a")].find(
-        (a) => a.textContent?.trim() === "Configurações",
-      );
-      return nav.contains(link!);
-    });
-    expect(dentroDaNav, "Configurações não pode depender de scroll para aparecer").toBe(false);
+    await entrada(page, "Empresa").click();
+    for (const nome of [/Dados da empresa/, /Equipe/, /Plano e cobrança/]) {
+      await expect(sidebar(page).getByRole("link", { name: nome }).first()).toBeVisible();
+    }
   });
 
-  test("um agent não vê o cabeçalho de um grupo que a permissão esvaziou", async ({ page }) => {
+  test("um agent não vê a entrada Agente nem um grupo que a permissão esvaziou", async ({ page }) => {
     await login(page, creds.users.agent!.email);
 
-    // CANAIS é todo manager+/admin: o título não pode sobrar sozinho.
-    await expect(sidebar(page).getByRole("heading", { name: "Canais" })).toHaveCount(0);
+    await expect(faixa(page)).toBeVisible();
+    await expect(faixa(page).getByRole("button", { name: /^Agente/ })).toHaveCount(0);
     await expect(sidebar(page).getByRole("heading", { name: "Leads" })).toBeVisible();
   });
 });
 
 /**
- * O manual do usuário, dentro do próprio sistema: o link no rodapé do menu, logo
- * abaixo de Configurações, e a rota `/manual` por trás dele.
+ * O manual do usuário, dentro do próprio sistema: o link no rodapé do painel (e no menu
+ * «Você»), e a rota `/manual` por trás dele.
  *
- * Duas coisas só se provam no navegador contra o servidor de verdade: que o
- * rodapé com mais uma linha NÃO faz o menu rolar (a 900px a folga é de 19px, e
- * o teste de "em 900px o menu não rola" acima continua valendo para a tela
- * inteira), e que a imagem do manual — que o `proxy` deixa passar por terminar
+ * Duas coisas só se provam no navegador contra o servidor de verdade: que o link abre o
+ * manual numa aba nova, e que a imagem do manual — que o `proxy` deixa passar por terminar
  * em `.png` — não é pública.
  */
 test.describe("o manual dentro do sistema", () => {
@@ -377,30 +395,17 @@ test.describe("o manual dentro do sistema", () => {
     await menuExpandido(context, baseURL);
   });
 
-  test("o link 'Manual' fica logo abaixo de 'Configurações' e abre o manual numa aba nova", async ({
+  test("o link 'Manual' fica no rodapé do painel e abre o manual numa aba nova", async ({
     page,
     context,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginAdmin(page);
 
-    const configuracoes = page.getByRole("link", { name: "Configurações", exact: true });
-    const manual = page.getByRole("link", { name: "Manual", exact: true });
+    const manual = sidebar(page).locator("xpath=..").getByRole("link", { name: "Manual", exact: true });
     await expect(manual).toBeVisible();
     await expect(manual).toHaveAttribute("href", "/manual/index.html");
     await expect(manual).toHaveAttribute("target", "_blank");
-
-    const [c, m] = await Promise.all([configuracoes.boundingBox(), manual.boundingBox()]);
-    expect(c && m, "os dois links têm caixa na tela").toBeTruthy();
-    expect(m!.y, "o Manual está abaixo de Configurações").toBeGreaterThan(c!.y + c!.height - 1);
-    expect(m!.y - (c!.y + c!.height), "e logo abaixo, sem outro item no meio").toBeLessThan(12);
-
-    // O rodapé com a linha nova não pode empurrar o menu para dentro da rolagem.
-    const rola = await page.evaluate(() => {
-      const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
-      return nav.scrollHeight > Math.round(nav.getBoundingClientRect().height) + 1;
-    });
-    expect(rola, "em 900px o menu inteiro tem de continuar cabendo sem scroll").toBe(false);
 
     const [aba] = await Promise.all([context.waitForEvent("page"), manual.click()]);
     await aba.waitForLoadState("domcontentloaded");

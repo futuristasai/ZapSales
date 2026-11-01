@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { DICIONARIO } from "@/lib/i18n/dicionario";
-import { NAV_CATALOG, NAV_GROUPS } from "@/lib/navigation/catalogo";
+import { MENU_AREAS, MENU_BLOCOS, MENU_GRUPOS, NAV_CATALOG, NAV_GROUPS } from "@/lib/navigation/catalogo";
 
 /**
  * O CATÁLOGO DO MENU TAMBÉM FALA ESPANHOL.
@@ -82,6 +82,13 @@ function textosDoMenu(): TextoDoMenu[] {
   for (const grupo of NAV_GROUPS as unknown as readonly Record<string, unknown>[]) {
     junta(`grupo:${String(grupo.id)}`, grupo, ["label", "description"]);
   }
+  // Os rótulos do menu novo (issue #188): os blocos da faixa, as áreas de Configurar e os grupos por
+  // tarefa chegam à tela por `t(entrada.label)` / `t(grupo.label)` — variável de laço, que a varredura
+  // de chaves de `i18n-espanhol-cobre-a-tela` não resolve. Sem esta leitura, «Todo dia» e «Vender»
+  // saíam em português para quem escolheu espanhol, com a suíte inteira verde.
+  for (const bloco of MENU_BLOCOS) achados.push({ onde: `bloco:${bloco.id}`, campo: "label", texto: bloco.label });
+  for (const area of MENU_AREAS) achados.push({ onde: `area:${area.id}`, campo: "label", texto: area.label });
+  for (const grupo of MENU_GRUPOS) achados.push({ onde: `grupo-do-menu:${grupo.id}`, campo: "label", texto: grupo.label });
   return achados;
 }
 

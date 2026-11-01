@@ -17,17 +17,15 @@ import { useAuth } from "@/hooks/auth/AuthProvider";
 import { ConnectionHealthDot } from "@/components/connections/ConnectionHealthDot";
 import { ContadorDeCasos } from "@/components/shell/ContadorDeCasos";
 import { ContadorDaFila } from "@/components/shell/ContadorDaFila";
+import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
+import { NavegacaoDoComputador } from "@/components/shell/NavegacaoDoComputador";
 import { VersionFooter } from "@/components/shell/VersionFooter";
 import { LogotipoDoProduto, SimboloDoProduto } from "@/components/branding/MarcaDoProduto";
-import { marcaEhADoProduto } from "@/lib/branding";
-import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
+import { useMarcaDaBarra } from "@/components/shell/useMarcaDaBarra";
 import { dicaDoDestino } from "@/lib/navigation/dica";
 import { GRUPO_NO_RODAPE, ICONE_DO_HUB, sidebarGroups } from "@/lib/navigation/registry";
 
 const CHAVE_GRUPOS_FECHADOS = "sidebar-grupos-fechados";
-
-/** O manual do usuário, servido pela própria instalação (`app/manual`). */
-const ENDERECO_DO_MANUAL = "/manual/index.html";
 
 interface SidebarContentProps {
   collapsed: boolean;
@@ -96,48 +94,7 @@ export function SidebarContent({
     });
   }
 
-  const brand = useMarcaDaInstalacao();
-  /**
-   * O CONSUMIDOR do nome por organização.
-   *
-   * Sem ele, `settings.branding.app_name` seria campo decorativo: medido, o nome
-   * da org não aparece em lugar nenhum da casca para o cliente típico de um
-   * revendedor — o único leitor é o `TenantSwitcher`, e ele devolve `null` com
-   * uma organização só.
-   *
-   * A marca da INSTALAÇÃO continua embaixo: a organização que não definiu nome
-   * vê exatamente o que via antes. O que mudou é POR ONDE ela chega — era
-   * `branding()`, que no navegador lê `window.__PUBLIC_ENV__` e no servidor lê
-   * `process.env`, e essas duas fontes passaram a divergir quando o layout raiz
-   * começou a injetar a marca do BANCO. Divergência entre SSR e cliente aqui não
-   * é detalhe: com logo no banco e `APP_LOGO_URL` vazio, o servidor desenhava o
-   * `<span>` de baixo e o cliente desenhava o `<img>` — React #418 em toda tela.
-   * Hoje a marca vem por PROP do servidor (`useMarcaDaInstalacao`), pela mesma
-   * rota de `activeOrg`, e os dois lados leem o mesmo objeto por construção.
-   */
-  const nome = activeOrg?.marca?.nome ?? brand.name;
-  /**
-   * O mesmo desenho para o LOGO — e é este par de linhas que fecha o caminho do
-   * `logo_url` gravado até a tela.
-   *
-   * `||` e não `??`: vazio é AUSÊNCIA de logo, não "logo em branco". É a regra
-   * que `resolveBranding` e `primeiroDefinido` já aplicam nas camadas de baixo, e
-   * com `??` um `""` vindo de cima apagaria o logo do revendedor em vez de
-   * descer para ele — que é o contrário do que a precedência por campo promete.
-   */
-  const logo = activeOrg?.marca?.logoUrl || brand.logoUrl;
-  const logoEscuro =
-    activeOrg?.marca?.logoDarkUrl !== undefined
-      ? activeOrg.marca.logoDarkUrl
-      : activeOrg?.marca?.logoUrl
-        ? null
-        : brand.logoDarkUrl;
-  // Só quando NINGUÉM — nem a instalação, nem a organização — pôs marca própria:
-  // é a condição de `lib/branding.ts`, avaliada sobre o que a barra vai mostrar.
-  const marcaDoProduto = marcaEhADoProduto({ name: nome, logoUrl: logo ?? null });
-  // Só o da INSTALAÇÃO, e só quando a organização não pôs logo próprio: com logo da
-  // organização, o ícone do revendedor seria a marca errada naquela casca.
-  const icone = activeOrg?.marca?.logoUrl ? null : (brand.iconUrl ?? null);
+  const { nome, logo, logoEscuro, marcaDoProduto, icone, inicial } = useMarcaDaBarra();
 
   return (
     <>
@@ -205,11 +162,17 @@ export function SidebarContent({
                 quebraria no meio do code point. Mesma regra de `resolveBranding`
                 — a inicial precisa acompanhar o nome que a barra mostra, senão
                 recolher o menu troca a marca. */}
-            {[...nome][0]?.toUpperCase() ?? brand.initial}
+            {[...nome][0]?.toUpperCase() ?? inicial}
           </span>
         )}
       </div>
       {/*
+        ⚠️ HISTÓRICO (issue #188). Este conteúdo é hoje só o menu de gaveta do CELULAR; no
+        computador a navegação é a faixa com o painel (`NavegacaoDoComputador`), e a regra
+        «o menu cabe em 1280×900 sem rolar» do `navegacao.spec.ts` foi trocada por «nenhum bloco
+        some abaixo da dobra». O texto abaixo conta por que a densidade foi medida e fica porque
+        o menu do celular ainda é este, até o ticket do celular.
+
         A DENSIDADE É MEDIDA, NÃO ESTÉTICA.
 
         O e2e `navegacao.spec.ts` exige que o menu inteiro caiba em 1280×900 sem
@@ -439,34 +402,39 @@ export function SidebarContent({
   );
 }
 
+/**
+ * A navegação do COMPUTADOR: a faixa e o painel (issue #188). O menu de gaveta do
+ * celular segue sendo `SidebarContent`, até o ticket do celular.
+ *
+ * `collapsed` é o painel recolhido (o cookie que `toggleSidebar` grava, lido no layout).
+ */
 export function Sidebar({ collapsed }: { collapsed: boolean }) {
   return (
     <aside
-      className={cn(
-        // ⚠️ `sticky`, e NUNCA `fixed`.
-        //
-        // Com `fixed` a barra sai do fluxo: ela não ocupa lugar nenhum na linha,
-        // e quem afastava o conteúdo era um `md:ml-16`/`md:ml-60` do lado de lá.
-        // Duas medidas para a mesma coisa, em componentes diferentes — e no dia
-        // em que discordassem (largura de 60 com margem de 16), a barra passava
-        // POR CIMA da lista de conversas, escondendo o começo de cada linha.
-        //
-        // Foi assim que apareceu numa instalação real: a barra expandida, com as
-        // etiquetas legíveis, e a lista atrás dela cortada. Um F5 "consertava",
-        // que é a assinatura de servidor e navegador terem pintado estados
-        // diferentes — e `AppShell` e `Sidebar` são ambos `"use client"`.
-        //
-        // `sticky top-0 h-screen` dá o mesmo efeito visual (a barra não rola com
-        // a página) e ela VOLTA a ocupar lugar: sobra para o conteúdo exatamente
-        // o que ela não usou, e não há segunda medida para discordar.
-        //
-        // `shrink-0` porque item de flex encolhe por padrão, e uma barra de 60
-        // espremida para caber é o mesmo defeito por outro caminho.
-        "sticky top-0 z-30 flex h-screen shrink-0 flex-col border-r bg-card transition-[width] duration-200",
-        collapsed ? "w-16" : "w-60",
-      )}
+      // ⚠️ `sticky`, e NUNCA `fixed`.
+      //
+      // Com `fixed` a barra sai do fluxo: ela não ocupa lugar nenhum na linha,
+      // e quem afastava o conteúdo era um `md:ml-16`/`md:ml-60` do lado de lá.
+      // Duas medidas para a mesma coisa, em componentes diferentes — e no dia
+      // em que discordassem (largura de 60 com margem de 16), a barra passava
+      // POR CIMA da lista de conversas, escondendo o começo de cada linha.
+      //
+      // Foi assim que apareceu numa instalação real: a barra expandida, com as
+      // etiquetas legíveis, e a lista atrás dela cortada. Um F5 "consertava",
+      // que é a assinatura de servidor e navegador terem pintado estados
+      // diferentes — e `AppShell` e `Sidebar` são ambos `"use client"`.
+      //
+      // `sticky top-0 h-screen` dá o mesmo efeito visual (a barra não rola com
+      // a página) e ela VOLTA a ocupar lugar: sobra para o conteúdo exatamente
+      // o que ela não usou, e não há segunda medida para discordar. A faixa e o
+      // painel fixado ocupam lugar JUNTOS; o painel recolhido que se abre por
+      // cima da tela é `absolute` DENTRO desta caixa, nunca `fixed`.
+      //
+      // `shrink-0` porque item de flex encolhe por padrão, e uma barra espremida
+      // para caber é o mesmo defeito por outro caminho.
+      className="sticky top-0 z-30 flex h-screen shrink-0"
     >
-      <SidebarContent collapsed={collapsed} />
+      <NavegacaoDoComputador painelRecolhido={collapsed} />
     </aside>
   );
 }

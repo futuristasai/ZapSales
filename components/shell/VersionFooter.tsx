@@ -15,8 +15,15 @@ import { cn } from "@/lib/utils";
 export function VersionFooter({
   collapsed,
   onNavigate,
+  soAtualizacao = false,
 }: {
   collapsed: boolean;
+  /**
+   * Só o aviso de atualização, e nada quando não há. É o uso da faixa com o painel
+   * recolhido (issue #188): o número da versão não tem lugar nos 80px dela, mas o
+   * aviso para quem administra continua precisando estar à vista.
+   */
+  soAtualizacao?: boolean;
   /** Fecha a gaveta do mobile — é o único Link do drawer que não a recebia. */
   onNavigate?: () => void;
 }) {
@@ -32,6 +39,7 @@ export function VersionFooter({
   const alerta = data.is_owner && data.update_available;
 
   if (!alerta) {
+    if (soAtualizacao) return null;
     return (
       <p
         className={cn(

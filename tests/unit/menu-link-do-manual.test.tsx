@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import { Sidebar, SidebarContent } from "@/components/shell/Sidebar";
+import { SidebarContent } from "@/components/shell/Sidebar";
 import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import { DEFAULT_APP_NAME, type Branding } from "@/lib/branding";
 import { MarcaDaInstalacaoProvider } from "@/lib/branding/contexto";
@@ -50,12 +50,12 @@ function renderizar(ui: React.ReactElement) {
 
 describe("o link do manual no menu", () => {
   it("aparece para qualquer papel — aqui, o mais baixo (somente leitura)", () => {
-    renderizar(<Sidebar collapsed={false} />);
+    renderizar(<SidebarContent collapsed={false} />);
     expect(screen.getByRole("link", { name: "Manual" })).toBeTruthy();
   });
 
   it("abre o manual da própria instalação, numa aba nova e sem entregar a janela de origem", () => {
-    renderizar(<Sidebar collapsed={false} />);
+    renderizar(<SidebarContent collapsed={false} />);
     const link = screen.getByRole("link", { name: "Manual" });
     expect(link.getAttribute("href")).toBe("/manual/index.html");
     expect(link.getAttribute("target")).toBe("_blank");
@@ -63,7 +63,7 @@ describe("o link do manual no menu", () => {
   });
 
   it("vem logo DEPOIS de Configurações, sem nenhum outro link no meio", () => {
-    renderizar(<Sidebar collapsed={false} />);
+    renderizar(<SidebarContent collapsed={false} />);
     const configuracoes = screen.getByRole("link", { name: "Configurações" });
     const manual = screen.getByRole("link", { name: "Manual" });
     expect(
@@ -76,14 +76,14 @@ describe("o link do manual no menu", () => {
   });
 
   it("divide a linha com o controle de recolher — é o que o mantém dentro da folga do menu", () => {
-    renderizar(<Sidebar collapsed={false} />);
+    renderizar(<SidebarContent collapsed={false} />);
     const manual = screen.getByRole("link", { name: "Manual" });
     const recolher = screen.getByRole("button", { name: "Recolher sidebar" });
     expect(manual.parentElement).toBe(recolher.parentElement);
   });
 
   it("recolhido, o controle vira 'Expandir sidebar' e o Manual continua com nome acessível", () => {
-    renderizar(<Sidebar collapsed />);
+    renderizar(<SidebarContent collapsed />);
     expect(screen.getByRole("button", { name: "Expandir sidebar" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Manual" }).getAttribute("title")).toBe("Manual");
   });

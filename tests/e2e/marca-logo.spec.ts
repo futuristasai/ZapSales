@@ -402,11 +402,13 @@ async function logoDaBarra(page: Page): Promise<LogoNaTela | null> {
       `(redirect de auth, onboarding, suspensão, 403 ou o gate de MFA).`,
   ).toHaveURL(/\/app(\/|$)/, { timeout: 15_000 });
 
-  const casca = page.locator("aside").first();
+  // O logo por extenso mora no topo da tela desde a issue #188 (a faixa de 80px só comporta o
+  // símbolo). O `<aside>` continua sendo a prova de que a casca montou.
   await expect(
-    casca,
+    page.locator("aside").first(),
     `a casca do app não montou em /app — ${page.url()}. Sem <aside> não há o que medir.`,
   ).toBeAttached({ timeout: 15_000 });
+  const casca = page.getByTestId("marca-no-topo");
 
   const img = casca.locator("img").first();
   // `count()` é a ÚNICA leitura sem auto-espera do helper, e por isso era ela
@@ -571,7 +573,7 @@ async function barraMostraLogoDe(
   onde: string,
 ): Promise<LogoNaTela> {
   await expect(
-    page.locator("aside").first().locator("img").first(),
+    page.getByTestId("marca-no-topo").locator("img").first(),
     `${onde}: a barra lateral não passou a mostrar o logo da camada — esperava um src ` +
       `com "brand-logos/${caminhoNoBucket}" e há outro (ou nenhum)`,
   ).toHaveAttribute("src", new RegExp(`brand-logos/${caminhoNoBucket}`), { timeout: 15_000 });

@@ -3775,3 +3775,27 @@ conferidas contra a `main` limpa arquivo por arquivo), nenhuma do PR.
   travam no claim da fila sob PGlite (igual ao `ferramenta-externa-no-turno`, com o controle da `main` também vermelho):
   o gate é o job `invariants` do CI.
 - O caminho HTTPS real contra um servidor MCP de terceiro (SNI/certificado) não é exercitado por nenhum gate.
+
+## A faixa e o painel Todo dia no computador (2026-11-01, issue #188)
+
+Origem: o menu de seis grupos e 15 itens trocou a barra lateral de 240 px pela **faixa** de 80 px com o **painel** ao
+lado (pai #183). **Substitui a regra «o menu inteiro cabe em 1280×900 sem rolar» das seções acima** por «nenhum bloco
+some abaixo da dobra»: as linhas de 2026-09-04 e 2026-09-27 sobre a folga de 19 px descrevem o menu antigo e ficam como
+histórico.
+
+| caso | prioridade | estado |
+|---|---|---|
+| O painel abre em Todo dia, com a faixa de 80 px | `[P0]` | `navegacao.spec.ts` (mede a largura da faixa e o título); unitário `faixa-e-painel.test.tsx` |
+| Todas as telas continuam alcançáveis (as 63, por papel) | `[P0]` | unitário `faixa-do-menu.test.ts` (conjunto igual ao de `destinosDaInterface` para dono, gerente, atendente, leitor, plataforma e interface simplificada) e `faixa-e-painel.test.tsx` (clicando cada entrada e o menu «Você») |
+| Nenhum bloco some abaixo da dobra, em nenhuma entrada, em 1280×900 e a faixa em 1280×768 | `[P1]` | `navegacao.spec.ts` — **a rodar no CI**; medido à mão na vitrine local (faixa termina em 888 de 900) |
+| Contador da fila sobre o ícone de Todo dia; casos só em Aguardando Humano; zero não aparece | `[P1]` | `contadores-do-menu.spec.ts` (estendida) e `faixa-e-painel.test.tsx` |
+| Número do WhatsApp caído acende o aviso no ícone de Conexões | `[P1]` | unitário (`AvisoDeConexaoNaFaixa` só desenha com a conexão em `down`); **prova pela tela com uma conexão derrubada: a fazer na VPS** |
+| Recolher o painel, abrir por cima, Esc/clique fora/escolher tela fecham, e a preferência vale no F5 | `[P1]` | unitário + `navegacao.spec.ts` («Fixar o painel ao lado» seguido de reload) |
+| Marca: símbolo/ícone/inicial na faixa, logo por extenso no topo, nos dois temas | `[P1]` | `marca-logo.spec.ts` e `logo-moldura-no-tema-escuro.spec.ts` (agora medem `marca-no-topo`) |
+| Menu do celular não regride | `[P1]` | `navegacao.spec.ts` (caso mobile, inalterado) e os unitários que agora exercitam `SidebarContent` |
+
+**Vitrine local (sem Docker), 2026-11-01:** faixa e painel conferidos no navegador, tema claro e escuro, painel fixado e
+recolhido aberto por cima, Dono e Atendente. Tudo em tela com rede sem servidor (os 401 de contadores são esperados). **Não
+substitui** a prova em ambiente fresco estilo VPS com os três papéis e os recursos opcionais ligados e desligados — essa
+vem do CI do PR (`e2e`) e da prova em produção depois do merge.
+

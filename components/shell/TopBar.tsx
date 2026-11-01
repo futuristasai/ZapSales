@@ -6,34 +6,75 @@ import { TenantSwitcher } from "./TenantSwitcher";
 import { UserMenu } from "./UserMenu";
 import { SearchTrigger } from "./SearchTrigger";
 import { LogotipoDoProduto } from "@/components/branding/MarcaDoProduto";
-import { useAuth } from "@/hooks/auth/AuthProvider";
-import { marcaEhADoProduto } from "@/lib/branding";
-import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
+import { useMarcaDaBarra } from "@/components/shell/useMarcaDaBarra";
+import { cn } from "@/lib/utils";
 
 /**
- * O logotipo do PRODUTO na barra do topo — "ZapSales by Futuristas".
+ * A marca por extenso no topo — "ZapSales by Futuristas" ou o logo do revendedor.
  *
- * Com o menu recolhido (escolha da pessoa; o padrão é expandido desde 14/10/2026) a barra lateral só tem
- * espaço para o símbolo, e o nome do produto com a assinatura da Futuristas
- * sumiria da tela. Ele aparece aqui só nesse caso, e só quando a marca é a do
- * produto: com marca própria (da instalação ou da organização) quem aparece é
- * o ícone dela, no menu — a regra é a mesma de `Sidebar.tsx`.
+ * A faixa do computador tem 80px (issue #188) e só comporta o símbolo, então o nome
+ * e o logo ficam aqui. É a mesma marca que a faixa resolve (`useMarcaDaBarra`):
+ *  - a do produto → o logotipo desenhado em SVG;
+ *  - logo configurado (da organização ou da instalação) → a imagem, com a arte do
+ *    tema escuro quando existe e a proteção de contraste quando não existe;
+ *  - só nome → o nome em texto.
+ *
+ * Só no computador: no celular o topo é apertado e o menu de gaveta tem a sua marca.
  */
-function LogotipoNoTopo() {
-  const brand = useMarcaDaInstalacao();
-  const { activeOrg } = useAuth();
-  const nome = activeOrg?.marca?.nome ?? brand.name;
-  const logo = activeOrg?.marca?.logoUrl || brand.logoUrl;
-  if (!marcaEhADoProduto({ name: nome, logoUrl: logo ?? null })) return null;
-  return <LogotipoDoProduto nome={nome} className="hidden h-9 w-auto md:block" />;
+function MarcaNoTopo() {
+  const { nome, logo, logoEscuro, marcaDoProduto } = useMarcaDaBarra();
+  if (marcaDoProduto)
+    return (
+      <div data-testid="marca-no-topo" className="hidden md:block">
+        <LogotipoDoProduto nome={nome} className="h-9 w-auto" />
+      </div>
+    );
+  if (logo || logoEscuro) {
+    return (
+      <div
+        data-testid="marca-no-topo"
+        className={cn(
+          "hidden rounded-md md:block",
+          !logoEscuro && "dark:bg-white dark:px-2 dark:py-1 dark:shadow-sm",
+        )}
+      >
+        {/* <img> em vez de next/image de propósito: a URL vem de quem hospeda (banco ou
+            .env), e next/image exige allowlist de domínios fechada em build. Altura
+            fixa e largura livre porque a arte enviada tem proporção desconhecida. */}
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logo}
+            alt={nome}
+            className={cn("h-7 w-auto max-w-[10rem] object-contain", logoEscuro && "dark:hidden")}
+          />
+        ) : (
+          <span className="dark:hidden">{nome}</span>
+        )}
+        {logoEscuro ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoEscuro}
+            alt={nome}
+            className="hidden h-7 w-auto max-w-[10rem] object-contain dark:block"
+          />
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <span data-testid="marca-no-topo" className="hidden font-semibold tracking-tight md:block">
+      {nome}
+    </span>
+  );
 }
 
-export function TopBar({ mostrarLogotipo = false }: { mostrarLogotipo?: boolean }) {
+export function TopBar() {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-3 backdrop-blur md:gap-4 md:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <MobileSidebar />
-        {mostrarLogotipo ? <LogotipoNoTopo /> : null}
+        <MarcaNoTopo />
         <TenantSwitcher />
       </div>
       <div className="flex min-w-0 flex-1 justify-center md:max-w-md">
