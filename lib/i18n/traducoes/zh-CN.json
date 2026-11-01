@@ -5394,5 +5394,15 @@
   "Observando — onde o Jev compara, a sua IA de sempre decide, e ele só é comparado com ela. Nos pedidos do cliente, ele conta as mensagens em que a regra de hoje não reconheceu o pedido, e avisa a equipe.": "观察中——在 Jev 做对比的任务中，由您平时使用的 AI 决定，Jev 只与它做对比。对于客户的请求，它统计现有规则没有识别出该请求的消息，并提醒团队。",
   "Observando — onde o Jev compara, a sua IA de sempre decide, e ele só é comparado com ela. Nos pedidos do cliente, ele só conta as mensagens em que a regra de hoje não reconheceu o pedido.": "观察中——在 Jev 做对比的任务中，由您平时使用的 AI 决定，Jev 只与它做对比。对于客户的请求，它只统计现有规则没有识别出该请求的消息。",
   "Onde ele decide, vale a escolha que você fez antes de desligá-lo; onde só observa, a sua IA de sempre continua decidindo.": "在它做决定的任务中，沿用你关闭它之前所做的选择；在它只观察的任务中，仍由您平时使用的 AI 决定。",
-  "Onde ele só observa, a sua IA de sempre continua decidindo.": "在它只观察的任务中，仍由您平时使用的 AI 决定。"
+  "Onde ele só observa, a sua IA de sempre continua decidindo.": "在它只观察的任务中，仍由您平时使用的 AI 决定。",
+  "Avisar outros sistemas": "Webhook 回调",
+  "Quem atende cada conversa": "分配规则",
+  "O que o agente sabe fazer": "技能",
+  "Chave da IA": "凭证",
+  "Qual IA usar": "提供商",
+  "Chaves de acesso": "API 访问令牌",
+  "Histórico do agente": "执行",
+  "Revezamento da equipe": "客服分配",
+  "Etiquetas": "标签",
+  "Dados da empresa": "组织"
 }

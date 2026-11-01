@@ -104,7 +104,7 @@ describe("Sidebar agrupado", () => {
     expect(casos[0]!.closest("a")).toHaveAttribute("href", "/app/ai/cases");
     expect(fila[0]!.closest("a")).toHaveAttribute("href", "/app/inbox");
     // «Quem atende cada conversa» (antes Roteadores) saiu do menu para Casos caber (a folga era menos de uma linha).
-    expect(screen.queryByRole("link", { name: "Quem atende cada conversa" })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Quem atende cada conversa/ })).toBeNull();
     cleanup();
     // Recolhido, o contador vira ponto — é o componente que decide, com esta dica.
     render(<Sidebar collapsed />);
