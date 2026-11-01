@@ -52,13 +52,11 @@ function Grupo({
 }
 
 /**
- * O que o painel lista para a entrada escolhida na faixa.
+ * O que o painel lista: a MESA de Todo dia.
  *
- * Todo dia é a MESA: Leads e Gestão de Clientes CRM juntos numa caixa, com os
- * contadores, e depois «Se a sua empresa usa» fora dela. Configurar e Resultados
- * são a lista simples das telas da área, agrupadas por tarefa — a gaveta larga com
- * a frase de cada tela vem em outro ticket, e esta lista é o que mantém as telas
- * todas alcançáveis enquanto isso.
+ * Leads e Gestão de Clientes CRM juntos numa caixa, com os contadores, e depois «Se a
+ * sua empresa usa» fora dela. As áreas de Configurar e Resultados não passam por aqui:
+ * elas abrem a gaveta (`GavetaDaArea`, issue #189).
  *
  * Não decide quem vê o quê: recebe os grupos já projetados (`faixaDoMenu`).
  */
@@ -67,23 +65,13 @@ export function PainelDoMenu({
   hrefAtual,
   aoNavegar,
 }: {
+  /** A entrada Todo dia. */
   entrada: EntradaDaFaixa;
   /** O endereço da tela atual (`telaAtual`): uma só, a mais específica. */
   hrefAtual: string | null;
   aoNavegar?: () => void;
 }) {
   const atual = (href: string) => href === hrefAtual;
-
-  if (entrada.id !== "todo-dia") {
-    return (
-      <div className="space-y-1">
-        {entrada.grupos.map((g) => (
-          <Grupo key={g.id} grupo={g} atual={atual} daMesa={false} aoNavegar={aoNavegar} />
-        ))}
-      </div>
-    );
-  }
-
   const mesa = entrada.grupos.filter((g) => GRUPOS_DA_MESA.includes(g.id));
   const resto = entrada.grupos.filter((g) => !GRUPOS_DA_MESA.includes(g.id));
   return (

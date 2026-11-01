@@ -92,6 +92,8 @@ test.describe.configure({ timeout: 120_000 });
 const faixa = (page: Page) => page.getByRole("navigation", { name: "Áreas do menu" });
 const entrada = (page: Page, nome: string) =>
   faixa(page).getByRole("button", { name: new RegExp(`^${nome}`) });
+// As áreas de Configurar e Resultados abrem a GAVETA (issue #189): um diálogo por cima da tela.
+const gaveta = (page: Page) => page.getByRole("dialog");
 
 test.describe("a faixa e o painel nascem abertos", () => {
   test("sem preferência salva, há a faixa de 80px e o painel em Todo dia", async ({ page }) => {
@@ -117,7 +119,9 @@ test.describe("a faixa e o painel nascem abertos", () => {
     await expect(page.getByRole("button", { name: "Recolher o painel" })).toBeVisible();
   });
 
-  test("a faixa tem Todo dia, as quatro áreas de Configurar, Resultados, Buscar e Você", async ({ page }) => {
+  test("a faixa tem Todo dia, as quatro áreas de Configurar, Resultados, Buscar e Você", async ({
+    page,
+  }) => {
     await loginAdmin(page);
     const nomes = await faixa(page).getByRole("button").allTextContents();
     // O número da fila (quando há) vem colado ao nome do botão de Todo dia: «Todo dia6».
@@ -139,7 +143,9 @@ test.describe("o painel recolhido, por escolha da pessoa", () => {
     await menuRecolhido(context, baseURL);
   });
 
-  test("sobra só a faixa; escolher uma entrada abre o painel por cima, e Esc o fecha", async ({ page }) => {
+  test("sobra só a faixa; escolher uma entrada abre o painel por cima, e Esc o fecha", async ({
+    page,
+  }) => {
     await loginAdmin(page);
     await expect(faixa(page)).toBeVisible();
     await expect(sidebar(page)).toHaveCount(0);
@@ -171,7 +177,9 @@ test.describe("o painel recolhido, por escolha da pessoa", () => {
     // A preferência é gravada por uma ação do servidor, em segundo plano: recarregar antes dela
     // terminar mediria o cookie de ANTES. Espera-se o estado (o cookie), não um relógio.
     await expect
-      .poll(async () => (await context.cookies()).find((c) => c.name === "sidebar_collapsed")?.value)
+      .poll(
+        async () => (await context.cookies()).find((c) => c.name === "sidebar_collapsed")?.value,
+      )
       .toBe("0");
     await page.reload();
     await expect(sidebar(page)).toBeVisible();
@@ -209,10 +217,12 @@ test.describe("navegação agrupada", () => {
     // em "Funis" seguiria verde medindo a outra tela; por isso a asserção de URL é
     // específica (`settings/tenant/pipelines`).
     await entrada(page, "Vender").click();
-    await expect(page.getByRole("heading", { level: 2, name: "Vender" })).toBeVisible();
+    await expect(gaveta(page).getByRole("heading", { level: 2, name: "Vender" })).toBeVisible();
     await page.screenshot({ path: path.join(EVIDENCE, "nav-area-vender.png"), fullPage: true });
 
-    await sidebar(page).getByRole("link", { name: /Etapas do funil/ }).click();
+    await gaveta(page)
+      .getByRole("link", { name: /Etapas do funil/ })
+      .click();
     await page.waitForURL(/settings\/tenant\/pipelines/);
     await expect(page.getByRole("heading", { name: "Etapas do funil", level: 1 })).toBeVisible();
   });
@@ -224,7 +234,9 @@ test.describe("navegação agrupada", () => {
     await expect(sidebar(page).getByRole("link", { name: "Produtos" })).toHaveCount(0);
 
     await entrada(page, "Vender").click();
-    await sidebar(page).getByRole("link", { name: /Produtos/ }).click();
+    await gaveta(page)
+      .getByRole("link", { name: /Produtos/ })
+      .click();
     await page.waitForURL(/\/app\/products/);
   });
 
@@ -235,17 +247,21 @@ test.describe("navegação agrupada", () => {
     await expect(page.getByRole("heading", { name: "Funis", level: 1 })).toBeVisible();
   });
 
-  test("chega em Conhecimento, que só existia atrás das abas de IA, pela área Agente", async ({ page }) => {
+  test("chega em Conhecimento, que só existia atrás das abas de IA, pela área Agente", async ({
+    page,
+  }) => {
     await loginAdmin(page);
 
     await entrada(page, "Agente").click();
-    await expect(sidebar(page).getByRole("heading", { name: "Montar o agente" })).toBeVisible();
-    await expect(sidebar(page).getByRole("heading", { name: "Ensinar o agente" })).toBeVisible();
-    await expect(sidebar(page).getByRole("heading", { name: "Conectar a IA" })).toBeVisible();
+    await expect(gaveta(page).getByRole("heading", { name: "Montar o agente" })).toBeVisible();
+    await expect(gaveta(page).getByRole("heading", { name: "Ensinar o agente" })).toBeVisible();
+    await expect(gaveta(page).getByRole("heading", { name: "Conectar a IA" })).toBeVisible();
 
     await page.screenshot({ path: path.join(EVIDENCE, "nav-area-agente.png"), fullPage: true });
 
-    await sidebar(page).getByRole("link", { name: /Conhecimento/ }).click();
+    await gaveta(page)
+      .getByRole("link", { name: /Conhecimento/ })
+      .click();
     await page.waitForURL(/knowledge\/sources/);
   });
 
@@ -257,7 +273,9 @@ test.describe("navegação agrupada", () => {
     await loginAdmin(page);
 
     await entrada(page, "Conexões").click();
-    await sidebar(page).getByRole("link", { name: /^Conexões/ }).click();
+    await gaveta(page)
+      .getByRole("link", { name: /^Conexões/ })
+      .click();
     await page.waitForURL(/\/app\/connections/);
     await expect(page.getByRole("tab", { name: /oficial/i })).toBeVisible();
   });
@@ -289,13 +307,13 @@ test.describe("navegação agrupada", () => {
   });
 
   /**
-   * A garantia que SUBSTITUI "o menu cabe em 900px sem rolar, no máximo 15 itens" (issue #188).
+   * A garantia que SUBSTITUI "o menu cabe em 900px sem rolar, no máximo 15 itens" (issues #188 e #189).
    *
-   * O menu agora cresce: o painel lista as telas de uma entrada por vez e pode rolar. O que não
-   * pode acontecer é um bloco inteiro — um título de grupo, um botão da faixa — ficar abaixo da
-   * dobra, indistinguível de um bloco que não existe. É isso que se mede, por ferramenta e nunca a
-   * olho: em cada entrada da faixa, todo título de grupo está dentro da área visível do painel, e
-   * todo botão da faixa está dentro da janela.
+   * O menu agora cresce: o painel lista a mesa de Todo dia e cada área abre a sua gaveta, que pode
+   * rolar. O que não pode acontecer é um bloco inteiro — um título de grupo, um botão da faixa —
+   * ficar abaixo da dobra, indistinguível de um bloco que não existe. É isso que se mede, por
+   * ferramenta e nunca a olho: em Todo dia, todo título de grupo está dentro da área visível do
+   * painel; em cada área, o mesmo na gaveta; e todo botão da faixa está dentro da janela.
    */
   test("nenhum bloco some abaixo da dobra, em nenhuma entrada da faixa", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -303,22 +321,33 @@ test.describe("navegação agrupada", () => {
 
     const entradas = ["Todo dia", "Vender", "Agente", "Conexões", "Empresa", "Resultados"];
     for (const nome of entradas) {
-      await entrada(page, nome).click();
-      const m = await page.evaluate(() => {
-        const nav = document.querySelector('nav[aria-label="Navegação principal"]')!;
-        const r = nav.getBoundingClientRect();
+      if (nome !== "Todo dia") await entrada(page, nome).click();
+      const m = await page.evaluate((nomeDaEntrada) => {
+        const raiz =
+          nomeDaEntrada === "Todo dia"
+            ? document.querySelector('nav[aria-label="Navegação principal"]')!
+            : document.querySelector('[role="dialog"]')!;
+        const r = raiz.getBoundingClientRect();
         const botoes = [...document.querySelectorAll('nav[aria-label="Áreas do menu"] button')];
         return {
-          titulos: nav.querySelectorAll("h3").length,
-          titulosFora: [...nav.querySelectorAll("h3")].filter(
+          titulos: raiz.querySelectorAll("h3").length,
+          titulosFora: [...raiz.querySelectorAll("h3")].filter(
             (h) => h.getBoundingClientRect().bottom > r.bottom + 1,
           ).length,
-          botoesFora: botoes.filter((b) => b.getBoundingClientRect().bottom > window.innerHeight).length,
+          botoesFora: botoes.filter((b) => b.getBoundingClientRect().bottom > window.innerHeight)
+            .length,
         };
-      });
+      }, nome);
       expect(m.titulos, `${nome}: guarda de vacuidade`).toBeGreaterThan(0);
-      expect(m.titulosFora, `${nome}: grupo inteiro invisível é o problema que viemos resolver`).toBe(0);
+      expect(
+        m.titulosFora,
+        `${nome}: grupo inteiro invisível é o problema que viemos resolver`,
+      ).toBe(0);
       expect(m.botoesFora, `${nome}: botão da faixa abaixo da dobra`).toBe(0);
+      if (nome !== "Todo dia") {
+        await page.keyboard.press("Escape");
+        await expect(gaveta(page)).toHaveCount(0);
+      }
     }
   });
 
@@ -340,7 +369,10 @@ test.describe("navegação agrupada", () => {
     test("em 390px, o sidebar vira gaveta e não cria overflow horizontal", async ({ page }) => {
       await loginAdmin(page);
 
-      await expect(sidebar(page), "o sidebar desktop fica fora da árvore acessível no mobile").toHaveCount(0);
+      await expect(
+        sidebar(page),
+        "o sidebar desktop fica fora da árvore acessível no mobile",
+      ).toHaveCount(0);
       await expectSemOverflowHorizontal(page, "shell mobile após login");
 
       await page.getByRole("button", { name: "Abrir navegação" }).click();
@@ -363,22 +395,143 @@ test.describe("navegação agrupada", () => {
     });
   });
 
-  test("as telas de Empresa continuam alcançáveis: Dados da empresa, Equipe e Plano", async ({ page }) => {
+  test("as telas de Empresa continuam alcançáveis: Dados da empresa, Equipe e Plano", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1280, height: 768 });
     await loginAdmin(page);
 
     await entrada(page, "Empresa").click();
     for (const nome of [/Dados da empresa/, /Equipe/, /Plano e cobrança/]) {
-      await expect(sidebar(page).getByRole("link", { name: nome }).first()).toBeVisible();
+      await expect(gaveta(page).getByRole("link", { name: nome }).first()).toBeVisible();
     }
   });
 
-  test("um agent não vê a entrada Agente nem um grupo que a permissão esvaziou", async ({ page }) => {
+  test("um agent não vê a entrada Agente nem um grupo que a permissão esvaziou", async ({
+    page,
+  }) => {
     await login(page, creds.users.agent!.email);
 
     await expect(faixa(page)).toBeVisible();
     await expect(faixa(page).getByRole("button", { name: /^Agente/ })).toHaveCount(0);
     await expect(sidebar(page).getByRole("heading", { name: "Leads" })).toBeVisible();
+  });
+});
+
+/**
+ * A GAVETA das áreas de Configurar e Resultados (issue #189), pela tela.
+ *
+ * O jsdom não faz layout, então largura, colunas e o escurecimento do fundo só se provam aqui,
+ * com `getBoundingClientRect`/`getComputedStyle`, e nunca a olho.
+ */
+test.describe("a gaveta das áreas", () => {
+  test.beforeEach(async ({ context, baseURL }) => {
+    await menuExpandido(context, baseURL);
+  });
+
+  const medirTiles = (page: Page) =>
+    page.evaluate(() => {
+      const d = document.querySelector('[role="dialog"]')!;
+      const r = d.getBoundingClientRect();
+      const tiles = [...d.querySelectorAll("li > a")];
+      return {
+        largura: r.width,
+        esquerda: r.left,
+        colunas: new Set(tiles.map((a) => Math.round(a.getBoundingClientRect().left))).size,
+        tiles: tiles.length,
+        // Texto cortado na horizontal: a caixa do tile é menor que o conteúdo dele.
+        cortados: tiles.filter((a) => a.scrollWidth > a.clientWidth + 1).length,
+        transbordaGaveta: d.scrollWidth > d.clientWidth + 1,
+      };
+    });
+
+  test("abre com ~700px, duas colunas e o fundo escurecido, ao lado da faixa", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await loginAdmin(page);
+    await entrada(page, "Agente").click();
+    await expect(gaveta(page)).toBeVisible();
+
+    const m = await medirTiles(page);
+    expect(m.largura, "a gaveta tem cerca de 700px").toBeGreaterThanOrEqual(690);
+    expect(m.largura, "a gaveta tem cerca de 700px").toBeLessThanOrEqual(710);
+    expect(m.esquerda, "ela nasce encostada na faixa de 80px").toBeGreaterThanOrEqual(78);
+    expect(m.esquerda).toBeLessThanOrEqual(82);
+    expect(m.tiles, "guarda de vacuidade").toBeGreaterThan(3);
+    expect(m.colunas, "duas colunas").toBe(2);
+    expect(m.cortados, "nenhuma tela com texto cortado").toBe(0);
+
+    const fundo = await gaveta(page).evaluate(
+      (d) => getComputedStyle(d.previousElementSibling!).backgroundColor,
+    );
+    expect(fundo, "o fundo atrás da gaveta é escurecido (translúcido, não transparente)").not.toBe(
+      "rgba(0, 0, 0, 0)",
+    );
+    await page.screenshot({ path: path.join(EVIDENCE, "gaveta-agente-1280.png") });
+  });
+
+  test("fecha com o ×, com Esc e com um clique fora; e o foco volta ao botão da faixa", async ({
+    page,
+  }) => {
+    await loginAdmin(page);
+
+    await entrada(page, "Vender").click();
+    await gaveta(page).getByRole("button", { name: "Fechar" }).click();
+    await expect(gaveta(page)).toHaveCount(0);
+    await expect(entrada(page, "Vender")).toBeFocused();
+
+    await entrada(page, "Conexões").click();
+    await page.keyboard.press("Escape");
+    await expect(gaveta(page)).toHaveCount(0);
+    await expect(entrada(page, "Conexões")).toBeFocused();
+
+    await entrada(page, "Resultados").click();
+    await page.mouse.click(1200, 450);
+    await expect(gaveta(page)).toHaveCount(0);
+  });
+
+  test("escolher uma tela fecha a gaveta, e o painel continua em Todo dia", async ({ page }) => {
+    await loginAdmin(page);
+    await entrada(page, "Vender").click();
+    await gaveta(page)
+      .getByRole("link", { name: /Produtos/ })
+      .click();
+    await page.waitForURL(/\/app\/products/);
+    await expect(gaveta(page)).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 2, name: "Todo dia" })).toBeVisible();
+    await expect(entrada(page, "Vender")).toHaveAttribute("aria-current", "true");
+  });
+
+  test("prende o foco dentro dela enquanto aberta", async ({ page }) => {
+    await loginAdmin(page);
+    await entrada(page, "Empresa").click();
+    const voltas = (await gaveta(page).getByRole("link").count()) + 3;
+    for (let i = 0; i < voltas; i++) {
+      await page.keyboard.press("Tab");
+      const dentro = await page.evaluate(() =>
+        document.querySelector('[role="dialog"]')!.contains(document.activeElement),
+      );
+      expect(dentro, `Tab ${i + 1} saiu da gaveta`).toBe(true);
+    }
+  });
+
+  test("com movimento reduzido ela aparece sem animação", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await loginAdmin(page);
+    await entrada(page, "Resultados").click();
+    const animacao = await gaveta(page).evaluate((d) => getComputedStyle(d).animationName);
+    expect(animacao).toBe("none");
+  });
+
+  test("em janela estreita (768px) vira uma coluna, sem cortar texto", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 800 });
+    await loginAdmin(page);
+    await entrada(page, "Agente").click();
+    const m = await medirTiles(page);
+    expect(m.tiles, "guarda de vacuidade").toBeGreaterThan(3);
+    expect(m.colunas, "uma coluna").toBe(1);
+    expect(m.cortados, "nenhuma tela com texto cortado").toBe(0);
+    expect(m.transbordaGaveta, "a gaveta não rola na horizontal").toBe(false);
+    await page.screenshot({ path: path.join(EVIDENCE, "gaveta-agente-768.png") });
   });
 });
 
@@ -402,7 +555,9 @@ test.describe("o manual dentro do sistema", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginAdmin(page);
 
-    const manual = sidebar(page).locator("xpath=..").getByRole("link", { name: "Manual", exact: true });
+    const manual = sidebar(page)
+      .locator("xpath=..")
+      .getByRole("link", { name: "Manual", exact: true });
     await expect(manual).toBeVisible();
     await expect(manual).toHaveAttribute("href", "/manual/index.html");
     await expect(manual).toHaveAttribute("target", "_blank");
@@ -438,7 +593,9 @@ test.describe("o manual dentro do sistema", () => {
     const semLogin = await browser.newContext({ baseURL });
     try {
       const paginaSemLogin = await semLogin.request.get("/manual/index.html", { maxRedirects: 0 });
-      expect([307, 308], "sem sessão a página manda para o login").toContain(paginaSemLogin.status());
+      expect([307, 308], "sem sessão a página manda para o login").toContain(
+        paginaSemLogin.status(),
+      );
       expect(paginaSemLogin.headers()["location"] ?? "").toContain("/login");
 
       // O caminho que o proxy NÃO guarda: é a rota que tem de recusar.
@@ -451,7 +608,11 @@ test.describe("o manual dentro do sistema", () => {
 
   test("o que não é a página nem um print não sai de lá", async ({ page }) => {
     await loginAdmin(page);
-    for (const caminho of ["/manual/README.md", "/manual/modelo.html", "/manual/conteudo/ia/agentes.html"]) {
+    for (const caminho of [
+      "/manual/README.md",
+      "/manual/modelo.html",
+      "/manual/conteudo/ia/agentes.html",
+    ]) {
       const r = await page.request.get(caminho);
       expect(r.status(), caminho).toBe(404);
     }
