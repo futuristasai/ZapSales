@@ -127,6 +127,11 @@ test.describe("webhooks & automações — fluxo completo", () => {
     try {
       // --- Step 1: login como manager; sidebar mostra "Avisar outros sistemas" (antes Webhooks) ---
       await login(page, creds.users.manager!.email);
+      // Desde a issue #188 a tela mora na área Conexões da faixa, e não na mesa de Todo dia.
+      await page
+        .getByRole("navigation", { name: "Áreas do menu" })
+        .getByRole("button", { name: /^Conexões/ })
+        .click();
       await expect(page.getByRole("link", { name: "Avisar outros sistemas" })).toBeVisible();
       await page.getByRole("link", { name: "Avisar outros sistemas" }).click();
       await page.waitForURL(/\/app\/webhooks/);

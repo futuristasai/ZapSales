@@ -103,6 +103,11 @@ test.describe("J6.8 — anti-SSRF do outbound call_webhook (real, ponta a ponta)
     try {
       // --- fonte inbound (para gerar o lead que dispara a regra) ---
       await login(page, creds.users.manager!.email);
+      // A tela mora na área Conexões da faixa (issue #188).
+      await page
+        .getByRole("navigation", { name: "Áreas do menu" })
+        .getByRole("button", { name: /^Conexões/ })
+        .click();
       await page.getByRole("link", { name: "Avisar outros sistemas" }).click();
       await page.waitForURL(/\/app\/webhooks/);
       await page.getByRole("button", { name: /Nova fonte|Criar primeira fonte/ }).click();

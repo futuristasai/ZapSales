@@ -203,13 +203,13 @@ test.describe("chamada de voz — o estado em que toda instalação começa", ()
     // pode mudar; o endereço é o contrato. Um spec que casa rótulo reprova
     // quando alguém renomeia "Configurações", e isso não é o defeito que ele
     // existe para pegar.
-    const porta = page.locator('a[href="/app/settings"]').first();
-    await expect(porta, "não há porta para Configurações na navegação").toBeVisible();
-    await porta.click();
-    await page.waitForURL(/\/app\/settings(\/)?$/);
-
+    // Desde a issue #188 as telas pessoais moram no menu «Você» da faixa — a porta de Segurança.
+    await page
+      .getByRole("navigation", { name: "Áreas do menu" })
+      .getByRole("button", { name: /^Você/ })
+      .click();
     const paraSeguranca = page.locator('a[href="/app/settings/security"]').first();
-    await expect(paraSeguranca, "a tela de Segurança não está listada em Configurações").toBeVisible();
+    await expect(paraSeguranca, "a tela de Segurança não está no menu «Você»").toBeVisible();
     await paraSeguranca.click();
     await page.waitForURL(/\/app\/settings\/security/);
 

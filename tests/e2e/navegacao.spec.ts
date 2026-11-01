@@ -120,7 +120,8 @@ test.describe("a faixa e o painel nascem abertos", () => {
   test("a faixa tem Todo dia, as quatro áreas de Configurar, Resultados, Buscar e Você", async ({ page }) => {
     await loginAdmin(page);
     const nomes = await faixa(page).getByRole("button").allTextContents();
-    expect(nomes.map((n) => n.trim())).toEqual([
+    // O número da fila (quando há) vem colado ao nome do botão de Todo dia: «Todo dia6».
+    expect(nomes.map((n) => n.trim().replace(/\d+$/, ""))).toEqual([
       "Todo dia",
       "Vender",
       "Agente",
@@ -159,11 +160,19 @@ test.describe("o painel recolhido, por escolha da pessoa", () => {
     await expect(entrada(page, "Agente")).toBeFocused();
   });
 
-  test("«Fixar o painel ao lado» devolve o painel, e a escolha vale no próximo acesso", async ({ page }) => {
+  test("«Fixar o painel ao lado» devolve o painel, e a escolha vale no próximo acesso", async ({
+    page,
+    context,
+  }) => {
     await loginAdmin(page);
     await entrada(page, "Todo dia").click();
     await page.getByRole("button", { name: "Fixar o painel ao lado" }).click();
     await expect(sidebar(page)).toBeVisible();
+    // A preferência é gravada por uma ação do servidor, em segundo plano: recarregar antes dela
+    // terminar mediria o cookie de ANTES. Espera-se o estado (o cookie), não um relógio.
+    await expect
+      .poll(async () => (await context.cookies()).find((c) => c.name === "sidebar_collapsed")?.value)
+      .toBe("0");
     await page.reload();
     await expect(sidebar(page)).toBeVisible();
     await expect(page.getByRole("button", { name: "Recolher o painel" })).toBeVisible();
