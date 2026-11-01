@@ -531,7 +531,7 @@ export function AtendimentoForm({
                 <span className="block text-sm font-medium">{t("A conversa fica com quem atendeu")}</span>
                 <span className="block text-xs text-muted-foreground">
                   {t(
-                    "Responder pelo Inbox numa conversa sem dono passa a assumi-la, e a IA fica calada até alguém devolver. Quando o cliente escreve numa conversa encerrada, ela volta direto para o último atendente, sem passar pela distribuição, se ele ainda faz parte da equipe.",
+                    "Responder pela tela Conversas numa conversa sem dono passa a assumi-la, e a IA fica calada até alguém devolver. Quando o cliente escreve numa conversa encerrada, ela volta direto para o último atendente, sem passar pela distribuição, se ele ainda faz parte da equipe.",
                   )}
                 </span>
               </span>

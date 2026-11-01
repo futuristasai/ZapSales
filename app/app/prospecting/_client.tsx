@@ -976,10 +976,10 @@ export function ProspectingClient() {
                           <p className="text-xs text-muted-foreground">
                             {(config.funnel_entry ?? "on_start") === "on_send"
                               ? t(
-                                  "Ao iniciar, as empresas com telefone entram na fila. Cada uma entra no funil só quando for abordada. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem no Inbox. Uma mensagem já em transmissão pode concluir após a pausa.",
+                                  "Ao iniciar, as empresas com telefone entram na fila. Cada uma entra no funil só quando for abordada. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem em Conversas. Uma mensagem já em transmissão pode concluir após a pausa.",
                                 )
                               : t(
-                                  "Ao iniciar, os contatos novos com telefone entram no funil. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem no Inbox. Uma mensagem já em transmissão pode concluir após a pausa.",
+                                  "Ao iniciar, os contatos novos com telefone entram no funil. Contatos já existentes são preservados. A fila faz uma primeira abordagem; respostas seguem em Conversas. Uma mensagem já em transmissão pode concluir após a pausa.",
                                 )}
                           </p>
                         </fieldset>
@@ -1198,7 +1198,7 @@ export function ProspectingClient() {
                                   className="underline"
                                   href={`/app/inbox?id=${c.conversation_id}`}
                                 >
-                                  {t("Abrir no Inbox")}
+                                  {t("Abrir em Conversas")}
                                 </Link>
                               )}
                             </td>

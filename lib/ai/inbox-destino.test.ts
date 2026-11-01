@@ -117,12 +117,12 @@ describe("destinos da Central", () => {
     expect(items[1]?.destination).toMatchObject({ href: "/app/connections?aba=oficial&sub=templates", orientacao: expect.stringContaining("modelo citado no aviso") });
     expect(items[2]?.destination.estado).toBe("sem_destino");
   });
-  it("reativação leva ao Inbox sem referência, e só para quem atende", async () => {
+  it("reativação leva a Conversas sem referência, e só para quem atende", async () => {
     const [agente] = await resolverDestinosDosAvisos(leitor().client, ORG, "agent", [aviso("org_reativada", null, null)]);
     expect(agente?.destination).toEqual({
       estado: "disponivel",
       href: "/app/inbox",
-      rotulo: "Abrir o Inbox",
+      rotulo: "Abrir Conversas",
       orientacao: POLITICAS_DE_AVISO.org_reativada.orientacao,
     });
     const [leitura] = await resolverDestinosDosAvisos(leitor().client, ORG, "viewer", [aviso("org_reativada", null, null)]);

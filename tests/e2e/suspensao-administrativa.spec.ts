@@ -301,7 +301,7 @@ test("suspender cala B pela tela; o hub atende quem ficou; reativar não solta r
     await pAdminB.goto("/app/ai/inbox");
     const item = pAdminB.getByTestId("inbox-item").filter({ hasText: "enquanto a conta estava suspensa" });
     await expect(item).toHaveCount(1);
-    await expect(item.getByRole("link", { name: "Abrir o Inbox" })).toHaveAttribute("href", "/app/inbox");
+    await expect(item.getByRole("link", { name: "Abrir Conversas" })).toHaveAttribute("href", "/app/inbox");
     await pAdminB.screenshot({ path: `${EVIDENCIA}/central-apos-reativar.png`, fullPage: true });
   } catch (erro) {
     falhaDoCenario = erro;

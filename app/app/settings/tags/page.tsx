@@ -75,7 +75,7 @@ export default async function TagsPage() {
       <CabecalhoDePagina
         titulo={t("Tags")}
         descricao={t(
-            "As etiquetas que os agentes, o Inbox e o funil usam nesta organização. Renomear ou juntar corrige também as regras de agente que escrevem a etiqueta, na mesma operação.",
+            "As etiquetas que os agentes, as Conversas e o funil usam nesta organização. Renomear ou juntar corrige também as regras de agente que escrevem a etiqueta, na mesma operação.",
           )}
       />
 

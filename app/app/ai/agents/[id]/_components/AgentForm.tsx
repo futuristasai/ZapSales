@@ -1377,7 +1377,7 @@ export function AgentForm(props: Props) {
               estado={estadoDaSecao.quem}
               Icone={IdentificationCard}
               titulo={t("Quem é este agente")}
-              explicacao={t("Como a sua equipe reconhece este agente nas listas e na Inbox. O cliente não vê esta parte.")}
+              explicacao={t("Como a sua equipe reconhece este agente nas listas e em Conversas. O cliente não vê esta parte.")}
             >
               {isEdit ? null : (
                 <div className="flex items-center gap-3">
