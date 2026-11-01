@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu ZapSales — Protótipo 4 · Três modos</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  .p4-lado { width: 284px; flex: none; display: flex; flex-direction: column; background: var(--color-surface); border-right: 1px solid var(--color-border); }
+  .p4-topo { padding: 14px 14px 10px; display: flex; flex-direction: column; gap: 12px; }
+  .p4-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--color-elev); border-radius: 12px; }
+  .p4-seg button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; border-radius: 9px; font-size: 12.5px; color: var(--color-muted); transition: background 0.15s var(--ease), color 0.15s var(--ease); }
+  .p4-seg button:hover { color: var(--color-text); }
+  .p4-seg button[aria-pressed="true"] { background: var(--color-surface); color: var(--color-accent-text); font-weight: 700; box-shadow: var(--sombra); }
+  .p4-seg .zs-ic svg { width: 22px; height: 22px; }
+  .p4-seg .zs-n { position: absolute; top: 2px; right: 4px; height: 17px; min-width: 17px; font-size: 11px; padding: 0 4px; }
+  .p4-lista { flex: 1; overflow: auto; padding: 4px 8px 12px; }
+  .p4-lista .zs-item { padding-block: 8px; }
+  .p4-espera { margin: 4px 10px 10px; padding: 9px 12px; border-radius: 10px; background: var(--color-funil-fundo); color: var(--color-text); font-size: 13px; line-height: 1.4; }
+  .p4-espera a { color: var(--color-funil); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+  .p4-modo-frase { margin: 4px 10px 8px; font-size: 13px; color: var(--color-muted); }
+  .p4-pe { padding: 8px; border-top: 1px solid var(--color-border); position: relative; }
+  .p4-kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 5px; color: var(--color-subtle); margin-left: auto; }
+  .mb.p4m .zs-miolo { padding-bottom: 0; }
+  .p4-mtopo { background: var(--color-surface); border-bottom: 1px solid var(--color-border); position: relative; z-index: 20; }
+  .p4-mlinha { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
+  .p4-mlinha .espaco { flex: 1; }
+  .p4-mseg { margin: 0 10px 10px; }
+  .p4-mseg button { flex-direction: row; justify-content: center; gap: 6px; padding: 9px 2px; }
+  .p4-mseg .zs-ic svg { width: 20px; height: 20px; }
+  .p4-mdrop { position: absolute; top: 100%; left: 0; right: 0; max-height: 62dvh; max-height: 420px; overflow: auto; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--sombra-flutuante); padding: 6px 8px 12px; animation: desce 0.18s var(--ease); }
+  @keyframes desce { from { transform: translateY(-8px); opacity: 0.3; } to { transform: none; opacity: 1; } }
+  .p4-mdrop .zs-item { min-height: 44px; font-size: 15px; }
+  .p4-mfundo { position: absolute; inset: 0; background: var(--color-overlay); z-index: 10; }
+  .p4-btn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: var(--color-muted); }
+  .p4-btn .zs-av { width: 32px; height: 32px; background: var(--color-accent-soft); color: var(--color-accent-text); }
+</style>
+</head>
+<body>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/nucleo.js"></script>
+<script>
+const ui = { modo: "dia", ultimo: null, conta: false, mobile: null };
+document.addEventListener("zs-fechar", () => { ui.conta = false; ui.mobile = null; });
+const MODOS = [["dia", "Todo dia", "House"], ["montar", "Configurar", "Wrench"], ["acompanhar", "Resultados", "ChartPieSlice"]];
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea|select/i.test((e.target || {}).tagName || "")) return;
+  const i = ["1", "2", "3"].indexOf(e.key); if (i >= 0 && window.ZS) { ui.modo = MODOS[i][0]; ZS.set({}); }
+});
+ZS.iniciar({
+  titulo: "4 · Três modos",
+  ideia: "Um seletor no alto da barra troca a lista inteira entre Todo dia, Configurar e Resultados — você só vê o que serve ao que está fazendo agora. Atalhos: teclas 1, 2 e 3. A barra avisa quantas coisas esperam você. No celular, o seletor fica no topo e abre a lista por baixo.",
+  montar(tela, Z) {
+    const { h, ic } = Z, atual = Z.atual();
+    if (ui.ultimo !== atual.id) { ui.ultimo = atual.id; if (atual.bloco !== "voce") ui.modo = atual.bloco; }
+    const modos = MODOS.filter(([id]) => Z.porBloco(id).length);
+    if (!modos.some(([id]) => id === ui.modo)) ui.modo = modos[0][0];
+    const soma = Z.total(Z.porBloco("dia"));
+    const seletor = (cls, aoEscolher, pressionado) => h("div", { class: "p4-seg " + (cls || ""), role: "group", "aria-label": "O que você vai fazer agora" },
+      modos.map(([id, rot, icone]) => h("button", { type: "button", "aria-pressed": String(pressionado(id)), onclick: () => aoEscolher(id) }, ic(icone, pressionado(id) ? "fill" : "regular"), rot, id === "dia" && soma ? h("span", { class: "zs-n", "aria-label": soma + " esperando" }, soma) : null)));
+
+    function listaDoModo(id, opts) {
+      opts = opts || {};
+      if (id === "dia") {
+        const fx = Z.fixados(), op = Z.porTema("opcional");
+        const link = (d, t) => d && Z.D.CONTADORES[d.n] ? [h("a", { href: "#" + d.id, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } }, Z.D.CONTADORES[d.n] + " " + t)] : [];
+        const dd = (i) => Z.porTema("principal").find((d) => d.id === i);
+        const partes = [].concat(link(dd("/inbox"), "na fila"), link(dd("/ai/cases"), "casos"), link(dd("/ai/inbox"), "alertas"), link(dd("/tasks"), "tarefas"));
+        return [
+          partes.length ? h("div", { class: "p4-espera" }, "Esperando você: ", partes.flatMap((p, i) => [i ? ", " : "", p[0]])) : null,
+          Z.lista(Z.porTema("principal")),
+          op.length ? [h("div", { class: "zs-sub" }, "Se a sua empresa usa"), Z.lista(op)] : null,
+          fx.length ? [h("div", { class: "zs-sub" }, "Fixados por você"), Z.lista(fx, { pin: true })] : null];
+      }
+      const b = Z.D.BLOCOS.find((x) => x.id === id);
+      return [h("p", { class: "p4-modo-frase" }, b.frase), Z.temasDe(id).map((t) => Z.secao(t, { pin: true }))];
+    }
+
+    // ── Computador ──
+    const p = Z.papel();
+    const lado = h("aside", { class: "p4-lado", "aria-label": "Menu principal" },
+      h("div", { class: "p4-topo" }, Z.marca(), seletor("", (id) => { ui.modo = id; Z.set({}); }, (id) => ui.modo === id), Z.botaoBusca()),
+      h("nav", { class: "p4-lista", "data-scroll": "lista", "aria-label": "Navegação principal" }, listaDoModo(ui.modo)),
+      h("div", { class: "p4-pe" }, ui.conta ? h("div", { class: "zs-flutua", style: "left:10px;right:10px;bottom:64px" }, Z.lista(Z.porTema("conta"))) : null,
+        h("button", { class: "zs-eu", type: "button", "aria-haspopup": "menu", "aria-expanded": String(ui.conta), onclick: () => { ui.conta = !ui.conta; Z.set({}); } },
+          h("span", { class: "zs-av" }, p.pessoa.split(" ").map((x) => x[0]).join("")), h("span", null, h("div", { class: "n" }, p.pessoa), h("div", { class: "p" }, p.papel)))));
+    const dk = h("div", { class: "dk" }, lado, Z.conteudo());
+
+    // ── Celular ──
+    const mAberto = ui.mobile;
+    const mb = h("div", { class: "mb p4m" },
+      h("header", { class: "p4-mtopo" },
+        h("div", { class: "p4-mlinha" }, Z.marca(), h("span", { class: "espaco" }), h("button", { class: "p4-btn", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass")),
+          h("button", { class: "p4-btn", type: "button", "aria-label": "Sua conta", onclick: () => Z.abrirFolha(h("div", null, h("div", { class: "zs-sub" }, p.pessoa + " · " + p.papel), Z.lista(Z.porTema("conta")))) }, h("span", { class: "zs-av" }, p.pessoa.split(" ").map((x) => x[0]).join("")))),
+        seletor("p4-mseg", (id) => { ui.mobile = ui.mobile === id ? null : id; Z.set({}); }, (id) => (mAberto ? mAberto === id : ui.modo === id)),
+        mAberto ? h("div", { class: "p4-mdrop", role: "menu" }, listaDoModo(mAberto)) : null),
+      mAberto ? h("div", { class: "p4-mfundo", style: "top:0", onclick: Z.fecharTudo }) : null,
+      Z.conteudo());
+    tela.append(dk, mb);
+  }
+});
+</script>
+</body>
+</html>

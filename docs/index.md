@@ -131,6 +131,10 @@ iconografia, componentes, motion, voice & tone, **anti-patterns**.
 Fluxo de tela em `design-system/screen-flow/` (jornadas, clickflows, máquinas de estado,
 acessibilidade). Marca (símbolo, logotipo, card social) em [`brand/README.md`](brand/README.md).
 
+**Novo menu de navegação** (issue #183): os protótipos clicáveis e a spec estão em
+[`design/menu-prototipos/`](design/menu-prototipos/index.html). São a referência visual dos
+tickets do novo menu e abrem direto no navegador, sem servidor. O escolhido é o protótipo 6.
+
 ## 6. Operar e instalar
 
 O kit de instalação e atualização para a VPS Hostinger está sendo refeito (issues #3 e #12)
