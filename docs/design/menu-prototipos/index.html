@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Novo menu do ZapSales — protótipos</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { display: block; height: auto; overflow: visible; background: var(--color-bg); }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+  h2 { margin: 40px 0 6px; font-size: 20px; }
+  p.l { margin: 8px 0 0; max-width: 65ch; color: var(--color-muted); }
+  .topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .tema { padding: 6px 12px; border: 1px solid var(--color-border-strong); border-radius: 8px; background: var(--color-surface); font-size: 13px; }
+  ol.passos { margin: 14px 0 0; padding-left: 20px; color: var(--color-muted); max-width: 70ch; } ol.passos li { margin: 4px 0; } ol.passos b { color: var(--color-text); }
+  .lista { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; margin-top: 14px; box-shadow: var(--sombra); }
+  .proto { display: grid; grid-template-columns: 1fr auto; gap: 6px 20px; padding: 18px 20px; }
+  .proto + .proto { border-top: 1px solid var(--color-border); }
+  .proto h3 { margin: 0; font-size: 17px; }
+  .proto p { margin: 4px 0 0; font-size: 14px; color: var(--color-muted); max-width: 68ch; }
+  .proto p b { color: var(--color-text); }
+  .abrir { align-self: center; padding: 9px 16px; border-radius: 10px; background: var(--color-accent); color: var(--color-accent-fg); font-weight: 700; white-space: nowrap; }
+  .abrir:hover { filter: brightness(1.08); }
+  @media (max-width: 640px) { .proto { grid-template-columns: 1fr; } .abrir { justify-self: start; } }
+  .blocos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 14px; }
+  .bloco { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 18px; }
+  .bloco h3 { margin: 0; font-size: 16px; display: flex; justify-content: space-between; }
+  .bloco h3 span { font-weight: 400; font-size: 13px; color: var(--color-subtle); }
+  .bloco p { margin: 4px 0 8px; font-size: 13px; color: var(--color-muted); }
+  .bloco h4 { margin: 12px 0 2px; font-size: 13px; color: var(--color-subtle); }
+  .bloco ul { margin: 0; padding: 0; list-style: none; font-size: 13.5px; columns: 1; }
+  .bloco li { padding: 1px 0; }
+  .bloco li i { font-style: normal; font-family: var(--mono); font-size: 11px; color: var(--color-subtle); margin-left: 6px; }
+  .bloco li.o { color: var(--color-muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  th { font-size: 12.5px; color: var(--color-subtle); background: var(--color-elev); }
+  td.t { font-family: var(--mono); font-size: 12px; color: var(--color-subtle); }
+  tr:last-child td { border-bottom: 0; }
+  .aberto { margin: 14px 0 0; padding-left: 20px; max-width: 72ch; color: var(--color-muted); } .aberto li { margin: 6px 0; } .aberto b { color: var(--color-text); }
+</style>
+</head>
+<body>
+<main>
+  <div class="topo"><span class="zs-logo" id="logo"></span><button class="tema" id="tema" type="button">Tema: claro</button></div>
+  <h1>Novo menu do ZapSales: protótipos para comparar</h1>
+  <p class="l">Todos usam a mesma lógica de grupos (<b>Todo dia</b>, <b>Configurar</b> e <b>Resultados</b>) e os 63 destinos reais do produto. O que muda é a forma do menu. Nada disto está no produto: são arquivos soltos, feitos para você escolher vendo.</p>
+  <ol class="passos">
+    <li><b>Abra cada protótipo</b> e clique pelo menu. Todas as telas abrem, e a tela Conversas mostra uma conversa de exemplo.</li>
+    <li><b>Troque “Ver como”</b> entre Dono, Gerente, Atendente e Leitor para ver como o menu encolhe conforme o papel.</li>
+    <li><b>Ligue “Recursos opcionais”</b> para ver as telas que só aparecem em empresas que usam propostas, comandas, telefonia e cadastro de empresas.</li>
+    <li><b>Teste “Termo técnico”</b> (ao lado, embaixo ou só na dica) e o botão <b>Celular</b>. Em todos, <b>Ctrl K</b> busca uma tela pelo nome simples ou pelo termo técnico (tente “webhook”).</li>
+    <li><b>Passe o mouse num item de Configurar ou Resultados</b> e use o alfinete: ele fixa a tela em “Todo dia”.</li>
+  </ol>
+
+  <h2>O híbrido que combinamos e os cinco de origem</h2>
+  <div class="lista">
+    <div class="proto" style="background:var(--color-accent-soft);border-radius:12px 12px 0 0"><div><h3>6 · Faixa + Mesa <span class="zs-chip-tec" style="margin-left:8px">o que combinamos</span></h3><p><b>A ideia:</b> a faixa azul-noite do 2 com a mesa de trabalho do 1. O painel abre sempre em <b>Todo dia</b>, com os subtítulos <b>Leads</b> e <b>Gestão de Clientes CRM</b>, contadores e Fixados. As áreas de <b>Configurar</b> (Vender, Agente, Conexões, Empresa) e <b>Resultados</b> trocam o painel. O termo técnico fica embaixo do nome. O seletor <b>Submenu</b> compara o estilo atual com três novos (A · Limpa, B · Por tarefa, C · Gaveta).</p><p><b>Risco:</b> dois níveis (faixa + painel) ocupam 408 px de largura quando o painel está aberto; ele pode ser recolhido.</p></div><a class="abrir" href="p6-faixa-e-mesa.html">Abrir</a></div>
+    <div class="proto"><div><h3>1 · Mesa de trabalho</h3><p><b>A ideia:</b> a barra lateral de sempre, redesenhada pela rotina. O dia a dia fica numa “mesa” fixa no alto, com contadores; Configurar e Resultados recolhem e abrem por tema.</p><p><b>Bom para:</b> quem já usa o produto e não deve estranhar. <b>Risco:</b> é o que mais se parece com o menu de hoje, e o que menos se afasta de qualquer outro CRM.</p></div><a class="abrir" href="p1-mesa-de-trabalho.html">Abrir</a></div>
+    <div class="proto"><div><h3>2 · Faixa de ícones + painel</h3><p><b>A ideia:</b> uma faixa azul-noite fina e fixa com seis entradas, e um painel ao lado que troca por entrada. O painel fica fixo ou só abre por cima, deixando a tela livre.</p><p><b>Bom para:</b> telas largas (funil, agenda) e quem quer o menu quieto. <b>Risco:</b> seis ícones novos para aprender; depende dos rótulos curtos abaixo deles.</p></div><a class="abrir" href="p2-faixa-e-painel.html">Abrir</a></div>
+    <div class="proto"><div><h3>3 · Barra no topo</h3><p><b>A ideia:</b> o dia a dia vira abas no topo, sempre à vista, com contadores. Configurar e Resultados abrem menus grandes, com descrição de cada tela e o termo técnico. No celular, uma faixa rolável de atalhos.</p><p><b>Bom para:</b> quem procura telas e precisa de explicação (o dono leigo). <b>Risco:</b> perde altura da tela, o que pesa na Inbox.</p></div><a class="abrir" href="p3-barra-no-topo.html">Abrir</a></div>
+    <div class="proto"><div><h3>4 · Três modos</h3><p><b>A ideia:</b> um seletor no alto troca a lista inteira entre Todo dia, Configurar e Resultados, e avisa quantas coisas esperam você. Teclas 1, 2 e 3 trocam de modo.</p><p><b>Bom para:</b> traduzir a lógica de rotina em layout; é o que mais ensina o que cada coisa é. <b>Risco:</b> um clique extra para ir ao Configurar, e quem acha que “Configurar” é só configuração pode estranhar.</p></div><a class="abrir" href="p4-tres-modos.html">Abrir</a></div>
+    <div class="proto"><div><h3>5 · Dock + cartões</h3><p><b>A ideia:</b> sem barra lateral. Uma tela inicial mostra o que espera você; um dock flutuante leva às telas mais usadas; Configurar e Resultados abrem por cartões de tema.</p><p><b>Bom para:</b> ver o limite do quanto dá para se afastar. <b>Risco:</b> mais cliques para telas de configuração, e a barra some do lado, o que muda o hábito de quem opera o dia todo.</p></div><a class="abrir" href="p5-dock-e-cartoes.html">Abrir</a></div>
+  </div>
+
+  <h2>O mapa dos 63 destinos</h2>
+  <p class="l">Cada tela real do produto aparece uma vez. Em cinza, as que só existem para empresas que usam um recurso opcional. “Todo dia” é uma <b>hipótese a validar com operadores</b>, não um fato medido.</p>
+  <div class="blocos" id="mapa"></div>
+
+  <h2>Nomes simples e termos técnicos</h2>
+  <p class="l">Só mudam os nomes que são jargão. O termo técnico continua visível (conforme a chave “Termo técnico”), aparece no título da tela, na dica e na busca. Os endereços das telas não mudam.</p>
+  <table id="nomes"><thead><tr><th>Hoje</th><th>Menu novo</th><th>Termo técnico</th></tr></thead><tbody></tbody></table>
+
+  <h2>Pontos abertos para você decidir</h2>
+  <ul class="aberto">
+    <li><b>Contatos em “Todo dia”.</b> Combinamos 7 ideias; acrescentei Contatos porque ele está no menu de hoje e tirá-lo seria uma regressão. Você pode tirá-lo.</li>
+    <li><b>Casos e Alertas separados.</b> São duas telas reais; na lista combinada eram “Casos e Alertas”. Agora “Casos” se chama <b>Aguardando Humano</b>; ver o aviso abaixo.</li>
+    <li><b>Perfil, Segurança e Notificações</b> saem do menu e vão para o menu da conta (clique no seu nome). Seguem sendo portas essenciais.</li>
+    <li><b>Nomes novos pedidos por você:</b> Inbox → <b>Conversas</b>, Radar → <b>Riscos de Perda</b>, Agenda → <b>Compromissos</b>, Casos → <b>Aguardando Humano</b>. A busca (Ctrl K) ainda acha pelo nome antigo.</li>
+    <li><b>Aguardando Humano:</b> a tela de hoje lista também os casos já resolvidos. Proposta já aplicada na descrição: ao implementar, o filtro padrão mostra só os que esperam uma pessoa, com o histórico a um clique.</li>
+    <li><b>“Leads” e “Gestão de Clientes CRM”</b> viraram subtítulos dentro de Todo dia, só no protótipo 6. “Leads” reúne Conversas, Aguardando Humano, Alertas, Riscos de Perda e Compromissos; “Gestão de Clientes CRM” reúne Funis, Contatos, Tarefas e Disparo em massa. Dentro do produto, “lead” também nomeia a pessoa no funil, então vale confirmar o nome com operadores.</li>
+    <li><b>Telas opcionais em “Todo dia”:</b> Propostas, Comandas e Chamadas aparecem só para quem usa. Dados de exemplo: a contagem de pendências, os nomes e as conversas.</li>
+    <li><b>Fixar por pessoa</b> está só mostrado aqui; construí-lo é outra decisão.</li>
+  </ul>
+</main>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script>
+(function () {
+  const D = window.ZS_DADOS, $ = (s) => document.querySelector(s);
+  $("#logo").innerHTML = '<svg viewBox="0 0 216 216" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M60 26H156A34 34 0 0 1 190 60V132A34 34 0 0 1 156 166H72L26 198V60A34 34 0 0 1 60 26ZM66 52A14 14 0 0 0 52 66V126A14 14 0 0 0 66 140H150A14 14 0 0 0 164 126V66A14 14 0 0 0 150 52Z"/><path fill="currentColor" d="M118 60L78 106H104L94 136L140 86H114L126 60Z"/></svg><span>ZapSales</span>';
+  const li = (d) => { const e = document.createElement("li"); if (d.opc) e.className = "o"; e.textContent = d.rot; if (d.tec) { const i = document.createElement("i"); i.textContent = d.tec; e.append(i); } return e; };
+  const mapa = $("#mapa");
+  [["dia", "Todo dia", ["principal", "opcional"]], ["montar", "Configurar", ["vender", "agente", "conexoes", "empresa"]], ["acompanhar", "Resultados", ["resultados", "trabalho", "problemas"]]].forEach(([b, rot, temas]) => {
+    const n = D.DESTINOS.filter((d) => d.bloco === b).length, bl = D.BLOCOS.find((x) => x.id === b);
+    const el = document.createElement("section"); el.className = "bloco";
+    el.innerHTML = `<h3>${rot}<span>${n} telas</span></h3><p>${bl.frase}</p>`;
+    temas.forEach((t) => { const tm = D.TEMAS.find((x) => x.id === t), ds = D.DESTINOS.filter((d) => d.tema === t); const h4 = document.createElement("h4"); h4.textContent = tm.rot + " (" + ds.length + ")"; const ul = document.createElement("ul"); ds.forEach((d) => ul.append(li(d))); el.append(h4, ul); });
+    mapa.append(el);
+  });
+  const conta = D.DESTINOS.filter((d) => d.bloco === "voce"), el = document.createElement("section"); el.className = "bloco";
+  el.innerHTML = `<h3>Você (menu da conta)<span>${conta.length} telas</span></h3><p>Dados pessoais, fora dos três blocos.</p>`; const ul = document.createElement("ul"); conta.forEach((d) => ul.append(li(d))); el.append(ul); mapa.append(el);
+  const tb = $("#nomes tbody");
+  D.DESTINOS.filter((d) => d.antes !== d.rot || d.tec).forEach((d) => { const tr = document.createElement("tr"); [d.antes, d.rot, d.tec || ""].forEach((v, i) => { const td = document.createElement("td"); if (i === 2) td.className = "t"; td.textContent = v; tr.append(td); }); tb.append(tr); });
+  const botao = $("#tema"); let escuro = false;
+  try { const s = JSON.parse(localStorage.getItem("zs-proto-menu-v3") || "{}"); escuro = s.tema === "escuro"; } catch (e) {}
+  const aplica = () => { document.documentElement.dataset.theme = escuro ? "dark" : "light"; botao.textContent = "Tema: " + (escuro ? "escuro" : "claro"); try { const s = JSON.parse(localStorage.getItem("zs-proto-menu-v3") || "{}"); s.tema = escuro ? "escuro" : "claro"; localStorage.setItem("zs-proto-menu-v3", JSON.stringify(s)); } catch (e) {} };
+  botao.onclick = () => { escuro = !escuro; aplica(); }; aplica();
+})();
+</script>
+</body>
+</html>

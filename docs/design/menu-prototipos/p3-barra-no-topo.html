@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu ZapSales — Protótipo 3 · Barra no topo</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  .dk.p3 { flex-direction: column; position: relative; }
+  .p3-barra { flex: none; height: 60px; display: flex; align-items: center; gap: 2px; padding: 0 14px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); z-index: 30; position: relative; }
+  .p3-barra .zs-logo { margin-right: 14px; }
+  .p3-tab { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 60px; padding: 0 12px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 0.15s var(--ease), background 0.15s var(--ease); }
+  .p3-tab:hover { color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+  .p3-tab[aria-current="page"], .p3-tab[aria-expanded="true"] { color: var(--color-accent-text); font-weight: 700; }
+  .p3-tab[aria-current="page"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--color-accent); }
+  .p3-tab .zs-ic svg { width: 20px; height: 20px; }
+  .p3-tab .zs-n { height: 18px; min-width: 18px; font-size: 11.5px; }
+  .p3-tab .cs { width: 12px; height: 12px; opacity: 0.7; }
+  .p3-sep { width: 1px; height: 26px; background: var(--color-border); margin: 0 10px; flex: none; }
+  .p3-esp { flex: 1; }
+  .p3-icone { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: var(--color-muted); }
+  .p3-icone:hover { background: var(--color-elev); }
+  .p3-icone .zs-av { width: 32px; height: 32px; background: var(--color-accent-soft); color: var(--color-accent-text); }
+  .p3-fundo { position: absolute; inset: 60px 0 0 0; z-index: 25; background: var(--color-overlay); }
+  .p3-mega { position: absolute; top: 60px; left: 12px; right: 12px; z-index: 28; max-width: 1180px; max-height: calc(100% - 80px); overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0 0 14px 14px; box-shadow: var(--sombra-flutuante); padding: 18px 18px 14px; animation: desce 0.18s var(--ease); }
+  .p3-mega.direita { left: auto; }
+  @keyframes desce { from { transform: translateY(-8px); opacity: 0.3; } to { transform: none; opacity: 1; } }
+  .p3-mega .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 6px 22px; }
+  .p3-mega h3 { margin: 0 0 2px; padding: 0 10px; font-size: 14px; }
+  .p3-mega .frase { margin: 0 0 6px; padding: 0 10px; font-size: 12.5px; color: var(--color-subtle); }
+  .p3-mega .zs-item { padding-block: 6px; }
+  .p3-menu { position: absolute; top: 60px; z-index: 28; min-width: 280px; max-height: calc(100% - 80px); overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0 0 12px 12px; box-shadow: var(--sombra-flutuante); padding: 8px; animation: desce 0.18s var(--ease); }
+  @container app (max-width: 1360px) { .p3-tab .lab { display: none; } .p3-tab { padding: 0 10px; } }
+  .mb.p3m .zs-miolo { padding-bottom: 0; }
+  .p3-mtopo { background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+  .p3-mlinha { display: flex; align-items: center; gap: 6px; padding: 8px 10px; }
+  .p3-mlinha .espaco { flex: 1; }
+  .p3-chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 10px 10px; scrollbar-width: none; }
+  .p3-chips::-webkit-scrollbar { display: none; }
+  .p3-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); font-size: 14px; color: var(--color-muted); }
+  .p3-chip[aria-current="page"] { background: var(--color-accent-soft); border-color: transparent; color: var(--color-accent-text); font-weight: 700; }
+  .p3-chip .zs-ic svg { width: 18px; height: 18px; }
+  .p3-chip .zs-n { height: 18px; min-width: 18px; font-size: 11.5px; }
+  .p3-folha .zs-item { min-height: 44px; font-size: 15px; }
+  .p3-folha h3 { margin: 16px 10px 2px; font-size: 16px; }
+</style>
+</head>
+<body>
+<script src="assets/icones.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/nucleo.js"></script>
+<script>
+const ui = { aberto: null };
+document.addEventListener("zs-fechar", () => { ui.aberto = null; });
+const CARET = '<svg class="cs" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z"/></svg>';
+ZS.iniciar({
+  titulo: "3 · Barra no topo",
+  ideia: "O dia a dia vira abas fixas no topo, sempre à vista e com contadores. Configurar e Resultados abrem como menus grandes, com a descrição de cada tela e o termo técnico ao lado. No celular, uma faixa rolável de atalhos no topo.",
+  montar(tela, Z) {
+    const { h, ic } = Z, atual = Z.atual();
+    const abrir = (id) => { ui.aberto = ui.aberto === id ? null : id; Z.set({}); };
+    const PRIO = ["/inbox", "/kanban", "/ai/cases", "/tasks", "/agenda"];
+    const dia = Z.porTema("principal"), op = Z.porTema("opcional");
+    const fixas = PRIO.map((id) => dia.find((d) => d.id === id)).filter(Boolean);
+    const resto = dia.filter((d) => !fixas.includes(d));
+    const tab = (d) => h("a", { class: "p3-tab", href: "#" + d.id, title: d.rot, "aria-current": d.id === atual.id ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } },
+      ic(d.ic, d.id === atual.id ? "fill" : "regular"), h("span", { class: "lab" }, d.rot), d.n && Z.D.CONTADORES[d.n] ? h("span", { class: "zs-n" }, Z.D.CONTADORES[d.n]) : null);
+    const menuTab = (id, rot, icone) => h("button", { class: "p3-tab", type: "button", "aria-expanded": String(ui.aberto === id), "aria-haspopup": "true", onclick: () => abrir(id) },
+      ic(icone, ui.aberto === id ? "fill" : "regular"), h("span", { class: "lab" }, rot), h("span", { html: CARET, style: "display:grid" }));
+
+    const coluna = (t) => { const ds = Z.porTema(t.id); return ds.length ? h("div", null, h("h3", null, t.rot), h("p", { class: "frase" }, t.frase || ""), Z.lista(ds, { pin: true, desc: true })) : null; };
+    function mega(bloco, direita) {
+      const temas = Z.temasDe(bloco).map(coluna).filter(Boolean);
+      return h("div", { class: "p3-mega" + (direita ? " direita" : ""), role: "menu" }, h("div", { class: "cols" }, temas));
+    }
+    const maisItens = resto.concat(op), fx = Z.fixados();
+    const temConfigurar = Z.porBloco("montar").length, temAcomp = Z.porBloco("acompanhar").length;
+
+    const barra = h("header", { class: "p3-barra" }, Z.marca(),
+      fixas.map(tab),
+      (maisItens.length || fx.length) ? menuTab("mais", "Mais do dia", "SquaresFour") : null,
+      h("span", { class: "p3-sep", role: "separator" }),
+      temConfigurar ? menuTab("montar", "Configurar", "Wrench") : null,
+      temAcomp ? menuTab("acompanhar", "Resultados", "ChartPieSlice") : null,
+      h("span", { class: "p3-esp" }),
+      h("button", { class: "p3-icone", type: "button", "aria-label": "Buscar uma tela (Ctrl K)", title: "Buscar uma tela (Ctrl K)", onclick: Z.abrirBusca }, ic("MagnifyingGlass")),
+      h("button", { class: "p3-icone", type: "button", "aria-label": "Sua conta", onclick: () => abrir("conta") }, h("span", { class: "zs-av" }, Z.papel().pessoa.split(" ").map((x) => x[0]).join(""))));
+
+    let aberto = null;
+    if (ui.aberto === "montar") aberto = mega("montar");
+    else if (ui.aberto === "acompanhar") aberto = mega("acompanhar");
+    else if (ui.aberto === "mais") aberto = h("div", { class: "p3-menu", style: "left:" + (fixas.length * 52 + 160) + "px;width:340px" }, Z.lista(maisItens), fx.length ? [h("div", { class: "zs-sub" }, "Fixados por você"), Z.lista(fx, { pin: true })] : null);
+    else if (ui.aberto === "conta") aberto = h("div", { class: "p3-menu", style: "right:12px;width:280px" }, h("div", { class: "zs-sub" }, Z.papel().pessoa + " · " + Z.papel().papel), Z.lista(Z.porTema("conta")));
+    const fundo = aberto ? h("div", { class: "p3-fundo", onclick: Z.fecharTudo }) : null;
+    const dk = h("div", { class: "dk p3" }, barra, Z.conteudo(), fundo, aberto);
+
+    // ── Celular: faixa rolável de atalhos ──
+    const chip = (d) => h("a", { class: "p3-chip", href: "#" + d.id, "aria-current": d.id === atual.id ? "page" : null, onclick: (e) => { e.preventDefault(); Z.ir(d.id); } }, ic(d.ic, d.id === atual.id ? "fill" : "regular"), d.rot, d.n && Z.D.CONTADORES[d.n] ? h("span", { class: "zs-n" }, Z.D.CONTADORES[d.n]) : null);
+    const completo = () => Z.abrirFolha(h("div", { class: "p3-folha" },
+      ["montar", "acompanhar"].map((b) => { const bl = Z.D.BLOCOS.find((x) => x.id === b); return Z.porBloco(b).length ? [h("h3", null, bl.rot), Z.temasDe(b).map((t) => Z.secao(t, { pin: true }))] : null; }),
+      fx.length ? [h("h3", null, "Fixados por você"), Z.lista(fx, { pin: true })] : null, h("h3", null, "Você"), Z.lista(Z.porTema("conta"))));
+    const mb = h("div", { class: "mb p3m" },
+      h("header", { class: "p3-mtopo" },
+        h("div", { class: "p3-mlinha" }, Z.marca(), h("span", { class: "espaco" }), h("button", { class: "p3-icone", type: "button", "aria-label": "Buscar uma tela", onclick: Z.abrirBusca }, ic("MagnifyingGlass")), h("button", { class: "p3-icone", type: "button", "aria-label": "Abrir o menu completo", onclick: completo }, ic("List"))),
+        h("nav", { class: "p3-chips", "aria-label": "Todo dia", "data-scroll": "chips" }, dia.concat(op).map(chip))),
+      Z.conteudo());
+    tela.append(dk, mb);
+  }
+});
+</script>
+</body>
+</html>
