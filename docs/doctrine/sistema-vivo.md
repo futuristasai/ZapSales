@@ -99,7 +99,7 @@ Living System Checklist — <nome da feature>
 [ ] Quem eu alimento?  (aresta de saída — a peça é um polvo, distribui)
 [ ] Que atividade/log eu emito?  (event_log / audit / crm_lead_activities)
 [ ] Onde eu apareço na tela?  (timeline/insight — não só no banco)
-[ ] Por qual porta se chega até mim?  (entrada em lib/navigation/registry.ts, ou allowlist justificada)
+[ ] Por qual porta se chega até mim?  (entrada em lib/navigation/catalogo.ts com `menu: { grupo, ordem }`, ou allowlist justificada)
 [ ] Qual meu mecanismo anti-morte?  (próximo passo garantido, ou N/A justificado)
 [ ] Onde se CONFIGURA o que eu uso?  (tela de ver + tela de mudar; e o que aparece se faltar)
 [ ] Qual a continuidade IA↔humano?  (payload de handoff nas duas direções, se aplicável)
