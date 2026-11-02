@@ -3822,3 +3822,36 @@ topo 101–226 px até o fundo da janela; reserva do rodapé 57 px no celular e 
 termina exatamente no topo da barra; Esc fecha e o foco volta ao botão da aba. Capturas em
 `docs/testing/evidencias/barra-de-baixo-do-celular/`. **Não substitui** a prova em ambiente fresco estilo VPS com os
 recursos opcionais ligados e desligados nos três papéis — essa vem do CI do PR (`e2e`) e da prova em produção depois do merge.
+
+
+## O menu novo, prova final (2026-11-02, issue #193)
+
+Origem: fecha o #183 (faixa, painel, gaveta, barra de baixo, nomes e busca, editor de interface). **A regra «o menu cabe em
+900 px sem rolar, no máximo 15 itens» deixou de existir** em todo documento de autoridade (`DESIGN.md`, `CLAUDE.md`,
+`AGENTS.md`, `docs/doctrine/sistema-vivo.md`); a garantia vigente é «nenhum bloco some abaixo da dobra»
+(`navegacao.spec.ts`). As linhas antigas de 900 px acima ficam como histórico.
+
+A matriz da issue é papel × aparelho × tema × idioma × recursos opcionais, e quem a prova é
+**`tests/e2e/menu-prova-final.spec.ts`**, que roda no `e2e` do CI (parte 6) contra o Supabase local com o `baseline.sql` —
+o mesmo banco que a instalação aplica. Cada cenário mede por `getBoundingClientRect`/`getComputedStyle`: nenhum botão da
+faixa nem título de grupo abaixo da dobra, sem estouro horizontal, o tema pedido pintado, contraste de pelo menos 3:1,
+nenhum nome em português com a interface em es/en, alvos de 44 px e último link alcançável no celular.
+
+| cenário | prioridade | estado |
+|---|---|---|
+| Computador (1280×900): Dono pt claro · Dono en escuro · Atendente pt escuro · Atendente es claro · Leitor en claro · Leitor es escuro | `[P0]` | **PASS no CI** (run 41496227044) |
+| Celular (390×844, toque): Dono es claro · Atendente pt escuro · Atendente en claro · Leitor pt claro · Leitor es escuro | `[P0]` | **PASS no CI** |
+| Recursos opcionais: sem módulo e sem chave → sem Propostas; só a chave da empresa → sem Propostas; módulo + chave → Propostas sob «Se a sua empresa usa» | `[P1]` | **PASS no CI** |
+| Menu monótono por papel (Dono 8 entradas na faixa; Atendente sem «Agente»; Leitor ≤ Atendente) | `[P1]` | **PASS no CI** |
+
+Capturas dos 12 cenários em `docs/testing/evidencias/menu-prova-final/` (computador, a gaveta aberta, a folha de Configurar
+no celular, e os opcionais desligados e ligados).
+
+**O que esta prova NÃO cobre, e por quê:**
+- **É o ambiente do CI, não uma VPS.** O banco é o do `baseline.sql` e os envs opcionais ficam ausentes, mas sem o WAHA nem o
+  Redis de uma instalação real. A prova autenticada em produção (Dono, Atendente e Leitor numa org temporária, com capturas)
+  segue pendente: depende de autorização do dono para a escrita por SSH.
+- **Cada papel só em parte da matriz.** São 11 combinações de aparelho × tema × idioma, não as 36 possíveis; os eixos foram
+  distribuídos para que cada papel, cada idioma e cada tema apareça em computador e em celular. A matriz cheia custaria um
+  login por combinação, e o do Dono espera a janela do TOTP (~30 s cada).
+- **O Leitor no celular** vê menos folhas que os outros papéis (a spec só exige que tenha ao menos uma).

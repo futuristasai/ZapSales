@@ -1187,6 +1187,7 @@ jobs:
         inbox-busca-e-filtros-dizem-a-verdade.spec.ts
         inbox-funil-e-nome-do-agente.spec.ts
         mapas-em-provedores.spec.ts
+        menu-prova-final.spec.ts
         painel-de-configuracao-da-instalacao.spec.ts
         protecao-de-envio-nao-congela-o-padrao.spec.ts
         prova-painel-provedores.spec.ts
@@ -2100,6 +2101,18 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+      # As capturas da prova final do menu (issue #193) valem MESMO com tudo verde: são a evidência
+      # visual que a doutrina de QA pede, e `if: failure()` acima as jogaria fora justamente quando
+      # a spec passa. `evidence/menu-prova-final/` só existe na parte que roda
+      # `menu-prova-final.spec.ts`; nas outras o passo não acha nada e segue.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: evidencia-menu-prova-final-parte-${{ matrix.parte }}
+          path: evidence/menu-prova-final/
+          if-no-files-found: ignore
+          retention-days: 14
 
       # ── ONDE A MEDIÇÃO FICA ───────────────────────────────────────────────
       # A medição que só existe no log se perde: quem decide repartir as listas

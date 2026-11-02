@@ -195,7 +195,7 @@ Todos observáveis por terceiro. "Está implementado" não é aceite.
 
 ## 6. Requisitos de harness
 
-- **Porta de navegação:** declarar a tela em `lib/navigation/registry.ts` (ou na allowlist com
+- **Porta de navegação:** declarar a tela em `lib/navigation/catalogo.ts` (`menu: { grupo, ordem }`; ou na allowlist com
   justificativa escrita) — `tests/unit/navegacao-completude.test.ts` reprova tela alcançável só por
   URL digitada.
 - **Mapa de arquitetura:** representar a peça nova em `docs/architecture/` com ao menos duas

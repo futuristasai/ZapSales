@@ -122,6 +122,7 @@ export function Faixa({
   return (
     <nav
       aria-label={t("Áreas do menu")}
+      data-testid="faixa-do-menu"
       className="flex h-full w-20 shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto px-1.5 py-3"
     >
       <div className="mb-3 flex h-10 items-center justify-center">
