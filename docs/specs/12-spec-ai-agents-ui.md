@@ -779,8 +779,8 @@ tamanho **dentro da execução** (além do SDK) e devolve uma frase que ensina o
 devolve ao modelo `nao_executada_em_teste` ("não invente o que ela devolveria"); a tela mostra
 "seria feita". Nenhuma rede, nenhuma auditoria de chamada. O botão real fica na tela da ferramenta.
 
-**Telas**: Agente de IA › **Ferramentas externas** (`/app/ai/external-tools`; no hub "Ver tudo em IA" e
-no ⌘K, sem item no menu lateral) — lista, cadastro/edição com campos, chave exibida uma vez, **Testar de
+**Telas**: Agente de IA › **Ferramentas externas** (`/app/ai/external-tools`; na página de área Agente de IA,
+na gaveta Agente do menu e no ⌘K) — lista, cadastro/edição com campos, chave exibida uma vez, **Testar de
 verdade**, ativar/desativar, nova chave, apagar · editor do agente › grupo **Ferramentas externas** do
 seletor (conta no "N de 27"; ferramenta desativada só pode ser desmarcada) · aba Teste › "seria feita" ·
 diff de versões · Central › aviso `external_tool_failed`.

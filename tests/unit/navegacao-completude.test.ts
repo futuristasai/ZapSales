@@ -3,7 +3,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { NAV_DESTINATIONS, NAV_GROUPS } from "@/lib/navigation/registry";
+import { PAGINAS_DE_AREA } from "@/lib/navigation/catalogo";
+import { NAV_DESTINATIONS } from "@/lib/navigation/registry";
 
 /**
  * O teste que impede a bagunça de voltar.
@@ -68,7 +69,7 @@ function rotasNoDisco(dir: string, prefixo = "/app"): string[] {
 
 const ROTAS = rotasNoDisco(BASE).sort();
 const NO_REGISTRO = new Set(NAV_DESTINATIONS.map((d) => d.href));
-const HUBS = NAV_GROUPS.flatMap((g) => (g.hub ? [g.hub.href] : []));
+const PAGINAS = PAGINAS_DE_AREA.map((p) => p.href as string);
 
 describe("completude da navegação", () => {
   it("encontrou as rotas do app — se isto zerar, o resto do arquivo não prova nada", () => {
@@ -76,10 +77,10 @@ describe("completude da navegação", () => {
   });
 
   it("toda tela tem porta: está no registro ou na allowlist justificada", () => {
-    // Um hub é porta tanto quanto um destino — o sidebar linka para ele. Ele só
-    // não é `NavDestination` porque não é uma tela do grupo, e sim a vitrine dele.
+    // Uma página de área é porta tanto quanto um destino — a busca ⌘K a lista. Ela só não é
+    // `NavDestination` porque não é uma tela do menu, e sim o inventário de alguns grupos dele.
     const semPorta = ROTAS.filter(
-      (r) => !NO_REGISTRO.has(r) && !HUBS.includes(r) && !(r in NAV_ALLOWLIST),
+      (r) => !NO_REGISTRO.has(r) && !PAGINAS.includes(r) && !(r in NAV_ALLOWLIST),
     );
     expect(
       semPorta,
@@ -92,7 +93,7 @@ describe("completude da navegação", () => {
       // pessoa lê no pior momento; mandá-la ao arquivo errado é o defeito mais
       // caro dos dois (o `CLAUDE.md` repetia o mesmo engano, já corrigido).
       `Tela sem porta — existe mas não se chega nela pela navegação.\n` +
-        `Declare em lib/navigation/catalogo.ts (NAV_CATALOG), com seu grupo, ou\n` +
+        `Declare em lib/navigation/catalogo.ts (NAV_CATALOG), com o grupo do menu (menu.grupo), ou\n` +
         `à NAV_ALLOWLIST deste arquivo COM a justificativa:\n  ${semPorta.join("\n  ")}`,
     ).toEqual([]);
   });
@@ -102,9 +103,9 @@ describe("completude da navegação", () => {
     expect(mortos, `Link morto no registro:\n  ${mortos.join("\n  ")}`).toEqual([]);
   });
 
-  it("todo hub de grupo aponta para uma tela que existe", () => {
-    const mortos = HUBS.filter((h) => !ROTAS.includes(h));
-    expect(mortos, `Hub apontando para rota inexistente:\n  ${mortos.join("\n  ")}`).toEqual([]);
+  it("toda página de área aponta para uma tela que existe", () => {
+    const mortos = PAGINAS.filter((h) => !ROTAS.includes(h));
+    expect(mortos, `Página de área apontando para rota inexistente:\n  ${mortos.join("\n  ")}`).toEqual([]);
   });
 
   it("a allowlist não guarda rota que já morreu", () => {

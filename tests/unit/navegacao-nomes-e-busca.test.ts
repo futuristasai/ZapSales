@@ -4,7 +4,8 @@ import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
 import { casaComABusca, normalizarBusca } from "@/lib/navigation/busca";
 import { dicaDoDestino } from "@/lib/navigation/dica";
-import { NAV_DESTINATIONS, searchable } from "@/lib/navigation/registry";
+import { buscaveis } from "@/lib/navigation/menu";
+import { NAV_DESTINATIONS } from "@/lib/navigation/registry";
 
 /**
  * OS NOMES NOVOS, O TERMO TÉCNICO E A BUSCA (issue #187, do #183).
@@ -100,14 +101,14 @@ const SO_GANHAM_TERMO: readonly Renomeada[] = [
 // O dono vê tudo o que a instalação tem, com os recursos opcionais ligados: assim
 // a tela não some da busca por um motivo que não é o que este arquivo mede.
 const dono = () =>
-  searchable(false, "admin", undefined, MODULOS_OPCIONAIS, CAPACIDADES_DA_ORGANIZACAO);
+  buscaveis(false, "admin", undefined, MODULOS_OPCIONAIS, CAPACIDADES_DA_ORGANIZACAO);
 
 function acha(destinos: ReturnType<typeof dono>, digitado: string): string[] {
   const termo = normalizarBusca(digitado);
   return destinos.filter((d) => casaComABusca(d, termo, "")).map((d) => d.href);
 }
 
-const porHref = new Map(NAV_DESTINATIONS.map((d) => [d.href, d]));
+const porHref = new Map(dono().map((d) => [d.href, d]));
 
 describe("os nomes novos do menu", () => {
   it.each(RENOMEADAS)("$href se chama «$nome»", ({ href, nome }) => {
@@ -117,7 +118,7 @@ describe("os nomes novos do menu", () => {
   it.each([...RENOMEADAS, ...SO_GANHAM_TERMO])(
     "$href leva o termo técnico $termo",
     ({ href, termo }) => {
-      expect(porHref.get(href)?.menu.termo).toBe(termo);
+      expect(porHref.get(href)?.termo).toBe(termo);
     },
   );
 
@@ -172,7 +173,7 @@ describe("a busca (Ctrl K) acha a tela", () => {
   });
 
   it("achar não é autorizar: quem não vê a tela não a encontra", () => {
-    const atendente = searchable(false, "agent", undefined, MODULOS_OPCIONAIS, []);
+    const atendente = buscaveis(false, "agent", undefined, MODULOS_OPCIONAIS, []);
     // Webhooks pede gerente; Chaves de acesso pede administrador.
     expect(acha(atendente, "webhooks")).not.toContain("/app/webhooks");
     expect(acha(atendente, "API tokens")).not.toContain("/app/settings/api-tokens");
@@ -198,22 +199,23 @@ describe("a busca (Ctrl K) acha a tela", () => {
 
 describe("a dica ao passar o mouse", () => {
   const igual = (t: string) => t;
+  const destino = (href: string) => NAV_DESTINATIONS.find((d) => d.href === href)!;
 
   it("traz o nome, o termo técnico e a descrição", () => {
-    const dica = dicaDoDestino(porHref.get("/app/webhooks")!, igual);
+    const dica = dicaDoDestino(destino("/app/webhooks"), igual);
     expect(dica).toBe(
       "Avisar outros sistemas (webhooks) — Avise outros sistemas quando algo acontecer aqui dentro.",
     );
   });
 
   it("sem termo técnico, não deixa parênteses vazios", () => {
-    const dica = dicaDoDestino(porHref.get("/app/radar")!, igual);
+    const dica = dicaDoDestino(destino("/app/radar"), igual);
     expect(dica.startsWith("Riscos de Perda — ")).toBe(true);
     expect(dica).not.toContain("()");
   });
 
   it("sai na língua da pessoa", () => {
-    const dica = dicaDoDestino(porHref.get("/app/ai/credentials")!, (t) => `«${t}»`);
+    const dica = dicaDoDestino(destino("/app/ai/credentials"), (t) => `«${t}»`);
     expect(dica).toContain("«Chave da IA» («API key»)");
   });
 });

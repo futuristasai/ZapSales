@@ -1154,12 +1154,12 @@ export const DICIONARIO: Traducoes = {
   "A seleção anterior contém áreas que não existem mais. Confira e salve novamente.": { es: "La selección anterior contiene áreas que ya no existen. Revísala y vuelve a guardar." },
   "Salvar interface": { es: "Guardar interfaz" },
   "Sua navegação foi atualizada. Você pode continuar nesta tela.": { es: "Se actualizó tu navegación. Puedes seguir en esta pantalla." },
-  // ─── Cabeçalhos de grupo da barra lateral ───
+  // ─── Cabeçalhos de grupo do menu ───
   //
-  // ⚠️ NUNCA TIVERAM TRADUÇÃO, e o defeito era invisível: `Sidebar.tsx:83` já
-  // chamava `t(group.label)`, então o espanhol recebia os cabeçalhos em
-  // português e nada ficava vermelho — `traduzir()` devolve a chave ausente
-  // como está. Achado pelo cruzamento novo entre DICIONARIO e NAV_GROUPS.
+  // ⚠️ NUNCA TIVERAM TRADUÇÃO, e o defeito era invisível: o menu chamava `t(group.label)`, então o
+  // espanhol recebia os cabeçalhos em português e nada ficava vermelho — `traduzir()` devolve a
+  // chave ausente como está. Hoje o cruzamento é o de `tests/unit/idioma-da-interface.test.ts`
+  // (DICIONARIO × MENU_GRUPOS) e o de `tests/unit/i18n-catalogo-do-menu.test.ts`.
   Atendimento: { es: "Atención" },
   CRM: { es: "CRM" },
   "Agente de IA": { es: "Agente de IA" },
@@ -1294,9 +1294,6 @@ export const DICIONARIO: Traducoes = {
   Agentes: { es: "Agentes" },
   "Follow-ups": { es: "Seguimientos" },
   Roteadores: { es: "Enrutadores" },
-  "Ver tudo em IA": { es: "Ver todo en IA" },
-  "Ver tudo em CRM": { es: "Ver todo en CRM" },
-  "Ver tudo em Análise": { es: "Ver todo en Análisis" },
   Conexões: { es: "Conexiones" },
   Webhooks: { es: "Webhooks" },
   Desempenho: { es: "Rendimiento" },
@@ -1469,7 +1466,6 @@ export const DICIONARIO: Traducoes = {
   // ─── Hub de IA (NavHub: seções, rótulos e descrições) ───
   "Montar o agente": { es: "Configurar el agente" },
   "Ensinar o agente": { es: "Enseñar al agente" },
-  "Acompanhar o agente": { es: "Supervisar al agente" },
   "Tudo que define quem atende por você — e como acompanhar o que ele faz.": {
     es: "Todo lo que define quién atiende por ti, y cómo dar seguimiento a lo que hace.",
   },
@@ -1520,30 +1516,22 @@ export const DICIONARIO: Traducoes = {
     es: "Cuánto consumió la IA y cuál es el límite de gasto del mes.",
   },
 
-  // ─── Hub do CRM (NavHub: seções e subtítulo) ───
+  // ─── Página de área do CRM (NavHub: subtítulo) ───
   //
-  // As duas seções são a régua que decide o menu, escrita por extenso: o que se
-  // abre todo dia fica no sidebar, o que se define uma vez fica só no hub.
-  "O dia a dia da venda": { es: "El día a día de la venta" },
-  "Preparar a venda": { es: "Preparar la venta" },
+  // As seções são os grupos por tarefa do menu (`MENU_GRUPOS`), traduzidos em "Grupos do menu novo".
   "Onde a venda acontece — e o que você define uma vez para ela funcionar.": {
     es: "Donde ocurre la venta — y lo que defines una vez para que funcione.",
   },
 
-  // ─── Hub da Análise (NavHub: seções e subtítulo) ───
+  // ─── Página de área da Análise (NavHub: subtítulo) ───
   //
-  // As duas seções são a régua do menu escrita por extenso: o que se pergunta
-  // toda semana fica no sidebar, o que se visita de propósito fica só no hub.
-  "Os números do período": { es: "Los números del período" },
-  "O histórico que se consulta": { es: "El historial que se consulta" },
+  // As seções são os grupos de Resultados do menu (`MENU_GRUPOS`).
   "Como o negócio foi no período — e o histórico para quando alguém perguntar por quê.": {
     es: "Cómo le fue al negocio en el período y el historial para cuando alguien pregunte por qué.",
   },
 
   // ─── Hub de Configurações (NavHub: seções, rótulos e descrições das cards) ───
-  "Sua conta": { es: "Tu cuenta" },
   "Sua empresa": { es: "Tu empresa" },
-  "Dados e acesso": { es: "Datos y acceso" },
   Segurança: { es: "Seguridad" },
   Notificações: { es: "Notificaciones" },
   Equipe: { es: "Equipo" },
@@ -1588,6 +1576,7 @@ export const DICIONARIO: Traducoes = {
   "Recolher o painel": { es: "Contraer el panel" },
   "Recolher o painel (fica só a faixa)": { es: "Contraer el panel (queda solo la barra)" },
   // Blocos, áreas e grupos do menu novo (issue #188)
+  "Páginas de área": { es: "Páginas de área" },
   "Todo dia": { es: "Todo el día" },
   "Resultados": { es: "Resultados" },
   "Vender": { es: "Vender" },
@@ -13660,7 +13649,6 @@ export const DICIONARIO: Traducoes = {
   "Aceita": {"es": "Aceptada"},
   "Recusada": {"es": "Rechazada"},
   "Vencida": {"es": "Vencida"},
-  "Fechar a venda": {"es": "Cerrar la venta"},
   "Configure a validade padrão e condições para propostas comerciais.": {"es": "Configure la validez predeterminada y las condiciones para propuestas comerciales."},
   "Rascunhe, revise e envie propostas comerciais — do orçamento ao aceite.": {"es": "Redacta, revisa y envía propuestas comerciales — del presupuesto a la aceptación."},
   "A proposta mudou desde que você abriu. Recarregue antes de editar.": {"es": "La propuesta cambió desde que la abriste. Recarga antes de editar."},

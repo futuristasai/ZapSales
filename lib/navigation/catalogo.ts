@@ -9,36 +9,22 @@ import type { CapacidadeDaOrganizacao } from "@/lib/organizacao/capacidades";
  * no Sidebar, `LINKS` no hub de Configurações e `TABS` na área de IA. Sete telas
  * só eram alcançáveis por dentro da própria seção e uma não tinha link nenhum.
  *
- * Sidebar, hubs e a paleta ⌘K são PROJEÇÕES puras deste array — nenhum deles
- * decide o que existe, só desenha o que sai daqui. Tela nova aparece nos três
- * sem editar três arquivos, e `tests/unit/navegacao-completude.test.ts` reprova
- * o CI se uma rota nascer fora daqui.
+ * O menu (faixa, painel, gaveta, barra de baixo), a busca ⌘K e as páginas de área
+ * são PROJEÇÕES puras deste array — nenhum deles decide o que existe, só desenha o
+ * que sai daqui. Tela nova aparece em todos sem editar arquivo nenhum, e
+ * `tests/unit/navegacao-completude.test.ts` reprova o CI se uma rota nascer fora
+ * daqui.
  *
  * Doutrina: docs/doctrine/sistema-vivo.md — "por qual porta se chega até mim?"
  */
 
-export type NavGroupId = "atendimento" | "crm" | "ia" | "canais" | "analise" | "organizacao";
-
-export interface NavGroup {
-  id: NavGroupId;
-  label: string;
-  /**
-   * Hub do grupo, quando ele tem telas demais para caber no sidebar.
-   * O rótulo é declarado junto do href porque não é derivável: "Ver tudo em IA"
-   * é útil, "Ver tudo em Organização" seria gratuito quando a tela já se chama
-   * Configurações e o usuário a conhece por esse nome.
-   */
-  hub?: { href: string; label: string };
-}
-
 /**
- * O MODELO NOVO DO MENU (issue #183) — por frequência de uso, não por área do sistema.
+ * O MODELO DO MENU (issue #183) — por frequência de uso, não por área do sistema.
  *
  * Três blocos que a pessoa entende pelo nome: o que se abre TODO DIA, o que se
  * CONFIGURA de vez em quando (em quatro áreas) e os RESULTADOS. As telas pessoais
- * moram no menu da conta ("Você"). Este modelo vive AO LADO do antigo (`group`,
- * `section`, `sidebar`): nada que a pessoa vê muda até os tickets seguintes
- * migrarem o Sidebar, o hub e o ⌘K para ele.
+ * moram no menu da conta ("Você"). É o único modelo: o antigo (`group`, `section`,
+ * `sidebar`, os grupos com "Ver tudo em…" e o limite de 15 itens) saiu na issue #192.
  *
  * A tela declara só o `grupo`; bloco e área SAEM da tabela de grupos abaixo. Assim
  * não existe uma tela com "bloco Resultados, área Vender" — a combinação inválida
@@ -102,13 +88,22 @@ export const MENU_GRUPOS = [
 ] as const satisfies readonly GrupoDoMenuDeclarado[];
 export type GrupoDoMenuId = (typeof MENU_GRUPOS)[number]["id"];
 
+interface PaginaDeAreaDeclarada {
+  href: string;
+  label: string;
+  description: string;
+  icon: string;
+  /** Os grupos por tarefa que a página lista, na ordem em que aparecem. */
+  grupos: readonly GrupoDoMenuId[];
+}
+
 /** Onde a tela mora no menu novo. Obrigatória: tela sem posição não compila. */
 export interface PosicaoNoMenu {
   grupo: GrupoDoMenuId;
   /**
    * O termo técnico, mostrado embaixo do nome ("webhooks", "API key") no menu, na
-   * dica e no hub, e buscável no ⌘K. O NOME é o `label`: um só, o mesmo nos dois
-   * menus (issue #187) — o nome de antes vira sinônimo de busca.
+   * dica e nas páginas de área, e buscável no ⌘K. O NOME é o `label`: um só, igual no menu e na
+   * busca (issue #187) — o nome de antes vira sinônimo de busca.
    */
   termo?: string;
   /** Posição dentro do grupo, a partir de 1. Única por grupo. */
@@ -120,7 +115,7 @@ export interface NavMetadata {
   label: string;
   /** Onde a tela mora no menu novo — ver `MENU_GRUPOS`. */
   menu: PosicaoNoMenu;
-  /** Aparece no card do hub e é texto buscável no ⌘K. Nunca vazio. */
+  /** Aparece na gaveta, nas páginas de área e é texto buscável no ⌘K. Nunca vazio. */
   description: string;
   /**
    * Outros nomes pelos quais quem procura chama esta tela, buscáveis no ⌘K mas
@@ -130,13 +125,8 @@ export interface NavMetadata {
    */
   sinonimos?: readonly string[];
   icon: string;
-  group: NavGroupId;
-  /** Obrigatória em grupo com hub — é o agrupamento por jornada dentro dele. */
-  section?: string;
   /** Ausente = viewer. Ver a regra de escolha abaixo. */
   minRole?: Role;
-  /** Ausente = só no hub. `true` = uso diário, sobe para o sidebar. */
-  sidebar?: boolean;
   healthDot?: boolean;
   /**
    * Contador de pendências ao lado do rótulo. `casos`: casos em que a IA espera
@@ -147,61 +137,96 @@ export interface NavMetadata {
   contador?: "casos" | "fila";
   /**
    * A porta de um MÓDULO OPCIONAL da instalação (`lib/instalacao/modulos.ts`).
-   * Com o módulo desligado ela some do menu, do hub e do ⌘K — para todo papel.
+   * Com o módulo desligado ela some do menu, das páginas de área e do ⌘K — para todo papel.
    * É apresentação, como o resto deste arquivo: quem recusa é a tela e a rota.
    */
   modulo?: ModuloOpcional;
   /**
    * A porta de uma CAPACIDADE que a organização liga para si
-   * (`lib/organizacao/capacidades.ts`). Desligada, some do menu, do hub e do
+   * (`lib/organizacao/capacidades.ts`). Desligada, some do menu, das páginas de área e do
    * ⌘K. Apresentação, como `modulo`: quem recusa é a tela e a rota.
    */
   capacidade?: CapacidadeDaOrganizacao;
 }
 
 /**
- * Grupos por OBJETIVO, na ordem de uso: o que se abre toda hora primeiro, o que
- * se ajusta uma vez por mês por último.
+ * AS PÁGINAS DE ÁREA (issue #192): `/app/crm`, `/app/ai`, `/app/analise` e
+ * `/app/settings`.
  *
- * "Análise" e não "Observabilidade": quem instala isto numa VPS é dono de PME,
- * não engenheiro. E configurar o sistema (grupo IA) é atividade diferente de
- * observar o sistema funcionando (grupo Análise) — por isso Evolução da IA mora
- * aqui, e não junto dos agentes.
+ * Eram o "Ver tudo em…" do menu antigo. O menu novo não precisa delas para chegar
+ * a nenhuma tela, mas o endereço é de quem o salvou nos favoritos — então elas
+ * continuam abrindo, e a busca ⌘K as acha pelo nome. Cada uma é um INVENTÁRIO:
+ * lista os grupos por tarefa do menu que declara aqui, e o que a pessoa vê dentro
+ * deles é o que o menu já decide (papel, módulos, interface por empresa). Não há
+ * segunda lista de telas: só a lista de grupos de cada página.
  *
- * Hub só onde o grupo passa de 4 telas. Abaixo disso ele cabe inteiro no
- * sidebar, e um hub de 3 itens seria só um clique a mais para chegar onde já
- * dava para chegar.
+ * Cada página lista, no MÍNIMO, o que o hub antigo dela listava — o piso está congelado em
+ * `tests/unit/paginas-de-area.test.ts`. Como o corte é por grupo, algumas listam telas a mais.
  *
- * O CRM cruzou essa linha com a tela de Tarefas (PR #546), e o hub dele é a
- * cobrança de uma promessa escrita: o comentário de densidade do `Sidebar.tsx`
- * dizia, desde a vez em que Produtos estourou a dobra por uma linha, que
- * "quando o quinto destino de CRM aparecer, é hub que se cria, não mais 4px que
- * se raspa". Tarefas foi o quinto. Raspar de novo devolveria 13px e adiaria a
- * mesma conversa para a sexta tela.
+ * O texto (`label`, `description`) é o título e o subtítulo da própria página.
+ * Retirar estas páginas é decisão para depois, e começa por apagar este array.
  */
-export const NAV_GROUPS: NavGroup[] = [
-  { id: "atendimento", label: "Leads" },
-  { id: "crm", label: "Gestão de Clientes CRM", hub: { href: "/app/crm", label: "Ver tudo em CRM" } },
-  { id: "ia", label: "Agente de IA", hub: { href: "/app/ai", label: "Ver tudo em IA" } },
-  { id: "canais", label: "Canais" },
-  { id: "analise", label: "Análise", hub: { href: "/app/analise", label: "Ver tudo em Análise" } },
+export const PAGINAS_DE_AREA = [
   {
-    id: "organizacao",
-    label: "Organização",
-    hub: { href: "/app/settings", label: "Configurações" },
+    href: "/app/crm",
+    label: "Gestão de Clientes CRM",
+    description: "Onde a venda acontece — e o que você define uma vez para ela funcionar.",
+    icon: "AddressBook",
+    // O que se abre todo dia no CRM e tudo o que se prepara em Vender.
+    grupos: [
+      "gestao-de-clientes",
+      "se-a-empresa-usa",
+      "vender-funil",
+      "vender-oferta",
+      "vender-equipe",
+      "vender-cadastro",
+    ],
   },
-];
-
-/**
- * Grupo cujo hub vive no RODAPÉ fixo do sidebar, fora da área que rola.
- *
- * Medido em tela (1280×768, o notebook comum): com todos os grupos na área
- * rolável, o conteúdo dava 1019px contra 663px visíveis — Configurações ficava
- * fora da dobra em TODAS as alturas testadas, inclusive 1080px. É o item que
- * mais se procura quando não se acha algo; deixá-lo dependendo de scroll
- * recriaria, em outra forma, o problema que esta reorganização veio resolver.
- */
-export const GRUPO_NO_RODAPE: NavGroupId = "organizacao";
+  {
+    href: "/app/ai",
+    label: "Agente de IA",
+    description: "Tudo que define quem atende por você — e como acompanhar o que ele faz.",
+    icon: "Sparkle",
+    // Montar, ensinar e conectar a IA, e o acompanhamento que o hub antigo também listava: os casos
+    // que esperam uma pessoa e os alertas (Leads) e o que a IA fez e gastou (Resultados).
+    grupos: [
+      "agente-montar",
+      "agente-ensinar",
+      "agente-conectar",
+      "leads",
+      "resultados-equipe",
+      "resultados-erro",
+    ],
+  },
+  {
+    href: "/app/analise",
+    label: "Análise",
+    description: "Como o negócio foi no período — e o histórico para quando alguém perguntar por quê.",
+    icon: "ChartPieSlice",
+    grupos: ["resultados-negocio", "resultados-equipe", "resultados-erro"],
+  },
+  {
+    href: "/app/settings",
+    label: "Configurações",
+    description: "Sua conta, os dados da empresa e quem tem acesso ao quê.",
+    icon: "Gear",
+    // A conta, a empresa e as conexões — e o que se prepara em Vender (agenda, propostas, etiquetas),
+    // que o hub antigo de Configurações também listava.
+    grupos: [
+      "conta-voce",
+      "empresa-equipe",
+      "empresa-dados",
+      "empresa-plano",
+      "conexoes-whatsapp",
+      "conexoes-sistemas",
+      "conexoes-anuncios",
+      "vender-funil",
+      "vender-oferta",
+      "vender-equipe",
+    ],
+  },
+] as const satisfies readonly PaginaDeAreaDeclarada[];
+export type PaginaDeAreaHref = (typeof PAGINAS_DE_AREA)[number]["href"];
 
 /**
  * Como `minRole` foi escolhido — medido tela a tela, não estimado:
@@ -218,26 +243,12 @@ export const GRUPO_NO_RODAPE: NavGroupId = "organizacao";
  */
 export const NAV_CATALOG = [
   {
-    // SEM `sidebar: true`, e a razão não tem nada a ver com a qualidade desta
-    // tela: o menu lateral está no limite medido. Com ela, seriam 20 portas, e
-    // `tests/e2e/navegacao.spec.ts` reprova ("em 900px o menu inteiro tem de
-    // caber sem scroll" · Received: true). O comentário daquela spec já
-    // antecipava o número: "Trocar '17 itens sem hierarquia' por '20 itens que
-    // não cabem' seria recriar o problema em outra forma."
-    //
-    // A porta NÃO sumiu: ela vive no hub do grupo CRM ("Ver tudo em CRM") e no
-    // ⌘K — o mesmo caminho das outras entradas do grupo.
-    // CONDIÇÃO QUE ENCERRA ESTA EXCEÇÃO: quando o menu couber mais uma porta
-    // (ver doc 47), este item volta ao sidebar — é o primeiro da fila, porque
-    // saiu por falta de espaço e não por decisão de produto.
     href: "/app/prospecting",
     label: "Prospecção",
     description: "Busque empresas e conduza abordagens graduais com IA.",
     icon: "Binoculars",
-    group: "crm",
     menu: { grupo: "vender-funil", ordem: 3 },
     minRole: "admin",
-    section: "O dia a dia da venda",
   },
   // ---- Atendimento — onde o operador passa o dia ----
   {
@@ -247,9 +258,7 @@ export const NAV_CATALOG = [
     // O nome mudou de "Inbox" para "Conversas"; quem procura pelo antigo ainda acha.
     sinonimos: ["inbox", "caixa de entrada"],
     icon: "Inbox",
-    group: "atendimento",
     menu: { grupo: "leads", ordem: 1, termo: "inbox" },
-    sidebar: true,
     // Quantas conversas a IA passou para a equipe e esperam uma pessoa (aba Fila).
     contador: "fila",
   },
@@ -260,9 +269,7 @@ export const NAV_CATALOG = [
     sinonimos: ["radar", "risco", "esfriou"],
     description: "Quem esfriou e ainda está aberto — o que corre risco de morrer sem resposta.",
     icon: "ClockCountdown",
-    group: "atendimento",
     menu: { grupo: "leads", ordem: 4 },
-    sidebar: true,
   },
   {
     // Entra em "atendimento", e não em "organizacao", porque a Agenda é onde o
@@ -283,9 +290,7 @@ export const NAV_CATALOG = [
     sinonimos: ["agenda", "calendário", "agendamentos"],
     description: "O que está marcado, com quem, e quem atende — seu e da equipe.",
     icon: "CalendarBlank",
-    group: "atendimento",
     menu: { grupo: "leads", ordem: 5 },
-    sidebar: true,
   },
   {
     // Renomeado de "Templates": estes são scripts do atendente, consumidos pelo
@@ -295,9 +300,7 @@ export const NAV_CATALOG = [
     label: "Respostas rápidas",
     description: "Scripts salvos para responder mais rápido, seus ou da equipe.",
     icon: "Lightning",
-    group: "atendimento",
     menu: { grupo: "vender-equipe", ordem: 1 },
-    sidebar: true,
   },
 
   // ---- CRM — o funil ----
@@ -316,10 +319,7 @@ export const NAV_CATALOG = [
     label: "Funis",
     description: "Seus funis de venda — clique em um para abrir o quadro de clientes.",
     icon: "FunilEmEtapas",
-    group: "crm",
     menu: { grupo: "gestao-de-clientes", ordem: 1 },
-    section: "O dia a dia da venda",
-    sidebar: true,
   },
   {
     // A campanha vive no CRM e não em Conexões: quem a usa está pensando em
@@ -332,43 +332,30 @@ export const NAV_CATALOG = [
     // (inclusive uma planilha CSV). A URL não muda — link salvo e histórico
     // seguem valendo.
     //
-    // ─── E ESTÁ NO MENU LATERAL desde 2026-10-15 ───
-    // Antes ficava só no hub, e quem procurava o disparo não achava. Entrou no
-    // sidebar do CRM com `minRole: "manager"` (a API da campanha exige manager:
-    // mostrar a quem toma 403 seria uma porta que não abre). O custo de altura é
-    // medido em 900px por `tests/e2e/navegacao.spec.ts`.
+    // `minRole: "manager"`: a API da campanha exige manager, e mostrar a quem toma 403 seria uma porta
+    // que não abre.
     href: "/app/campaigns",
     label: "Disparo em massa",
     description:
       "Mande uma mensagem para muita gente de uma vez — suba uma planilha CSV ou escolha contatos que já estão aqui.",
     sinonimos: ["campanha", "campanhas", "envio em massa", "broadcast"],
     icon: "Megaphone",
-    group: "crm",
     menu: { grupo: "gestao-de-clientes", ordem: 4 },
-    section: "O dia a dia da venda",
     minRole: "manager",
-    sidebar: true,
   },
   {
     href: "/app/contacts",
     label: "Contatos",
     description: "As pessoas do outro lado da conversa e seu histórico.",
     icon: "Users",
-    group: "crm",
     menu: { grupo: "gestao-de-clientes", ordem: 2 },
-    section: "O dia a dia da venda",
-    sidebar: true,
   },
   {
     href: "/app/companies",
     label: "Empresas",
     description: "Cadastro B2B — razão social, CNPJ e decisores.",
     icon: "Buildings",
-    group: "crm",
     menu: { grupo: "vender-cadastro", ordem: 2, termo: "B2B" },
-    section: "O dia a dia da venda",
-    // SEM sidebar: o CRM já tem Funis/Contatos/Tarefas no menu diário; este trio
-    // mora no hub "Ver tudo em CRM" para não reabrir a corrida por pixel.
     minRole: "viewer",
     // Módulo opcional da instalação, desligado por padrão (doc 68, #1621).
     modulo: "crm_b2b",
@@ -378,60 +365,31 @@ export const NAV_CATALOG = [
     label: "Pessoas",
     description: "Decisores e contatos ligados a empresas, com vários telefones.",
     icon: "UserList",
-    group: "crm",
     menu: { grupo: "vender-cadastro", ordem: 3, termo: "B2B" },
-    section: "O dia a dia da venda",
     minRole: "viewer",
     // Módulo opcional da instalação, desligado por padrão (doc 68, #1621).
     modulo: "crm_b2b",
   },
   {
-    // Extraída do PR #418 (@clinicacentrodosorrisosc-code). Fica no CRM e no
-    // sidebar porque é tela de USO DIÁRIO — quem atende abre para ver o que
-    // vence hoje, do mesmo jeito que abre o Inbox. Sem `minRole`: `viewer` VÊ
-    // o que o time combinou (é informação de operação), e a criação é cobrada
-    // pela rota, com `requireRole("agent")`.
+    // Extraída do PR #418 (@clinicacentrodosorrisosc-code). É tela de USO DIÁRIO — quem atende
+    // abre para ver o que vence hoje, do mesmo jeito que abre as Conversas. Sem `minRole`: `viewer` VÊ
+    // o que o time combinou (é informação de operação), e a criação é cobrada pela rota, com
+    // `requireRole("agent")`.
     href: "/app/tasks",
     label: "Tarefas",
     description: "O que ficou combinado, com prazo — e o que já venceu sem ninguém fazer.",
     icon: "ListChecks",
-    group: "crm",
     menu: { grupo: "gestao-de-clientes", ordem: 3 },
-    section: "O dia a dia da venda",
-    sidebar: true,
   },
   {
     // Módulo VoIP (migration 0347). No grupo do CRM pelo mesmo critério de
     // Tarefas: quem atende confere ligações perdidas e transcrições no dia a
     // dia, não como revisão deliberada.
-    //
-    // ─── SEM `sidebar`, e a razão não é gosto: a telefonia é MÓDULO OPCIONAL ───
-    //
-    // O dono decidiu (doc 27) que a telefonia por SIP entra desligada por
-    // padrão — quem não liga não tem os contêineres, não tem tronco e não tem
-    // ligação nenhuma para ver. Pôr a porta no sidebar de TODA instalação
-    // custaria a todas elas um item que quase nenhuma usa, e o preço é medido:
-    // `tests/e2e/navegacao.spec.ts` exige que, em 900px, o menu caiba inteiro
-    // sem rolagem, e o vigésimo item o faz rolar.
-    //
-    // O ideal seria mostrá-la SÓ para quem ligou o módulo, e isso hoje não é
-    // possível: "telefonia ligada" é um profile do docker compose (servidor),
-    // não um estado que o aplicativo conheça — o shell não consulta nada de
-    // telefonia, e os dois sinais de banco possíveis (linha em
-    // `voip_trunk_settings`, ou `phone_numbers` ativo) custariam uma consulta
-    // em todo render. Está desenhado na issue do `sidebarSe`.
-    //
-    // A porta NÃO sumiu: ela vive no hub do grupo CRM ("Ver tudo em CRM") e no
-    // ⌘K, que é o mesmo caminho das outras dez entradas de "organizacao".
-    // CONDIÇÃO QUE ENCERRA ESTA EXCEÇÃO: no dia em que o app souber que o
-    // módulo está ligado, o item volta ao sidebar para quem ligou.
     href: "/app/calls",
     label: "Chamadas",
     description: "Histórico de ligações (voz por IA) com transcrição.",
     icon: "Phone",
-    group: "crm",
     menu: { grupo: "se-a-empresa-usa", ordem: 3 },
-    section: "O dia a dia da venda",
     minRole: "manager",
   },
   {
@@ -442,35 +400,18 @@ export const NAV_CATALOG = [
     //
     // Fica no grupo do CRM, e não em Configurações, porque o catálogo é insumo
     // de VENDA: ele existe para o agente responder preço na conversa.
-    //
-    // ⚠️ ESTA FRASE DIZIA "consultar preço é trabalho de quem ATENDE, todo dia",
-    // e era o argumento para o `sidebar: true`. Ela se contradizia com a própria
-    // descrição do destino, uma linha abaixo: quem responde o preço é o
-    // atendente de IA, dentro do Inbox. O humano não abre esta tela para
-    // vender — abre para cadastrar o que vende.
     href: "/app/products",
     label: "Produtos",
     description: "O catálogo da loja, com o preço que o atendente de IA responde.",
     icon: "Storefront",
-    group: "crm",
     menu: { grupo: "vender-oferta", ordem: 1 },
-    section: "Preparar a venda",
-    // SEM `sidebar`: mora atrás de "Ver tudo em CRM".
-    //
-    // O critério é QUEM CONSOME a tela, e a descrição acima já o entrega: o
-    // preço quem responde é o atendente de IA, dentro da conversa. Esta tela é
-    // onde o catálogo se CADASTRA — trabalho de quando entra produto novo ou
-    // muda preço, não de toda manhã. Quem atende não a abre para vender; abre o
-    // Inbox e o funil, que continuam no menu.
   },
   {
     href: "/app/imports",
     label: "Importações",
     description: "Lotes CSV/XLSX de empresas, pessoas e telefones.",
     icon: "UploadSimple",
-    group: "crm",
     menu: { grupo: "vender-cadastro", ordem: 1, termo: "CSV / XLSX" },
-    section: "Preparar a venda",
     minRole: "manager",
     // Módulo opcional da instalação, desligado por padrão (doc 68, #1621).
     modulo: "crm_b2b",
@@ -480,9 +421,7 @@ export const NAV_CATALOG = [
     label: "Propostas",
     description: "Rascunhe, revise e envie propostas comerciais — do orçamento ao aceite.",
     icon: "Signature",
-    group: "crm",
     menu: { grupo: "se-a-empresa-usa", ordem: 1 },
-    section: "Fechar a venda",
     capacidade: "propostas",
   },
   {
@@ -498,16 +437,7 @@ export const NAV_CATALOG = [
     label: "Tipos de agendamento",
     description: "O que se pode marcar, quanto dura, onde acontece e quem atende.",
     icon: "CalendarCheck",
-    group: "organizacao",
     menu: { grupo: "vender-funil", ordem: 2 },
-    // "Sua empresa", junto de Atendimento e Empresa: é configuração do NEGÓCIO,
-    // não da conta de quem está logado. O gate `navegacao-registry` cobra a
-    // seção em todo grupo que tem hub, e sem ela o destino não aparece no hub.
-    section: "Sua empresa",
-    // SEM `sidebar`, como as outras DEZ entradas de "organizacao": este grupo
-    // tem hub, e se chega às telas dele por "Configurações". Eu tinha posto
-    // `sidebar: true` e a cerca reprovou dizendo "a tela existe e não tem porta
-    // na navegação" — a porta existia, era outra.
   },
   {
     href: "/app/settings/tenant/proposals",
@@ -515,27 +445,20 @@ export const NAV_CATALOG = [
     sinonimos: ["propostas"],
     description: "Configure a validade padrão e condições para propostas comerciais.",
     icon: "Files",
-    group: "organizacao",
     menu: { grupo: "vender-oferta", ordem: 2 },
-    section: "Sua empresa",
     minRole: "manager",
     // Doc 79: é aqui que a EMPRESA liga — então a porta depende só da chave da
     // INSTALAÇÃO (a capacidade da empresa ainda está desligada quando se chega).
     modulo: "propostas",
-    // SEM `sidebar`: mora atrás de "Configurações", como as demais telas de
-    // settings/tenant que não são de acompanhamento diário.
   },
   {
     href: "/app/settings/tenant/proposals/modelos",
     label: "Modelos de proposta",
     description: "Personalize os modelos da plataforma ou crie os da sua empresa, inclusive a partir de uma proposta que você já usa.",
     icon: "FileText",
-    group: "organizacao",
     menu: { grupo: "vender-oferta", ordem: 3 },
-    section: "Sua empresa",
     minRole: "manager",
     capacidade: "propostas",
-    // SEM `sidebar`, como a tela-mãe de Propostas: chega-se por Configurações.
   },
   {
     // O BALCÃO. Fica em CRM, e não em Configurações, porque é uso diário de quem
@@ -548,20 +471,7 @@ export const NAV_CATALOG = [
     label: "Comandas",
     description: "O que foi feito, por quem, e quanto o cliente paga.",
     icon: "Receipt",
-    group: "crm",
     menu: { grupo: "se-a-empresa-usa", ordem: 2 },
-    section: "O dia a dia da venda",
-    // ⚠️ FORA do sidebar, e isto foi MEDIDO, não escolhido por gosto. Com
-    // `sidebar: true` o menu passou a rolar em 1280×900 e o e2e
-    // `navegacao.spec.ts` ("nenhum grupo fica fora da dobra") reprovou — grupo
-    // abaixo da dobra é indistinguível de grupo que não existe. A regra escrita
-    // no comentário de densidade do `Sidebar.tsx` é esta: grupo COM hub não
-    // ganha linha nova no menu, a tela mora dentro do hub. O CRM tem hub desde
-    // Tarefas (PR #546), e raspar 4px de densidade de novo só adiaria a mesma
-    // conversa para a próxima tela.
-    //
-    // O balcão continua a um clique: CRM › Ver tudo em CRM › "O dia a dia da
-    // venda", e pelo ⌘K digitando "comanda".
     minRole: "viewer",
   },
   {
@@ -576,9 +486,7 @@ export const NAV_CATALOG = [
     label: "Financeiro",
     description: "Contas, formas de pagamento e como cada lançamento é classificado.",
     icon: "Wallet",
-    group: "organizacao",
     menu: { grupo: "empresa-dados", ordem: 3 },
-    section: "Sua empresa",
     // Leitura para a organização, escrita para manager+ (é a RLS que decide).
     // `viewer` aqui e não `manager`: quem só olha precisa conferir para onde o
     // dinheiro vai, e esconder a tela não esconde o dado — só torna a
@@ -598,20 +506,8 @@ export const NAV_CATALOG = [
     label: "Etapas do funil",
     description: "As colunas de cada funil, o vocabulário do negócio e os motivos de perda.",
     icon: "Funnel",
-    group: "crm",
     menu: { grupo: "vender-funil", ordem: 1 },
-    section: "Preparar a venda",
     minRole: "manager",
-    // SEM `sidebar`: mora atrás de "Ver tudo em CRM".
-    //
-    // ⚠️ O ACHADO ORIGINAL NÃO FOI DESFEITO. Ele era "esta tela está enterrada
-    // em CONFIGURAÇÕES e ninguém sabe que existe" — o problema era o GRUPO
-    // errado, não a profundidade. Ela continua sendo CRM: aparece no hub do
-    // CRM, no ⌘K, e o caminho é "CRM › Ver tudo em CRM", nunca mais
-    // "Configurações". O que muda é a frequência: desenhar as colunas do funil
-    // e escrever os motivos de perda é trabalho de montagem, feito uma vez e
-    // revisitado por `manager` de vez em quando — enquanto Funis, Contatos e
-    // Tarefas se abrem todo dia. É esse o corte que decide quem fica no menu.
   },
 
   // ---- Agente de IA — montar, ensinar, acompanhar ----
@@ -620,38 +516,26 @@ export const NAV_CATALOG = [
     label: "Agentes",
     description: "Quem atende por você: instruções, modelo, ferramentas e publicação.",
     icon: "AgenteEmConversa",
-    group: "ia",
     menu: { grupo: "agente-montar", ordem: 1 },
-    section: "Montar o agente",
     minRole: "manager",
-    sidebar: true,
   },
   {
     href: "/app/ai/followups",
     label: "Follow-ups",
     description: "Como o agente retoma uma conversa que esfriou, para nenhuma morrer no silêncio.",
     icon: "FlowArrow",
-    group: "ia",
     menu: { grupo: "agente-montar", ordem: 2 },
-    section: "Montar o agente",
     minRole: "manager",
-    sidebar: true,
   },
   {
     // Os roteiros de atendimento (#1130): perguntas que a IA conduz
     // durante a conversa. MÓDULO OPCIONAL da instalação, desligado por padrão
     // (doc 64): a porta só existe onde quem administra o servidor o ligou.
-    //
-    // SEM `sidebar`, pela decisão (d) do doc 48: o menu lateral encheu e ficou
-    // configurável por empresa — o padrão não cresce; a porta mora no hub de IA
-    // e na busca, e quem usa pode pô-la no menu dela.
     href: "/app/ai/atendimento",
     label: "Fluxos de atendimento",
     description: "Perguntas que a IA conduz durante a conversa, com as respostas guardadas na ficha do cliente.",
     icon: "TreeStructure",
-    group: "ia",
     menu: { grupo: "agente-montar", ordem: 3 },
-    section: "Montar o agente",
     minRole: "manager",
     modulo: "fluxos_atendimento",
   },
@@ -661,13 +545,8 @@ export const NAV_CATALOG = [
     sinonimos: ["roteadores"],
     description: "Qual agente pega qual conversa, e quando o humano assume.",
     icon: "PassagemParaHumano",
-    group: "ia",
     menu: { grupo: "agente-montar", ordem: 4, termo: "roteadores" },
-    section: "Montar o agente",
     minRole: "manager",
-    // Saiu do sidebar para dar lugar a Casos: roteador se configura poucas
-    // vezes, e o caso pede resposta no mesmo dia. A troca é um-por-um porque o
-    // menu inteiro tem de caber em 900px (e2e `navegacao.spec.ts`).
   },
   {
     href: "/app/ai/credentials",
@@ -675,15 +554,7 @@ export const NAV_CATALOG = [
     sinonimos: ["credenciais"],
     description: "A chave do provedor de IA que os agentes usam para pensar.",
     icon: "Key",
-    // VOLTOU para "ia"/"Montar o agente" na triagem, e a razão de quem tinha
-    // movido VENCEU em vez de estar errada: quando este PR nasceu, a tela não
-    // aparecia em hub nenhum e só se chegava nela digitando a URL. Depois
-    // disso a main ganhou o hub de IA, que a lista — e `tests/unit/nav-hub`
-    // cobra a entrada ali, inclusive em espanhol. Movê-la para "Sua empresa"
-    // agora tiraria a tela do lugar onde o hub promete que ela está.
-    group: "ia",
     menu: { grupo: "agente-conectar", ordem: 2, termo: "API key" },
-    section: "Montar o agente",
     minRole: "manager",
   },
   {
@@ -697,24 +568,15 @@ export const NAV_CATALOG = [
     // longa cortava antes do nome — quem procurava "jev" achava, mas não via por quê.
     description: "Ligue o Jev para decisões rápidas e escolha qual inteligência atende cada parte do sistema.",
     icon: "Plugs",
-    group: "ia",
     menu: { grupo: "agente-conectar", ordem: 3, termo: "provedores" },
-    section: "Montar o agente",
     minRole: "manager",
-    // SEM `sidebar: true`, como as outras nove telas deste grupo. Adicionar as
-    // duas telas novas à sidebar estourou a dobra em 900px — medido pelo e2e
-    // `navegacao.spec.ts`, que existe justamente porque agrupar o menu o faz
-    // crescer. Configurar provedor é tarefa de poucas vezes; o caminho é o hub
-    // "Ver tudo em IA", igual a Credenciais, Conhecimento, Memória e Skills.
   },
   {
     href: "/app/ai/knowledge/sources",
     label: "Conhecimento",
     description: "Os materiais que o agente consulta antes de responder sobre o seu negócio.",
     icon: "BookOpen",
-    group: "ia",
     menu: { grupo: "agente-ensinar", ordem: 1, termo: "RAG" },
-    section: "Ensinar o agente",
     minRole: "manager",
   },
   {
@@ -723,22 +585,15 @@ export const NAV_CATALOG = [
     description: "Consultas e ações em outro sistema (estoque, planilha, ERP) que o agente faz durante a conversa; as que alteram algo esperam a sua aprovação.",
     sinonimos: ["webhook", "integração", "make", "n8n", "erp", "consulta externa", "mcp", "servidor mcp", "ferramentas externas"],
     icon: "Signpost",
-    group: "ia",
     menu: { grupo: "agente-conectar", ordem: 1, termo: "MCP" },
-    section: "Montar o agente",
     minRole: "manager",
-    // SEM `sidebar: true`: o menu lateral só cabe com 15 itens em 900 px (medido por
-    // `navegacao.spec.ts`). Cadastrar uma ferramenta é tarefa de poucas vezes; o caminho é o
-    // hub "Ver tudo em IA" e a paleta ⌘K, como Credenciais, Conhecimento e Skills.
   },
   {
     href: "/app/ai/memory",
     label: "Memória",
     description: "O que o agente já aprendeu sobre a sua operação e reaproveita.",
     icon: "Brain",
-    group: "ia",
     menu: { grupo: "agente-ensinar", ordem: 2 },
-    section: "Ensinar o agente",
     minRole: "manager",
   },
   {
@@ -747,9 +602,7 @@ export const NAV_CATALOG = [
     sinonimos: ["skills"],
     description: "As ações que o agente pode executar sozinho durante o atendimento.",
     icon: "MagicWand",
-    group: "ia",
     menu: { grupo: "agente-ensinar", ordem: 3, termo: "skills" },
-    section: "Ensinar o agente",
     minRole: "manager",
   },
   {
@@ -760,14 +613,9 @@ export const NAV_CATALOG = [
     // O nome mudou de "Casos" para "Aguardando Humano"; quem procura pelo antigo ainda acha.
     sinonimos: ["casos", "caso", "esperando uma pessoa"],
     icon: "ClipboardText",
-    group: "ia",
     menu: { grupo: "leads", ordem: 2 },
-    section: "Acompanhar o agente",
     minRole: "agent",
-    // Uso diário: a IA abre caso quando precisa de uma pessoa e segue
-    // atendendo enquanto espera. Escondido no hub, o caso só era visto por quem
-    // fosse procurar — medido numa loja que vende pelo WhatsApp.
-    sidebar: true,
+    // Uso diário: a IA abre caso quando precisa de uma pessoa e segue atendendo enquanto espera.
     contador: "casos",
   },
   {
@@ -775,9 +623,7 @@ export const NAV_CATALOG = [
     label: "Alertas",
     description: "O que a IA encontrou e precisa de uma decisão sua.",
     icon: "Flag",
-    group: "ia",
     menu: { grupo: "leads", ordem: 3 },
-    section: "Acompanhar o agente",
   },
   {
     // "Aviso no WhatsApp", NUNCA "Avisos": a vizinha de cima chama-se "Alertas"
@@ -789,15 +635,10 @@ export const NAV_CATALOG = [
     label: "Aviso no WhatsApp",
     description: "Receber no WhatsApp quando o assistente abrir um caso.",
     icon: "PaperPlaneTilt",
-    group: "ia",
     menu: { grupo: "agente-conectar", ordem: 4 },
-    section: "Acompanhar o agente",
     // `admin` porque escolhe um número conectado e manda dado de cliente para um
     // celular — o mesmo gate da rota e da RLS de `config_aviso_de_caso`.
     minRole: "admin",
-    // SEM `sidebar`: o grupo IA já tem treze telas e o e2e de navegação exige
-    // que o menu inteiro caiba em 900px de altura. Configurar isto é tarefa de
-    // poucas vezes; o caminho é o hub "Ver tudo em IA".
   },
   {
     // Órfã: nenhum lugar do app linkava para cá. O flywheel gerava propostas de
@@ -806,9 +647,7 @@ export const NAV_CATALOG = [
     label: "Sugestões da IA",
     description: "Melhorias que a IA sugere para si mesma, esperando sua decisão.",
     icon: "Lightbulb",
-    group: "ia",
     menu: { grupo: "resultados-equipe", ordem: 3 },
-    section: "Acompanhar o agente",
   },
   {
     // A tela de Uso responde "quanto gastei". Esta responde a pergunta que não
@@ -820,21 +659,15 @@ export const NAV_CATALOG = [
     sinonimos: ["execuções"],
     description: "O que a IA fez — e, quando falhou, o que aconteceu e o que fazer.",
     icon: "Pulse",
-    group: "ia",
     menu: { grupo: "resultados-erro", ordem: 1, termo: "logs" },
-    section: "Acompanhar o agente",
     minRole: "manager",
-    // Idem: fora da sidebar para o menu não passar da dobra. Quem vem para cá
-    // está diagnosticando, e chega pelo hub ou pelo link do aviso na Central.
   },
   {
     href: "/app/ai/usage",
     label: "Uso e orçamento",
     description: "Quanto a IA consumiu e qual é o teto de gasto do mês.",
     icon: "Gauge",
-    group: "ia",
     menu: { grupo: "resultados-equipe", ordem: 4 },
-    section: "Acompanhar o agente",
     minRole: "manager",
   },
 
@@ -849,10 +682,8 @@ export const NAV_CATALOG = [
     description:
       "Seus números de WhatsApp: por QR ou canal oficial da Meta, com saúde, reconexão e templates.",
     icon: "PlugsConnected",
-    group: "canais",
     menu: { grupo: "conexoes-whatsapp", ordem: 1 },
     minRole: "admin",
-    sidebar: true,
     healthDot: true,
   },
   {
@@ -861,46 +692,20 @@ export const NAV_CATALOG = [
     sinonimos: ["webhooks"],
     description: "Avise outros sistemas quando algo acontecer aqui dentro.",
     icon: "WebhooksLogo",
-    group: "canais",
     menu: { grupo: "conexoes-sistemas", ordem: 1, termo: "webhooks" },
     minRole: "manager",
-    sidebar: true,
   },
 
   // ---- Análise — olhar o sistema funcionando ----
-  //
-  // ── QUEM FICA NO MENU, E POR QUÊ ─────────────────────────────────────────
-  //
-  // A régua é a FREQUÊNCIA de quem opera vendas por WhatsApp, não a importância
-  // da tela. As três de cima entram na rotina — o dono abre Desempenho para
-  // saber como vai o mês, Meta Ads para saber quanto custou trazer quem chegou,
-  // e Atividades para saber se a equipe (e a IA) trabalhou no período. São
-  // perguntas que se refazem toda semana, e um menu é para o que se refaz.
-  //
-  // As duas de baixo são visita DELIBERADA: "Evolução da IA" é revisão do
-  // agente, coisa de quando se senta para ensiná-lo — e quem senta para isso já
-  // vai ao grupo de IA; "Audit Log" é forense, aberto quando algo deu errado e
-  // se precisa saber quem mexeu. Nenhuma das duas se abre de passagem, e é
-  // justamente disso que o hub é feito: quem vai lá vai de propósito.
-  //
-  // Sair do menu não é sair do produto — o hub `/app/analise` é INVENTÁRIO e
-  // lista as cinco (`hubSections`), então as duas continuam a um clique, com a
-  // frase que explica para que servem. O ⌘K também as acha por nome.
   {
     // A terceira ponta do módulo financeiro: Configurações › Financeiro descreve
     // para onde o dinheiro vai, CRM › Comandas é onde o dia acontece, e aqui se
     // responde a pergunta do fim do mês.
-    //
-    // Fora do sidebar de propósito: é consulta periódica, não uso diário, e o
-    // hub de Análise é onde ela se encontra sem disputar pixel com o que se abre
-    // toda hora.
     href: "/app/faturamento",
     label: "Faturamento",
     description: "Quanto entrou, de que forma, e quanto cada pessoa tem a receber.",
     icon: "CurrencyCircleDollar",
-    group: "analise",
     menu: { grupo: "resultados-negocio", ordem: 3 },
-    section: "Dinheiro",
     minRole: "viewer",
   },
   {
@@ -913,9 +718,7 @@ export const NAV_CATALOG = [
     label: "Honorários",
     description: "O modelo de cobrança de cada caso e o calendário de parcelas.",
     icon: "HandCoins",
-    group: "analise",
     menu: { grupo: "resultados-negocio", ordem: 4 },
-    section: "Dinheiro",
     minRole: "viewer",
     modulo: "honorarios",
   },
@@ -924,10 +727,7 @@ export const NAV_CATALOG = [
     label: "Desempenho",
     description: "Funil e performance por atendente nos últimos 30 dias.",
     icon: "ChartBar",
-    group: "analise",
     menu: { grupo: "resultados-negocio", ordem: 1 },
-    section: "Os números do período",
-    sidebar: true,
   },
   {
     // Logo abaixo de Desempenho porque responde a metade da MESMA pergunta: lá
@@ -937,14 +737,11 @@ export const NAV_CATALOG = [
     label: "Meta Ads",
     description: "Quanto custou cada resultado das campanhas que trazem gente para cá.",
     icon: "Target",
-    group: "analise",
     menu: { grupo: "resultados-negocio", ordem: 2 },
-    section: "Os números do período",
     // `manager`, e não o `viewer` de Desempenho: aqui não há recorte por
     // pessoa — orçamento e criativo são da empresa inteira. Mesmo grau dos
     // outros dois vizinhos do grupo.
     minRole: "manager",
-    sidebar: true,
   },
   {
     // Irmã de "Desempenho", não a mesma coisa: lá é DESFECHO (funil agora,
@@ -957,16 +754,7 @@ export const NAV_CATALOG = [
     description:
       "Relatório do que a equipe e os agentes fizeram no período: quanto, quem e de que tipo.",
     icon: "ClockCounterClockwise",
-    group: "analise",
     menu: { grupo: "resultados-equipe", ordem: 1 },
-    section: "Os números do período",
-    // SEM `sidebar` desde 2026-10-15: foi o item que cedeu o lugar de "Disparo em
-    // massa" no menu lateral. O dono do produto autorizou trocar um item para o
-    // menu não rolar em 900 px — MEDIDO: com os dois, `navegacao.spec.ts` reprova
-    // e `interface-por-empresa.test.ts` (folga 0 com 15 itens) também. Este é de
-    // consulta periódica (relatório do período), não de uso a cada atendimento. A
-    // porta continua: "Ver tudo em Análise" e o ⌘K. Volta ao sidebar no dia em
-    // que o menu ganhar altura.
   },
   {
     // Observabilidade, não configuração: por isso não fica junto dos agentes.
@@ -974,9 +762,7 @@ export const NAV_CATALOG = [
     label: "Evolução da IA",
     description: "Se o agente está melhorando, onde ele erra e o que falta ensinar.",
     icon: "ChartLineUp",
-    group: "analise",
     menu: { grupo: "resultados-equipe", ordem: 2 },
-    section: "O histórico que se consulta",
     minRole: "manager",
   },
   {
@@ -985,9 +771,7 @@ export const NAV_CATALOG = [
     sinonimos: ["auditoria"],
     description: "Quem mudou o quê, e quando — o histórico que não se apaga.",
     icon: "ListMagnifyingGlass",
-    group: "analise",
     menu: { grupo: "resultados-erro", ordem: 2, termo: "audit log" },
-    section: "O histórico que se consulta",
     minRole: "manager",
   },
 
@@ -997,36 +781,28 @@ export const NAV_CATALOG = [
     label: "Perfil",
     description: "Seu nome, idioma, fuso horário e avatar.",
     icon: "UserCircle",
-    group: "organizacao",
     menu: { grupo: "conta-voce", ordem: 1 },
-    section: "Sua conta",
   },
   {
     href: "/app/settings/security",
     label: "Segurança",
     description: "Verificação em duas etapas, códigos de recuperação e sessões.",
     icon: "ShieldCheck",
-    group: "organizacao",
     menu: { grupo: "conta-voce", ordem: 2, termo: "MFA" },
-    section: "Sua conta",
   },
   {
     href: "/app/settings/notifications",
     label: "Notificações",
     description: "Por onde e sobre o quê você quer ser avisado.",
     icon: "Bell",
-    group: "organizacao",
     menu: { grupo: "conta-voce", ordem: 3 },
-    section: "Sua conta",
   },
   {
     href: "/app/team",
     label: "Equipe",
     description: "Quem trabalha aqui, com qual papel e quanta conversa cada um aguenta.",
     icon: "UsersThree",
-    group: "organizacao",
     menu: { grupo: "empresa-equipe", ordem: 1 },
-    section: "Sua empresa",
   },
   {
     // A porta que faltava (issue #144): rodízio de atendimento e restrição de
@@ -1037,9 +813,7 @@ export const NAV_CATALOG = [
     sinonimos: ["distribuição de atendimento"],
     description: "Quem recebe cada cliente novo, e o que cada atendente enxerga.",
     icon: "Shuffle",
-    group: "organizacao",
     menu: { grupo: "empresa-equipe", ordem: 2, termo: "round-robin" },
-    section: "Sua empresa",
     minRole: "manager",
   },
   {
@@ -1060,9 +834,7 @@ export const NAV_CATALOG = [
     description:
       "O vocabulário de etiquetas da empresa: onde cada uma é usada e como renomear, juntar ou excluir.",
     icon: "Tag",
-    group: "organizacao",
     menu: { grupo: "vender-equipe", ordem: 2, termo: "tags" },
-    section: "Sua empresa",
     minRole: "manager",
   },
   {
@@ -1073,9 +845,7 @@ export const NAV_CATALOG = [
     label: "Recursos opcionais",
     description: "Tudo o que se liga e desliga, se está ligado e onde se ajusta.",
     icon: "ToggleRight",
-    group: "organizacao",
     menu: { grupo: "empresa-plano", ordem: 3 },
-    section: "Sua empresa",
     // `manager`: o gerente decide metade das chaves da lista. Atendente e
     // leitor não ajustam nenhuma, e a tela redireciona os dois para /403.
     minRole: "manager",
@@ -1086,9 +856,7 @@ export const NAV_CATALOG = [
     sinonimos: ["organização"],
     description: "Dados da empresa, retenção de dados e encarregado de LGPD.",
     icon: "Briefcase",
-    group: "organizacao",
     menu: { grupo: "empresa-dados", ordem: 1, termo: "organização" },
-    section: "Sua empresa",
     minRole: "admin",
   },
   {
@@ -1102,9 +870,7 @@ export const NAV_CATALOG = [
     description:
       "Devolver ao anúncio as vendas que ele trouxe, e marcar a origem de quem chega pelo site.",
     icon: "TrendUp",
-    group: "organizacao",
     menu: { grupo: "conexoes-anuncios", ordem: 2, termo: "CAPI" },
-    section: "Sua empresa",
     // `admin` pelo mesmo critério das vizinhas: o token grava na conta de
     // anúncios da empresa, e quem o troca decide para onde vai o dinheiro de
     // mídia. Um `manager` ficaria acima de billing na mesma prancheta.
@@ -1125,9 +891,7 @@ export const NAV_CATALOG = [
     // Ícone próprio: com o nome novo ("Conta de anúncios") a tela deixou de ser a "mesma
     // coisa" do Meta Ads de Análise, e a regra é um ícone por destino.
     icon: "IdentificationCard",
-    group: "organizacao",
     menu: { grupo: "conexoes-anuncios", ordem: 1, termo: "Meta Ads" },
-    section: "Sua empresa",
     // `admin` pelo mesmo critério da vizinha, mesmo o token sendo só de
     // leitura: ele expõe orçamento e performance da conta inteira, e quem
     // apenas LÊ a tela (`manager`) não precisa poder trocar a credencial.
@@ -1138,25 +902,18 @@ export const NAV_CATALOG = [
     label: "Marca",
     description: "O nome e a cor que sua empresa mostra dentro do sistema.",
     icon: "Palette",
-    group: "organizacao",
     menu: { grupo: "empresa-dados", ordem: 2 },
-    section: "Sua empresa",
     // `admin` pelo mesmo motivo da linha de cima: o que se edita ali é
     // identidade da empresa, e dá-lo a `manager` o colocaria abaixo de billing e
     // de API tokens na mesma prancheta.
     minRole: "admin",
-    // SEM `sidebar`: fica só no hub. Trocar a marca é tarefa de uma vez, e
-    // agrupar o menu já o fez crescer — duas telas a mais estouraram a dobra em
-    // 900px, medido pelo e2e `navegacao.spec.ts`.
   },
   {
     href: "/app/settings/billing",
     label: "Plano e cobrança",
     description: "O plano contratado e as cobranças da sua empresa.",
     icon: "CreditCard",
-    group: "organizacao",
     menu: { grupo: "empresa-plano", ordem: 1 },
-    section: "Sua empresa",
     minRole: "admin",
   },
   {
@@ -1164,9 +921,7 @@ export const NAV_CATALOG = [
     label: "LGPD",
     description: "Pedidos de exportação e exclusão de dados feitos por clientes.",
     icon: "ScalesSimple",
-    group: "organizacao",
     menu: { grupo: "empresa-plano", ordem: 2 },
-    section: "Dados e acesso",
     minRole: "admin",
   },
   {
@@ -1175,9 +930,7 @@ export const NAV_CATALOG = [
     sinonimos: ["api tokens"],
     description: "Chaves para outro sistema conversar com o seu CRM.",
     icon: "Lock",
-    group: "organizacao",
     menu: { grupo: "conexoes-sistemas", ordem: 2, termo: "API tokens" },
-    section: "Dados e acesso",
     minRole: "admin",
   },
   {
@@ -1186,9 +939,7 @@ export const NAV_CATALOG = [
     sinonimos: ["linha telefônica (sip)"],
     description: "Os dados da operadora de telefonia para a IA fazer e receber chamadas.",
     icon: "PhoneTransfer",
-    group: "organizacao",
     menu: { grupo: "conexoes-whatsapp", ordem: 2, termo: "SIP" },
-    section: "Dados e acesso",
     minRole: "admin",
   },
   {
@@ -1197,9 +948,7 @@ export const NAV_CATALOG = [
     description:
       "Guias instalados para orientar o trabalho no CRM, com permissões e estado visíveis.",
     icon: "PuzzlePiece",
-    group: "organizacao",
     menu: { grupo: "empresa-plano", ordem: 4 },
-    section: "Sua empresa",
   },
   {
     // A porta da fonte de dados externa (migration 0372). Fica em "Dados e
@@ -1214,12 +963,7 @@ export const NAV_CATALOG = [
     description:
       "Conecte um banco de dados de outro sistema para o agente consultar em tempo real.",
     icon: "Database",
-    group: "organizacao",
     menu: { grupo: "conexoes-sistemas", ordem: 3, termo: "banco externo" },
-    section: "Dados e acesso",
-    // SEM `sidebar`: o menu de Organização já estourou a dobra uma vez e hub é
-    // onde se agrupa por uso. Configurar fonte de dados é tarefa de uma vez.
-    //
     // Módulo opcional da instalação, desligado por padrão (doc 37): a porta só
     // existe onde quem administra o servidor o ligou, em `/admin/sistema`.
     modulo: "banco_externo",

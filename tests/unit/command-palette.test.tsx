@@ -37,7 +37,7 @@ function abrir() {
 }
 
 describe("CommandPalette", () => {
-  it("acha uma tela que o sidebar não mostra", async () => {
+  it("acha uma tela que não está na mesa de Todo dia", async () => {
     const user = userEvent.setup();
     abrir();
     await user.type(screen.getByRole("combobox"), "conhec");
@@ -148,18 +148,34 @@ describe("CommandPalette", () => {
     expect(screen.getByText(/Nada encontrado/i)).toBeTruthy();
   });
 
-  it("permite filtrar por categorias através dos botões", async () => {
+  it("permite filtrar por categorias — os lugares do menu: Todo dia, Vender, Agente…", async () => {
     const user = userEvent.setup();
     abrir();
-    const btnLeads = screen.getByRole("button", { name: /Leads/i });
-    expect(btnLeads).toBeTruthy();
-    await user.click(btnLeads);
-    // Ao filtrar por Leads, itens de CRM ou Funcionários não devem aparecer
+    const btnTodoDia = screen.getByRole("button", { name: /^Todo dia/i });
+    expect(btnTodoDia).toBeTruthy();
+    await user.click(btnTodoDia);
+    // Ao filtrar por Todo dia, o que mora em Vender ou em Agente não deve aparecer.
     expect(screen.getByRole("option", { name: /^Conversas/ })).toBeTruthy();
-    expect(screen.queryByRole("option", { name: /Contatos/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /Produtos/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /Conhecimento/ })).toBeNull();
   });
 
-  it("no catálogo, abre em Leads e a seta segue a ordem da tela", async () => {
+  it("as páginas de área têm a categoria delas, e abrem pelo endereço de sempre", async () => {
+    const user = userEvent.setup();
+    abrir();
+    await user.click(screen.getByRole("button", { name: /^Páginas de área/i }));
+    const opcoes = screen.getAllByRole("option").map((o) => o.getAttribute("data-href"));
+    expect(opcoes).toEqual(["/app/crm", "/app/ai", "/app/analise", "/app/settings"]);
+  });
+
+  it("acha a página de área pelo nome, junto das telas", async () => {
+    const user = userEvent.setup();
+    abrir();
+    await user.type(screen.getByRole("combobox"), "configuracoes");
+    expect(screen.getByRole("option", { name: /Configurações/ }).getAttribute("data-href")).toBe("/app/settings");
+  });
+
+  it("no catálogo, abre em Todo dia e a seta segue a ordem da tela", async () => {
     const user = userEvent.setup();
     abrir();
     // O catálogo começa por Prospecção (CRM): agrupar pela 1ª aparição punha

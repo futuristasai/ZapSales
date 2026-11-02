@@ -259,7 +259,7 @@ o controlador (`organizations.legal_name`) e o DPO.
 
 **Anti-patterns proibidos** — string que deveria ser FK; duplicação sem source of truth declarado;
 feature nomeando um provider de canal (gate `pnpm lint:channels`); tela nova sem porta declarada em
-`lib/navigation/registry.ts` (gate `tests/unit/navegacao-completude.test.ts`); `getSession()` no
+`lib/navigation/catalogo.ts` (com `menu.grupo`) (gate `tests/unit/navegacao-completude.test.ts`); `getSession()` no
 server; segredo em query string; `throw` cru na borda da API.
 
 ## Important Files

@@ -1140,21 +1140,6 @@ const DADO_DO_OPERADOR_CONGELADO: { arquivo: string; expressao: string; motivo: 
     expressao: "rotulo",
     motivo: "par de TIPOS_DE_LINK, tabela fechada do módulo, iterada na linha 181",
   },
-  {
-    arquivo: "components/shell/NavHub.tsx",
-    expressao: "title",
-    motivo: "prop title do hub (linha 27), vinda do registro de portais do produto",
-  },
-  {
-    arquivo: "components/shell/NavHub.tsx",
-    expressao: "subtitle",
-    motivo: "prop subtitle do hub (linha 28), mesma origem do title",
-  },
-  {
-    arquivo: "components/shell/NavHub.tsx",
-    expressao: "section",
-    motivo: "seção devolvida por hubSections (linha 84): conjunto fechado do registro de navegação",
-  },
 ];
 
 function ehDadoCongelado(sitio: SitioDeDadoDeOperador): boolean {

@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { DICIONARIO } from "@/lib/i18n/dicionario";
-import { MENU_AREAS, MENU_BLOCOS, MENU_GRUPOS, NAV_CATALOG, NAV_GROUPS } from "@/lib/navigation/catalogo";
+import { MENU_AREAS, MENU_BLOCOS, MENU_GRUPOS, NAV_CATALOG, PAGINAS_DE_AREA } from "@/lib/navigation/catalogo";
+import { LUGAR_DAS_PAGINAS_DE_AREA } from "@/lib/navigation/menu";
 
 /**
  * O CATÁLOGO DO MENU TAMBÉM FALA ESPANHOL.
@@ -72,16 +73,19 @@ function textosDoMenu(): TextoDoMenu[] {
     }
   };
   for (const item of NAV_CATALOG as readonly Record<string, unknown>[]) {
-    junta(String(item.href), item, ["label", "description", "section"]);
+    junta(String(item.href), item, ["label", "description"]);
     // O termo técnico embaixo do nome (issue #187): é texto do menu como o resto.
     const termo = (item.menu as { termo?: string }).termo;
     if (termo && !TERMOS_IGUAIS_EM_TODOS_OS_IDIOMAS.has(termo)) {
       achados.push({ onde: String(item.href), campo: "menu.termo", texto: termo });
     }
   }
-  for (const grupo of NAV_GROUPS as unknown as readonly Record<string, unknown>[]) {
-    junta(`grupo:${String(grupo.id)}`, grupo, ["label", "description"]);
+  // As páginas de área (issue #192): título e subtítulo da própria página, e a categoria que as
+  // reúne no ⌘K.
+  for (const pagina of PAGINAS_DE_AREA as readonly Record<string, unknown>[]) {
+    junta(`pagina-de-area:${String(pagina.href)}`, pagina, ["label", "description"]);
   }
+  achados.push({ onde: "busca:areas", campo: "label", texto: LUGAR_DAS_PAGINAS_DE_AREA.label });
   // Os rótulos do menu novo (issue #188): os blocos da faixa, as áreas de Configurar e os grupos por
   // tarefa chegam à tela por `t(entrada.label)` / `t(grupo.label)` — variável de laço, que a varredura
   // de chaves de `i18n-espanhol-cobre-a-tela` não resolve. Sem esta leitura, «Todo dia» e «Vender»
