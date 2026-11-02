@@ -367,7 +367,6 @@ async function provarCelular(
   idioma: Idioma,
   tema: Tema,
 ): Promise<void> {
-  await page.setViewportSize({ width: 390, height: 844 });
   await entrarNoIdioma(page, baseURL, papel, idioma, tema);
 
   await expect(barra(page)).toBeVisible();
@@ -459,7 +458,9 @@ test.describe("computador", () => {
 });
 
 test.describe("celular", () => {
-  test.use({ hasTouch: true });
+  // O viewport nasce com o contexto, como em `navegacao.spec.ts`: redimensionar depois do login
+  // deixou a faixa do computador na árvore.
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
   test("Dono · espanhol · claro", async ({ page, baseURL }) =>
     provarCelular(page, baseURL, "admin", "es", "light"));
   test("Atendente · português · escuro", async ({ page, baseURL }) =>
