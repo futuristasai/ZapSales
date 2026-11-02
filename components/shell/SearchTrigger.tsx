@@ -19,11 +19,15 @@ export function SearchTrigger() {
       <Button
         variant="outline"
         size="sm"
-        className="gap-2 text-muted-foreground"
+        // No celular sobra o ícone e o alvo de toque tem 44 px também na largura (#190).
+        className="gap-2 text-muted-foreground max-md:min-w-11"
         onClick={() => setOpen(true)}
       >
         <MagnifyingGlass size={14} aria-hidden />
-        <span className="hidden md:inline">{t("Buscar...")}</span>
+        {/* O nome do botão vem do TEXTO, nunca de um aria-label: o texto visível («Buscar... ⌘K»)
+            tem de estar dentro do nome acessível (WCAG 2.5.3, regra `label-content-name-mismatch`
+            do axe). No celular o texto fica só para o leitor de tela. */}
+        <span className="max-md:sr-only">{t("Buscar...")}</span>
         <kbd className="ml-2 hidden md:inline rounded-md border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
       </Button>
       <CommandPalette open={open} onOpenChange={setOpen} />

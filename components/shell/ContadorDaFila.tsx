@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 export function ContadorDaFila({
   compacto,
   naFaixa = false,
+  className,
 }: {
   compacto: boolean;
   /**
@@ -28,6 +29,8 @@ export function ContadorDaFila({
    * diferentes.
    */
   naFaixa?: boolean;
+  /** Reposiciona o número onde o botão pede — a barra de baixo o pousa ao lado do ícone (#190). */
+  className?: string;
 }) {
   const t = useT();
   const { activeOrg } = useAuth();
@@ -50,6 +53,7 @@ export function ContadorDaFila({
           : compacto
             ? "absolute top-1 right-1 h-2 w-2"
             : "ml-auto px-1.5 py-0.5",
+        className,
       )}
     >
       {compacto && !naFaixa ? null : esperando}

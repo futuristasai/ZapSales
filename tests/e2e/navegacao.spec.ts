@@ -368,35 +368,187 @@ test.describe("navegação agrupada", () => {
     expect(fora, "botão da faixa abaixo da dobra em 1280x768").toBe(0);
   });
 
+  /**
+   * O CELULAR (issue #190): a barra de baixo e as folhas substituem a gaveta lateral.
+   *
+   * O que só o navegador mede: que a barra é a única navegação (sem o botão antigo), que cada
+   * folha cabe na janela e se deixa rolar, que todo alvo de toque tem 44 px, que nada estoura na
+   * horizontal e que a última linha da tela não fica por baixo das abas. Tudo por
+   * `getBoundingClientRect`, nunca a olho.
+   *
+   * Poucos testes e longos de propósito: cada `loginAdmin` espera a virada da janela TOTP e custa
+   * até ~30 s, e a parte do CI que roda esta spec já anda perto do teto de tempo.
+   */
   test.describe("mobile", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
-    test("em 390px, o sidebar vira gaveta e não cria overflow horizontal", async ({ page }) => {
+    const barra = (page: Page) => page.getByRole("navigation", { name: "Menu do celular" });
+    const aba = (page: Page, nome: string) =>
+      barra(page).getByRole("button", { name: new RegExp(`^${nome}`) });
+
+    test("em 390px o menu é a barra de baixo; Todo dia abre a folha, escolher uma tela a fecha, e Conversas vai direto", async ({
+      page,
+    }) => {
       await loginAdmin(page);
 
-      await expect(
-        sidebar(page),
-        "o sidebar desktop fica fora da árvore acessível no mobile",
-      ).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Abrir navegação" })).toHaveCount(0);
+      await expect(faixa(page), "a faixa do computador fica fora da árvore no celular").toHaveCount(
+        0,
+      );
+      await expect(barra(page)).toBeVisible();
+      await expect(barra(page).getByRole("link", { name: /^Conversas/ })).toBeVisible();
+      for (const nome of ["Todo dia", "Configurar", "Resultados"]) {
+        await expect(aba(page, nome)).toBeVisible();
+      }
       await expectSemOverflowHorizontal(page, "shell mobile após login");
 
-      await page.getByRole("button", { name: "Abrir navegação" }).click();
-      await expect(sidebar(page)).toBeVisible();
-      await expectSemOverflowHorizontal(page, "shell mobile com drawer aberto");
+      // A barra está dentro da janela, ocupa a largura toda e cada aba tem alvo de 44 px.
+      const m = await page.evaluate(() => {
+        const nav = document.querySelector('nav[aria-label="Menu do celular"]')!;
+        const r = nav.getBoundingClientRect();
+        return {
+          base: r.bottom,
+          largura: r.width,
+          vh: window.innerHeight,
+          // `clientWidth`, e não `innerWidth`: a janela de teste tem barra de rolagem, e a barra
+          // fixa vai até a borda do que é conteúdo.
+          vw: document.documentElement.clientWidth,
+          alvos: [...nav.querySelectorAll("a, button")].map(
+            (e) => e.getBoundingClientRect().height,
+          ),
+        };
+      });
+      expect(m.base, "a barra encosta no fundo da janela").toBeCloseTo(m.vh, 0);
+      expect(m.largura).toBeCloseTo(m.vw, 0);
+      expect(m.alvos.length, "guarda de vacuidade: as quatro abas").toBe(4);
+      for (const h of m.alvos) expect(h).toBeGreaterThanOrEqual(44);
+
       await page.screenshot({
-        path: path.join(EVIDENCE, "nav-mobile-390-drawer-aberta.png"),
+        path: path.join(EVIDENCE, "nav-mobile-390-barra-de-baixo.png"),
         fullPage: true,
       });
 
-      await sidebar(page).getByRole("link", { name: "Funis", exact: true }).click();
+      await aba(page, "Todo dia").click();
+      const folha = page.getByRole("dialog", { name: "Todo dia" });
+      await expect(folha).toBeVisible();
+      await expect(folha.getByTestId("mesa-de-trabalho")).toBeVisible();
+      await expectSemOverflowHorizontal(page, "folha de Todo dia aberta");
+      await page.screenshot({
+        path: path.join(EVIDENCE, "nav-mobile-390-folha-todo-dia.png"),
+        fullPage: true,
+      });
+
+      await folha.getByRole("link", { name: "Funis", exact: true }).click();
       await page.waitForURL(/\/app\/kanban/);
       await expect(page.getByRole("dialog")).toHaveCount(0);
-      await expectSemOverflowHorizontal(page, "shell mobile após navegar pelo drawer");
+      await expectSemOverflowHorizontal(page, "shell mobile após navegar pela folha");
 
-      await page.screenshot({
-        path: path.join(EVIDENCE, "nav-mobile-390-sem-overflow.png"),
-        fullPage: true,
+      // Conversas não abre folha: leva direto, e a aba da tela atual é marcada.
+      await barra(page)
+        .getByRole("link", { name: /^Conversas/ })
+        .click();
+      await page.waitForURL(/\/app\/inbox/);
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await expect(barra(page).getByRole("link", { name: /^Conversas/ })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+    });
+
+    /**
+     * A garantia que SUBSTITUI «o menu cabe em 900 px sem rolar» no celular: nenhum bloco some
+     * abaixo da dobra. Cada folha cabe na janela, rola por dentro, e o último link — depois de
+     * rolar até o fim — fica acima do rodapé dela.
+     */
+    test("nenhum bloco some: cada folha cabe na janela, tem alvos de 44 px e chega ao último link; Esc devolve o foco", async ({
+      page,
+    }) => {
+      await loginAdmin(page);
+      for (const nome of ["Todo dia", "Configurar", "Resultados"]) {
+        await aba(page, nome).click();
+        const folha = page.getByRole("dialog", { name: nome });
+        await expect(folha).toBeVisible();
+        const m = await folha.evaluate((d) => {
+          const r = d.getBoundingClientRect();
+          const corpo = d.querySelector<HTMLElement>(".overflow-y-auto")!;
+          const links = [...corpo.querySelectorAll("a")];
+          corpo.scrollTop = corpo.scrollHeight;
+          const ultimo = links[links.length - 1]!.getBoundingClientRect();
+          const rodape = d.querySelector("footer")!.getBoundingClientRect();
+          return {
+            topo: r.top,
+            base: r.bottom,
+            vh: window.innerHeight,
+            links: links.length,
+            h3: corpo.querySelectorAll("h3").length,
+            menorAlvo: Math.min(
+              ...[...d.querySelectorAll("a, button")].map((e) => e.getBoundingClientRect().height),
+            ),
+            ultimoAcimaDoRodape: ultimo.bottom <= rodape.top + 1,
+            semRolagemH: corpo.scrollWidth <= corpo.clientWidth + 1,
+          };
+        });
+        expect(m.links, `${nome}: guarda de vacuidade`).toBeGreaterThan(5);
+        expect(m.h3, `${nome}: grupos`).toBeGreaterThan(0);
+        expect(m.topo, `${nome}: a folha começa dentro da janela`).toBeGreaterThanOrEqual(0);
+        expect(m.base, `${nome}: a folha termina na janela`).toBeLessThanOrEqual(m.vh + 1);
+        expect(m.menorAlvo, `${nome}: alvo de toque`).toBeGreaterThanOrEqual(44);
+        expect(m.ultimoAcimaDoRodape, `${nome}: o último link fica à vista depois de rolar`).toBe(
+          true,
+        );
+        expect(m.semRolagemH, `${nome}: sem rolagem horizontal`).toBe(true);
+        await expectSemOverflowHorizontal(page, `folha de ${nome}`);
+
+        if (nome === "Configurar") {
+          for (const area of ["Vender", "Agente", "Conexões", "Empresa"]) {
+            await expect(folha.getByRole("heading", { name: area, exact: true })).toBeVisible();
+          }
+          await page.screenshot({
+            path: path.join(EVIDENCE, "nav-mobile-390-folha-configurar.png"),
+            fullPage: true,
+          });
+        }
+
+        await page.keyboard.press("Escape");
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(aba(page, nome), `${nome}: o foco volta à aba`).toBeFocused();
+      }
+    });
+
+    test("a última linha da tela não fica por baixo da barra, e o menu da conta leva Perfil, Segurança e Notificações", async ({
+      page,
+    }) => {
+      await loginAdmin(page);
+      await page.goto("/app/settings/profile");
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const m = await page.evaluate(() => {
+        const nav = document
+          .querySelector('nav[aria-label="Menu do celular"]')!
+          .getBoundingClientRect();
+        const ultimo = document.querySelector("main")!.lastElementChild!.getBoundingClientRect();
+        return { barraTopo: nav.top, ultimoBase: ultimo.bottom };
       });
+      expect(m.ultimoBase, "o fim do conteúdo fica acima da barra").toBeLessThanOrEqual(
+        m.barraTopo + 1,
+      );
+
+      await page.getByRole("button", { name: /Menu do usuário/ }).click();
+      const menu = page.getByRole("menu");
+      for (const nome of ["Perfil", "Segurança", "Notificações"]) {
+        const item = menu.getByRole("menuitem", { name: nome });
+        await expect(item).toBeVisible();
+        const h = await item.evaluate((e) => e.getBoundingClientRect().height);
+        expect(h, `${nome}: alvo de toque`).toBeGreaterThanOrEqual(44);
+      }
+    });
+
+    test("um atendente não vê a área Agente na folha de Configurar", async ({ page }) => {
+      await login(page, creds.users.agent!.email);
+      await expect(barra(page).getByRole("link", { name: /^Conversas/ })).toBeVisible();
+      await aba(page, "Configurar").click();
+      const folha = page.getByRole("dialog", { name: "Configurar" });
+      await expect(folha.getByRole("heading", { name: "Vender", exact: true })).toBeVisible();
+      await expect(folha.getByRole("heading", { name: "Agente", exact: true })).toHaveCount(0);
     });
   });
 

@@ -45,7 +45,11 @@ const LAYOUT = "app/app/layout.tsx";
  * Toda peça FIXA do rodapé do produto. Peça nova entra nesta lista — é ela que
  * mantém o número da peça rastreável até o arquivo que a desenha.
  */
-const PECAS = ["components/voice/ActiveCallPanel.tsx"] as const;
+const PECAS = [
+  "components/voice/ActiveCallPanel.tsx",
+  // A barra de baixo do celular (#190): fixa no fundo, a 0 px dele.
+  "components/shell/BarraDeBaixo.tsx",
+] as const;
 
 /** O arquivo sem comentários: o que o código diz, não o que o comentário conta. */
 function codigo(rel: string): string {

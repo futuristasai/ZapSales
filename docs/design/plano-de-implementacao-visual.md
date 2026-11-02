@@ -86,7 +86,7 @@ P9 é feito primeiro na prática (as demais peças nascem nela), mas o PR sai ju
 
 | # | Pacote | O que entrega | Prova |
 |---|---|---|---|
-| X1 | **Celular** | `MobileSidebar` com nome; tabelas viram lista em 390 px; alvos de toque ≥ 44 px; sem estouro horizontal. | Playwright em 390 na vitrine; tela real com janela estreitada pelo dono |
+| X1 | **Celular** | barra de baixo e folhas (`BarraDeBaixo`, #190) no lugar da gaveta lateral; tabelas viram lista em 390 px; alvos de toque ≥ 44 px; sem estouro horizontal. | Playwright em 390 na vitrine; tela real com janela estreitada pelo dono |
 | X2 | **Modo claro** | Profundidade (filete + sombra suave), selos e vazios nos dois temas, contraste ≥ 4,5:1 medido. | medição por ferramenta |
 | X3 | **Cores cruas → tokens** | 403 usos de paleta Tailwind crua em 69 arquivos e 48 hex trocados por token; cerca "só encolhe". | `tests/unit/branding.test.ts` e cerca nova |
 | X4 | **Peso** | Abrir o pacote do hub CRM (1,17 MB de JS, 104 requisições): o que pode ser carregado só sob demanda. Orçamento de tamanho no `perf.yml` (hoje só relata). | `next build` antes/depois, mesma máquina |

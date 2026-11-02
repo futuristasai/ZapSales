@@ -115,7 +115,8 @@ tela. A faixa é uma ilha escura nos dois temas (`data-theme="dark"` no miolo), 
 trocada por «nenhum bloco some abaixo da dobra» (`navegacao.spec.ts`): em Todo dia e em cada gaveta, todo título de
 grupo está dentro da área visível, e todo botão da faixa está dentro da janela. Tela nova declara onde mora em `lib/navigation/catalogo.ts`
 (`menu: { grupo, ordem }`; bloco e área saem do grupo) e aparece na faixa, na busca e no celular sem editar mais nada.
-O menu de gaveta do celular segue como antes até o ticket do celular (#183).
+
+**No celular** (`< 768 px`, issue #190) o menu é uma **barra de baixo** (`BarraDeBaixo`, projetada por `lib/navigation/celular.ts`) com Conversas — link direto, com o contador da fila —, Todo dia, Configurar e Resultados, que abrem uma **folha** que sobe de baixo (`FolhaDoMenu`, diálogo com foco preso, Esc que fecha e foco devolvido à aba). A folha de Configurar lista as quatro áreas e seus grupos por tarefa; a de Todo dia, a mesa. Busca e menu da conta (Perfil, Segurança, Notificações, Sair) ficam no topo. Alvo de toque de 44 px; a barra é uma peça fixa do rodapé e declara o que ocupa pelo contrato `lib/ui/rodape-ocupado.tsx`. A gaveta lateral antiga (`MobileSidebar`, `SidebarContent`) deixou de existir.
 
 ## Linguagem
 

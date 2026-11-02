@@ -5,7 +5,7 @@ import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
 
 /**
  * A marca que a navegação mostra — a MESMA para a faixa do computador e para o
- * menu do celular (`SidebarContent`), por isso mora aqui e não em um dos dois.
+ * a marca no topo do celular (`TopBar`), por isso mora aqui e não em um dos dois.
  *
  * O CONSUMIDOR do nome por organização. Sem ele, `settings.branding.app_name`
  * seria campo decorativo: medido, o nome da org não aparece em lugar nenhum da

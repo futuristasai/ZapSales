@@ -13,13 +13,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { SeletorDeIdioma } from "@/components/shell/SeletorDeIdioma";
+import { useFaixaDoPapel } from "@/components/shell/useFaixaDoPapel";
 import { useT } from "@/hooks/i18n/useT";
 import Link from "next/link";
 import { SignOut, ShieldCheck } from "@/lib/ui/icons";
 
 function initials(name: string | null, email: string): string {
   if (name && name.trim()) {
-    return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0])
+      .join("")
+      .toUpperCase();
   }
   return email.slice(0, 2).toUpperCase();
 }
@@ -28,6 +35,7 @@ export function UserMenu() {
   const t = useT();
   const user = useUser();
   const { signOut } = useAuth();
+  const { conta } = useFaixaDoPapel();
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -60,6 +68,28 @@ export function UserMenu() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {/*
+            O MENU DA CONTA NO CELULAR (issue #190). No computador as telas pessoais moram
+            em «Você», na faixa; o celular não tem faixa, e este menu — que já está no topo — é
+            onde elas ficam. Os itens vêm do grupo «Você» do catálogo, com a regra de sempre de
+            quem vê o quê; `md:hidden` só os tira da frente de quem já os tem na faixa.
+          */}
+          {conta && conta.itens.length > 0 && (
+            <div role="group" aria-label={t("Você")} className="md:hidden">
+              {conta.itens.map((item) => {
+                const Icone = item.icon;
+                return (
+                  <DropdownMenuItem key={item.href} asChild className="min-h-11">
+                    <Link href={item.href}>
+                      <Icone size={16} className="mr-2" aria-hidden />
+                      {t(item.label)}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+              <DropdownMenuSeparator />
+            </div>
+          )}
           {/*
             A PORTA DO MODO ADMINISTRADOR.
 
@@ -96,7 +126,15 @@ export function UserMenu() {
               <DropdownMenuSeparator />
             </>
           )}
-          <DropdownMenuItem disabled={isPending} onClick={() => startTransition(async () => { await signOut(); })}>
+          <DropdownMenuItem
+            className="max-md:min-h-11"
+            disabled={isPending}
+            onClick={() =>
+              startTransition(async () => {
+                await signOut();
+              })
+            }
+          >
             <SignOut size={16} className="mr-2" aria-hidden />
             {t("Sair")}
           </DropdownMenuItem>

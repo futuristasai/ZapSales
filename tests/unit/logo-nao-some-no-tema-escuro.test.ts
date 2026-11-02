@@ -14,7 +14,7 @@
  * três superfícies, e as três precisam concordar — consertar uma só devolve o
  * defeito nas outras duas:
  *
- *   1. a barra lateral do app          (`components/shell/Sidebar.tsx`)
+ *   1. a marca no topo do app          (`components/shell/TopBar.tsx`, desde a faixa — #188)
  *   2. a tela de entrada               (`app/(public)/layout.tsx`)
  *   3. a PRÉVIA da tela de marca       (`components/branding/CampoDeLogo.tsx`)
  *
@@ -72,11 +72,11 @@ function imgDoLogoEstaDentroDoChip(fonte: string, classeDoChip: RegExp): boolean
 }
 
 describe("o logo do operador não some no tema escuro", () => {
-  it("a BARRA LATERAL desenha o logo sobre um chip claro quando o tema é escuro", () => {
-    const fonte = semComentario(leia("components/shell/Sidebar.tsx"));
+  it("a MARCA NO TOPO desenha o logo sobre um chip claro quando o tema é escuro", () => {
+    const fonte = semComentario(leia("components/shell/TopBar.tsx"));
 
     // O chip existe...
-    expect(fonte, "sumiu o chip `dark:bg-white` da barra lateral").toMatch(/dark:bg-white/);
+    expect(fonte, "sumiu o chip `dark:bg-white` da marca no topo").toMatch(/dark:bg-white/);
     // ...e o `<img>` do logo está DENTRO dele. Sem esta segunda asserção, mover
     // a classe para um irmão deixaria a cerca verde com o logo cru de novo.
     expect(
@@ -115,7 +115,7 @@ describe("o logo do operador não some no tema escuro", () => {
     // chutado: em 2026-09-11, na prévia do merge do PR #659, `logoUrl`/`logo`
     // chegava a um `<img>` em exatamente três arquivos.
     const SUPERFICIES = [
-      "components/shell/Sidebar.tsx",
+      "components/shell/TopBar.tsx",
       "app/(public)/layout.tsx",
       "components/branding/CampoDeLogo.tsx",
     ];

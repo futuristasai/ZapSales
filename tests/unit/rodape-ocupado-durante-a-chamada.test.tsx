@@ -44,6 +44,9 @@ vi.mock("@/hooks/i18n/useT", () => ({ useT: () => (texto: string) => texto }));
 // medir o rodapé, e não a rede delas.
 vi.mock("@/components/shell/Sidebar", () => ({ Sidebar: () => null }));
 vi.mock("@/components/shell/TopBar", () => ({ TopBar: () => null }));
+// A barra de baixo do celular (#190) também lê a sessão; a reserva dela tem o teste próprio
+// em `barra-de-baixo.test.tsx`, e aqui só a chamada de voz mede o rodapé.
+vi.mock("@/components/shell/BarraDeBaixo", () => ({ BarraDeBaixo: () => null }));
 vi.mock("@/components/shell/BarraDeProgressoNavegacao", () => ({
   BarraDeProgressoNavegacao: () => null,
 }));
