@@ -3831,18 +3831,27 @@ Origem: fecha o #183 (faixa, painel, gaveta, barra de baixo, nomes e busca, edit
 `AGENTS.md`, `docs/doctrine/sistema-vivo.md`); a garantia vigente é «nenhum bloco some abaixo da dobra»
 (`navegacao.spec.ts`). As linhas antigas de 900 px acima ficam como histórico.
 
-A matriz que a issue pede é papel × aparelho × tema × idioma × recursos opcionais. Quem cobre cada eixo hoje:
+A matriz da issue é papel × aparelho × tema × idioma × recursos opcionais, e quem a prova é
+**`tests/e2e/menu-prova-final.spec.ts`**, que roda no `e2e` do CI (parte 6) contra o Supabase local com o `baseline.sql` —
+o mesmo banco que a instalação aplica. Cada cenário mede por `getBoundingClientRect`/`getComputedStyle`: nenhum botão da
+faixa nem título de grupo abaixo da dobra, sem estouro horizontal, o tema pedido pintado, contraste de pelo menos 3:1,
+nenhum nome em português com a interface em es/en, alvos de 44 px e último link alcançável no celular.
 
-| eixo | prioridade | quem prova | estado |
-|---|---|---|---|
-| Dono e Atendente (computador e celular), portas por papel | `[P0]` | `navegacao.spec.ts` (`agent` não vê Agente; folha de Configurar do atendente) | **a rodar no CI** |
-| Leitor | `[P0]` | unitários de projeção (`faixa-do-menu.test.ts`, `barra-de-baixo-do-menu.test.ts`) | só unitário: **sem prova pela tela em ambiente fresco** |
-| Claro e escuro | `[P1]` | vitrine local (#188, #189, #190) e `logo-moldura-no-tema-escuro.spec.ts` | vitrine local; **sem prova em ambiente fresco** |
-| pt-BR, es e en | `[P1]` | `i18n-espanhol-cobre-a-tela` e a verificação de tradução (unitárias); vitrine local em 390 px | **sem prova pela tela em ambiente fresco** |
-| Recursos opcionais ligados e desligados | `[P1]` | unitários de projeção; vitrine local (Dono) | **sem prova pela tela em ambiente fresco** |
+| cenário | prioridade | estado |
+|---|---|---|
+| Computador (1280×900): Dono pt claro · Dono en escuro · Atendente pt escuro · Atendente es claro · Leitor en claro · Leitor es escuro | `[P0]` | **PASS no CI** (run 41496227044) |
+| Celular (390×844, toque): Dono es claro · Atendente pt escuro · Atendente en claro · Leitor pt claro · Leitor es escuro | `[P0]` | **PASS no CI** |
+| Recursos opcionais: sem módulo e sem chave → sem Propostas; só a chave da empresa → sem Propostas; módulo + chave → Propostas sob «Se a sua empresa usa» | `[P1]` | **PASS no CI** |
+| Menu monótono por papel (Dono 8 entradas na faixa; Atendente sem «Agente»; Leitor ≤ Atendente) | `[P1]` | **PASS no CI** |
 
-**Lacuna declarada:** a prova final em ambiente que imita a instalação nova numa VPS (banco do `baseline.sql`, os três papéis,
-os dois temas, os três idiomas, opcionais ligados e desligados, com capturas) **ainda não foi feita**. Ela depende de um
-ambiente com Supabase — a máquina de desenvolvimento não tem Docker — e se faz por uma de duas vias: a org e os usuários
-temporários na VPS (exige autorização do dono para a escrita por SSH) ou uma spec
-de matriz no `e2e` do CI. Enquanto não vier, o estado acima é o que vale.
+Capturas dos 12 cenários em `docs/testing/evidencias/menu-prova-final/` (computador, a gaveta aberta, a folha de Configurar
+no celular, e os opcionais desligados e ligados).
+
+**O que esta prova NÃO cobre, e por quê:**
+- **É o ambiente do CI, não uma VPS.** O banco é o do `baseline.sql` e os envs opcionais ficam ausentes, mas sem o WAHA nem o
+  Redis de uma instalação real. A prova autenticada em produção (Dono, Atendente e Leitor numa org temporária, com capturas)
+  segue pendente: depende de autorização do dono para a escrita por SSH.
+- **Cada papel só em parte da matriz.** São 11 combinações de aparelho × tema × idioma, não as 54 possíveis; os eixos foram
+  distribuídos para que cada papel, cada idioma e cada tema apareça em computador e em celular. A matriz cheia custaria um
+  login por combinação, e o do Dono espera a janela do TOTP (~30 s cada).
+- **O Leitor no celular** vê menos folhas que os outros papéis (a spec só exige que tenha ao menos uma).
