@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { toggleSidebar } from "@/app/actions/shell/toggleSidebar";
 import { Faixa } from "@/components/shell/Faixa";
+import { GavetaDaArea } from "@/components/shell/GavetaDaArea";
 import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import { PainelDoMenu } from "@/components/shell/PainelDoMenu";
 import { VersionFooter } from "@/components/shell/VersionFooter";
@@ -13,21 +14,21 @@ import {
   entradaDaTela,
   telaAtual,
   faixaDoMenu,
-  type EntradaDaFaixa,
   type EntradaDaFaixaId,
 } from "@/lib/navigation/faixa";
 import { menuDoPapel } from "@/lib/navigation/menu";
-import { BookOpen, CaretDoubleLeft, CaretDoubleRight, CaretLeft } from "@/lib/ui/icons";
+import { BookOpen, CaretDoubleLeft, CaretDoubleRight } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 
 /**
  * A navegação do computador: a faixa à esquerda e, ao lado dela, o painel (issue #188).
  *
- * O painel abre em Todo dia e mostra a lista da entrada que a pessoa escolhe na
- * faixa. Pode ser RECOLHIDO — sobra só a faixa — e então a escolha de uma entrada
- * abre o painel POR CIMA da tela, até a pessoa escolher uma tela, apertar Esc ou
- * clicar fora. Nenhum caminho deixa de existir por causa do recolhimento: todas as
- * telas continuam a um clique.
+ * O painel é SEMPRE a mesa de Todo dia. As áreas de Configurar e Resultados não o
+ * trocam: abrem a gaveta (issue #189), por cima da tela, e ao escolher uma tela ou
+ * fechá-la o painel continua onde estava. O painel pode ser RECOLHIDO — sobra só a
+ * faixa — e então Todo dia abre o painel POR CIMA da tela, até a pessoa escolher uma
+ * tela, apertar Esc ou clicar fora. Nenhum caminho deixa de existir por causa do
+ * recolhimento: todas as telas continuam a um clique.
  *
  * ⚠️ HIDRATAÇÃO. `painelRecolhido` vem do servidor (o cookie, lido no layout) e é o
  * ÚNICO insumo do primeiro desenho: nada aqui lê `localStorage` nem a largura da
@@ -61,38 +62,39 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
       activeOrg?.capacidades_ligadas,
     ],
   );
-  const entradas = useMemo(
-    () =>
-      [faixa.todoDia, ...faixa.configurar, faixa.resultados].filter(
-        (e): e is EntradaDaFaixa => !!e,
-      ),
-    [faixa],
-  );
 
   const [recolhido, setRecolhido] = useState(painelRecolhido);
-  const [escolhidaId, setEscolhidaId] = useState<EntradaDaFaixaId>("todo-dia");
+  /** A área cuja gaveta está aberta, ou `null`. */
+  const [gavetaId, setGavetaId] = useState<EntradaDaFaixaId | null>(null);
   /** Só vale com o painel recolhido: ele está aberto por cima da tela. */
   const [sobre, setSobre] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const gatilho = useRef<HTMLElement | null>(null);
   const lista = useRef<HTMLElement>(null);
 
-  // A entrada que sumiu (o papel mudou, o módulo foi desligado) cai em Todo dia.
-  const escolhida = entradas.find((e) => e.id === escolhidaId) ?? entradas[0] ?? null;
+  // A área que sumiu (o papel mudou, o módulo foi desligado) fecha a gaveta.
+  const gaveta =
+    gavetaId === null
+      ? null
+      : (faixa.configurar.find((e) => e.id === gavetaId) ??
+        (faixa.resultados?.id === gavetaId ? faixa.resultados : null));
+  // E o id velho não fica de pé: se a área voltar, a gaveta não reabre sozinha.
+  if (gavetaId !== null && gaveta === null) setGavetaId(null);
+  // Quem não tem tela em Todo dia (a interface da empresa as escondeu) ainda tem o painel fixado,
+  // com o botão de recolher, o Manual e o aviso de versão — só sem a lista.
+  const todoDia = faixa.todoDia;
   const painelAberto = !recolhido || sobre;
 
   function escolher(id: EntradaDaFaixaId, botao: HTMLButtonElement) {
     gatilho.current = botao;
-    if (recolhido) {
-      if (sobre && escolhida?.id === id) setSobre(false);
-      else {
-        setEscolhidaId(id);
-        setSobre(true);
-      }
+    if (id !== "todo-dia") {
+      // A gaveta cobre a tela inteira: o painel que estava por cima dela não tem o que fazer ali.
+      setSobre(false);
+      setGavetaId(id);
       return;
     }
-    // Apertar de novo a área que já está à vista volta para Todo dia.
-    setEscolhidaId(escolhida?.id === id && id !== "todo-dia" ? "todo-dia" : id);
+    // Fixado, o painel já é Todo dia; só recolhido ele abre e fecha por cima da tela.
+    if (recolhido) setSobre(!sobre);
   }
 
   function alternarRecolhimento() {
@@ -106,7 +108,7 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
   // usa só o teclado passaria por Buscar e Você antes de chegar à lista. Esc devolve o foco ao botão.
   useEffect(() => {
     if (recolhido && sobre) lista.current?.querySelector<HTMLElement>("a")?.focus();
-  }, [recolhido, sobre, escolhidaId]);
+  }, [recolhido, sobre]);
 
   // O painel por cima da tela fecha com Esc e com um clique fora dele.
   useEffect(() => {
@@ -137,16 +139,16 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
         <div data-theme="dark" className="h-full text-foreground">
           <Faixa
             faixa={faixa}
-            escolhida={painelAberto ? (escolhida?.id ?? null) : null}
+            escolhida={gaveta ? gaveta.id : painelAberto ? "todo-dia" : null}
             atual={entradaDaTela(faixa, pathname)}
             aoEscolher={escolher}
             mostrarAtualizacao={recolhido}
           />
         </div>
       </div>
-      {painelAberto && escolhida ? (
+      {painelAberto ? (
         <section
-          aria-label={t(escolhida.label)}
+          aria-label={t(todoDia ? todoDia.label : "Navegação principal")}
           className={cn(
             "flex h-full w-[20.5rem] flex-col border-r bg-card",
             recolhido &&
@@ -154,21 +156,9 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
           )}
         >
           <header className="flex items-start gap-1 px-3 pt-4 pb-2">
-            {escolhida.id !== "todo-dia" ? (
-              <button
-                type="button"
-                aria-label={t("Voltar para Todo dia")}
-                title={t("Voltar para Todo dia")}
-                onClick={() => setEscolhidaId("todo-dia")}
-                className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent-soft hover:text-foreground"
-              >
-                <CaretLeft size={18} aria-hidden />
-              </button>
-            ) : null}
             <div className="min-w-0 flex-1 px-1">
-              <h2 className="text-base leading-tight font-semibold">{t(escolhida.label)}</h2>
-              {faixa.configurar.some((e) => e.id === escolhida.id) ? (
-                <p className="text-xs text-muted-foreground">{t("Configurar")}</p>
+              {todoDia ? (
+                <h2 className="text-base leading-tight font-semibold">{t(todoDia.label)}</h2>
               ) : null}
             </div>
             <button
@@ -187,17 +177,21 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
               )}
             </button>
           </header>
-          <nav
-            ref={lista}
-            aria-label={t("Navegação principal")}
-            className="min-h-0 flex-1 overflow-y-auto px-2 pb-3"
-          >
-            <PainelDoMenu
-              entrada={escolhida}
-              hrefAtual={telaAtual(faixa, pathname)}
-              aoNavegar={aoNavegar}
-            />
-          </nav>
+          {todoDia ? (
+            <nav
+              ref={lista}
+              aria-label={t("Navegação principal")}
+              className="min-h-0 flex-1 overflow-y-auto px-2 pb-3"
+            >
+              <PainelDoMenu
+                entrada={todoDia}
+                hrefAtual={telaAtual(faixa, pathname)}
+                aoNavegar={aoNavegar}
+              />
+            </nav>
+          ) : (
+            <div className="min-h-0 flex-1" />
+          )}
           <footer className="border-t p-2">
             <a
               href={ENDERECO_DO_MANUAL}
@@ -213,6 +207,12 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
           </footer>
         </section>
       ) : null}
+      <GavetaDaArea
+        entrada={gaveta}
+        hrefAtual={telaAtual(faixa, pathname)}
+        aoFechar={() => setGavetaId(null)}
+        aoDevolverFoco={() => gatilho.current?.focus()}
+      />
     </div>
   );
 }

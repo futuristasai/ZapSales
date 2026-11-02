@@ -62,7 +62,10 @@ function BotaoDaEntrada({
     <button
       type="button"
       data-entrada={entrada.id}
-      aria-pressed={String(apertado) as "true" | "false"}
+      // Todo dia alterna o painel; as áreas abrem a gaveta (um diálogo).
+      {...(entrada.id === "todo-dia"
+        ? { "aria-pressed": String(apertado) as "true" | "false" }
+        : { "aria-haspopup": "dialog" as const, "aria-expanded": apertado })}
       aria-current={atual ? "true" : undefined}
       onClick={(e) => aoEscolher(entrada.id, e.currentTarget)}
       className={cn(

@@ -142,7 +142,8 @@ test("o menu da empresa encolhe pela tela — e a porta que desfaz continua lá"
     .getByRole("navigation", { name: "Áreas do menu" })
     .getByRole("button", { name: /^Empresa/ })
     .click();
-  const portaDeVolta = menuLateral(page).getByRole("link", { name: /Dados da empresa/ });
+  // A área abre a gaveta (issue #189): a porta está nela, e não no painel de Todo dia.
+  const portaDeVolta = page.getByRole("dialog").getByRole("link", { name: /Dados da empresa/ });
   await expect(
     portaDeVolta,
     "a empresa encolheu o menu e perdeu a porta que desfaz a escolha — trancada do lado de fora",

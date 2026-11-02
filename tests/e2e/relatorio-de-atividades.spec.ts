@@ -290,9 +290,9 @@ test.describe("Relatório de atividades — o período, pela tela", () => {
 
     await login(page, creds.users.manager!.email, creds.password);
 
-    // A porta é a entrada Resultados da faixa (issue #188): um clique na faixa abre a lista no
-    // painel, e a tela está nela. Antes era o hub «Ver tudo em Análise».
-    const sidebar = page.getByRole("navigation", { name: "Navegação principal" });
+    // A porta é a entrada Resultados da faixa (issues #188 e #189): um clique na faixa abre a
+    // gaveta, e a tela está nela. Antes era o hub «Ver tudo em Análise».
+    const sidebar = page.getByRole("dialog", { name: "Resultados" });
     await page
       .getByRole("navigation", { name: "Áreas do menu" })
       .getByRole("button", { name: /^Resultados/ })
@@ -435,7 +435,7 @@ test.describe("Relatório de atividades — o período, pela tela", () => {
     // A porta aparece para viewer — o item não declara `minRole`, e o piso da
     // rota é `viewer` de propósito: um piso mais alto esconderia da pessoa as
     // atividades dela mesma.
-    const sidebar = page.getByRole("navigation", { name: "Navegação principal" });
+    const sidebar = page.getByRole("dialog", { name: "Resultados" });
     await page
       .getByRole("navigation", { name: "Áreas do menu" })
       .getByRole("button", { name: /^Resultados/ })

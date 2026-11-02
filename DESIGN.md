@@ -101,16 +101,19 @@ Phosphor; o item ativo do menu usa o peso `fill`, os hubs usam `duotone`.
 
 No computador, uma **faixa** de 80 px à esquerda (Todo dia; Vender, Agente, Conexões e Empresa sob o rótulo
 «Configurar»; Resultados; Buscar; Você) e, ao lado dela, o **painel**, que abre em Todo dia. Todo dia é a mesa de
-trabalho (Leads e Gestão de Clientes CRM, depois «Se a sua empresa usa»); Configurar e Resultados mostram no painel a
-lista das telas da área, agrupadas por tarefa. O painel pode ser recolhido (cookie `sidebar_collapsed`, lido no
+trabalho (Leads e Gestão de Clientes CRM, depois «Se a sua empresa usa»); Configurar e Resultados abrem a **gaveta**
+(`GavetaDaArea`, ~700 px, duas colunas que viram uma quando ela não tem largura, fundo escurecido) por cima da tela, com
+as telas da área agrupadas por tarefa, cada uma com o termo técnico e a frase do que faz. A gaveta é um diálogo (foco
+preso, Esc, «×», clique fora e escolher uma tela a fecham; o foco volta ao botão da faixa) e só anima com
+`motion-safe:`; o painel segue em Todo dia por baixo. O painel pode ser recolhido (cookie `sidebar_collapsed`, lido no
 servidor para a primeira pintura); recolhido, ele abre por cima da tela e fecha com Esc, clique fora ou escolha de uma
 tela. A faixa é uma ilha escura nos dois temas (`data-theme="dark"` no miolo), com a cor de destaque da marca resolvida
 — nenhum valor de marca fixo no código. A marca por extenso (logo ou nome) mora no topo; na faixa ficam o símbolo, o
 ícone da instalação ou a inicial.
 
 **Não há mais limite de altura nem de itens.** A regra «o menu cabe em 1280×900 sem rolar, no máximo 15 itens» foi
-trocada por «nenhum bloco some abaixo da dobra» (`navegacao.spec.ts`): em cada entrada da faixa, todo título de grupo e
-toda tela está dentro da área visível do painel. Tela nova declara onde mora em `lib/navigation/catalogo.ts`
+trocada por «nenhum bloco some abaixo da dobra» (`navegacao.spec.ts`): em Todo dia e em cada gaveta, todo título de
+grupo está dentro da área visível, e todo botão da faixa está dentro da janela. Tela nova declara onde mora em `lib/navigation/catalogo.ts`
 (`menu: { grupo, ordem }`; bloco e área saem do grupo) e aparece na faixa, na busca e no celular sem editar mais nada.
 
 **No celular** (`< 768 px`, issue #190) o menu é uma **barra de baixo** (`BarraDeBaixo`, projetada por `lib/navigation/celular.ts`) com Conversas — link direto, com o contador da fila —, Todo dia, Configurar e Resultados, que abrem uma **folha** que sobe de baixo (`FolhaDoMenu`, diálogo com foco preso, Esc que fecha e foco devolvido à aba). A folha de Configurar lista as quatro áreas e seus grupos por tarefa; a de Todo dia, a mesa. Busca e menu da conta (Perfil, Segurança, Notificações, Sair) ficam no topo. Alvo de toque de 44 px; a barra é uma peça fixa do rodapé e declara o que ocupa pelo contrato `lib/ui/rodape-ocupado.tsx`. A gaveta lateral antiga (`MobileSidebar`, `SidebarContent`) deixou de existir.

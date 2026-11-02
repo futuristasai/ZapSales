@@ -1584,7 +1584,6 @@ export const DICIONARIO: Traducoes = {
   // Faixa e painel do computador (issue #188)
   "Áreas do menu": { es: "Áreas del menú" },
   "Menu do celular": { es: "Menú del celular" },
-  "Voltar para Todo dia": { es: "Volver a Todo el día" },
   "Fixar o painel ao lado": { es: "Fijar el panel al lado" },
   "Recolher o painel": { es: "Contraer el panel" },
   "Recolher o painel (fica só a faixa)": { es: "Contraer el panel (queda solo la barra)" },
