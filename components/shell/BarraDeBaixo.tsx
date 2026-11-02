@@ -100,13 +100,17 @@ function Aba({
   );
   const miolo = (
     <>
-      <span className="relative inline-flex">
-        <Icone size={24} weight={destaque ? "fill" : "regular"} aria-hidden />
-        {aba.tipo === "link" && aba.contador === "fila" ? (
-          <ContadorDaFila compacto={false} naFaixa className="top-[-6px] right-[-14px]" />
-        ) : null}
-      </span>
+      <Icone size={24} weight={destaque ? "fill" : "regular"} aria-hidden />
       <span className="max-w-full truncate">{t(aba.label)}</span>
+      {/* Depois do rótulo no DOM, e pousado ao lado do ícone por CSS: o nome acessível do link é
+          «Conversas, N conversas esperando…», e não o número primeiro. */}
+      {aba.tipo === "link" && aba.contador === "fila" ? (
+        <ContadorDaFila
+          compacto={false}
+          naFaixa
+          className="top-0.5 right-auto left-[calc(50%+8px)]"
+        />
+      ) : null}
     </>
   );
 

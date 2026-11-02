@@ -32,7 +32,12 @@ vi.mock("@/components/connections/ConnectionHealthDot", () => ({
 }));
 vi.mock("@/components/shell/ContadorDeCasos", () => ({ ContadorDeCasos: () => null }));
 vi.mock("@/components/shell/ContadorDaFila", () => ({
-  ContadorDaFila: () => <span data-testid="contador-da-fila-dublê" />,
+  // Como o real: o número vem com um aria-label próprio, que entra no nome do link.
+  ContadorDaFila: () => (
+    <span data-testid="contador-da-fila-dublê" aria-label="3 conversas esperando uma pessoa">
+      3
+    </span>
+  ),
 }));
 vi.mock("@/components/shell/VersionFooter", () => ({ VersionFooter: () => null }));
 
@@ -54,12 +59,18 @@ describe("a barra de baixo", () => {
   it("mostra Conversas, Todo dia, Configurar e Resultados, nessa ordem", () => {
     render(<BarraDeBaixo />);
     const itens = [...barra().querySelectorAll("a, button")];
-    expect(itens.map((i) => i.textContent?.trim())).toEqual([
+    expect(itens.map((i) => i.querySelector("span.truncate")?.textContent)).toEqual([
       "Conversas",
       "Todo dia",
       "Configurar",
       "Resultados",
     ]);
+  });
+
+  it("o nome do link Conversas começa por Conversas: o número da fila vem DEPOIS do rótulo", () => {
+    render(<BarraDeBaixo />);
+    const link = within(barra()).getByRole("link", { name: /^Conversas/ });
+    expect(link).toHaveAccessibleName(/^Conversas.*3 conversas esperando uma pessoa/);
   });
 
   it("Conversas é um link direto para a tela e leva o contador da fila", () => {

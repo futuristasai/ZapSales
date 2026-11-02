@@ -375,6 +375,9 @@ test.describe("navegação agrupada", () => {
    * folha cabe na janela e se deixa rolar, que todo alvo de toque tem 44 px, que nada estoura na
    * horizontal e que a última linha da tela não fica por baixo das abas. Tudo por
    * `getBoundingClientRect`, nunca a olho.
+   *
+   * Poucos testes e longos de propósito: cada `loginAdmin` espera a virada da janela TOTP e custa
+   * até ~30 s, e a parte do CI que roda esta spec já anda perto do teto de tempo.
    */
   test.describe("mobile", () => {
     test.use({ viewport: { width: 390, height: 844 } });
@@ -383,13 +386,15 @@ test.describe("navegação agrupada", () => {
     const aba = (page: Page, nome: string) =>
       barra(page).getByRole("button", { name: new RegExp(`^${nome}`) });
 
-    test("em 390px o menu é a barra de baixo: sem a gaveta antiga e sem overflow horizontal", async ({
+    test("em 390px o menu é a barra de baixo; Todo dia abre a folha, escolher uma tela a fecha, e Conversas vai direto", async ({
       page,
     }) => {
       await loginAdmin(page);
 
       await expect(page.getByRole("button", { name: "Abrir navegação" })).toHaveCount(0);
-      await expect(faixa(page), "a faixa do computador fica fora da árvore no celular").toHaveCount(0);
+      await expect(faixa(page), "a faixa do computador fica fora da árvore no celular").toHaveCount(
+        0,
+      );
       await expect(barra(page)).toBeVisible();
       await expect(barra(page).getByRole("link", { name: /^Conversas/ })).toBeVisible();
       for (const nome of ["Todo dia", "Configurar", "Resultados"]) {
@@ -405,8 +410,12 @@ test.describe("navegação agrupada", () => {
           base: r.bottom,
           largura: r.width,
           vh: window.innerHeight,
-          vw: window.innerWidth,
-          alvos: [...nav.querySelectorAll("a, button")].map((e) => e.getBoundingClientRect().height),
+          // `clientWidth`, e não `innerWidth`: a janela de teste tem barra de rolagem, e a barra
+          // fixa vai até a borda do que é conteúdo.
+          vw: document.documentElement.clientWidth,
+          alvos: [...nav.querySelectorAll("a, button")].map(
+            (e) => e.getBoundingClientRect().height,
+          ),
         };
       });
       expect(m.base, "a barra encosta no fundo da janela").toBeCloseTo(m.vh, 0);
@@ -418,12 +427,7 @@ test.describe("navegação agrupada", () => {
         path: path.join(EVIDENCE, "nav-mobile-390-barra-de-baixo.png"),
         fullPage: true,
       });
-    });
 
-    test("Todo dia abre a folha com a mesa; escolher uma tela fecha a folha e leva até ela", async ({
-      page,
-    }) => {
-      await loginAdmin(page);
       await aba(page, "Todo dia").click();
       const folha = page.getByRole("dialog", { name: "Todo dia" });
       await expect(folha).toBeVisible();
@@ -438,11 +442,11 @@ test.describe("navegação agrupada", () => {
       await page.waitForURL(/\/app\/kanban/);
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expectSemOverflowHorizontal(page, "shell mobile após navegar pela folha");
-    });
 
-    test("Conversas leva direto à tela, sem folha", async ({ page }) => {
-      await loginAdmin(page);
-      await barra(page).getByRole("link", { name: /^Conversas/ }).click();
+      // Conversas não abre folha: leva direto, e a aba da tela atual é marcada.
+      await barra(page)
+        .getByRole("link", { name: /^Conversas/ })
+        .click();
       await page.waitForURL(/\/app\/inbox/);
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expect(barra(page).getByRole("link", { name: /^Conversas/ })).toHaveAttribute(
@@ -456,7 +460,7 @@ test.describe("navegação agrupada", () => {
      * abaixo da dobra. Cada folha cabe na janela, rola por dentro, e o último link — depois de
      * rolar até o fim — fica acima do rodapé dela.
      */
-    test("nenhum bloco some: cada folha cabe na janela, tem alvos de 44 px e chega ao último link", async ({
+    test("nenhum bloco some: cada folha cabe na janela, tem alvos de 44 px e chega ao último link; Esc devolve o foco", async ({
       page,
     }) => {
       await loginAdmin(page);
@@ -489,32 +493,31 @@ test.describe("navegação agrupada", () => {
         expect(m.topo, `${nome}: a folha começa dentro da janela`).toBeGreaterThanOrEqual(0);
         expect(m.base, `${nome}: a folha termina na janela`).toBeLessThanOrEqual(m.vh + 1);
         expect(m.menorAlvo, `${nome}: alvo de toque`).toBeGreaterThanOrEqual(44);
-        expect(m.ultimoAcimaDoRodape, `${nome}: o último link fica à vista depois de rolar`).toBe(true);
+        expect(m.ultimoAcimaDoRodape, `${nome}: o último link fica à vista depois de rolar`).toBe(
+          true,
+        );
         expect(m.semRolagemH, `${nome}: sem rolagem horizontal`).toBe(true);
         await expectSemOverflowHorizontal(page, `folha de ${nome}`);
+
+        if (nome === "Configurar") {
+          for (const area of ["Vender", "Agente", "Conexões", "Empresa"]) {
+            await expect(folha.getByRole("heading", { name: area, exact: true })).toBeVisible();
+          }
+          await page.screenshot({
+            path: path.join(EVIDENCE, "nav-mobile-390-folha-configurar.png"),
+            fullPage: true,
+          });
+        }
+
         await page.keyboard.press("Escape");
         await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(aba(page, nome), `${nome}: o foco volta à aba`).toBeFocused();
       }
     });
 
-    test("Configurar traz as quatro áreas; Esc fecha e o foco volta à aba", async ({ page }) => {
-      await loginAdmin(page);
-      await aba(page, "Configurar").click();
-      const folha = page.getByRole("dialog", { name: "Configurar" });
-      for (const area of ["Vender", "Agente", "Conexões", "Empresa"]) {
-        await expect(folha.getByRole("heading", { name: area, exact: true })).toBeVisible();
-      }
-      await page.screenshot({
-        path: path.join(EVIDENCE, "nav-mobile-390-folha-configurar.png"),
-        fullPage: true,
-      });
-
-      await page.keyboard.press("Escape");
-      await expect(folha).toHaveCount(0);
-      await expect(aba(page, "Configurar")).toBeFocused();
-    });
-
-    test("a última linha da tela não fica por baixo da barra", async ({ page }) => {
+    test("a última linha da tela não fica por baixo da barra, e o menu da conta leva Perfil, Segurança e Notificações", async ({
+      page,
+    }) => {
       await loginAdmin(page);
       await page.goto("/app/settings/profile");
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -528,10 +531,7 @@ test.describe("navegação agrupada", () => {
       expect(m.ultimoBase, "o fim do conteúdo fica acima da barra").toBeLessThanOrEqual(
         m.barraTopo + 1,
       );
-    });
 
-    test("o menu da conta, no topo, leva Perfil, Segurança e Notificações", async ({ page }) => {
-      await loginAdmin(page);
       await page.getByRole("button", { name: /Menu do usuário/ }).click();
       const menu = page.getByRole("menu");
       for (const nome of ["Perfil", "Segurança", "Notificações"]) {
