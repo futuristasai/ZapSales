@@ -14,7 +14,9 @@ import { localize, type ExtensionManifest } from "@/lib/extensions/manifest";
 import type { ExtensionGuideView } from "@/lib/extensions/view";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { IDIOMA_PADRAO, type Idioma } from "@/lib/i18n/idiomas";
-import { hubSections, type NavGroupId } from "@/lib/navigation/registry";
+import type { PaginaDeAreaHref } from "@/lib/navigation/catalogo";
+import { secoesDaPaginaDeArea } from "@/lib/navigation/menu";
+import { PAGINAS } from "@/lib/navigation/registry";
 import { BookOpen, CaretRight, Lightbulb, ListChecks, Warning } from "@/lib/ui/icons";
 
 interface NavHubProps {
@@ -27,11 +29,10 @@ interface NavHubProps {
   modulosLigados: readonly ModuloOpcional[];
   /** Capacidades que a organização ligou. Ausente = o hub não filtra por capacidade. */
   capacidadesLigadas?: readonly CapacidadeDaOrganizacao[];
-  group: NavGroupId;
+  /** Qual página de área é esta — o título, o subtítulo e os grupos vêm de `PAGINAS_DE_AREA`. */
+  pagina: PaginaDeAreaHref;
   isPlatformAdmin: boolean;
   role: Role | null;
-  title: string;
-  subtitle: string;
   extensionGuides?: ExtensionGuideView[];
   extensionsUnavailable?: boolean;
   /**
@@ -50,16 +51,13 @@ const EXTENSION_ICONS: Record<ExtensionManifest["display"]["icon"], typeof ListC
 };
 
 /**
- * Vitrine de um grupo do registro de navegação.
+ * Uma página de área (`/app/crm`, `/app/ai`, `/app/analise`, `/app/settings`): o
+ * inventário dos grupos por tarefa que ela declara em `PAGINAS_DE_AREA`, cada tela
+ * com a frase que explica para que serve.
  *
- * O sidebar carrega o uso diário; o hub carrega o inventário — todas as telas
- * do grupo, cada uma com a frase que explica para que serve. Era isso que
- * faltava: telas como Conhecimento e Credenciais existiam só como aba dentro de
- * `/app/ai`, invisíveis para quem ainda não estava lá.
- *
- * As seções vêm do campo `section` do registro e são a JORNADA de quem usa o
- * grupo (montar → ensinar → acompanhar), não uma taxonomia técnica. Reordenar a
- * jornada é reordenar o array do registro.
+ * Não é mais o caminho principal do menu (issue #192) — o menu leva a qualquer tela
+ * sem passar por aqui —, mas o endereço continua abrindo e a busca ⌘K a acha. As
+ * seções são os MESMOS grupos do menu, com os mesmos nomes; não há segunda lista.
  */
 /**
  * `aria-labelledby` separa múltiplos ids por ESPAÇO — então um id com espaço
@@ -76,11 +74,9 @@ function slug(texto: string): string {
 }
 
 export function NavHub({
-  group,
+  pagina,
   isPlatformAdmin,
   role,
-  title,
-  subtitle,
   interfaceSettings,
   modulosLigados,
   capacidadesLigadas,
@@ -88,22 +84,30 @@ export function NavHub({
   extensionGuides = [],
   extensionsUnavailable = false,
 }: NavHubProps) {
-  const secoes = hubSections(group, isPlatformAdmin, role, interfaceSettings, modulosLigados, capacidadesLigadas);
+  const secoes = secoesDaPaginaDeArea(
+    pagina,
+    isPlatformAdmin,
+    role,
+    interfaceSettings,
+    modulosLigados,
+    capacidadesLigadas,
+  );
+  const { label, description } = PAGINAS.find((p) => p.href === pagina) ?? { label: "", description: "" };
 
   return (
     <CorpoDaPagina largura="lista" className="gap-8">
-      <CabecalhoDePagina titulo={traduzir(title, locale)} descricao={subtitle ? traduzir(subtitle, locale) : ""} />
+      <CabecalhoDePagina titulo={traduzir(label, locale)} descricao={traduzir(description, locale)} />
 
-      {secoes.map(({ section, items }) => (
-        <div key={section} className="space-y-3">
+      {secoes.map((grupo) => (
+        <div key={grupo.id} className="space-y-3">
           {/* Título de seção de verdade, não um rótulo miúdo em caixa alta: é o que diz, em palavras, a
-              tarefa do grupo ("Montar o agente", "O dia a dia da venda"). */}
-          <h2 id={`hub-${group}-${slug(section)}`} className="text-base font-semibold tracking-tight">
-            {traduzir(section, locale)}
+              tarefa do grupo ("Montar o agente", "O seu funil"). */}
+          <h2 id={`hub-${slug(pagina)}-${grupo.id}`} className="text-base font-semibold tracking-tight">
+            {traduzir(grupo.label, locale)}
           </h2>
-          <Painel aria-labelledby={`hub-${group}-${slug(section)}`} semRecuo>
+          <Painel aria-labelledby={`hub-${slug(pagina)}-${grupo.id}`} semRecuo>
             <ul className="divide-y divide-border">
-              {items.map((item) => {
+              {grupo.itens.map((item) => {
                 const Icon = item.icon;
                 return (
                   <li key={item.href}>
@@ -141,7 +145,7 @@ export function NavHub({
         </div>
       ))}
 
-      {group === "crm" && (extensionGuides.length > 0 || extensionsUnavailable) ? (
+      {pagina === "/app/crm" && (extensionGuides.length > 0 || extensionsUnavailable) ? (
         <section aria-labelledby="hub-crm-orientacoes-instaladas" className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>

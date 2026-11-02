@@ -11,7 +11,8 @@ import { Selo, type SignificadoDoSelo } from "@/components/ui/selo";
 import { ICONES_DO_PRODUTO } from "@/components/icons/produto";
 import { ChatCircle, Funnel, Kanban, Robot, Signpost, Tray } from "@/lib/ui/icons";
 import type { IconWeight } from "@phosphor-icons/react";
-import { ICONE_DO_HUB, NAV_DESTINATIONS, NAV_GROUPS } from "@/lib/navigation/registry";
+import { MENU_GRUPOS } from "@/lib/navigation/catalogo";
+import { NAV_DESTINATIONS, PAGINAS } from "@/lib/navigation/registry";
 
 const ORG_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -51,9 +52,9 @@ function Quadro({ titulo, children }: { titulo: string; children: React.ReactNod
  * desenham nada — o que se mede aqui é a casca, não o dado.
  */
 export function VitrineDoSistema() {
-  const grupos = NAV_GROUPS.map((g) => ({
+  const grupos = MENU_GRUPOS.map((g) => ({
     grupo: g,
-    destinos: NAV_DESTINATIONS.filter((d) => d.group === g.id),
+    destinos: NAV_DESTINATIONS.filter((d) => d.menu.grupo === g.id).sort((a, b) => a.menu.ordem - b.menu.ordem),
   }));
   return (
     <AuthProvider user={USUARIO} activeOrg={ORGANIZACAO}>
@@ -65,7 +66,7 @@ export function VitrineDoSistema() {
           </p>
         </header>
 
-        <Quadro titulo="Menu lateral: expandido (o padrão) e recolhido (escolha da pessoa)">
+        <Quadro titulo="Menu do computador: painel aberto (o padrão) e recolhido (escolha da pessoa)">
           <div className="flex items-start gap-6" data-vitrine="menus">
             <div className="h-[820px] overflow-hidden rounded-lg border" data-vitrine="menu-expandido">
               <div className="h-full [&>aside]:h-full">
@@ -175,18 +176,25 @@ export function VitrineDoSistema() {
 
         <Quadro titulo="Folha de ícones: um por destino">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3" data-vitrine="folha-de-icones">
+            <div className="space-y-2 rounded-lg border bg-card p-4">
+              <h3 className="text-sm font-semibold">Páginas de área</h3>
+              <ul className="space-y-1.5">
+                {PAGINAS.map((p) => {
+                  const Icone = p.icon;
+                  return (
+                    <li key={p.href} className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <Icone size={20} aria-hidden />
+                      {p.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
             {grupos.map(({ grupo, destinos }) => {
-              const IconeDoHub = ICONE_DO_HUB[grupo.id];
               return (
                 <div key={grupo.id} className="space-y-2 rounded-lg border bg-card p-4">
                   <h3 className="text-sm font-semibold">{grupo.label}</h3>
                   <ul className="space-y-1.5">
-                    {IconeDoHub && grupo.hub ? (
-                      <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <IconeDoHub size={20} aria-hidden />
-                        {grupo.hub.label}
-                      </li>
-                    ) : null}
                     {destinos.map((d) => {
                       const Icone = d.icon;
                       return (

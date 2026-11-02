@@ -486,20 +486,12 @@ jobs:
     #   `agenda-google-meet` (0,92 min)  PARTE_3 → PARTE_2, onde já moram
     #       `agenda-conectar-google` e as duas `agenda-ocupacao-do-google-*`.
     #
-    # ⚠️ `navegacao` NÃO se move, e a razão é medida, não preferência. A primeira
-    # versão deste rebalanceamento a levava da 2 para a 1, e lá ela REPROVOU
-    # (run 35345305473, parte 1: 153 passaram, 1 falhou em 18,6 min):
-    #
-    #     navegacao.spec.ts:222 — "em 900px o menu inteiro tem de caber sem
-    #     scroll": esperado false, recebido true. `titulosFora` = 0, ou seja,
-    #     nenhum grupo saiu da dobra — o menu passa do alto por pouco.
-    #
-    # A mesma spec passa na PARTE_2. A diferença não é a partição: é o ESTADO do
-    # banco daquela parte (cada parte tem o seu), que muda o que o menu mostra.
-    # Ou seja, o menu está no limite e alguma vizinhança da parte 1 o empurra —
-    # sinal de PRODUTO, não de CI, e por isso vira item próprio em vez de virar
-    # uma partição escolhida para esconder o vermelho. Quem for atrás: rodar
-    # `navegacao` na parte 1 e ler `nav.scrollHeight` contra a altura visível.
+    # `navegacao` NÃO se move neste rebalanceamento: a primeira versão a levava da 2 para a 1 e lá ela
+    # REPROVOU (run 35345305473), por causa de um teto de altura do menu — "em 900px o menu inteiro
+    # tem de caber sem scroll" — que o estado do banco de cada parte empurrava por poucos pixels.
+    # Esse teto deixou de existir (issue #192): a garantia que o substituiu mede que nenhum bloco do
+    # menu some abaixo da dobra, e não depende do que há no banco. A spec pode ser movida quando
+    # outro rebalanceamento pedir; este registro só explica por que ela ficou onde está.
     #
     # PREVISÃO (é previsão; a rodada deste PR é que mede): 18,0 / 18,4 / 18,7 min
     # de casos, ou ~25 min de relógio por parte, com ~5 min de folga cada.

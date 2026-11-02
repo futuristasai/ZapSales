@@ -11,7 +11,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { NavHub } from "@/components/shell/NavHub";
 import { DICIONARIO } from "@/lib/i18n/dicionario";
 import type { ExtensionGuideView } from "@/lib/extensions/view";
-import { hubSections } from "@/lib/navigation/registry";
+import { secoesDaPaginaDeArea } from "@/lib/navigation/menu";
 
 afterEach(cleanup);
 
@@ -55,26 +55,26 @@ describe("NavHub", () => {
     },
   };
 
-  it("apresenta a IA nas três etapas da jornada, na ordem", () => {
-    render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
+  it("apresenta o Agente nas três tarefas do menu, na ordem", () => {
+    render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     const secoes = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim());
-    expect(secoes).toEqual(["Montar o agente", "Ensinar o agente", "Acompanhar o agente"]);
+    expect(secoes).toEqual(["Montar o agente", "Ensinar o agente", "Conectar a IA"]);
   });
 
   it("desenterra Conhecimento, que só existia atrás das abas", () => {
-    render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
+    render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     const link = screen.getByRole("link", { name: /Conhecimento/ });
     expect(link).toHaveAttribute("href", "/app/ai/knowledge/sources");
   });
 
-  it("cada card explica para que serve — é o que o sidebar não cabe dizer", () => {
-    render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
+  it("cada card explica para que serve — é o que o menu não cabe dizer", () => {
+    render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     const link = screen.getByRole("link", { name: /Conhecimento/ });
     expect(link.textContent).toMatch(/consulta antes de responder/i);
   });
 
-  it("mostra também o que já está no sidebar — é inventário, não sobra", () => {
-    render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
+  it("mostra tudo o que o menu mostra nesses grupos — é inventário, não sobra", () => {
+    render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     expect(screen.getByRole("link", { name: /Agentes/ })).toBeTruthy();
   });
 
@@ -92,12 +92,12 @@ describe("NavHub", () => {
      * sobre todo grupo e todo papel, em vez de sobre uma seção nomeada.
      */
     render(
-      <NavHub modulosLigados={["banco_externo"]} group="organizacao" isPlatformAdmin={false} role="viewer" title="Org" subtitle="" />,
+      <NavHub modulosLigados={["banco_externo"]} pagina="/app/settings" isPlatformAdmin={false} role="viewer" />,
     );
     const secoes = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim());
-    expect(secoes).toContain("Sua conta");
-    expect(secoes).toContain("Sua empresa");
-    expect(secoes).toContain("Dados e acesso");
+    expect(secoes).toContain("Você");
+    expect(secoes).toContain("Plano e regras");
+    expect(secoes).toContain("Outros sistemas");
     expect(screen.getByRole("link", { name: /Extensões/ })).toHaveAttribute(
       "href",
       "/app/extensions",
@@ -115,26 +115,24 @@ describe("NavHub", () => {
     // é quem administra o servidor. Para o viewer, a seção inteira some junto,
     // porque "Dados de outro sistema" era a única porta dela ao alcance dele.
     render(
-      <NavHub group="organizacao" isPlatformAdmin={false} role="admin" title="Org" subtitle="" modulosLigados={[]} />,
+      <NavHub pagina="/app/settings" isPlatformAdmin={false} role="admin" modulosLigados={[]} />,
     );
     expect(screen.queryByRole("link", { name: /Dados de outro sistema/ })).toBeNull();
     expect(screen.getByRole("link", { name: /Chaves de acesso/ })).toBeTruthy();
     cleanup();
 
     render(
-      <NavHub group="organizacao" isPlatformAdmin={false} role="viewer" title="Org" subtitle="" modulosLigados={[]} />,
+      <NavHub pagina="/app/settings" isPlatformAdmin={false} role="viewer" modulosLigados={[]} />,
     );
     const secoes = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim());
-    expect(secoes).not.toContain("Dados e acesso");
+    expect(secoes).not.toContain("Outros sistemas");
     cleanup();
 
     render(
       <NavHub
-        group="organizacao"
+        pagina="/app/settings"
         isPlatformAdmin={false}
         role="viewer"
-        title="Org"
-        subtitle=""
         modulosLigados={["banco_externo"]}
       />,
     );
@@ -146,18 +144,16 @@ describe("NavHub", () => {
 
   it("a porta de Propostas no hub do CRM some com a capacidade desligada e volta ligada", () => {
     render(
-      <NavHub group="crm" isPlatformAdmin={false} role="admin" title="CRM" subtitle="" modulosLigados={[]} capacidadesLigadas={[]} />,
+      <NavHub pagina="/app/crm" isPlatformAdmin={false} role="admin" modulosLigados={[]} capacidadesLigadas={[]} />,
     );
     expect(screen.queryByRole("link", { name: /Propostas/ })).toBeNull();
     cleanup();
 
     render(
       <NavHub
-        group="crm"
+        pagina="/app/crm"
         isPlatformAdmin={false}
         role="admin"
-        title="CRM"
-        subtitle=""
         modulosLigados={[]}
         capacidadesLigadas={["propostas"]}
       />,
@@ -166,7 +162,7 @@ describe("NavHub", () => {
   });
 
   it("agrupa os cards sob a própria seção, não numa lista solta", () => {
-    render(<NavHub modulosLigados={[]} group="ia" isPlatformAdmin role={null} title="Agente de IA" subtitle="" />);
+    render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     const ensinar = screen.getByRole("region", { name: "Ensinar o agente" });
     expect(within(ensinar).getByRole("link", { name: /Memória/ })).toBeTruthy();
     expect(within(ensinar).queryByRole("link", { name: /Chave da IA/ })).toBeNull();
@@ -175,11 +171,9 @@ describe("NavHub", () => {
   it("traduz o conteúdo do hub quando a página entrega o idioma", () => {
     render(
       <NavHub modulosLigados={[]}
-        group="ia"
+        pagina="/app/ai"
         isPlatformAdmin
         role={null}
-        title="Agente de IA"
-        subtitle="Tudo que define quem atende por você — e como acompanhar o que ele faz."
         locale="es"
       />,
     );
@@ -190,17 +184,17 @@ describe("NavHub", () => {
     expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim())).toEqual([
       "Configurar el agente",
       "Enseñar al agente",
-      "Supervisar al agente",
+      "Conectar la IA",
     ]);
     expect(
       screen.getByRole("link", { name: /Clave de la IA.*La clave del proveedor de IA/ }),
     ).toBeTruthy();
   });
 
-  it("todo texto registrado no hub de IA tem tradução em espanhol", () => {
-    const textos = hubSections("ia", true, "admin").flatMap(({ section, items }) => [
-      section,
-      ...items.flatMap((item) => [item.label, item.description]),
+  it("todo texto registrado na página do Agente tem tradução em espanhol", () => {
+    const textos = secoesDaPaginaDeArea("/app/ai", true, "admin").flatMap(({ label, itens }) => [
+      label,
+      ...itens.flatMap((item) => [item.label, item.description]),
     ]);
 
     expect(textos.filter((texto) => !DICIONARIO[texto]?.es)).toEqual([]);
@@ -209,11 +203,9 @@ describe("NavHub", () => {
   it("integra contribuições tipadas no CRM sem aceitar destino vindo do pacote", () => {
     render(
       <NavHub modulosLigados={[]}
-        group="crm"
+        pagina="/app/crm"
         isPlatformAdmin={false}
         role="viewer"
-        title="CRM"
-        subtitle=""
         locale="es"
         extensionGuides={[extensionGuide]}
       />,
@@ -231,11 +223,9 @@ describe("NavHub", () => {
   it("expõe falha de leitura das contribuições sem derrubar o hub do CRM", () => {
     render(
       <NavHub modulosLigados={[]}
-        group="crm"
+        pagina="/app/crm"
         isPlatformAdmin={false}
         role="viewer"
-        title="CRM"
-        subtitle=""
         extensionsUnavailable
       />,
     );

@@ -1,15 +1,15 @@
-import type { NavDestination } from "./registry";
+import type { ResultadoDaBusca } from "./menu";
 
 /**
  * A BUSCA DA NAVEGAÇÃO (⌘K), como função pura (issue #187).
  *
  * Uma tela é achada por tudo o que a pessoa pode usar para chamá-la: o NOME que
  * o menu mostra, o NOME ANTIGO (`sinonimos`), o TERMO TÉCNICO que fica embaixo do
- * nome, a DESCRIÇÃO e o grupo. O técnico que digita "webhook" e o antigo usuário
+ * nome, a DESCRIÇÃO e o lugar do menu em que mora (a área ou o bloco). O técnico que digita "webhook" e o antigo usuário
  * que digita "Inbox" chegam à mesma tela, sem ninguém precisar saber como o
  * catálogo guarda isso.
  *
- * Achar não é autorizar: quem decide o que entra na lista é `searchable()` (papel,
+ * Achar não é autorizar: quem decide o que entra na lista é `buscaveis()` (papel,
  * módulos, interface por empresa). Aqui só se filtra o que já é visível.
  */
 
@@ -26,13 +26,13 @@ export function normalizarBusca(texto: string): string {
  * O português continua valendo, porque o nome antigo e os sinônimos moram nele.
  */
 export function casaComABusca(
-  destino: NavDestination,
+  destino: Pick<ResultadoDaBusca, "label" | "description" | "termo" | "sinonimos">,
   termo: string,
-  rotuloDoGrupo: string,
+  rotuloDoLugar: string,
   traduzir: (texto: string) => string = (texto) => texto,
 ): boolean {
   if (!termo) return true;
-  const tecnico = destino.menu.termo ?? "";
+  const tecnico = destino.termo ?? "";
   return normalizarBusca(
     [
       destino.label,
@@ -41,7 +41,7 @@ export function casaComABusca(
       tecnico && traduzir(tecnico),
       destino.description,
       traduzir(destino.description),
-      rotuloDoGrupo,
+      rotuloDoLugar,
       ...(destino.sinonimos ?? []),
     ].join(" "),
   ).includes(termo);

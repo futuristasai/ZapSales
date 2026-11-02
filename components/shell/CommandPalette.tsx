@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/auth/AuthProvider";
 import { useT } from "@/hooks/i18n/useT";
 import { MagnifyingGlass } from "@/lib/ui/icons";
 import { casaComABusca, normalizarBusca } from "@/lib/navigation/busca";
-import { NAV_GROUPS, searchable, type NavDestination, type NavGroupId } from "@/lib/navigation/registry";
+import { buscaveis, type ResultadoDaBusca } from "@/lib/navigation/menu";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,9 +19,6 @@ import { cn } from "@/lib/utils";
  * v1 busca só NAVEGAÇÃO — os destinos do registro. Contato, conversa e lead têm
  * outra fonte de dados e são outra feature.
  */
-
-const ROTULO_GRUPO = new Map(NAV_GROUPS.map((g) => [g.id, g.label]));
-const ORDEM_GRUPO = new Map(NAV_GROUPS.map((g, i) => [g.id, i]));
 
 export function CommandPalette({
   open,
@@ -54,7 +51,7 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
 
   const visiveis = useMemo(
     () =>
-      searchable(
+      buscaveis(
         user.is_platform_admin && !user.support,
         activeOrg?.role ?? null,
         activeOrg?.interface_settings,
@@ -71,42 +68,38 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
     ],
   );
 
-  // Lista dos grupos disponíveis nos destinos visíveis
+  // As categorias são os lugares do menu em que há tela visível, na ordem em que as telas
+  // aparecem (a do menu) — e a das páginas de área por último, que `buscaveis` já põe no fim.
   const categoriasDisponiveis = useMemo(() => {
-    const gruposNoCatalogo = new Set(visiveis.map((v) => v.group));
-    return NAV_GROUPS.filter((g) => gruposNoCatalogo.has(g.id));
+    const vistas = new Map<string, string>();
+    for (const v of visiveis) if (!vistas.has(v.lugar.id)) vistas.set(v.lugar.id, v.lugar.label);
+    return [...vistas].map(([id, label]) => ({ id, label }));
   }, [visiveis]);
 
   const resultados = useMemo(() => {
     const termo = normalizarBusca(busca.trim());
     const filtrados = visiveis.filter((d) => {
-      const casaCategoria = categoriaAtiva === "todos" || d.group === categoriaAtiva;
+      const casaCategoria = categoriaAtiva === "todos" || d.lugar.id === categoriaAtiva;
       if (!casaCategoria) return false;
-      // Nome novo, nome antigo, termo técnico, descrição e grupo — e o texto na
+      // Nome novo, nome antigo, termo técnico, descrição e lugar no menu — e o texto na
       // língua que a pessoa vê (`t`). Ver `lib/navigation/busca.ts`.
-      return casaComABusca(d, termo, ROTULO_GRUPO.get(d.group) ?? "", t);
+      return casaComABusca(d, termo, d.lugar.label, t);
     });
-    if (termo) return filtrados;
-    // O catálogo não é contíguo por grupo (a Prospecção, de CRM, vem antes do
-    // Inbox). Sem reordenar, a 1ª seção seria a do 1º item e as setas, que
-    // andam por este array, pulariam de uma seção para outra. Ordenado pelo
-    // NAV_GROUPS, a ordem do array é a ordem da tela. O sort é estável.
-    return [...filtrados].sort((a, b) => (ORDEM_GRUPO.get(a.group) ?? 0) - (ORDEM_GRUPO.get(b.group) ?? 0));
+    return filtrados;
   }, [busca, visiveis, categoriaAtiva, t]);
 
   // Agrupamento para exibição visual estruturada quando não há busca específica digitada
   const resultadosAgrupados = useMemo(() => {
-    const map = new Map<NavGroupId, NavDestination[]>();
+    const map = new Map<string, ResultadoDaBusca[]>();
     for (const item of resultados) {
-      const g = item.group;
-      const lista = map.get(g) ?? [];
+      const lista = map.get(item.lugar.id) ?? [];
       lista.push(item);
-      map.set(g, lista);
+      map.set(item.lugar.id, lista);
     }
     return map;
   }, [resultados]);
 
-  function navegar(destino: NavDestination) {
+  function navegar(destino: ResultadoDaBusca) {
     aoEscolher();
     router.push(destino.href);
   }
@@ -184,7 +177,7 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
           {t("Todas")} ({visiveis.length})
         </button>
         {categoriasDisponiveis.map((cat) => {
-          const qtd = visiveis.filter((v) => v.group === cat.id).length;
+          const qtd = visiveis.filter((v) => v.lugar.id === cat.id).length;
           return (
             <button
               key={cat.id}
@@ -218,10 +211,10 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
           aria-label={t("Telas")}
           className="max-h-[60vh] space-y-5 overflow-y-auto p-4"
         >
-          {Array.from(resultadosAgrupados.entries()).map(([grupoId, itens]) => {
-            const rotuloGrupo = ROTULO_GRUPO.get(grupoId) ?? grupoId;
+          {Array.from(resultadosAgrupados.entries()).map(([lugarId, itens]) => {
+            const rotuloGrupo = itens[0]?.lugar.label ?? lugarId;
             return (
-              <div key={grupoId} role="group" aria-label={t(rotuloGrupo)} className="space-y-2">
+              <div key={lugarId} role="group" aria-label={t(rotuloGrupo)} className="space-y-2">
                 <div className="flex items-center justify-between border-b pb-1">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t(rotuloGrupo)}
@@ -263,8 +256,8 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-semibold leading-tight">{t(d.label)}</p>
-                          {d.menu.termo ? (
-                            <p className={cn("truncate text-[10px] leading-tight", secundario)}>{t(d.menu.termo)}</p>
+                          {d.termo ? (
+                            <p className={cn("truncate text-[10px] leading-tight", secundario)}>{t(d.termo)}</p>
                           ) : null}
                           <p className={cn("mt-0.5 line-clamp-2 text-[11px] leading-snug", secundario)}>
                             {t(d.description)}
@@ -320,11 +313,11 @@ function Resultados({ aoEscolher }: { aoEscolher: () => void }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="text-sm font-medium">{t(d.label)}</span>
-                    {d.menu.termo ? (
-                      <span className={cn("truncate font-mono text-[11px]", secundario)}>{t(d.menu.termo)}</span>
+                    {d.termo ? (
+                      <span className={cn("truncate font-mono text-[11px]", secundario)}>{t(d.termo)}</span>
                     ) : null}
                     <span className={cn("truncate text-[10px] font-medium tracking-wider uppercase", secundario)}>
-                      {t(ROTULO_GRUPO.get(d.group) ?? "")}
+                      {t(d.lugar.label)}
                     </span>
                   </div>
                   {/* Duas linhas, não uma cortada: a palavra que a pessoa buscou

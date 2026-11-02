@@ -22,7 +22,8 @@ import { describe, expect, it } from "vitest";
  */
 import { traduzir } from "@/lib/i18n/dicionario";
 import { IDIOMAS, IDIOMA_PADRAO, normalizarIdioma, parseAcceptLanguage } from "@/lib/i18n/idiomas";
-import { NAV_DESTINATIONS, NAV_GROUPS } from "@/lib/navigation/registry";
+import { MENU_GRUPOS } from "@/lib/navigation/catalogo";
+import { NAV_DESTINATIONS } from "@/lib/navigation/registry";
 import { DICIONARIO } from "@/lib/i18n/dicionario";
 
 describe("traduzir", () => {
@@ -207,7 +208,7 @@ describe("os elos que somem sem barulho", () => {
 });
 
 describe("o dicionário acompanha o registro de navegação", () => {
-  it("todo item da barra lateral tem tradução", () => {
+  it("todo item do menu tem tradução", () => {
     // ⚠️ ESTE CRUZAMENTO NÃO EXISTIA, e a falta dele é do tipo que não
     // vermelheia: a CHAVE do dicionário é o próprio texto em português, então
     // renomear um rótulo no registro não quebra nada — `traduzir()` devolve a
@@ -218,8 +219,7 @@ describe("o dicionário acompanha o registro de navegação", () => {
     // certo para eles. A lista é curta de propósito — cada entrada aqui é uma
     // renúncia consciente, não um lugar para esconder rótulo esquecido.
     const NOMES_PROPRIOS: string[] = [];
-    const semTraducao = NAV_DESTINATIONS.filter((d) => d.sidebar)
-      .filter((d) => !NOMES_PROPRIOS.includes(d.label))
+    const semTraducao = NAV_DESTINATIONS.filter((d) => !NOMES_PROPRIOS.includes(d.label))
       .filter((d) => !(d.label in DICIONARIO));
     expect(
       semTraducao.map((d) => d.label),
@@ -227,8 +227,8 @@ describe("o dicionário acompanha o registro de navegação", () => {
     ).toEqual([]);
   });
 
-  it("todo grupo da barra lateral tem tradução", () => {
-    const semTraducao = NAV_GROUPS.filter((g) => !(g.label in DICIONARIO));
+  it("todo grupo do menu tem tradução", () => {
+    const semTraducao = MENU_GRUPOS.filter((g) => !(g.label in DICIONARIO));
     expect(semTraducao.map((g) => g.label)).toEqual([]);
   });
 });
