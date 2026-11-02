@@ -290,7 +290,7 @@
       "id": "10",
       "from": "cerca_icones",
       "to": "registro",
-      "label": "o hub de cada grupo não repete ícone de tela"
+      "label": "cada página de área tem ícone próprio, sem repetir o de uma tela"
     },
     {
       "id": "11",

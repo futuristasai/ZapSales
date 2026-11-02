@@ -58,7 +58,14 @@ describe("NavHub", () => {
   it("apresenta o Agente nas três tarefas do menu, na ordem", () => {
     render(<NavHub modulosLigados={[]} pagina="/app/ai" isPlatformAdmin role={null} />);
     const secoes = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim());
-    expect(secoes).toEqual(["Montar o agente", "Ensinar o agente", "Conectar a IA"]);
+    expect(secoes).toEqual([
+      "Montar o agente",
+      "Ensinar o agente",
+      "Conectar a IA",
+      "Leads",
+      "Equipe e IA",
+      "Quando algo dá errado",
+    ]);
   });
 
   it("desenterra Conhecimento, que só existia atrás das abas", () => {
@@ -181,11 +188,14 @@ describe("NavHub", () => {
     expect(
       screen.getByText("Todo lo que define quién atiende por ti, y cómo dar seguimiento a lo que hace."),
     ).toBeTruthy();
-    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent?.trim())).toEqual([
-      "Configurar el agente",
-      "Enseñar al agente",
-      "Conectar la IA",
-    ]);
+    // As três primeiras seções são as do agente, em espanhol; as outras três (Leads, Equipe e IA,
+    // Quando algo dá errado) vêm do mesmo menu e têm a tradução cobrada por i18n-catalogo-do-menu.
+    expect(
+      screen
+        .getAllByRole("heading", { level: 2 })
+        .slice(0, 3)
+        .map((h) => h.textContent?.trim()),
+    ).toEqual(["Configurar el agente", "Enseñar al agente", "Conectar la IA"]);
     expect(
       screen.getByRole("link", { name: /Clave de la IA.*La clave del proveedor de IA/ }),
     ).toBeTruthy();

@@ -115,10 +115,9 @@ Uma feature que responde "nenhum" a *quem eu alimento* ou *onde apareço na tela
 
 ### Regras de navegação que a doutrina passa a exigir
 
-- **Todo destino declara seu grupo** em `lib/navigation/registry.ts`. Sem grupo, sem merge.
+- **Todo destino declara onde mora no menu** em `lib/navigation/catalogo.ts` (`menu: { grupo, ordem }`): o bloco e a área saem do grupo, e menu, busca e páginas de área leem dali. Sem posição, não compila; sem porta, o gate de completude reprova.
 - **Configuração e observabilidade são grupos diferentes.** Desenhar como o sistema funciona (Agentes, Roteadores) não é a mesma atividade que olhar o sistema funcionando (Evolução da IA, Desempenho) — e quem procura uma não está procurando a outra.
-- **Hub a partir de 5 telas.** Abaixo disso o grupo cabe inteiro no sidebar; um hub de 3 itens é só um clique a mais para chegar onde já dava.
-- **O sidebar carrega o uso diário; o hub carrega o inventário.** Na dúvida, `sidebar: false` — o hub e o ⌘K já garantem a descoberta.
+- **O menu é por frequência de uso, e não tem teto de itens.** O que se abre todo dia vai em "Todo dia"; o que se ajusta de vez em quando, em uma das áreas de "Configurar"; os números, em "Resultados". Não existe mais "Ver tudo em…" nem o limite de altura: o que protege a descoberta é o teste de que nenhum bloco some abaixo da dobra (`tests/e2e/navegacao.spec.ts`).
 - **Mudar o lugar na navegação não exige mudar a URL.** Rota só se renomeia quando o path mente sobre o conteúdo, e cada renomeação paga um redirect permanente.
 
 ---

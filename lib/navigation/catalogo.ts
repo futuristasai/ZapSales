@@ -160,6 +160,9 @@ export interface NavMetadata {
  * deles é o que o menu já decide (papel, módulos, interface por empresa). Não há
  * segunda lista de telas: só a lista de grupos de cada página.
  *
+ * Cada página lista, no MÍNIMO, o que o hub antigo dela listava — o piso está congelado em
+ * `tests/unit/paginas-de-area.test.ts`. Como o corte é por grupo, algumas listam telas a mais.
+ *
  * O texto (`label`, `description`) é o título e o subtítulo da própria página.
  * Retirar estas páginas é decisão para depois, e começa por apagar este array.
  */
@@ -184,7 +187,16 @@ export const PAGINAS_DE_AREA = [
     label: "Agente de IA",
     description: "Tudo que define quem atende por você — e como acompanhar o que ele faz.",
     icon: "Sparkle",
-    grupos: ["agente-montar", "agente-ensinar", "agente-conectar"],
+    // Montar, ensinar e conectar a IA, e o acompanhamento que o hub antigo também listava: os casos
+    // que esperam uma pessoa e os alertas (Leads) e o que a IA fez e gastou (Resultados).
+    grupos: [
+      "agente-montar",
+      "agente-ensinar",
+      "agente-conectar",
+      "leads",
+      "resultados-equipe",
+      "resultados-erro",
+    ],
   },
   {
     href: "/app/analise",
@@ -198,6 +210,8 @@ export const PAGINAS_DE_AREA = [
     label: "Configurações",
     description: "Sua conta, os dados da empresa e quem tem acesso ao quê.",
     icon: "Gear",
+    // A conta, a empresa e as conexões — e o que se prepara em Vender (agenda, propostas, etiquetas),
+    // que o hub antigo de Configurações também listava.
     grupos: [
       "conta-voce",
       "empresa-equipe",
@@ -206,6 +220,9 @@ export const PAGINAS_DE_AREA = [
       "conexoes-whatsapp",
       "conexoes-sistemas",
       "conexoes-anuncios",
+      "vender-funil",
+      "vender-oferta",
+      "vender-equipe",
     ],
   },
 ] as const satisfies readonly PaginaDeAreaDeclarada[];

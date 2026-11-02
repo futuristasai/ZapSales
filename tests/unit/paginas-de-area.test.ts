@@ -42,6 +42,9 @@ describe("o que cada página de área lista", () => {
       "Montar o agente",
       "Ensinar o agente",
       "Conectar a IA",
+      "Leads",
+      "Equipe e IA",
+      "Quando algo dá errado",
     ]);
   });
 
@@ -105,6 +108,47 @@ describe("o que cada página de área lista", () => {
 
 });
 
+/**
+ * O PISO: o que cada hub listava ANTES da issue #192, tela por tela, congelado do catálogo antigo
+ * (`group` de cada destino) para o Dono com todos os módulos ligados. As páginas de área não podem
+ * perder nenhuma delas — três e2e abrem a página e clicam na tela (Tipos de agendamento, Etiquetas,
+ * Histórico do agente). Podem listar a mais, porque o corte agora é por grupo do menu.
+ */
+const INVENTARIO_ANTIGO: Record<string, readonly string[]> = {
+  "/app/crm": [
+    "/app/prospecting", "/app/kanban", "/app/campaigns", "/app/contacts", "/app/companies", "/app/people",
+    "/app/tasks", "/app/calls", "/app/products", "/app/imports", "/app/proposals", "/app/comandas",
+    "/app/settings/tenant/pipelines",
+  ],
+  "/app/ai": [
+    "/app/ai/agents", "/app/ai/followups", "/app/ai/atendimento", "/app/ai/routers", "/app/ai/credentials",
+    "/app/ai/providers", "/app/ai/knowledge/sources", "/app/ai/external-tools", "/app/ai/memory",
+    "/app/ai/skills", "/app/ai/cases", "/app/ai/inbox", "/app/ai/cases/avisos", "/app/ai/proposals",
+    "/app/ai/runs", "/app/ai/usage",
+  ],
+  "/app/analise": [
+    "/app/faturamento", "/app/honorarios", "/app/metrics", "/app/ads/meta", "/app/activities",
+    "/app/ai/evolution", "/app/audit",
+  ],
+  "/app/settings": [
+    "/app/settings/tenant/agenda", "/app/settings/tenant/proposals", "/app/settings/tenant/proposals/modelos",
+    "/app/settings/tenant/financeiro", "/app/settings/profile", "/app/settings/security",
+    "/app/settings/notifications", "/app/team", "/app/settings/atendimento", "/app/settings/tags",
+    "/app/settings/recursos", "/app/settings/tenant", "/app/settings/conversoes", "/app/settings/meta-ads",
+    "/app/settings/marca", "/app/settings/billing", "/app/lgpd/requests", "/app/settings/api-tokens",
+    "/app/settings/voip-trunk", "/app/extensions", "/app/integracao-dados",
+  ],
+};
+
+describe("nenhuma página de área perde o que listava", () => {
+  for (const [href, antigo] of Object.entries(INVENTARIO_ANTIGO)) {
+    it(`${href} continua listando as ${antigo.length} telas de antes`, () => {
+      const hoje = new Set(hrefsDe(href, "admin"));
+      expect(antigo.filter((h) => !hoje.has(h))).toEqual([]);
+    });
+  }
+});
+
 describe("as páginas de área na busca", () => {
   const busca = (role: (typeof PAPEIS)[number] | null, termo?: string) =>
     buscaveis(false, role, undefined, TODOS, CAPACIDADES).filter((r) => !termo || r.label === termo);
@@ -116,10 +160,13 @@ describe("as páginas de área na busca", () => {
   });
 
   it("a página de área só aparece se a pessoa vê alguma tela dela", () => {
-    // O atendente não vê nenhuma tela do grupo do agente: a página não vira porta para o vazio.
-    const hrefs = busca("agent").map((r) => r.href);
-    expect(hrefs).not.toContain("/app/ai");
-    expect(hrefs).toContain("/app/crm");
+    // Com a interface mínima da empresa (só Conversas, mais as portas essenciais), nenhuma tela de
+    // Resultados fica visível: a página de Análise não vira porta para o vazio.
+    const minima = { preset: "completa" as const, destinos: ["/app/inbox" as const] };
+    const hrefs = buscaveis(false, "admin", minima, TODOS, CAPACIDADES).map((r) => r.href);
+    expect(hrefs).not.toContain("/app/analise");
+    expect(hrefs).toContain("/app/settings");
+    expect(busca("agent").map((r) => r.href)).toContain("/app/crm");
   });
 
   it("sem papel e sem ser administrador de plataforma não há nada a buscar", () => {
