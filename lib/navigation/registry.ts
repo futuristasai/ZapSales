@@ -1,6 +1,5 @@
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
-import { type Role } from "@/lib/auth/types";
 import { AgenteEmConversa, FunilEmEtapas, PassagemParaHumano } from "@/components/icons/produto";
 import {
   Bell,
@@ -18,6 +17,7 @@ import {
   FlowArrow,
   Funnel,
   Gauge,
+  Gear,
   Inbox,
   Kanban,
   Key,
@@ -72,17 +72,12 @@ import {
 
 import {
   NAV_CATALOG,
-  NAV_GROUPS,
+  PAGINAS_DE_AREA,
+  type GrupoDoMenuId,
   type NavMetadata,
-  type NavGroup,
-  type NavGroupId,
+  type PaginaDeAreaHref,
 } from "./catalogo";
-import type { ModuloOpcional } from "@/lib/instalacao/modulos";
-import type { CapacidadeDaOrganizacao } from "@/lib/organizacao/capacidades";
 
-import { destinosDaInterface, type InterfaceSettings } from "./interface";
-export { NAV_GROUPS, GRUPO_NO_RODAPE } from "./catalogo";
-export type { NavGroup, NavGroupId } from "./catalogo";
 const ICONS = {
   Bell,
   BookOpen,
@@ -99,6 +94,7 @@ const ICONS = {
   FlowArrow,
   Funnel,
   Gauge,
+  Gear,
   Inbox,
   Kanban,
   Key,
@@ -154,25 +150,25 @@ const ICONS = {
   FunilEmEtapas,
   PassagemParaHumano,
 };
-/**
- * O ícone do link "Ver tudo em …" de cada grupo com hub.
- *
- * Era a MESMA seta nos três (CRM, IA, Análise) — e com o menu recolhido, sem texto, ninguém
- * distinguia um do outro. Cada grupo tem o seu, e nenhum repete o ícone de uma tela do menu:
- * `tests/unit/navegacao-icones-unicos.test.ts` prende as duas coisas.
- */
-export const ICONE_DO_HUB: Partial<Record<NavGroupId, PhosphorIcon>> = {
-  crm: AddressBook,
-  ia: Sparkle,
-  analise: ChartPieSlice,
-};
-
 export interface NavDestination extends Omit<NavMetadata, "icon"> {
   icon: PhosphorIcon;
 }
 export const NAV_DESTINATIONS: NavDestination[] = NAV_CATALOG.map((d) => ({
   ...d,
   icon: ICONS[d.icon],
+}));
+
+/** Uma página de área (`/app/crm`…) com o ícone já resolvido — ver `PAGINAS_DE_AREA`. */
+export interface PaginaDeArea {
+  href: PaginaDeAreaHref;
+  label: string;
+  description: string;
+  icon: PhosphorIcon;
+  grupos: readonly GrupoDoMenuId[];
+}
+export const PAGINAS: readonly PaginaDeArea[] = PAGINAS_DE_AREA.map((p) => ({
+  ...p,
+  icon: ICONS[p.icon],
 }));
 /**
  * Único ponto de decisão de permissão da navegação.
@@ -182,69 +178,3 @@ export const NAV_DESTINATIONS: NavDestination[] = NAV_CATALOG.map((d) => ({
  * Como função pura, um `.filter()` resolve todas.
  */
 export { canSee } from "./interface";
-
-/** Projeção do sidebar: só o uso diário, agrupado, sem grupo vazio. */
-export function sidebarGroups(
-  isPlatformAdmin: boolean,
-  role: Role | null,
-  settings?: InterfaceSettings,
-  modulos?: readonly ModuloOpcional[],
-  capacidades?: readonly CapacidadeDaOrganizacao[],
-): Array<{ group: NavGroup; items: NavDestination[] }> {
-  const visible = new Set<string>(
-    destinosDaInterface(settings, isPlatformAdmin, role, modulos, capacidades).map((d) => d.href),
-  );
-  return NAV_GROUPS.map((group) => ({
-    group,
-    items: NAV_DESTINATIONS.filter(
-      (d) => d.group === group.id && (d.sidebar || (!group.hub && !!settings?.destinos)) && visible.has(d.href),
-    ),
-  })).filter(
-    (g) =>
-      g.items.length > 0 ||
-      (g.group.hub && NAV_DESTINATIONS.some((d) => d.group === g.group.id && visible.has(d.href))),
-  );
-}
-
-/**
- * Projeção do hub: TODAS as telas do grupo — inclusive as que já estão no
- * sidebar. O hub é inventário, não sobra; é onde se descobre o que existe.
- *
- * A ordem das seções é a de primeira aparição no registro, então reordenar a
- * jornada é reordenar o array — não há uma segunda lista para manter em sincronia.
- */
-export function hubSections(
-  group: NavGroupId,
-  isPlatformAdmin: boolean,
-  role: Role | null,
-  settings?: InterfaceSettings,
-  modulos?: readonly ModuloOpcional[],
-  capacidades?: readonly CapacidadeDaOrganizacao[],
-): Array<{ section: string; items: NavDestination[] }> {
-  const porSecao = new Map<string, NavDestination[]>();
-  const visible = new Set<string>(
-    destinosDaInterface(settings, isPlatformAdmin, role, modulos, capacidades).map((d) => d.href),
-  );
-  for (const d of NAV_DESTINATIONS) {
-    if (d.group !== group || !visible.has(d.href)) continue;
-    const secao = d.section ?? "";
-    const atual = porSecao.get(secao);
-    if (atual) atual.push(d);
-    else porSecao.set(secao, [d]);
-  }
-  return [...porSecao.entries()].map(([section, items]) => ({ section, items }));
-}
-
-/** Projeção do ⌘K: todo destino visível, do sidebar ou não. */
-export function searchable(
-  isPlatformAdmin: boolean,
-  role: Role | null,
-  settings?: InterfaceSettings,
-  modulos?: readonly ModuloOpcional[],
-  capacidades?: readonly CapacidadeDaOrganizacao[],
-): NavDestination[] {
-  const visible = new Set<string>(
-    destinosDaInterface(settings, isPlatformAdmin, role, modulos, capacidades).map((d) => d.href),
-  );
-  return NAV_DESTINATIONS.filter((d) => visible.has(d.href));
-}

@@ -69,16 +69,14 @@ describe("a lista do menu (folha do celular e painel do computador)", () => {
   });
 });
 
-describe("hub", () => {
+describe("página de área", () => {
   it("mostra o termo técnico ao lado do nome do card", () => {
     render(
       <NavHub
         modulosLigados={[]}
-        group="ia"
+        pagina="/app/ai"
         isPlatformAdmin
         role={null}
-        title="Agente de IA"
-        subtitle=""
       />,
     );
     const card = screen.getByRole("link", { name: /Chave da IA/ });

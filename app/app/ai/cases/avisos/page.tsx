@@ -1,5 +1,5 @@
 /**
- * IA › Acompanhar o agente › **Aviso no WhatsApp** (`/app/ai/cases/avisos`).
+ * Agente › Conectar a IA › **Aviso no WhatsApp** (`/app/ai/cases/avisos`).
  *
  * ## Por que aqui e não em Configurações
  *

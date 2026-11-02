@@ -67,7 +67,7 @@ export function canSee(
 }
 /**
  * `modulos` são os módulos opcionais LIGADOS na instalação. Ausente = não filtra
- * por módulo: quem desenha menu (sidebar, hub, ⌘K) passa a lista; quem só
+ * por módulo: quem desenha menu (menu, páginas de área, ⌘K) passa a lista; quem só
  * pergunta "sobra alguma porta?" não precisa.
  */
 export function permitidos(
@@ -161,7 +161,7 @@ const SO_O_ESSENCIAL: readonly NavDestinationId[] = ids.filter((id) =>
  * combinação é INTERSEÇÃO nos dois eixos, e `simplificada` — que também é um
  * limite, não um enfeite — sobrevive vindo de qualquer um dos lados.
  *
- * Isto é APRESENTAÇÃO, como as duas entradas: o resultado alimenta sidebar, hub,
+ * Isto é APRESENTAÇÃO, como as duas entradas: o resultado alimenta menu, páginas de área,
  * ⌘K e as telas. Autorização continua sendo `canSee` sobre o papel, aplicada
  * depois, sobre o conjunto já estreitado. Nenhuma escolha da empresa nega
  * página, API ou ação.

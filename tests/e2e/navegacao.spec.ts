@@ -23,16 +23,14 @@ const EVIDENCE = path.join(process.cwd(), ".superpowers", "evidence");
 mkdirSync(EVIDENCE, { recursive: true });
 
 // ── Precondição de identidade ────────────────────────────────────────────────
-// O menu é `sidebarGroups(isPlatformAdmin, role)` (`registry.ts:510-519`), então
-// a suspeita natural é que promover o `e2e-admin` a dono do servidor inflasse o
-// sidebar que esta spec mede item a item.
+// O menu é `menuDoPapel(isPlatformAdmin, role)` (`lib/navigation/menu.ts`), então a suspeita natural
+// é que promover o `e2e-admin` a dono do servidor inflasse o menu que esta spec mede item a item.
 //
-// ⚠️ MEDIDO, e a suspeita não se confirma: `canSee` (`registry.ts:503-507`) é
-// `isPlatformAdmin || ROLE_RANK[role] >= ROLE_RANK[minRole]`; `ROLE_RANK.admin`
-// é 5, o TETO, e o maior `minRole` do registro é `"admin"`. Para um admin de
-// tenant o menu é IDÊNTICO promovido ou não — as asserções de `toHaveText`
-// abaixo não mudariam. Guardar a identidade aqui continua valendo (é a spec de
-// navegação; qualquer destino futuro exclusivo do dono apareceria primeiro
+// ⚠️ MEDIDO, e a suspeita não se confirma: `canSee` (`lib/navigation/interface.ts`) é
+// `isPlatformAdmin || ROLE_RANK[role] >= ROLE_RANK[minRole]`; `ROLE_RANK.admin` é 5, o TETO, e o
+// maior `minRole` do catálogo é `"admin"`. Para um admin de tenant o menu é IDÊNTICO promovido ou
+// não — as asserções de `toHaveText` abaixo não mudariam. Guardar a identidade aqui continua
+// valendo (é a spec de navegação; qualquer destino futuro exclusivo do dono apareceria primeiro
 // nela), mas registrar a diferença entre "muda" e "poderia mudar" é o ponto.
 test.beforeAll(async () => {
   await afirmarAdminDeTenantPuro(creds.users.admin!.email);

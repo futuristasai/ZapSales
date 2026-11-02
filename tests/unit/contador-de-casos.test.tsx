@@ -12,7 +12,7 @@ const casos: { status: string }[] = [];
 vi.mock("@/hooks/ai/useCases", () => ({ useCases: () => ({ data: { cases: casos, open_count: casos.length } }) }));
 
 import { ContadorDeCasos } from "@/components/shell/ContadorDeCasos";
-import { sidebarGroups } from "@/lib/navigation/registry";
+import { itensDoMenu, menuDoPapel } from "@/lib/navigation/menu";
 
 describe("contador de casos no menu", () => {
   it("conta só os que esperam uma pessoa", () => {
@@ -27,8 +27,8 @@ describe("contador de casos no menu", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("Casos está no menu da IA com o contador declarado", () => {
-    const ia = sidebarGroups(true, null).find((g) => g.group.id === "ia");
-    expect(ia?.items.find((i) => i.href === "/app/ai/cases")?.contador).toBe("casos");
+  it("Aguardando Humano está no menu com o contador declarado", () => {
+    const telas = itensDoMenu(menuDoPapel(true, null).blocos);
+    expect(telas.find((i) => i.href === "/app/ai/cases")?.contador).toBe("casos");
   });
 });

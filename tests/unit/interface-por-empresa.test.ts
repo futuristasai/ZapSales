@@ -31,7 +31,7 @@ import {
   lerInterface,
   type InterfaceSettings,
 } from "@/lib/navigation/interface";
-import { GRUPO_NO_RODAPE, sidebarGroups } from "@/lib/navigation/registry";
+import { itensDoMenu, menuDoPapel } from "@/lib/navigation/menu";
 
 const completa = { preset: "completa" } as const;
 const simplificada = { preset: "simplificada" } as const;
@@ -39,14 +39,9 @@ const simplificada = { preset: "simplificada" } as const;
 const hrefs = (settings: unknown, role: "agent" | "admin" = "admin") =>
   destinosDaInterface(settings, false, role).map((d) => d.href);
 
-/**
- * Os itens do MENU LATERAL — o mesmo recorte que o instrumento de tela mede:
- * só os grupos que aparecem na dobra, sem o grupo do rodapé.
- */
-const itensNoMenuLateral = (settings: unknown, role: "agent" | "admin" = "admin") =>
-  sidebarGroups(false, role, settings as InterfaceSettings | undefined)
-    .filter((grupo) => grupo.group.id !== GRUPO_NO_RODAPE)
-    .reduce((total, grupo) => total + grupo.items.length, 0);
+/** As telas que o MENU mostra para esta pessoa — o menu novo inteiro, sem o limite de altura de antes. */
+const itensNoMenu = (settings: unknown, role: "agent" | "admin" = "admin") =>
+  itensDoMenu(menuDoPapel(false, role, settings as InterfaceSettings | undefined).blocos).map((d) => d.href);
 
 const essenciais = (role: "agent" | "admin" = "admin") =>
   NAV_CATALOG.filter((d) => essencial(d, role)).map((d) => d.href);
@@ -178,42 +173,35 @@ describe("a organização não consegue se trancar do lado de fora", () => {
   });
 });
 
-describe("medição da folga (pergunta de aceite da issue #1341)", () => {
+describe("o menu encolhe com a escolha da empresa, nunca cresce", () => {
   /**
-   * Baseline: a configuração de HOJE — nenhuma escolha, nem da empresa nem do
-   * vínculo. É o número que o issue publica (15 itens: atendimento 4, CRM 3,
-   * IA 3, canais 2, análise 3), medido aqui pelo módulo que alimenta o menu.
+   * Antes, esta seção medida a "folga" do menu contra o teto de 15 itens da dobra a 1280×900.
+   * O teto saiu (issue #192): o menu agora cresce e rola dentro de cada bloco. O que sobra
+   * dela e continua valendo é a propriedade de fundo — a escolha da empresa é INTERSEÇÃO, então
+   * nenhuma configuração mostra uma tela que a completa não mostra.
    */
-  it("hoje: 15 itens no menu lateral, folga 0 (é o teto da dobra a 1280x900)", () => {
-    expect(itensNoMenuLateral(INTERFACE_COMPLETA)).toBe(15);
+  it("configuração COMPLETA (ninguém escolheu): o menu tem todas as telas que o papel vê", () => {
+    expect(itensNoMenu(combinarInterfaces(completa, completa)).sort()).toEqual(hrefs(completa).sort());
     // `undefined` é o caminho de quem não tem escolha nenhuma gravada
-    expect(itensNoMenuLateral(undefined)).toBe(15);
+    expect(itensNoMenu(undefined).sort()).toEqual(hrefs(undefined).sort());
   });
 
-  /**
-   * Depois: a folga deixa de ser um número único e passa a ser escolhida.
-   * A escolha da empresa é interseção, então o menu só ENCOLHE — a mudança não
-   * tem como empurrar o instrumento de tela para o vermelho.
-   */
-  it("configuração COMPLETA (ninguém escolheu): 15 itens, folga 0 — igual a hoje", () => {
-    expect(itensNoMenuLateral(combinarInterfaces(completa, completa))).toBe(15);
+  it("configuração SIMPLIFICADA (empresa escolhe o preset): menos telas, todas da completa", () => {
+    const completo = itensNoMenu(combinarInterfaces(completa, completa));
+    const simples = itensNoMenu(combinarInterfaces(simplificada, completa));
+    expect(simples.length).toBeGreaterThan(0);
+    expect(simples.length).toBeLessThan(completo.length);
+    expect(simples.filter((h) => !completo.includes(h))).toEqual([]);
   });
 
-  it("configuração SIMPLIFICADA (empresa escolhe o preset): 6 itens, folga 9", () => {
-    const itens = itensNoMenuLateral(combinarInterfaces(simplificada, completa));
-    expect(itens).toBe(6);
-    expect(15 - itens).toBe(9);
-  });
-
-  it("configuração MÍNIMA (empresa escolhe 1 porta): 1 item, folga 14", () => {
+  it("configuração MÍNIMA (empresa escolhe 1 porta): a escolhida mais as essenciais", () => {
     const minima = combinarInterfaces({ preset: "completa", destinos: ["/app/inbox"] }, completa);
     expect(interfaceTemDestino(minima, "admin")).toBe(true); // a guarda exige ≥1 porta
-    const itens = itensNoMenuLateral(minima);
-    expect(itens).toBe(1);
-    expect(15 - itens).toBe(14);
+    expect(itensNoMenu(minima).sort()).toEqual(["/app/inbox", ...essenciais()].sort());
   });
 
   it("nenhuma escolha da empresa pode AUMENTAR o menu (é interseção, não soma)", () => {
+    const completo = new Set(itensNoMenu(undefined));
     const casos: unknown[] = [
       simplificada,
       { preset: "completa", destinos: ["/app/inbox"] },
@@ -222,7 +210,8 @@ describe("medição da folga (pergunta de aceite da issue #1341)", () => {
     ];
     for (const daEmpresa of casos) {
       for (const doVinculo of [completa, simplificada, undefined]) {
-        expect(itensNoMenuLateral(combinarInterfaces(daEmpresa, doVinculo))).toBeLessThanOrEqual(15);
+        const nele = itensNoMenu(combinarInterfaces(daEmpresa, doVinculo));
+        expect(nele.filter((h) => !completo.has(h))).toEqual([]);
       }
     }
   });

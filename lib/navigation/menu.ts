@@ -2,6 +2,8 @@ import type { Role } from "@/lib/auth/types";
 import type { ModuloOpcional } from "@/lib/instalacao/modulos";
 import type { CapacidadeDaOrganizacao } from "@/lib/organizacao/capacidades";
 
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+
 import {
   MENU_AREAS,
   MENU_BLOCOS,
@@ -11,7 +13,7 @@ import {
   type GrupoDoMenuId,
 } from "./catalogo";
 import { destinosDaInterface, essencial, type InterfaceSettings } from "./interface";
-import { NAV_DESTINATIONS, type NavDestination } from "./registry";
+import { NAV_DESTINATIONS, PAGINAS, type NavDestination } from "./registry";
 
 /**
  * O MENU NOVO, PROJETADO PARA QUEM ESTÁ OLHANDO (issue #185).
@@ -129,4 +131,93 @@ export function menuEditavelDoPapel(
     }
   }
   return blocos;
+}
+
+/**
+ * O QUE UMA PÁGINA DE ÁREA LISTA (issue #192): os grupos por tarefa que ela declara
+ * em `PAGINAS_DE_AREA`, na ordem dela, com as telas que ESTA pessoa vê neles.
+ *
+ * É o mesmo recorte do menu, só que cortado pelo endereço antigo: quem decide o que
+ * entra continua sendo `menuDoPapel`. Grupo sem tela visível não aparece.
+ */
+export function secoesDaPaginaDeArea(
+  href: string,
+  isPlatformAdmin: boolean,
+  role: Role | null,
+  settings?: InterfaceSettings,
+  modulos?: readonly ModuloOpcional[],
+  capacidades?: readonly CapacidadeDaOrganizacao[],
+): GrupoProjetado[] {
+  const pagina = PAGINAS.find((p) => p.href === href);
+  if (!pagina) return [];
+  const doMenu = menuDoPapel(isPlatformAdmin, role, settings, modulos, capacidades).blocos.flatMap(gruposDoBloco);
+  return pagina.grupos.flatMap((id) => doMenu.filter((g) => g.id === id));
+}
+
+/** Um resultado da busca ⌘K: uma tela do menu ou uma página de área. */
+export interface ResultadoDaBusca {
+  href: string;
+  label: string;
+  description: string;
+  icon: PhosphorIcon;
+  /** O termo técnico que fica embaixo do nome. */
+  termo?: string;
+  /** Os nomes antigos — buscáveis, nunca mostrados. */
+  sinonimos?: readonly string[];
+  /** Onde a tela mora no menu: a categoria do ⌘K. As páginas de área têm a delas. */
+  lugar: { id: string; label: string };
+  paginaDeArea: boolean;
+}
+
+/** A categoria que reúne as páginas de área no ⌘K. */
+export const LUGAR_DAS_PAGINAS_DE_AREA = { id: "areas", label: "Páginas de área" } as const;
+
+/** O lugar de uma tela no menu: a área (em Configurar) ou o bloco (nos demais). */
+function lugarDaTela(d: NavDestination): ResultadoDaBusca["lugar"] {
+  const grupo = MENU_GRUPOS.find((g) => g.id === d.menu.grupo);
+  if (!grupo) return { id: "", label: "" };
+  if (grupo.bloco === "configurar") {
+    const area = MENU_AREAS.find((a) => a.id === grupo.area);
+    return { id: grupo.area, label: area?.label ?? "" };
+  }
+  const bloco = MENU_BLOCOS.find((b) => b.id === grupo.bloco);
+  return { id: grupo.bloco, label: bloco?.label ?? "" };
+}
+
+/**
+ * A MATÉRIA-PRIMA DA BUSCA ⌘K (issue #192): toda tela que a pessoa vê, na ordem do
+ * menu, e depois as páginas de área em que ela vê alguma tela.
+ *
+ * Achar não é autorizar: o conjunto é o do menu (`destinosDaInterface`). Uma página
+ * de área cujos grupos ficaram todos vazios para esta pessoa não aparece — não vira
+ * porta para o vazio.
+ */
+export function buscaveis(
+  isPlatformAdmin: boolean,
+  role: Role | null,
+  settings?: InterfaceSettings,
+  modulos?: readonly ModuloOpcional[],
+  capacidades?: readonly CapacidadeDaOrganizacao[],
+): ResultadoDaBusca[] {
+  const menu = menuDoPapel(isPlatformAdmin, role, settings, modulos, capacidades);
+  const telas: ResultadoDaBusca[] = itensDoMenu(menu.blocos).map((d) => ({
+    href: d.href,
+    label: d.label,
+    description: d.description,
+    icon: d.icon,
+    termo: d.menu.termo,
+    sinonimos: d.sinonimos,
+    lugar: lugarDaTela(d),
+    paginaDeArea: false,
+  }));
+  const grupos = new Set(menu.blocos.flatMap(gruposDoBloco).map((g) => g.id));
+  const paginas: ResultadoDaBusca[] = PAGINAS.filter((p) => p.grupos.some((g) => grupos.has(g))).map((p) => ({
+    href: p.href,
+    label: p.label,
+    description: p.description,
+    icon: p.icon,
+    lugar: LUGAR_DAS_PAGINAS_DE_AREA,
+    paginaDeArea: true,
+  }));
+  return [...telas, ...paginas];
 }

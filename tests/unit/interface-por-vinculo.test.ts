@@ -7,7 +7,7 @@ import {
   interfaceTemDestino,
   lerInterface,
 } from "@/lib/navigation/interface";
-import { sidebarGroups, searchable, hubSections } from "@/lib/navigation/registry";
+import { buscaveis, gruposDoBloco, itensDoMenu, menuDoPapel, secoesDaPaginaDeArea } from "@/lib/navigation/menu";
 import { signInviteToken, verifyInviteToken } from "@/lib/auth/invite-token";
 const complete = { preset: "completa" } as const;
 const simplified = { preset: "simplificada" } as const;
@@ -37,18 +37,18 @@ describe("interface por vínculo é apresentação", () => {
     expect(hrefs(simplified, "admin", true)).not.toContain("/app/ai/credentials");
     expect(hrefs(complete, "agent")).not.toContain("/app/settings/tenant");
   });
-  it("granular hub-only tem porta, home e busca úteis, sem grupos vazios", () => {
+  it("granular com uma só tela tem porta, home e busca úteis, sem grupos vazios", () => {
     const settings = interfaceSettingsSchema.parse(granular);
-    expect(sidebarGroups(false, "admin", settings).map((g) => g.group.id)).toEqual([
-      "crm",
-      "organizacao",
-    ]);
+    const { blocos } = menuDoPapel(false, "admin", settings);
+    expect(itensDoMenu(blocos).map((d) => d.href)).toContain("/app/products");
+    // Bloco, área e grupo que ficaram sem tela não aparecem: o menu não desenha título órfão.
+    expect(blocos.flatMap(gruposDoBloco).filter((g) => g.itens.length === 0)).toEqual([]);
     expect(
-      hubSections("crm", false, "admin", settings)
-        .flatMap((s) => s.items)
+      secoesDaPaginaDeArea("/app/crm", false, "admin", settings)
+        .flatMap((g) => g.itens)
         .map((d) => d.href),
     ).toEqual(["/app/products"]);
-    expect(searchable(false, "admin", settings).map((d) => d.href)).toContain("/app/products");
+    expect(buscaveis(false, "admin", settings).map((d) => d.href)).toContain("/app/products");
     expect(homeDaInterface(settings, false, "admin")).toBe("/app/products");
     expect(hrefs(settings)).toEqual(
       expect.arrayContaining(["/app/team", "/app/settings/profile", "/app/settings/security"]),

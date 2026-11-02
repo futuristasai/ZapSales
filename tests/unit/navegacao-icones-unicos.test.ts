@@ -28,19 +28,19 @@ describe("ícones do menu", () => {
     expect(repetidos).toEqual([]);
   });
 
-  it("todo ícone do catálogo existe no mapa do registro, e o hub de cada grupo não repete o de uma tela", async () => {
+  it("todo ícone do catálogo existe no mapa do registro, e cada página de área tem o seu, sem repetir o de uma tela", async () => {
     // O registro importa o barril de ícones inteiro: o transform frio passa dos 5 s padrão.
-    const { NAV_DESTINATIONS, ICONE_DO_HUB } = await import("@/lib/navigation/registry");
+    const { NAV_DESTINATIONS, PAGINAS } = await import("@/lib/navigation/registry");
     const semIcone = NAV_DESTINATIONS.filter((d) => !d.icon).map((d) => d.href);
     expect(semIcone).toEqual([]);
 
     const iconesDasTelas = new Set(NAV_DESTINATIONS.map((d) => d.icon));
-    const hubs = Object.entries(ICONE_DO_HUB);
-    expect(hubs.length, "guarda de vacuidade: há hubs com ícone próprio").toBeGreaterThanOrEqual(3);
-    const colidem = hubs.filter(([, icone]) => iconesDasTelas.has(icone!)).map(([grupo]) => grupo);
+    expect(PAGINAS.length, "guarda de vacuidade: há páginas de área com ícone próprio").toBeGreaterThanOrEqual(4);
+    expect(PAGINAS.filter((p) => !p.icon).map((p) => p.href)).toEqual([]);
+    const colidem = PAGINAS.filter((p) => iconesDasTelas.has(p.icon)).map((p) => p.href);
     expect(colidem).toEqual([]);
 
-    const unicos = new Set(hubs.map(([, icone]) => icone));
-    expect(unicos.size, "cada hub tem um ícone diferente do outro").toBe(hubs.length);
+    const unicos = new Set(PAGINAS.map((p) => p.icon));
+    expect(unicos.size, "cada página de área tem um ícone diferente do outro").toBe(PAGINAS.length);
   }, 30_000);
 });

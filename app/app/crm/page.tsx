@@ -4,7 +4,6 @@ import { requireAuth, resolveActiveOrg } from "@/lib/auth/server";
 import { loadCrmExtensions } from "@/lib/extensions/service";
 import { logger } from "@/lib/logger";
 import type { ExtensionGuideView } from "@/lib/extensions/view";
-import { traduzir } from "@/lib/i18n/dicionario";
 import { modulosLigados } from "@/lib/instalacao/modulos";
 import { capacidadesDaOrganizacao } from "@/lib/organizacao/capacidades";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -13,17 +12,12 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Gestão de Clientes CRM" };
 
 /**
- * Hub do CRM.
+ * Página de área do CRM (`/app/crm`): o inventário do que se abre todo dia no CRM e
+ * de tudo o que se prepara em Vender — os grupos que `PAGINAS_DE_AREA` declara.
  *
- * Nasceu de uma promessa escrita: o comentário de densidade do `Sidebar.tsx`
- * dizia que, quando o quinto destino de CRM aparecesse, o conserto seria criar
- * o hub do grupo — e não raspar mais alguns pixels de padding. Tarefas (PR
- * #546) foi o quinto, e a dobra de 900px estourou em 13px.
- *
- * O sidebar fica com o que se abre todo dia (Funis, Contatos, Tarefas); o que
- * se define uma vez (Produtos, Etapas do funil) fica aqui. As duas seções são a
- * mesma régua escrita por extenso: o hub não é a sobra do menu, é o inventário
- * do grupo — Funis, Contatos e Tarefas aparecem aqui também.
+ * Não é mais o caminho principal do menu (issue #192); continua abrindo pelo
+ * endereço e aparece na busca. Também é onde as orientações das extensões
+ * instaladas se mostram.
  *
  * Passa `locale` (o padrão do `NavHub` é pt-BR): quem escolheu espanhol lê o
  * título, o subtítulo e as seções em espanhol, e não uma tela meio traduzida.
@@ -57,17 +51,12 @@ export default async function CrmHubPage() {
 
   return (
     <NavHub
-      group="crm"
+      pagina="/app/crm"
       capacidadesLigadas={capacidadesLigadas}
       isPlatformAdmin={user.is_platform_admin && !user.support}
       role={activeOrg?.role ?? null}
       interfaceSettings={activeOrg?.interface_settings}
       modulosLigados={await modulosLigados(createAdminClient())}
-      title={traduzir("Gestão de Clientes CRM", idioma)}
-      subtitle={traduzir(
-        "Onde a venda acontece — e o que você define uma vez para ela funcionar.",
-        idioma,
-      )}
       locale={idioma}
       extensionGuides={extensionGuides}
       extensionsUnavailable={extensionsUnavailable}

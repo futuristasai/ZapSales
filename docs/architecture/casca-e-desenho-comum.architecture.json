@@ -40,7 +40,7 @@
       "lane": "dados",
       "col": 2,
       "type": "lib",
-      "label": "registry.ts (mapa de ícones e ICONE_DO_HUB)"
+      "label": "registry.ts (mapa de ícones e páginas de área)"
     },
     {
       "id": "cookie",
@@ -236,7 +236,7 @@
       "id": "1",
       "from": "registro",
       "to": "menu",
-      "label": "destinos e ícone do \"Ver tudo\""
+      "label": "destinos e ícone das páginas de área"
     },
     {
       "id": "2",
@@ -290,7 +290,7 @@
       "id": "10",
       "from": "cerca_icones",
       "to": "registro",
-      "label": "o hub de cada grupo não repete ícone de tela"
+      "label": "cada página de área tem ícone próprio, sem repetir o de uma tela"
     },
     {
       "id": "11",

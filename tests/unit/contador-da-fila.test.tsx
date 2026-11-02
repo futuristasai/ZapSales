@@ -15,7 +15,7 @@ vi.mock("@/hooks/inbox/useConversationCounts", () => ({
 }));
 
 import { ContadorDaFila } from "@/components/shell/ContadorDaFila";
-import { sidebarGroups } from "@/lib/navigation/registry";
+import { itensDoMenu, menuDoPapel } from "@/lib/navigation/menu";
 
 describe("contador da fila no menu", () => {
   it("mostra quantas conversas esperam uma pessoa", () => {
@@ -38,8 +38,8 @@ describe("contador da fila no menu", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("Inbox está no menu com o contador da fila declarado", () => {
-    const atendimento = sidebarGroups(true, null).find((g) => g.group.id === "atendimento");
-    expect(atendimento?.items.find((i) => i.href === "/app/inbox")?.contador).toBe("fila");
+  it("Conversas está no menu com o contador da fila declarado", () => {
+    const telas = itensDoMenu(menuDoPapel(true, null).blocos);
+    expect(telas.find((i) => i.href === "/app/inbox")?.contador).toBe("fila");
   });
 });
