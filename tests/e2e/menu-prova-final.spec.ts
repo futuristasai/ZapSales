@@ -476,8 +476,18 @@ test.describe("celular", () => {
 
 // ── Recursos opcionais, desligados e ligados ─────────────────────────────────
 test.describe("recursos opcionais", () => {
-  const propostasNaMesa = (page: Page) =>
-    page.getByTestId("mesa-de-trabalho").locator('a[href="/app/proposals"]');
+  // O painel inteiro, e não `mesa-de-trabalho`: «Se a sua empresa usa» é um grupo de FORA da mesa
+  // (`PainelDoMenu` o separa em `resto`).
+  const painel = (page: Page) => page.getByRole("navigation", { name: "Navegação principal" });
+  const propostasNoPainel = (page: Page) => painel(page).locator('a[href="/app/proposals"]');
+
+  /** Escrita no banco que acusa o erro: um `update` que falha calado faria o «desligado» passar no vácuo. */
+  async function gravar(
+    escrita: PromiseLike<{ error: { message: string } | null }>,
+  ): Promise<void> {
+    const { error } = await escrita;
+    expect(error, "a escrita de preparo no banco").toBeNull();
+  }
 
   test("Propostas só aparece em «Se a sua empresa usa» quando a instalação e a empresa a ligam", async ({
     page,
@@ -488,33 +498,45 @@ test.describe("recursos opcionais", () => {
     await definirIdioma("agent", "pt-BR");
 
     // DESLIGADO: nem o módulo nem a chave da empresa.
-    await db.from("platform_config").delete().eq("chave", "MODULO_PROPOSTAS");
+    await gravar(db.from("platform_config").delete().eq("chave", "MODULO_PROPOSTAS"));
     const semPropostas = { ...(settingsOriginal ?? {}) } as Record<string, unknown>;
     delete semPropostas.proposals;
-    await db.from("organizations").update({ settings: semPropostas }).eq("id", orgId);
+    await gravar(db.from("organizations").update({ settings: semPropostas }).eq("id", orgId));
 
     await entrarComo(page, baseURL, "agent", "light");
-    await expect(page.getByTestId("mesa-de-trabalho")).toBeVisible();
-    await expect(propostasNaMesa(page), "desligado: a mesa não tem Propostas").toHaveCount(0);
+    await expect(
+      painel(page).getByRole("link", { name: /Conversas/ }),
+      "guarda de vacuidade",
+    ).toBeVisible();
+    await expect(propostasNoPainel(page), "desligado: o painel não tem Propostas").toHaveCount(0);
     await page.screenshot({ path: path.join(EVIDENCIA, "opcionais-desligados-atendente.png") });
 
     // SÓ A EMPRESA liga: o módulo da instalação, desligado, vence.
-    await db
-      .from("organizations")
-      .update({ settings: { ...semPropostas, proposals: { enabled: true } } })
-      .eq("id", orgId);
+    await gravar(
+      db
+        .from("organizations")
+        .update({ settings: { ...semPropostas, proposals: { enabled: true } } })
+        .eq("id", orgId),
+    );
     await page.reload();
+    await expect(painel(page).getByRole("link", { name: /Conversas/ })).toBeVisible();
     await expect(
-      propostasNaMesa(page),
+      propostasNoPainel(page),
       "sem o módulo da instalação, a chave da empresa não liga",
     ).toHaveCount(0);
 
     // LIGADO: módulo da instalação e chave da empresa.
-    await db
-      .from("platform_config")
-      .upsert({ chave: "MODULO_PROPOSTAS", valor: "ligado" }, { onConflict: "chave" });
+    await gravar(
+      db
+        .from("platform_config")
+        .upsert({ chave: "MODULO_PROPOSTAS", valor: "ligado" }, { onConflict: "chave" }),
+    );
     await page.reload();
-    await expect(propostasNaMesa(page), "ligado: a mesa passa a ter Propostas").toHaveCount(1);
+    await expect(propostasNoPainel(page), "ligado: o painel passa a ter Propostas").toHaveCount(1);
+    await expect(
+      painel(page).getByRole("heading", { name: "Se a sua empresa usa" }),
+      "e sob o título do grupo",
+    ).toBeVisible();
     await page.screenshot({ path: path.join(EVIDENCIA, "opcionais-ligados-atendente.png") });
   });
 });
