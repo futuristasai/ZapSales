@@ -3851,7 +3851,7 @@ no celular, e os opcionais desligados e ligados).
 - **É o ambiente do CI, não uma VPS.** O banco é o do `baseline.sql` e os envs opcionais ficam ausentes, mas sem o WAHA nem o
   Redis de uma instalação real. A prova autenticada em produção (Dono, Atendente e Leitor numa org temporária, com capturas)
   segue pendente: depende de autorização do dono para a escrita por SSH.
-- **Cada papel só em parte da matriz.** São 11 combinações de aparelho × tema × idioma, não as 54 possíveis; os eixos foram
+- **Cada papel só em parte da matriz.** São 11 combinações de aparelho × tema × idioma, não as 36 possíveis; os eixos foram
   distribuídos para que cada papel, cada idioma e cada tema apareça em computador e em celular. A matriz cheia custaria um
   login por combinação, e o do Dono espera a janela do TOTP (~30 s cada).
 - **O Leitor no celular** vê menos folhas que os outros papéis (a spec só exige que tenha ao menos uma).
