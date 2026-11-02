@@ -172,6 +172,7 @@ export function BarraDeBaixo() {
     <>
       <nav
         aria-label={t("Menu do celular")}
+        data-testid="barra-de-baixo"
         className={cn("fixed inset-x-0 bottom-0 z-40 flex bg-card md:hidden", GEOMETRIA)}
       >
         {abas.map((aba) => (
