@@ -370,7 +370,8 @@ async function provarCelular(
   await entrarNoIdioma(page, baseURL, papel, idioma, tema);
 
   await expect(barra(page)).toBeVisible();
-  await expect(faixa(page), "a faixa do computador fica fora da árvore no celular").toHaveCount(0);
+  // `getByTestId` enxerga o que o CSS esconde (`getByRole` não): a faixa fica no DOM, sem ser vista.
+  await expect(faixa(page), "a faixa do computador não aparece no celular").toBeHidden();
   await semEstouroHorizontal(page, "celular após o login");
 
   const abas = await barra(page).evaluate((nav) => {
