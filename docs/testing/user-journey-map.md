@@ -3822,3 +3822,27 @@ topo 101–226 px até o fundo da janela; reserva do rodapé 57 px no celular e 
 termina exatamente no topo da barra; Esc fecha e o foco volta ao botão da aba. Capturas em
 `docs/testing/evidencias/barra-de-baixo-do-celular/`. **Não substitui** a prova em ambiente fresco estilo VPS com os
 recursos opcionais ligados e desligados nos três papéis — essa vem do CI do PR (`e2e`) e da prova em produção depois do merge.
+
+
+## O menu novo, prova final (2026-11-02, issue #193)
+
+Origem: fecha o #183 (faixa, painel, gaveta, barra de baixo, nomes e busca, editor de interface). **A regra «o menu cabe em
+900 px sem rolar, no máximo 15 itens» deixou de existir** em todo documento de autoridade (`DESIGN.md`, `CLAUDE.md`,
+`AGENTS.md`, `docs/doctrine/sistema-vivo.md`); a garantia vigente é «nenhum bloco some abaixo da dobra»
+(`navegacao.spec.ts`). As linhas antigas de 900 px acima ficam como histórico.
+
+A matriz que a issue pede é papel × aparelho × tema × idioma × recursos opcionais. Quem cobre cada eixo hoje:
+
+| eixo | prioridade | quem prova | estado |
+|---|---|---|---|
+| Dono e Atendente (computador e celular), portas por papel | `[P0]` | `navegacao.spec.ts` (`agent` não vê Agente; folha de Configurar do atendente) | **a rodar no CI** |
+| Leitor | `[P0]` | unitários de projeção (`faixa-do-menu.test.ts`, `barra-de-baixo-do-menu.test.ts`) | só unitário: **sem prova pela tela em ambiente fresco** |
+| Claro e escuro | `[P1]` | vitrine local (#188, #189, #190) e `logo-moldura-no-tema-escuro.spec.ts` | vitrine local; **sem prova em ambiente fresco** |
+| pt-BR, es e en | `[P1]` | `i18n-espanhol-cobre-a-tela` e a verificação de tradução (unitárias); vitrine local em 390 px | **sem prova pela tela em ambiente fresco** |
+| Recursos opcionais ligados e desligados | `[P1]` | unitários de projeção; vitrine local (Dono) | **sem prova pela tela em ambiente fresco** |
+
+**Lacuna declarada:** a prova final em ambiente que imita a instalação nova numa VPS (banco do `baseline.sql`, os três papéis,
+os dois temas, os três idiomas, opcionais ligados e desligados, com capturas) **ainda não foi feita**. Ela depende de um
+ambiente com Supabase — a máquina de desenvolvimento não tem Docker — e se faz por uma de duas vias: a org e os usuários
+temporários na VPS (exige autorização do dono para a escrita por SSH) ou uma spec
+de matriz no `e2e` do CI. Enquanto não vier, o estado acima é o que vale.

@@ -14,7 +14,7 @@ date: 2026-04-28
 > construção divergiu dele nos dois sentidos. O que o plano previu e ainda não existe, e o
 > que existe e o plano não previu, estão medidos em **[Reconciliação com o disco](#reconciliação-com-o-disco)**,
 > no fim do arquivo. Quem quiser saber quais telas o produto TEM hoje lê
-> `lib/navigation/registry.ts` — esse é o registro vivo, obrigatório por tela e vigiado por
+> `lib/navigation/catalogo.ts` — esse é o registro vivo, obrigatório por tela e vigiado por
 > `tests/unit/navegacao-completude.test.ts`.
 
 ## Convenção
@@ -286,7 +286,7 @@ são alcançáveis e foram implementadas por outro mecanismo do Next — ou por 
 **Esta lista não é vigiada de propósito, e a razão é a mesma que fez `action-codes.ts` ser
 apagado:** exigir linha no doc para toda página nova criaria uma segunda lista de telas
 mantida à mão, parseada por regex, espelhando um disco que muda toda semana. O registro
-obrigatório por tela já existe e é `lib/navigation/registry.ts` — vigiado por
+obrigatório por tela já existe e é `lib/navigation/catalogo.ts` — vigiado por
 `tests/unit/navegacao-completude.test.ts`, que reprova tela que existe mas em que só se
 chega digitando a URL. Congelar um plano `version: 0.1` como espelho perpétuo do disco
 transformaria artefato histórico em superfície de manutenção.

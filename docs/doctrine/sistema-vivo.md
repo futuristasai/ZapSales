@@ -99,7 +99,7 @@ Living System Checklist — <nome da feature>
 [ ] Quem eu alimento?  (aresta de saída — a peça é um polvo, distribui)
 [ ] Que atividade/log eu emito?  (event_log / audit / crm_lead_activities)
 [ ] Onde eu apareço na tela?  (timeline/insight — não só no banco)
-[ ] Por qual porta se chega até mim?  (entrada em lib/navigation/registry.ts, ou allowlist justificada)
+[ ] Por qual porta se chega até mim?  (entrada em lib/navigation/catalogo.ts com `menu: { grupo, ordem }`, ou allowlist justificada)
 [ ] Qual meu mecanismo anti-morte?  (próximo passo garantido, ou N/A justificado)
 [ ] Onde se CONFIGURA o que eu uso?  (tela de ver + tela de mudar; e o que aparece se faltar)
 [ ] Qual a continuidade IA↔humano?  (payload de handoff nas duas direções, se aplicável)
@@ -115,10 +115,10 @@ Uma feature que responde "nenhum" a *quem eu alimento* ou *onde apareço na tela
 
 ### Regras de navegação que a doutrina passa a exigir
 
-- **Todo destino declara seu grupo** em `lib/navigation/registry.ts`. Sem grupo, sem merge.
+- **Todo destino declara seu lugar no menu** em `lib/navigation/catalogo.ts`, com `menu: { grupo, ordem }` (e `termo`, o termo técnico, quando o nome é simples). O **grupo** é a única escolha da tela: o bloco (Todo dia, Configurar, Resultados) e a área (Vender, Agente, Conexões, Empresa) saem da tabela de grupos, então não existe tela em «bloco Resultados, área Vender». Sem lugar declarado, sem merge — a faixa, o painel, a gaveta, o celular e o ⌘K leem dali (issue #183).
 - **Configuração e observabilidade são grupos diferentes.** Desenhar como o sistema funciona (Agentes, Roteadores) não é a mesma atividade que olhar o sistema funcionando (Evolução da IA, Desempenho) — e quem procura uma não está procurando a outra.
-- **Hub a partir de 5 telas.** Abaixo disso o grupo cabe inteiro no sidebar; um hub de 3 itens é só um clique a mais para chegar onde já dava.
-- **O sidebar carrega o uso diário; o hub carrega o inventário.** Na dúvida, `sidebar: false` — o hub e o ⌘K já garantem a descoberta.
+- **Não há mais limite de altura nem de itens no menu.** A regra «cabe em 900 px, no máximo 15 itens» obrigava toda tela nova a disputar espaço e acabar escondida; foi trocada por «nenhum bloco some abaixo da dobra» (`tests/e2e/navegacao.spec.ts`).
+- **A frequência de uso decide o bloco.** O que se abre toda hora mora em Todo dia (a mesa); o que se ajusta de vez em quando, em Configurar (numa área, num grupo por tarefa); os números e o histórico, em Resultados. Na dúvida, Configurar — a gaveta mostra a frase de cada tela, e o ⌘K encontra pelo nome novo, pelo antigo e pelo termo técnico.
 - **Mudar o lugar na navegação não exige mudar a URL.** Rota só se renomeia quando o path mente sobre o conteúdo, e cada renomeação paga um redirect permanente.
 
 ---
