@@ -88,8 +88,10 @@ async function definirIdioma(papel: Papel, idioma: Idioma): Promise<void> {
   const { id, meta } = await usuarioPorEmail(email);
   if (!localeOriginal.has(email)) localeOriginal.set(email, meta.locale ?? null);
   const novo = { ...meta };
-  if (idioma === "pt-BR") delete novo.locale;
-  else novo.locale = idioma;
+  // `null`, e nunca `delete`: o GoTrue MESCLA `user_metadata`, então omitir a chave não a remove.
+  // Medido neste PR: um restauro por `delete` deixou o `e2e-admin` em inglês para as specs
+  // seguintes, que procuram «Dígito 1» em português.
+  novo.locale = idioma === "pt-BR" ? null : idioma;
   const { error } = await db.auth.admin.updateUserById(id, { user_metadata: novo });
   if (error) throw error;
 }
@@ -112,8 +114,7 @@ test.afterAll(async () => {
   for (const [email, original] of localeOriginal) {
     const { id, meta } = await usuarioPorEmail(email);
     const volta = { ...meta };
-    if (original === null || original === undefined) delete volta.locale;
-    else volta.locale = original;
+    volta.locale = original ?? null;
     await db.auth.admin.updateUserById(id, { user_metadata: volta });
   }
   if (settingsOriginal) {
@@ -161,6 +162,41 @@ async function entrarComo(
 
 const faixa = (page: Page) => page.getByTestId("faixa-do-menu");
 const barra = (page: Page) => page.getByTestId("barra-de-baixo");
+
+/**
+ * O login do Dono acha o campo do MFA pelo rótulo em português («Dígito 1»), então ele entra em
+ * português e só DEPOIS troca o idioma. O servidor repassa o usuário por até 30 s
+ * (`lib/auth/sessao-repassada.ts`), então se recarrega até o menu aparecer no idioma pedido.
+ * Os outros papéis não têm MFA e já entram no idioma certo.
+ */
+async function entrarNoIdioma(
+  page: Page,
+  baseURL: string | undefined,
+  papel: Papel,
+  idioma: Idioma,
+  tema: Tema,
+): Promise<void> {
+  test.setTimeout(240_000);
+  if (papel !== "admin") {
+    await definirIdioma(papel, idioma);
+    await entrarComo(page, baseURL, papel, tema);
+    return;
+  }
+  await definirIdioma(papel, "pt-BR");
+  await entrarComo(page, baseURL, papel, tema);
+  if (idioma === "pt-BR") return;
+  await definirIdioma(papel, idioma);
+  await expect
+    .poll(
+      async () => {
+        await page.reload();
+        const nomes = await page.locator("body").evaluate((e) => e.textContent ?? "");
+        return !nomes.includes("Todo dia") && !nomes.includes("Riscos de Perda");
+      },
+      { timeout: 60_000, intervals: [2_000, 5_000, 10_000] },
+    )
+    .toBe(true);
+}
 
 async function semEstouroHorizontal(page: Page, onde: string): Promise<void> {
   // `body`, e não `documentElement`: o `html` tem `overflow-x: clip` e grampeia a medida.
@@ -250,8 +286,7 @@ async function provarComputador(
   tema: Tema,
 ): Promise<void> {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await definirIdioma(papel, idioma);
-  await entrarComo(page, baseURL, papel, tema);
+  await entrarNoIdioma(page, baseURL, papel, idioma, tema);
 
   await expect(faixa(page)).toBeVisible();
   const total = await botoesDaFaixa(page).count();
@@ -333,8 +368,7 @@ async function provarCelular(
   tema: Tema,
 ): Promise<void> {
   await page.setViewportSize({ width: 390, height: 844 });
-  await definirIdioma(papel, idioma);
-  await entrarComo(page, baseURL, papel, tema);
+  await entrarNoIdioma(page, baseURL, papel, idioma, tema);
 
   await expect(barra(page)).toBeVisible();
   await expect(faixa(page), "a faixa do computador fica fora da árvore no celular").toHaveCount(0);
@@ -447,6 +481,7 @@ test.describe("recursos opcionais", () => {
     page,
     baseURL,
   }) => {
+    test.setTimeout(240_000);
     await page.setViewportSize({ width: 1280, height: 900 });
     await definirIdioma("agent", "pt-BR");
 
