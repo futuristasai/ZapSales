@@ -28,13 +28,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DoisNumeros, problemaDoParDoisNumeros } from "@/components/campanhas/DoisNumeros";
-import { MensagemOficial, mapaCompleto, mapaDoModelo } from "@/components/campanhas/MensagemOficial";
+import {
+  MensagemOficial,
+  mapaCompleto,
+  mapaDoModelo,
+} from "@/components/campanhas/MensagemOficial";
 import { CampoDoTetoDeGasto, LinhaDaEstimativa } from "@/components/campanhas/CustoDaCampanha";
 import { RespostaDaCampanha } from "@/components/campanhas/RespostaDaCampanha";
 import { SubirListaCsv } from "@/components/campanhas/SubirListaCsv";
 import { botoesDoModeloEscolhido, precisaDeAgente } from "@/lib/campanhas/resposta-na-tela";
 import type { BotaoDaResposta, QuemAssume } from "@/lib/campanhas/destino-da-resposta";
-import { useCriarCampanha, useModelosDaCampanha, usePreviaDaAudiencia } from "@/hooks/campanhas/useCampanhas";
+import {
+  useCriarCampanha,
+  useModelosDaCampanha,
+  usePreviaDaAudiencia,
+} from "@/hooks/campanhas/useCampanhas";
 import { centavosDoTexto } from "@/lib/custo/formato";
 import { channelLabel, useChannelSessions } from "@/hooks/channels/useChannelSessions";
 import { useT } from "@/hooks/i18n/useT";
@@ -48,15 +56,11 @@ import {
   ritmoDoNumero,
   type RitmoDigitado,
 } from "@/lib/campanhas/resumo-do-disparo";
-import {
-  useAgentesPublicados,
-  useEtapas,
-  useFunis,
-} from "@/hooks/campanhas/useDestinoDaCampanha";
+import { useAgentesPublicados, useEtapas, useFunis } from "@/hooks/campanhas/useDestinoDaCampanha";
 import { VARIAVEIS_DA_CAMPANHA, DESCRICAO_DA_VARIAVEL } from "@/lib/campanhas/renderizador";
 import type { MapaDeVariaveis } from "@/lib/campanhas/variaveis-do-modelo";
 
-export function NovaCampanha() {
+export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: boolean }) {
   const t = useT();
   const router = useRouter();
   const canais = useChannelSessions();
@@ -104,7 +108,10 @@ export function NovaCampanha() {
   const atendimento = oficial && modeloId ? numeroDeAtendimento : "";
   const slotAutomatico = atendimento ? (modelo?.botao_wa_me?.slot ?? null) : null;
   const problemaDoAtendimento = atendimento
-    ? problemaDoParDoisNumeros(modelo, (canais.data ?? []).find((c) => c.id === atendimento))
+    ? problemaDoParDoisNumeros(
+        modelo,
+        (canais.data ?? []).find((c) => c.id === atendimento),
+      )
     : null;
 
   const funis = useFunis();
@@ -142,12 +149,19 @@ export function NovaCampanha() {
         template_variables: mapaDoModelo(modelo, mapa),
         numero_de_atendimento_id: atendimento || null,
       }
-    : { message_body: texto.trim(), meta_template_id: null, template_variables: {}, numero_de_atendimento_id: null };
+    : {
+        message_body: texto.trim(),
+        meta_template_id: null,
+        template_variables: {},
+        numero_de_atendimento_id: null,
+      };
 
   const podeSalvar =
     nome.trim() !== "" &&
     canal !== "" &&
-    (oficial ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento : texto.trim() !== "") &&
+    (oficial
+      ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento
+      : texto.trim() !== "") &&
     temCriterio &&
     (baseLegal !== "legitimate_interest" || liaRef.trim() !== "") &&
     !(precisaDeAgente(quemAssume, botoes) && !agente);
@@ -181,7 +195,10 @@ export function NovaCampanha() {
           diaDaSemanaHoje: diaDaSemanaNoFuso(new Date(), fusoDoNumero ?? "America/Sao_Paulo"),
         });
   const avisos = numero === null ? [] : avisosDeRitmo({ oficial, ritmo: ritmoDigitado, numero });
-  const recomendacao = numero === null ? null : recomendarRitmo({ oficial, temTetoDeGasto: tetoDeGastoCents !== null, numero });
+  const recomendacao =
+    numero === null
+      ? null
+      : recomendarRitmo({ oficial, temTetoDeGasto: tetoDeGastoCents !== null, numero });
   const canalEscolhido = (canais.data ?? []).find((c) => c.id === canal);
 
   const conferencias = prontidaoDoDisparo({
@@ -190,7 +207,9 @@ export function NovaCampanha() {
     temCriterio,
     elegiveis,
     oficial,
-    mensagemCompleta: oficial ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento : texto.trim() !== "",
+    mensagemCompleta: oficial
+      ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento
+      : texto.trim() !== "",
     temModelo: modeloId !== "",
     baseLegalSemReferencia: baseLegal === "legitimate_interest" && liaRef.trim() === "",
     respostaPedeAgenteSemAgente: precisaDeAgente(quemAssume, botoes) && !agente,
@@ -251,11 +270,84 @@ export function NovaCampanha() {
     router.push(`/app/campaigns/${criada.id}`);
   }
 
+  const cartaoDaMensagem = (
+    <Card className="space-y-4 p-4">
+      <h2 className="font-medium">{t("Mensagem")}</h2>
+      {oficial ? (
+        <>
+          <MensagemOficial
+            modelos={modelos}
+            carregando={modelosDoNumero.isPending}
+            modeloId={modeloId}
+            onModelo={(id) => {
+              setModeloId(id);
+              setMapa((atual) =>
+                mapaDoModelo(
+                  modelos.find((m) => m.id === id),
+                  atual,
+                ),
+              );
+            }}
+            mapa={mapa}
+            onMapa={setMapa}
+            slotAutomatico={slotAutomatico}
+            podeCriarModelo={podeCriarModelo}
+            onAtualizar={() => void modelosDoNumero.refetch()}
+            atualizando={modelosDoNumero.isFetching && !modelosDoNumero.isPending}
+            baseLegal={baseLegal}
+          />
+          {modeloId && (
+            <DoisNumeros
+              canais={canais.data ?? []}
+              modelo={modelo}
+              numeroId={numeroDeAtendimento}
+              onNumero={setNumeroDeAtendimento}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Textarea
+            rows={6}
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder={t("Escreva como você falaria com uma pessoa só.")}
+            aria-label={t("Texto da mensagem")}
+          />
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>{t("Você pode usar:")}</p>
+            <ul className="space-y-1">
+              {VARIAVEIS_DA_CAMPANHA.map((v) => (
+                <li key={v}>
+                  <button
+                    type="button"
+                    className="rounded-md bg-surface-elevated px-1 font-mono text-xs"
+                    onClick={() => setTexto((atual) => `${atual}{{${v}}}`)}
+                  >
+                    {`{{${v}}}`}
+                  </button>{" "}
+                  — {t(DESCRICAO_DA_VARIAVEL[v])}
+                </li>
+              ))}
+            </ul>
+            <p>
+              {t(
+                "Quem não tiver o dado que a mensagem usa fica de fora, com o motivo na lista — mensagem com buraco não sai.",
+              )}
+            </p>
+          </div>
+        </>
+      )}
+    </Card>
+  );
+
   return (
     <CorpoDaPagina largura="formulario">
       <CabecalhoDePagina
         titulo={t("Nova campanha")}
-        descricao={t("Isto cria um rascunho. Nada é enviado antes de você preparar a lista e iniciar.")}
+        descricao={t(
+          "Isto cria um rascunho. Nada é enviado antes de você preparar a lista e iniciar.",
+        )}
       />
 
       <ResumoDoDisparo
@@ -388,10 +480,14 @@ export function NovaCampanha() {
         </fieldset>
       </Card>
 
+      {oficial && cartaoDaMensagem}
+
       <Card className="space-y-4 p-4">
         <h2 className="font-medium">{t("Público")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Escolha pelo menos um critério ou suba uma lista de contatos — um público sem recorte ninguém confere antes de apertar.")}
+          {t(
+            "Escolha pelo menos um critério ou suba uma lista de contatos — um público sem recorte ninguém confere antes de apertar.",
+          )}
         </p>
         <SubirListaCsv incluidos={incluidos} onIncluidos={setIncluidos} />
         {incluidos.length > 0 && (
@@ -488,9 +584,7 @@ export function NovaCampanha() {
           {previa.data && (
             <p className="text-sm">
               <strong>{previa.data.elegiveis}</strong> {t("podem receber")}
-              {previa.data.excluidos > 0
-                ? ` · ${previa.data.excluidos} ${t("ficam de fora")}`
-                : ""}
+              {previa.data.excluidos > 0 ? ` · ${previa.data.excluidos} ${t("ficam de fora")}` : ""}
             </p>
           )}
         </div>
@@ -506,70 +600,14 @@ export function NovaCampanha() {
         )}
       </Card>
 
-      <Card className="space-y-4 p-4">
-        <h2 className="font-medium">{t("Mensagem")}</h2>
-        {oficial ? (
-          <>
-            <MensagemOficial
-              modelos={modelos}
-              carregando={modelosDoNumero.isPending}
-              modeloId={modeloId}
-              onModelo={(id) => {
-                setModeloId(id);
-                setMapa((atual) => mapaDoModelo(modelos.find((m) => m.id === id), atual));
-              }}
-              mapa={mapa}
-              onMapa={setMapa}
-              slotAutomatico={slotAutomatico}
-            />
-            {modeloId && (
-              <DoisNumeros
-                canais={canais.data ?? []}
-                modelo={modelo}
-                numeroId={numeroDeAtendimento}
-                onNumero={setNumeroDeAtendimento}
-              />
-            )}
-          </>
-        ) : (
-          <>
-            <Textarea
-              rows={6}
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-              placeholder={t("Escreva como você falaria com uma pessoa só.")}
-              aria-label={t("Texto da mensagem")}
-            />
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>{t("Você pode usar:")}</p>
-              <ul className="space-y-1">
-                {VARIAVEIS_DA_CAMPANHA.map((v) => (
-                  <li key={v}>
-                    <button
-                      type="button"
-                      className="rounded-md bg-surface-elevated px-1 font-mono text-xs"
-                      onClick={() => setTexto((atual) => `${atual}{{${v}}}`)}
-                    >
-                      {`{{${v}}}`}
-                    </button>{" "}
-                    — {t(DESCRICAO_DA_VARIAVEL[v])}
-                  </li>
-                ))}
-              </ul>
-              <p>
-                {t(
-                  "Quem não tiver o dado que a mensagem usa fica de fora, com o motivo na lista — mensagem com buraco não sai.",
-                )}
-              </p>
-            </div>
-          </>
-        )}
-      </Card>
+      {!oficial && cartaoDaMensagem}
 
       <Card className="space-y-4 p-4">
         <h2 className="font-medium">{t("Quem responder")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Em branco, tudo segue como hoje: o card nasce no funil do número e quem atende é o agente publicado nele.")}
+          {t(
+            "Em branco, tudo segue como hoje: o card nasce no funil do número e quem atende é o agente publicado nele.",
+          )}
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -629,7 +667,9 @@ export function NovaCampanha() {
             ))}
           </select>
           <p className="text-sm text-muted-foreground">
-            {t("Vale só para conversas que nascem desta campanha: quem já falava com você continua com quem o atendia. Quem aborda precisa saber dizer de onde veio o contato — essa resposta tem de estar no material do agente escolhido.")}
+            {t(
+              "Vale só para conversas que nascem desta campanha: quem já falava com você continua com quem o atendia. Quem aborda precisa saber dizer de onde veio o contato — essa resposta tem de estar no material do agente escolhido.",
+            )}
           </p>
         </div>
         <RespostaDaCampanha
@@ -653,7 +693,12 @@ export function NovaCampanha() {
             "Em branco, vale o ritmo do número (Conexões › Proteção de envio). O que você puser aqui só pode deixar mais devagar.",
           )}
         </p>
-        <GuiaDoRitmo oficial={oficial} numero={numero} recomendacao={recomendacao} avisos={avisos} />
+        <GuiaDoRitmo
+          oficial={oficial}
+          numero={numero}
+          recomendacao={recomendacao}
+          avisos={avisos}
+        />
         <div className="grid gap-4 sm:grid-cols-2">
           {!oficial && (
             <div className="space-y-2">
@@ -710,7 +755,9 @@ export function NovaCampanha() {
             />
           </div>
         </div>
-        {oficial && <CampoDoTetoDeGasto id="teto-gasto" valor={tetoGasto} onChange={setTetoGasto} />}
+        {oficial && (
+          <CampoDoTetoDeGasto id="teto-gasto" valor={tetoGasto} onChange={setTetoGasto} />
+        )}
       </Card>
 
       <div className="flex items-center justify-end gap-2">

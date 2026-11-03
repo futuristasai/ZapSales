@@ -28,11 +28,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { LinhaDaEstimativa } from "@/components/campanhas/CustoDaCampanha";
 import { DoisNumeros, problemaDoParDoisNumeros } from "@/components/campanhas/DoisNumeros";
-import { MensagemOficial, mapaCompleto, mapaDoModelo } from "@/components/campanhas/MensagemOficial";
+import {
+  MensagemOficial,
+  mapaCompleto,
+  mapaDoModelo,
+} from "@/components/campanhas/MensagemOficial";
 import { RespostaDaCampanha } from "@/components/campanhas/RespostaDaCampanha";
 import { SubirListaCsv } from "@/components/campanhas/SubirListaCsv";
 import { botoesDoModeloEscolhido, precisaDeAgente } from "@/lib/campanhas/resposta-na-tela";
-import { lerBotoesDaResposta, type BotaoDaResposta, type QuemAssume } from "@/lib/campanhas/destino-da-resposta";
+import {
+  lerBotoesDaResposta,
+  type BotaoDaResposta,
+  type QuemAssume,
+} from "@/lib/campanhas/destino-da-resposta";
 import {
   useCampanha,
   useEditarCampanha,
@@ -45,7 +53,13 @@ import { useAgentesPublicados, useEtapas, useFunis } from "@/hooks/campanhas/use
 import { DESCRICAO_DA_VARIAVEL, VARIAVEIS_DA_CAMPANHA } from "@/lib/campanhas/renderizador";
 import type { MapaDeVariaveis } from "@/lib/campanhas/variaveis-do-modelo";
 
-export function EditarCampanha({ id }: { id: string }) {
+export function EditarCampanha({
+  id,
+  podeCriarModelo = false,
+}: {
+  id: string;
+  podeCriarModelo?: boolean;
+}) {
   const t = useT();
   const router = useRouter();
   const campanha = useCampanha(id);
@@ -86,7 +100,10 @@ export function EditarCampanha({ id }: { id: string }) {
   const atendimento = oficial && modeloId ? numeroDeAtendimento : "";
   const slotAutomatico = atendimento ? (modelo?.botao_wa_me?.slot ?? null) : null;
   const problemaDoAtendimento = atendimento
-    ? problemaDoParDoisNumeros(modelo, (canais.data ?? []).find((c) => c.id === atendimento))
+    ? problemaDoParDoisNumeros(
+        modelo,
+        (canais.data ?? []).find((c) => c.id === atendimento),
+      )
     : null;
 
   const funis = useFunis();
@@ -191,15 +208,84 @@ export function EditarCampanha({ id }: { id: string }) {
         template_variables: mapaDoModelo(modelo, mapa),
         numero_de_atendimento_id: atendimento || null,
       }
-    : { message_body: texto.trim(), meta_template_id: null, template_variables: {}, numero_de_atendimento_id: null };
+    : {
+        message_body: texto.trim(),
+        meta_template_id: null,
+        template_variables: {},
+        numero_de_atendimento_id: null,
+      };
 
   const podeSalvar =
     nome.trim() !== "" &&
     canal !== "" &&
-    (oficial ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento : texto.trim() !== "") &&
+    (oficial
+      ? mapaCompleto(modelo, mapa, slotAutomatico) && !problemaDoAtendimento
+      : texto.trim() !== "") &&
     temCriterio &&
     (baseLegal !== "legitimate_interest" || liaRef.trim() !== "") &&
     !(precisaDeAgente(quemAssume, botoes) && !agente);
+
+  const cartaoDaMensagem = (
+    <Card className="space-y-4 p-4">
+      <h2 className="font-medium">{t("Mensagem")}</h2>
+      {oficial ? (
+        <>
+          <MensagemOficial
+            modelos={modelos}
+            carregando={modelosDoNumero.isPending}
+            modeloId={modeloId}
+            onModelo={(novo) => {
+              setModeloId(novo);
+              setMapa((atual) =>
+                mapaDoModelo(
+                  modelos.find((m) => m.id === novo),
+                  atual,
+                ),
+              );
+            }}
+            mapa={mapa}
+            onMapa={setMapa}
+            slotAutomatico={slotAutomatico}
+            podeCriarModelo={podeCriarModelo}
+            onAtualizar={() => void modelosDoNumero.refetch()}
+            atualizando={modelosDoNumero.isFetching && !modelosDoNumero.isPending}
+            baseLegal={baseLegal}
+          />
+          {modeloId && (
+            <DoisNumeros
+              canais={canais.data ?? []}
+              modelo={modelo}
+              numeroId={numeroDeAtendimento}
+              onNumero={setNumeroDeAtendimento}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Textarea
+            rows={6}
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            aria-label={t("Texto da mensagem")}
+          />
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            {VARIAVEIS_DA_CAMPANHA.map((v) => (
+              <li key={v}>
+                <button
+                  type="button"
+                  className="rounded-md bg-surface-elevated px-1 font-mono text-xs"
+                  onClick={() => setTexto((atual) => `${atual}{{${v}}}`)}
+                >
+                  {`{{${v}}}`}
+                </button>{" "}
+                — {t(DESCRICAO_DA_VARIAVEL[v])}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </Card>
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-6">
@@ -264,6 +350,8 @@ export function EditarCampanha({ id }: { id: string }) {
           )}
         </fieldset>
       </Card>
+
+      {oficial && cartaoDaMensagem}
 
       <Card className="space-y-4 p-4">
         <h2 className="font-medium">{t("Público")}</h2>
@@ -343,7 +431,9 @@ export function EditarCampanha({ id }: { id: string }) {
       <Card className="space-y-4 p-4">
         <h2 className="font-medium">{t("Quem responder")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Em branco, tudo segue como hoje: o card nasce no funil do número e quem atende é o agente publicado nele.")}
+          {t(
+            "Em branco, tudo segue como hoje: o card nasce no funil do número e quem atende é o agente publicado nele.",
+          )}
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -417,56 +507,7 @@ export function EditarCampanha({ id }: { id: string }) {
         />
       </Card>
 
-      <Card className="space-y-4 p-4">
-        <h2 className="font-medium">{t("Mensagem")}</h2>
-        {oficial ? (
-          <>
-            <MensagemOficial
-              modelos={modelos}
-              carregando={modelosDoNumero.isPending}
-              modeloId={modeloId}
-              onModelo={(novo) => {
-                setModeloId(novo);
-                setMapa((atual) => mapaDoModelo(modelos.find((m) => m.id === novo), atual));
-              }}
-              mapa={mapa}
-              onMapa={setMapa}
-              slotAutomatico={slotAutomatico}
-            />
-            {modeloId && (
-              <DoisNumeros
-                canais={canais.data ?? []}
-                modelo={modelo}
-                numeroId={numeroDeAtendimento}
-                onNumero={setNumeroDeAtendimento}
-              />
-            )}
-          </>
-        ) : (
-          <>
-            <Textarea
-              rows={6}
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-              aria-label={t("Texto da mensagem")}
-            />
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              {VARIAVEIS_DA_CAMPANHA.map((v) => (
-                <li key={v}>
-                  <button
-                    type="button"
-                    className="rounded-md bg-surface-elevated px-1 font-mono text-xs"
-                    onClick={() => setTexto((atual) => `${atual}{{${v}}}`)}
-                  >
-                    {`{{${v}}}`}
-                  </button>{" "}
-                  — {t(DESCRICAO_DA_VARIAVEL[v])}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </Card>
+      {!oficial && cartaoDaMensagem}
 
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" onClick={() => router.push(`/app/campaigns/${id}`)}>
