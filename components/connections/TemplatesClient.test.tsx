@@ -60,7 +60,11 @@ describe("TemplatesClient — link da mídia salvo no modelo", () => {
 
   it("modelo criado no editor mostra o arquivo guardado na criação, com link (issue #7)", () => {
     guardados.valores = {
-      "header:1": { fileName: "vitrine.png", mimeType: "image/png", url: "https://storage.exemplo/assinado" },
+      "header:1": {
+        fileName: "vitrine.png",
+        mimeType: "image/png",
+        url: "https://storage.exemplo/assinado",
+      },
     };
     render(<TemplatesClient />);
     const guardado = screen.getByTestId("template-midia-guardada");
@@ -69,6 +73,12 @@ describe("TemplatesClient — link da mídia salvo no modelo", () => {
       "href",
       "https://storage.exemplo/assinado",
     );
+  });
+
+  it("a categoria aparece em português, e não como o código da Meta", () => {
+    render(<TemplatesClient />);
+    expect(screen.getByTestId("template-categoria")).toHaveTextContent("Utilidade");
+    expect(screen.queryByText("UTILITY")).toBeNull();
   });
 
   it("modelo sem arquivo guardado não mostra a linha", () => {

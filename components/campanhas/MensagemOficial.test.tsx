@@ -74,10 +74,15 @@ function Tela({ modelos = [OFERTA, AVISO] }: { modelos?: ModeloParaCampanha[] })
   );
 }
 
+/** O modelo se escolhe clicando no cartão dele na galeria. */
+async function escolher(nome: string) {
+  await userEvent.click(screen.getByRole("radio", { name: new RegExp(nome) }));
+}
+
 describe("MensagemOficial — modelo aprovado e a fonte de cada variável", () => {
   it("escolher o modelo mostra o texto aprovado e um campo por variável", async () => {
     render(<Tela />);
-    await userEvent.selectOptions(screen.getByLabelText("Modelo aprovado"), OFERTA.id);
+    await escolher(OFERTA.name);
 
     expect(screen.getByTestId("previa-do-modelo").textContent).toBe(
       "Oi {{1}}, sua oferta de {{2}} chegou.",
@@ -89,7 +94,7 @@ describe("MensagemOficial — modelo aprovado e a fonte de cada variável", () =
 
   it("cada fonte escolhida aparece no texto como vai chegar, e com todas preenchidas o mapa fica completo", async () => {
     render(<Tela />);
-    await userEvent.selectOptions(screen.getByLabelText("Modelo aprovado"), OFERTA.id);
+    await escolher(OFERTA.name);
     await userEvent.selectOptions(
       screen.getByLabelText(/\{\{1\}\} — corpo/),
       "contato:primeiro_nome",
@@ -109,7 +114,7 @@ describe("MensagemOficial — modelo aprovado e a fonte de cada variável", () =
 
   it("campo personalizado pede o nome do campo, e sem ele o mapa não fica completo", async () => {
     render(<Tela />);
-    await userEvent.selectOptions(screen.getByLabelText("Modelo aprovado"), OFERTA.id);
+    await escolher(OFERTA.name);
     await userEvent.selectOptions(screen.getByLabelText(/\{\{1\}\} — corpo/), "contato:nome");
     await userEvent.selectOptions(
       screen.getByLabelText(/\{\{2\}\} — corpo/),
@@ -126,7 +131,7 @@ describe("MensagemOficial — modelo aprovado e a fonte de cada variável", () =
 
   it("modelo sem variável já está pronto e diz que todos recebem o mesmo texto", async () => {
     render(<Tela />);
-    await userEvent.selectOptions(screen.getByLabelText("Modelo aprovado"), AVISO.id);
+    await escolher(AVISO.name);
     expect(
       screen.getByText("Este modelo não tem variáveis: todos recebem o mesmo texto."),
     ).toBeTruthy();
@@ -158,7 +163,14 @@ describe("modo dois números (issue #9)", () => {
     const comBotao: ModeloParaCampanha = {
       ...AVISO,
       variaveis: [
-        { chave: "button0:1", rotulo: "{{1}}", onde: "botão 1 (url)", antes: "", depois: "", tipo: "url_suffix" },
+        {
+          chave: "button0:1",
+          rotulo: "{{1}}",
+          onde: "botão 1 (url)",
+          antes: "",
+          depois: "",
+          tipo: "url_suffix",
+        },
       ],
       botao_wa_me: { slot: "button0:1", numero_fixo: null },
     };

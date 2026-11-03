@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { RotuloDaCategoria } from "@/components/campanhas/GaleriaDeModelos";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,12 +18,13 @@ import {
 } from "@/hooks/channels/useTemplates";
 import { useT } from "@/hooks/i18n/useT";
 
-
 /**
  * A qualidade que a Meta atribui pelo retorno de quem recebe. Vermelha é o
  * degrau antes da pausa — o webhook já avisa na Central; aqui ela fica à vista.
  */
-function rotuloDaQualidade(q: string | null): { texto: string; tom: "outline" | "destructive" } | null {
+function rotuloDaQualidade(
+  q: string | null,
+): { texto: string; tom: "outline" | "destructive" } | null {
   const v = (q ?? "").toUpperCase();
   if (v === "GREEN") return { texto: "Qualidade alta", tom: "outline" };
   if (v === "YELLOW") return { texto: "Qualidade média", tom: "outline" };
@@ -52,10 +54,10 @@ function Preview({ preview }: { preview: TemplatePreview }) {
   const partes = preview.text.split(/(\{\{\w+\}\})/g);
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">
+      <span className="text-xs tracking-wide text-muted-foreground uppercase">
         {t(preview.onde)}
       </span>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed">
+      <p className="text-sm leading-relaxed whitespace-pre-wrap">
         {partes.map((parte, i) =>
           /^\{\{\w+\}\}$/.test(parte) ? (
             <span
@@ -111,7 +113,7 @@ function LinkDaMidia({ tpl, slot }: { tpl: TemplateView; slot: TemplateSlotView 
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs uppercase tracking-wide text-muted-foreground">
+      <label htmlFor={id} className="text-xs tracking-wide text-muted-foreground uppercase">
         {t(slot.onde)} · {slot.expects}
       </label>
       <div className="flex gap-2">
@@ -146,7 +148,9 @@ function LinkDaMidia({ tpl, slot }: { tpl: TemplateView; slot: TemplateSlotView 
         <span className="text-xs text-muted-foreground">
           {salvo
             ? t("Link salvo: o painel do modelo na conversa já vem preenchido com ele.")
-            : t("Link público (https) do arquivo. Salvo aqui, o painel do modelo na conversa já vem preenchido.")}
+            : t(
+                "Link público (https) do arquivo. Salvo aqui, o painel do modelo na conversa já vem preenchido.",
+              )}
         </span>
       )}
       {guardado ? (
@@ -194,7 +198,9 @@ export function TemplatesClient() {
       <Card className="p-6">
         <h2 className="font-medium">{t("Canal oficial não conectado")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t("Os templates vivem na sua conta do WhatsApp Business (Meta) — esta tela é um espelho deles. Conecte o canal oficial em")}{" "}
+          {t(
+            "Os templates vivem na sua conta do WhatsApp Business (Meta) — esta tela é um espelho deles. Conecte o canal oficial em",
+          )}{" "}
           <strong>{t("Conexões WhatsApp")}</strong> {t("para começar a sincronizar.")}
         </p>
       </Card>
@@ -209,7 +215,12 @@ export function TemplatesClient() {
           {templates.length} {t("template(s)")}
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={sincronizar} disabled={sync.isPending} data-testid="btn-sync">
+          <Button
+            variant="outline"
+            onClick={sincronizar}
+            disabled={sync.isPending}
+            data-testid="btn-sync"
+          >
             {sync.isPending ? t("Sincronizando…") : t("Sincronizar com a Meta")}
           </Button>
           <Button asChild data-testid="btn-novo-modelo">
@@ -239,8 +250,8 @@ export function TemplatesClient() {
                 </Badge>
                 <Badge variant={statusTone(tpl.status)}>{tpl.status}</Badge>
                 {tpl.category ? (
-                  <Badge variant="outline" className="text-xs">
-                    {tpl.category}
+                  <Badge variant="outline" className="text-xs" data-testid="template-categoria">
+                    <RotuloDaCategoria categoria={tpl.category} />
                   </Badge>
                 ) : null}
                 {(() => {
@@ -286,7 +297,7 @@ export function TemplatesClient() {
                         />
                       ) : (
                         <div key={`m:${s.onde}:${i}`} className="flex flex-col gap-0.5">
-                          <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <span className="text-xs tracking-wide text-muted-foreground uppercase">
                             {t(s.onde)} · {s.expects}
                           </span>
                           <span className="text-sm text-muted-foreground">
