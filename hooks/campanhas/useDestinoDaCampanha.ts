@@ -37,21 +37,28 @@ export interface AgenteDisponivel {
 export function useFunis() {
   return useQuery({
     queryKey: ["campanhas-funis"],
-    queryFn: async () => (await apiClient.get<{ data: FunilDaCampanha[] }>("/api/v1/pipelines")).data,
+    queryFn: async () =>
+      (await apiClient.get<{ data: FunilDaCampanha[] }>("/api/v1/pipelines")).data,
     staleTime: 60_000,
   });
 }
 
-export function useEtapas(pipelineId: string | null) {
-  return useQuery({
+/** A consulta das etapas de um funil — compartilhada por `useEtapas` e por quem lê vários funis de uma vez. */
+export function consultaDeEtapas(pipelineId: string | null) {
+  return {
     queryKey: ["campanhas-etapas", pipelineId],
     queryFn: async () =>
-      (await apiClient.get<{ data: EtapaDoFunil[] }>(`/api/v1/pipelines/${pipelineId}/stages`)).data,
+      (await apiClient.get<{ data: EtapaDoFunil[] }>(`/api/v1/pipelines/${pipelineId}/stages`))
+        .data,
     // Sem funil escolhido não há etapa possível — e pedir `/pipelines/null/stages`
     // seria um 404 por construção.
     enabled: !!pipelineId,
     staleTime: 60_000,
-  });
+  };
+}
+
+export function useEtapas(pipelineId: string | null) {
+  return useQuery(consultaDeEtapas(pipelineId));
 }
 
 export function useAgentesPublicados() {

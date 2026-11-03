@@ -34,7 +34,11 @@ import {
   mapaDoModelo,
 } from "@/components/campanhas/MensagemOficial";
 import { RespostaDaCampanha } from "@/components/campanhas/RespostaDaCampanha";
+import { CriteriosSalvos } from "@/components/campanhas/CriteriosSalvos";
+import { SeletorDePessoas } from "@/components/campanhas/SeletorDePessoas";
 import { SubirListaCsv } from "@/components/campanhas/SubirListaCsv";
+import { filtroDeBuscaSchema, temRecorte } from "@/lib/campanhas/audiencia";
+import { idsDoPublico } from "@/lib/campanhas/escolha-de-contatos";
 import { botoesDoModeloEscolhido, precisaDeAgente } from "@/lib/campanhas/resposta-na-tela";
 import {
   lerBotoesDaResposta,
@@ -71,14 +75,14 @@ export function EditarCampanha({
   const [canal, setCanal] = useState("");
   const [baseLegal, setBaseLegal] = useState<"consent" | "legitimate_interest">("consent");
   const [liaRef, setLiaRef] = useState("");
-  const [comAlgumaTag, setComAlgumaTag] = useState("");
-  const [semTags, setSemTags] = useState("");
-  const [semInteracao, setSemInteracao] = useState("");
-  // O filtro como foi gravado: o que esta tela não edita (funil, etapa…) segue como estava.
+  // O filtro como foi gravado: o que esta tela não edita segue como estava.
   const [filtroGravado, setFiltroGravado] = useState<Record<string, unknown>>({});
-  // Contatos da planilha subida (ids); somam ao recorte.
+  // Campanha antiga guarda critérios (etiquetas, funis…): seguem valendo até o operador tirá-los.
+  const [manterCriterios, setManterCriterios] = useState(true);
+  // Quem foi marcado na tabela de pessoas (ids) — as pessoas que a campanha já tinha entram aqui —
+  // e quem veio da planilha subida nesta edição.
+  const [marcados, setMarcados] = useState<string[]>([]);
   const [incluidos, setIncluidos] = useState<string[]>([]);
-  const [limite, setLimite] = useState("100");
   const [texto, setTexto] = useState("");
   const [funil, setFunil] = useState("");
   const [etapa, setEtapa] = useState("");
@@ -121,12 +125,8 @@ export function EditarCampanha({
     setCanal(c.channel_session_id);
     setBaseLegal(c.base_legal === "legitimate_interest" ? "legitimate_interest" : "consent");
     setLiaRef(c.lia_ref ?? "");
-    setComAlgumaTag(juntar(f.com_alguma_tag));
-    setSemTags(juntar(f.sem_tags));
-    setSemInteracao(f.sem_interacao_ha_dias == null ? "" : String(f.sem_interacao_ha_dias));
-    setLimite(f.limite == null ? "100" : String(f.limite));
     setFiltroGravado(f);
-    setIncluidos(Array.isArray(f.incluir_contatos) ? (f.incluir_contatos as string[]) : []);
+    setMarcados(Array.isArray(f.incluir_contatos) ? (f.incluir_contatos as string[]) : []);
     setTexto(c.message_body ?? "");
     setFunil(c.pipeline_id ?? "");
     setEtapa(c.stage_id ?? "");
@@ -140,25 +140,28 @@ export function EditarCampanha({
     setCarregado(true);
   }, [campanha.data, carregado]);
 
+  // Os critérios guardados, quando há (campanha criada antes da tabela de pessoas).
+  const criteriosGuardados = useMemo(() => {
+    const lido = filtroDeBuscaSchema.safeParse(filtroGravado);
+    return lido.success && temRecorte(lido.data) ? lido.data : null;
+  }, [filtroGravado]);
+  const comCriterios = criteriosGuardados !== null && manterCriterios;
+
   const filtro = useMemo(
-    () => ({
-      ...filtroGravado,
-      com_alguma_tag: listar(comAlgumaTag),
-      sem_tags: listar(semTags),
-      sem_interacao_ha_dias: semInteracao ? Number(semInteracao) : null,
-      incluir_contatos: incluidos,
-      limite: Number(limite) || 100,
-    }),
-    [filtroGravado, comAlgumaTag, semTags, semInteracao, incluidos, limite],
+    () =>
+      comCriterios
+        ? { ...filtroGravado, incluir_contatos: idsDoPublico(marcados, incluidos) }
+        : {
+            // Sem os critérios, só ficam as pessoas escolhidas — e quem foi tirado à mão segue tirado.
+            excluir_contatos: Array.isArray(filtroGravado.excluir_contatos)
+              ? filtroGravado.excluir_contatos
+              : [],
+            incluir_contatos: idsDoPublico(marcados, incluidos),
+          },
+    [comCriterios, filtroGravado, marcados, incluidos],
   );
 
-  const temCriterio =
-    filtro.com_alguma_tag.length > 0 ||
-    filtro.sem_tags.length > 0 ||
-    filtro.incluir_contatos.length > 0 ||
-    temLista(filtroGravado.funis) ||
-    temLista(filtroGravado.etapas) ||
-    filtro.sem_interacao_ha_dias !== null;
+  const temCriterio = comCriterios || idsDoPublico(marcados, incluidos).length > 0;
 
   if (campanha.isLoading || !carregado) {
     return (
@@ -355,47 +358,19 @@ export function EditarCampanha({
 
       <Card className="space-y-4 p-4">
         <h2 className="font-medium">{t("Público")}</h2>
+        {comCriterios && criteriosGuardados && (
+          <CriteriosSalvos
+            criterios={criteriosGuardados}
+            onTirar={() => setManterCriterios(false)}
+          />
+        )}
+        <SeletorDePessoas
+          marcados={marcados}
+          onMarcados={setMarcados}
+          daPlanilha={incluidos}
+          campanhaId={id}
+        />
         <SubirListaCsv incluidos={incluidos} onIncluidos={setIncluidos} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="e-com-tags">{t("Com alguma destas etiquetas")}</Label>
-            <Input
-              id="e-com-tags"
-              value={comAlgumaTag}
-              onChange={(e) => setComAlgumaTag(e.target.value)}
-              placeholder={t("separe por vírgula")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="e-sem-tags">{t("Sem nenhuma destas etiquetas")}</Label>
-            <Input
-              id="e-sem-tags"
-              value={semTags}
-              onChange={(e) => setSemTags(e.target.value)}
-              placeholder={t("separe por vírgula")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="e-silencio">{t("Sem falar com a gente há (dias)")}</Label>
-            <Input
-              id="e-silencio"
-              type="number"
-              min={1}
-              value={semInteracao}
-              onChange={(e) => setSemInteracao(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="e-limite">{t("Máximo de contatos nesta campanha")}</Label>
-            <Input
-              id="e-limite"
-              type="number"
-              min={1}
-              value={limite}
-              onChange={(e) => setLimite(e.target.value)}
-            />
-          </div>
-        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"

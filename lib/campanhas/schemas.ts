@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 
-import { filtroDeAudienciaSchema } from "./audiencia";
+import { filtroDeAudienciaSchema, filtroDeBuscaSchema } from "./audiencia";
 import { QUEM_ASSUME, botoesDaRespostaSchema } from "./destino-da-resposta";
 import { mapaDeVariaveisSchema } from "./variaveis-do-modelo";
 
@@ -85,26 +85,27 @@ export function exigeAgente(c: {
   quem_assume?: string | null;
   botoes_de_resposta?: ReadonlyArray<{ acao: string }> | null;
 }): boolean {
-  return c.quem_assume === "ia_e_humano" || (c.botoes_de_resposta ?? []).some((b) => b.acao === "atribuir_ia");
+  return (
+    c.quem_assume === "ia_e_humano" ||
+    (c.botoes_de_resposta ?? []).some((b) => b.acao === "atribuir_ia")
+  );
 }
 
 export const MENSAGEM_SEM_AGENTE = {
-  message: 'Escolha o agente da campanha: "IA e depois humano" e o botão "Atribuir à IA" entregam a conversa a ele.',
+  message:
+    'Escolha o agente da campanha: "IA e depois humano" e o botão "Atribuir à IA" entregam a conversa a ele.',
   path: ["agent_id"],
 };
 
 export const criarCampanhaSchema = z
   .object({ ...baseDaCampanha })
   .merge(ritmoSchema)
-  .refine(
-    (c) => c.base_legal !== "legitimate_interest" || (c.lia_ref ?? "").trim() !== "",
-    {
-      message:
-        "Interesse legítimo exige a referência da avaliação (LIA) — é ela que responde a quem " +
-        "perguntar com base em quê recebeu a mensagem.",
-      path: ["lia_ref"],
-    },
-  )
+  .refine((c) => c.base_legal !== "legitimate_interest" || (c.lia_ref ?? "").trim() !== "", {
+    message:
+      "Interesse legítimo exige a referência da avaliação (LIA) — é ela que responde a quem " +
+      "perguntar com base em quê recebeu a mensagem.",
+    path: ["lia_ref"],
+  })
   .refine((c) => c.stage_id == null || c.pipeline_id != null, {
     message: "Escolha o funil antes da etapa — etapa sem funil seria um card sem coluna.",
     path: ["stage_id"],
@@ -150,6 +151,17 @@ export const previaSchema = z.object({
   template_variables: mapaDeVariaveisSchema.optional(),
   /** Modo "dois números": a variável do botão wa.me sai deste número. */
   numero_de_atendimento_id: z.string().uuid().optional(),
+});
+
+/**
+ * A tabela "escolher pessoas do CRM". O filtro aqui só ENCONTRA gente (não precisa de recorte:
+ * uma busca pelo nome já é um critério); quem vira público é quem o operador marca.
+ */
+export const contatosDaTabelaSchema = z.object({
+  audience_filter: filtroDeBuscaSchema,
+  /** Nome, telefone, e-mail ou etiqueta. Abaixo de dois caracteres a busca não vai ao banco. */
+  busca: z.string().trim().max(80).default(""),
+  campaign_id: z.string().uuid().optional(),
 });
 
 export const criarTemplateSchema = z.object({

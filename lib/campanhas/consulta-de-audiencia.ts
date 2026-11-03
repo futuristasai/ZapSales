@@ -13,9 +13,17 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { CAMPANHAS_VIVAS, limiteDeSilencio, temRecorte, usaNegocio, type FiltroDeAudiencia } from "./audiencia";
+import {
+  CAMPANHAS_VIVAS,
+  limiteDeSilencio,
+  temRecorte,
+  usaNegocio,
+  type FiltroDeAudiencia,
+} from "./audiencia";
+import { condicaoDaBuscaDeContato } from "./busca-de-contato";
 import { nomeDoContato } from "@/lib/contacts/rotulo-do-contato";
-import { recusouMarketing, type CandidatoDaAudiencia } from "./elegibilidade";
+import { motivoParaExcluir, recusouMarketing, type CandidatoDaAudiencia } from "./elegibilidade";
+import type { ContatoDaTabela } from "./escolha-de-contatos";
 
 /** Teto de ids que um filtro de negócio devolve antes de virar `in (...)`. */
 const TETO_DE_IDS_DE_NEGOCIO = 20_000;
@@ -30,6 +38,7 @@ interface LinhaDeContato {
   is_blocked: boolean;
   is_anonymized: boolean;
   consent: unknown;
+  tags?: string[] | null;
 }
 
 /**
@@ -37,13 +46,77 @@ interface LinhaDeContato {
  * variáveis do modelo com eles (`./variaveis-do-modelo.ts`).
  */
 const COLUNAS_DO_CANDIDATO =
-  "id, name, display_name, phone_number, email, custom_fields, is_blocked, is_anonymized, consent";
+  "id, name, display_name, phone_number, email, custom_fields, is_blocked, is_anonymized, consent, tags";
 
 export async function buscarCandidatos(
   admin: SupabaseClient,
   entrada: { organizationId: string; filtro: FiltroDeAudiencia; agora: Date },
 ): Promise<CandidatoDaAudiencia[]> {
+  const linhas = await lerLinhas(admin, entrada);
+  return linhas.map(paraCandidato);
+}
+
+function paraCandidato(l: LinhaDeContato): CandidatoDaAudiencia {
+  return {
+    contactId: l.id,
+    nome: nomeDoContato(l),
+    telefone: l.phone_number,
+    bloqueado: l.is_blocked,
+    anonimizado: l.is_anonymized,
+    recusouMarketing: recusouMarketing(l.consent),
+    dados: {
+      name: l.name,
+      display_name: l.display_name,
+      phone_number: l.phone_number,
+      email: l.email,
+      custom_fields: l.custom_fields,
+    },
+  };
+}
+
+/**
+ * Os contatos que o recorte e a busca encontram, para o operador marcar um a um.
+ *
+ * É a MESMA consulta da prévia e do snapshot (`lerLinhas`), com uma busca digitada somada ao
+ * recorte — não há uma segunda forma de "quem é este público".
+ */
+export async function listarContatosDaTabela(
+  admin: SupabaseClient,
+  entrada: {
+    organizationId: string;
+    filtro: FiltroDeAudiencia;
+    busca: string;
+    agora: Date;
+    /** A campanha que está sendo editada: os destinatários dela não contam como "já em campanha". */
+    campanhaId?: string;
+  },
+): Promise<ContatoDaTabela[]> {
+  const linhas = await lerLinhas(admin, entrada);
+  const jaEmCampanha = await contatosJaEmCampanha(
+    admin,
+    entrada.organizationId,
+    entrada.campanhaId,
+  );
+  return linhas.map((l) => {
+    const candidato = paraCandidato(l);
+    return {
+      id: l.id,
+      nome: candidato.nome,
+      telefone: l.phone_number,
+      tags: l.tags ?? [],
+      motivo: motivoParaExcluir(candidato) ?? (jaEmCampanha.has(l.id) ? "ja_em_campanha" : null),
+    };
+  });
+}
+
+async function lerLinhas(
+  admin: SupabaseClient,
+  entrada: { organizationId: string; filtro: FiltroDeAudiencia; agora: Date; busca?: string },
+): Promise<LinhaDeContato[]> {
   const { organizationId, filtro, agora } = entrada;
+  // Busca abaixo do piso não vai ao banco: lista inteira sob busca é ruído que parece resposta.
+  const condicaoDaBusca = entrada.busca ? condicaoDaBuscaDeContato(entrada.busca) : null;
+  if (entrada.busca && condicaoDaBusca === null && !temRecorte(filtro)) return [];
 
   // ─── Os contatos que têm negócio no recorte ───
   // Consulta separada, e não `join` embutido do PostgREST: o mesmo contato tem N
@@ -59,7 +132,8 @@ export async function buscarCandidatos(
       .limit(TETO_DE_IDS_DE_NEGOCIO);
     if (filtro.funis.length > 0) negocios = negocios.in("pipeline_id", filtro.funis);
     if (filtro.etapas.length > 0) negocios = negocios.in("stage_id", filtro.etapas);
-    if (filtro.responsaveis.length > 0) negocios = negocios.in("owner_user_id", filtro.responsaveis);
+    if (filtro.responsaveis.length > 0)
+      negocios = negocios.in("owner_user_id", filtro.responsaveis);
     if (filtro.situacoes_do_negocio.length > 0) {
       negocios = negocios.in("status", filtro.situacoes_do_negocio);
     }
@@ -109,11 +183,13 @@ export async function buscarCandidatos(
   if (filtro.excluir_contatos.length > 0) {
     consulta = consulta.not("id", "in", `(${filtro.excluir_contatos.join(",")})`);
   }
+  if (condicaoDaBusca) consulta = consulta.or(condicaoDaBusca);
 
   // Sem recorte (só a lista subida por planilha), a consulta não tem predicado
-  // nenhum e devolveria a organização inteira: ela simplesmente não roda.
+  // nenhum e devolveria a organização inteira: ela simplesmente não roda. Uma busca
+  // digitada É um predicado, e por isso conta como recorte para a tabela.
   let linhas: LinhaDeContato[] = [];
-  if (temRecorte(filtro)) {
+  if (temRecorte(filtro) || condicaoDaBusca) {
     const { data, error } = await consulta;
     if (error) throw new Error(`audiência: contatos — ${error.message}`);
     linhas = (data ?? []) as LinhaDeContato[];
@@ -138,23 +214,8 @@ export async function buscarCandidatos(
     linhas.push(...((extras ?? []) as LinhaDeContato[]));
   }
 
-  return linhas.map((l) => ({
-    contactId: l.id,
-    nome: nomeDoContato(l),
-    telefone: l.phone_number,
-    bloqueado: l.is_blocked,
-    anonimizado: l.is_anonymized,
-    recusouMarketing: recusouMarketing(l.consent),
-    dados: {
-      name: l.name,
-      display_name: l.display_name,
-      phone_number: l.phone_number,
-      email: l.email,
-      custom_fields: l.custom_fields,
-    },
-  }));
+  return linhas;
 }
-
 
 /**
  * Quem já está em campanha VIVA desta organização.

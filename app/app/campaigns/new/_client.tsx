@@ -35,7 +35,9 @@ import {
 } from "@/components/campanhas/MensagemOficial";
 import { CampoDoTetoDeGasto, LinhaDaEstimativa } from "@/components/campanhas/CustoDaCampanha";
 import { RespostaDaCampanha } from "@/components/campanhas/RespostaDaCampanha";
+import { SeletorDePessoas } from "@/components/campanhas/SeletorDePessoas";
 import { SubirListaCsv } from "@/components/campanhas/SubirListaCsv";
+import { idsDoPublico } from "@/lib/campanhas/escolha-de-contatos";
 import { botoesDoModeloEscolhido, precisaDeAgente } from "@/lib/campanhas/resposta-na-tela";
 import type { BotaoDaResposta, QuemAssume } from "@/lib/campanhas/destino-da-resposta";
 import {
@@ -71,11 +73,9 @@ export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: bo
   const [canal, setCanal] = useState("");
   const [baseLegal, setBaseLegal] = useState<"consent" | "legitimate_interest">("consent");
   const [liaRef, setLiaRef] = useState("");
-  const [comAlgumaTag, setComAlgumaTag] = useState("");
-  const [semTags, setSemTags] = useState("");
-  const [semInteracao, setSemInteracao] = useState("");
-  const [limite, setLimite] = useState("100");
-  // Contatos da planilha subida aqui (ids). Somam ao recorte; sozinhos já são um público.
+  // Quem foi marcado na tabela de pessoas do CRM (ids)...
+  const [marcados, setMarcados] = useState<string[]>([]);
+  // ...e quem veio da planilha subida aqui (ids). As duas origens somam, e a mesma pessoa conta uma vez.
   const [incluidos, setIncluidos] = useState<string[]>([]);
   const [texto, setTexto] = useState("");
   const [intervalo, setIntervalo] = useState("");
@@ -88,8 +88,6 @@ export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: bo
   const [funil, setFunil] = useState("");
   const [etapa, setEtapa] = useState("");
   const [agente, setAgente] = useState("");
-  const [funilDoPublico, setFunilDoPublico] = useState("");
-  const [etapaDoPublico, setEtapaDoPublico] = useState("");
   const [modeloId, setModeloId] = useState("");
   const [mapa, setMapa] = useState<MapaDeVariaveis>({});
   const [quemAssume, setQuemAssume] = useState<QuemAssume>("ia");
@@ -116,30 +114,16 @@ export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: bo
 
   const funis = useFunis();
   const etapas = useEtapas(funil || null);
-  const etapasDoPublico = useEtapas(funilDoPublico || null);
   const agentes = useAgentesPublicados();
   const botoesDoModelo = oficial ? (modelo?.botoesDeResposta ?? []) : [];
 
+  // O público é a lista de pessoas escolhidas: as marcadas na tabela mais as da planilha.
   const filtro = useMemo(
-    () => ({
-      com_alguma_tag: listar(comAlgumaTag),
-      sem_tags: listar(semTags),
-      sem_interacao_ha_dias: semInteracao ? Number(semInteracao) : null,
-      funis: funilDoPublico ? [funilDoPublico] : [],
-      etapas: etapaDoPublico ? [etapaDoPublico] : [],
-      incluir_contatos: incluidos,
-      limite: Number(limite) || 100,
-    }),
-    [comAlgumaTag, semTags, semInteracao, funilDoPublico, etapaDoPublico, limite, incluidos],
+    () => ({ incluir_contatos: idsDoPublico(marcados, incluidos) }),
+    [marcados, incluidos],
   );
 
-  const temCriterio =
-    filtro.com_alguma_tag.length > 0 ||
-    filtro.sem_tags.length > 0 ||
-    filtro.funis.length > 0 ||
-    filtro.etapas.length > 0 ||
-    filtro.incluir_contatos.length > 0 ||
-    filtro.sem_interacao_ha_dias !== null;
+  const temCriterio = filtro.incluir_contatos.length > 0;
 
   /** O conteúdo que vai à API e à prévia: modelo + mapa (oficial) ou texto livre. */
   const conteudo = oficial
@@ -486,92 +470,11 @@ export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: bo
         <h2 className="font-medium">{t("Público")}</h2>
         <p className="text-sm text-muted-foreground">
           {t(
-            "Escolha pelo menos um critério ou suba uma lista de contatos — um público sem recorte ninguém confere antes de apertar.",
+            "Escolha pessoas do CRM, suba uma lista de contatos, ou os dois — um público sem ninguém escolhido não se confere antes de apertar.",
           )}
         </p>
+        <SeletorDePessoas marcados={marcados} onMarcados={setMarcados} daPlanilha={incluidos} />
         <SubirListaCsv incluidos={incluidos} onIncluidos={setIncluidos} />
-        {incluidos.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            {t("Os critérios abaixo, se você preencher algum, somam pessoas à lista subida.")}
-          </p>
-        )}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="com-tags">{t("Com alguma destas etiquetas")}</Label>
-            <Input
-              id="com-tags"
-              value={comAlgumaTag}
-              onChange={(e) => setComAlgumaTag(e.target.value)}
-              placeholder={t("separe por vírgula")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sem-tags">{t("Sem nenhuma destas etiquetas")}</Label>
-            <Input
-              id="sem-tags"
-              value={semTags}
-              onChange={(e) => setSemTags(e.target.value)}
-              placeholder={t("separe por vírgula")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="silencio">{t("Sem falar com a gente há (dias)")}</Label>
-            <Input
-              id="silencio"
-              type="number"
-              min={1}
-              value={semInteracao}
-              onChange={(e) => setSemInteracao(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pub-funil">{t("Com negócio no funil")}</Label>
-            <select
-              id="pub-funil"
-              className="h-9 w-full rounded-md border border-border bg-surface px-2 text-sm"
-              value={funilDoPublico}
-              onChange={(e) => {
-                setFunilDoPublico(e.target.value);
-                setEtapaDoPublico("");
-              }}
-            >
-              <option value="">{t("Qualquer um")}</option>
-              {(funis.data ?? []).map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pub-etapa">{t("Na etapa")}</Label>
-            <select
-              id="pub-etapa"
-              className="h-9 w-full rounded-md border border-border bg-surface px-2 text-sm"
-              value={etapaDoPublico}
-              onChange={(e) => setEtapaDoPublico(e.target.value)}
-              disabled={!funilDoPublico}
-            >
-              <option value="">{t("Qualquer etapa")}</option>
-              {(etapasDoPublico.data ?? []).map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="limite">{t("Máximo de contatos nesta campanha")}</Label>
-            <Input
-              id="limite"
-              type="number"
-              min={1}
-              max={5000}
-              value={limite}
-              onChange={(e) => setLimite(e.target.value)}
-            />
-          </div>
-        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
