@@ -267,6 +267,10 @@ const DECISOES: Record<string, Decisao> = {
     decidida: "manter",
     razao: "Traço de decisão do gate de envio (vetoed_gate/vetoed_code) para auditoria de POR QUE a mensagem não saiu; é código de vocabulário, não o conteúdo enviado — o corpo mora em messages.",
   },
+  campaign_audience_list_members: {
+    decidida: "manter",
+    razao: "0555: o ponteiro de uma lista salva de pessoas do disparo — organization_id, list_id, contact_id e a data em que entrou; sem nome, telefone ou texto, e o NOME da lista é da organização, não da pessoa. Com o contato anonimizado o ponteiro não identifica ninguém, e ao USAR a lista quem está anonimizado é deixado de fora pelo mesmo veto da tabela de busca (motivo anonimizado). Apagar o ponteiro só faria a lista encolher em silêncio, sem proteger nada.",
+  },
   cron_jobs: {
     decidida: "manter",
     razao: "Agenda do agendador (kind, intervalo, expressão, payload de configuração) — dado de operação da instalação, sem texto da pessoa; a FK existe para dizer de QUEM é o job.",
