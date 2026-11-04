@@ -17,7 +17,9 @@
 #      este arquivo, e ali não há branch de assinaturas nem Titular.
 #   5. NENHUM dado do PR entra em `run:` — não há `run:`.
 #
-# QUEM NÃO ASSINA: o dono, o robô de release e o github-actions (allowlist). O Dependabot
+# QUEM NÃO ASSINA: as três contas do dono (futuristasai, leandromastelliniai e leandrodiasmiddas —
+# esta última é a que o GitHub liga ao e-mail dos commits feitos na máquina dele), o robô de
+# release e o github-actions (allowlist). O Dependabot
 # fica de fora do `if`: nos PRs dele o token de `pull_request_target` é só leitura, e a
 # ação falharia por isso, não por falta de assinatura.
 #
@@ -53,7 +55,7 @@ jobs:
           path-to-signatures: assinaturas/cla.json
           path-to-document: https://github.com/futuristasai/ZapSales/blob/main/CLA.md
           branch: cla-assinaturas
-          allowlist: futuristasai,leandromastelliniai,dependabot[bot],zapsales-release[bot],github-actions[bot]
+          allowlist: futuristasai,leandromastelliniai,leandrodiasmiddas,dependabot[bot],zapsales-release[bot],github-actions[bot]
           lock-pullrequest-aftermerge: "false"
           create-file-commit-message: "CLA: cria o arquivo de assinaturas"
           signed-commit-message: "CLA: $contributorName assinou em #$pullRequestNo"
