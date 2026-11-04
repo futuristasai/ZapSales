@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ListasSalvas } from "@/components/campanhas/ListasSalvas";
 import {
   useEtiquetasDoCrm,
   usePessoasEncontradas,
@@ -165,6 +166,13 @@ export function SeletorDePessoas({ marcados, onMarcados, daPlanilha, campanhaId 
           )}
         </p>
       </div>
+
+      <ListasSalvas
+        marcados={marcados}
+        onMarcados={onMarcados}
+        daPlanilha={daPlanilha}
+        campanhaId={campanhaId}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="busca-de-pessoas">{t("Buscar por nome, telefone ou etiqueta")}</Label>

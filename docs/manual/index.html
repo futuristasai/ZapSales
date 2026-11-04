@@ -2258,6 +2258,17 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p><strong>Quem não pode receber</strong> aparece na tabela, mas esmaecido e sem caixa de marcar, com o motivo: pediu para não receber, está anonimizado, recusou contato comercial, não tem telefone (ou o telefone está fora do formato) ou já está em outra campanha que ainda não terminou. Esconder essas pessoas faria parecer que sumiram do CRM. São os mesmos vetos da conta “Ver quantas pessoas” — a tabela só os mostra mais cedo.</p>
 <aside class="nota atencao"><strong>Marcar é uma lista fixa.</strong><p>Quem você marca fica no público até você tirar. Uma etiqueta que alguém ganhar <em>depois</em> não traz essa pessoa para a campanha — para pegar os novos, volte e marque de novo. Campanhas salvas antes desta tela continuam valendo pelos critérios que já tinham: elas mostram uma caixa <em>Esta campanha guarda critérios de público</em>, e você escolhe se os mantém ou troca por pessoas marcadas.</p></aside>
 
+<h3 id="disparo-em-massa--listas">Listas salvas</h3>
+<p>Marcou as pessoas certas e quer usá-las de novo em outra campanha? Guarde-as com um nome. É a mesma escolha de pessoas, só que com nome, sem precisar refazer a busca e as marcações.</p>
+<ol class="passos">
+  <li>Marque as pessoas na tabela (e, se quiser, suba uma planilha). Quando o público tem pelo menos uma pessoa, o botão <span class="ui">Salvar as N pessoas deste público como lista</span> fica ativo.</li>
+  <li>Clique nele, dê um nome (de 2 a 80 letras) e clique em <span class="ui">Salvar lista</span>. A planilha entra junto: a lista guarda o público inteiro, como o contador o mostra. Não dá para ter duas listas com o mesmo nome, mesmo trocando maiúscula por minúscula.</li>
+  <li>Em outra campanha, a caixa <em>Listas salvas</em> mostra cada lista com quantas pessoas ela tem. <span class="ui">Usar esta lista</span> traz as pessoas para o público, somando às que já estão marcadas.</li>
+  <li><span class="ui">Excluir</span> pede confirmação. Só a lista some: as pessoas continuam no CRM e as campanhas que já usaram a lista não mudam.</li>
+</ol>
+<aside class="nota atencao"><strong>A lista é fixa, e quem não pode receber fica de fora.</strong><p>A lista guarda <em>quem</em> estava marcado na hora de salvar — não um filtro. Uma etiqueta que alguém ganhar depois não traz essa pessoa para ela. E ela nunca fura as proteções: ao usá-la, quem pediu para não receber, está anonimizado, não tem telefone ou já está em outra campanha <strong>não entra</strong>, e a tela diz quantas pessoas ficaram de fora e por quê. Se alguém foi apagado do CRM, também não volta.</p></aside>
+<p>Salvar, usar e excluir listas é com <strong>gerente</strong> ou <strong>administrador</strong>, o mesmo nível de quem cria campanha. Cada organização enxerga só as suas listas, e cada uma guarda até 200.</p>
+
 <h3 id="disparo-em-massa--csv">Subir uma planilha CSV</h3>
 <p>Em vez de (ou além de) marcar pessoas do CRM, você pode subir uma planilha de pessoas. Quem está na planilha <strong>entra em Contatos</strong> (se já existir, é reaproveitado) e recebe a campanha.</p>
 <ol class="passos">
@@ -8990,7 +9001,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 03 de novembro de 2026 a partir do código na revisão <code>f57c487</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 04 de novembro de 2026 a partir do código na revisão <code>72dc812</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

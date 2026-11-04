@@ -287,6 +287,11 @@ export const ApiErrorCodes = {
   // 422: campanha por número de QR code sem o aceite do aviso de risco de
   // banimento (issue #9). A ação `aceitar-risco` grava o aceite.
   campanha_risco_nao_aceito: "campanha_risco_nao_aceito",
+  // Listas salvas de pessoas do disparo (migration 0555).
+  lista_de_pessoas_nao_encontrada: "lista_de_pessoas_nao_encontrada", // 404
+  lista_de_pessoas_nome_repetido: "lista_de_pessoas_nome_repetido", // 409: já há uma lista com esse nome (sem diferenciar maiúscula)
+  lista_de_pessoas_limite: "lista_de_pessoas_limite", // 422: a organização já guarda o máximo de listas
+  lista_de_pessoas_vazia: "lista_de_pessoas_vazia", // 422: nenhuma das pessoas enviadas pertence a esta organização
 
   // 500 / upstream
   internal_error: "internal_error",
