@@ -246,7 +246,7 @@ const GATILHO_ESPERADO: Record<string, { condicao: string | null; efeito: string
   // --- e o que legitimamente tem interruptor -----------------------------------
   "acolhida.yml::acolher": {
     condicao:
-      "github.repository_owner == 'leandromastelliniai' && " +
+      "github.repository_owner == 'futuristasai' && " +
       "github.event.pull_request.head.repo.full_name != github.repository",
     efeito:
       "Este job posta a acolhida automática em PR de fork — a resposta em minutos que existe " +

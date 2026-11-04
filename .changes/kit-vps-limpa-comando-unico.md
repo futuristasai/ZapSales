@@ -7,7 +7,7 @@ titulo: Instalação numa VPS limpa com um comando, HTTPS automático e guia de 
 Numa VPS que ainda não tem nada, um comando instala tudo:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leandromastelliniai/ZapSales/main/kit/obter.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash
 ```
 
 Ele baixa a última versão publicada para `/opt/zapsales` e chama o `kit/instalar.sh`, que agora

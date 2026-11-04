@@ -59,7 +59,7 @@ ENV_ARQ="$RAIZ/.env"
 ESTADO=/etc/zapsales
 LOGS=/var/log/zapsales
 BACKUPS=/var/backups/zapsales
-REGISTRO_IMAGENS="ghcr.io/leandromastelliniai"
+REGISTRO_IMAGENS="ghcr.io/futuristasai"
 
 exigir_root
 mkdir -p "$ESTADO" "$LOGS"
@@ -707,7 +707,7 @@ resumo() {
     msg "  (guarde a senha num cofre de senhas e apague o arquivo: sudo rm $ESTADO/primeiro-acesso)"
   fi
   msg "  Logs:       cd $RAIZ && docker compose logs -f app"
-  msg "  Atualizar:  curl -fsSL https://raw.githubusercontent.com/leandromastelliniai/ZapSales/main/kit/obter.sh | sudo bash"
+  msg "  Atualizar:  curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash"
   msg "              (ou traga o código novo para $RAIZ e rode este kit de novo)"
   msg "  Backup:     sudo $KIT/backup.sh status"
 }

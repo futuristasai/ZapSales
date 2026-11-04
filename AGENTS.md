@@ -171,7 +171,7 @@ protection, não deste arquivo — confira na fonte (o comando exige permissão 
 repositório: com token de contribuidor ele devolve `404`, medido em 2026-09-13):
 
 ```bash
-gh api repos/leandromastelliniai/ZapSales/branches/main/protection \
+gh api repos/futuristasai/ZapSales/branches/main/protection \
   --jq '.required_status_checks.contexts|join(", ")'
 ```
 

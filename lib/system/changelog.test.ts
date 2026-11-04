@@ -32,8 +32,8 @@ Se você usa número próprio no WhatsApp, reconecte depois de atualizar.
 
 Primeira versão marcada do ZapSales.
 
-[Não lançado]: https://github.com/leandromastelliniai/ZapSales/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/leandromastelliniai/ZapSales/releases/tag/v1.0.0
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/futuristasai/ZapSales/releases/tag/v1.0.0
 `;
 
 describe("a seção de uma versão", () => {

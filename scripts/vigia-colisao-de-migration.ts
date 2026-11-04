@@ -149,7 +149,7 @@ function gh(args: string[]): string {
 
 function main(): void {
   const escrever = process.argv.includes("--escrever");
-  const repo = process.env.GITHUB_REPOSITORY ?? "leandromastelliniai/ZapSales";
+  const repo = process.env.GITHUB_REPOSITORY ?? "futuristasai/ZapSales";
   const naBase = execFileSync("git", ["ls-tree", "-r", "--name-only", "origin/main", "--", "supabase/migrations"], {
     encoding: "utf-8",
   })
