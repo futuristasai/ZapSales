@@ -1,0 +1,26 @@
+ZapSales
+Copyright (c) 2026 Leandro Mastellini (Futuristas.ai)
+
+O ZapSales é distribuído sob a PolyForm Noncommercial 1.0.0 (arquivo LICENSE) e, para uso
+comercial, sob licença comercial (ver LICENSING.md).
+
+Este produto inclui componentes de terceiros. Cada um continua sob a sua própria licença e
+NÃO é relicenciado pela licença do ZapSales. A lista completa e atual das dependências de
+produção, com a licença de cada uma, sai deste comando:
+
+    pnpm licenses list --prod
+
+Avisos que pedem menção expressa:
+
+- sharp (pacotes @img/sharp-*): Apache-2.0. Os binários de imagem que ele usa trazem a libvips,
+  sob LGPL-3.0-or-later, distribuída como biblioteca compartilhada separada. Código-fonte da
+  libvips: https://github.com/libvips/libvips
+- caniuse-lite: CC-BY-4.0 (dados de compatibilidade de navegadores).
+  https://github.com/browserslist/caniuse-lite
+- lightningcss e web-push: MPL-2.0, usados sem modificação. Código-fonte nos repositórios
+  de cada um.
+- glob, lru-cache, minimatch, minipass e path-scurry: BlueOak-1.0.0.
+
+As imagens de terceiros que a instalação baixa (WAHA, Supabase, Redis, Caddy e outras) são
+referenciadas por versão fixa e puxadas direto da origem; o ZapSales não as republica e elas
+seguem as licenças dos seus autores.

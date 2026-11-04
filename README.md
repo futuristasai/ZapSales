@@ -119,4 +119,4 @@ invariantes, incluindo o isolamento RLS entre duas empresas) e `e2e`.
 
 ## 📜 Licença
 
-[MIT](LICENSE).
+O código é público (*source-available*, **não open source**) sob a [PolyForm Noncommercial 1.0.0](LICENSE): livre para estudar, testar e usar **sem fins comerciais**. Usar numa empresa, hospedar para terceiros ou revender exige **licença comercial** — veja [`LICENSING.md`](LICENSING.md). Contribuições seguem o [CLA](CLA.md); avisos de terceiros em [`NOTICE`](NOTICE).

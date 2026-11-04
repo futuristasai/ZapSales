@@ -38,8 +38,8 @@ Fonte do posicionamento: `VISION.md`.
   mesmas regras de um atendente humano.
 - Campanha e atendimento vivem na mesma operação: a resposta da campanha chega ao
   funil e ao agente com o contexto do disparo.
-- Roda na VPS de quem usa. Depois da validação interna vira open source (MIT), sem
-  versão paga. É a alternativa a Kommo, Octadesk, Intercom e Zendesk.
+- Roda na VPS de quem usa. Código público (_source-available_); usar numa empresa exige
+  licença comercial de pagamento único. É a alternativa a Kommo, Octadesk, Intercom e Zendesk.
 
 ## Operating Context
 

@@ -4,6 +4,7 @@
 - **Data:** 2026-09-29
 - **Contexto medido em:** `9b63075bf` (topo de `origin/main` em 29/09/2026); o peso das tabelas, num Postgres 17 descartável no mesmo dia
 - **Lei que muda quando aceita:** [`docs/doctrine/operacao-de-agentes.md`](../doctrine/operacao-de-agentes.md) — §0, §1, a brecha "Faturamento e planos" da §3 e as proibições 2 e 3 da §4 — e, **só para este caso**, a condição 2 da [ADR-0002](0002-tabelas-de-modulo-num-banco-so.md)
+- **Nota de 2026-11-04:** o item 1 do Contexto ("o mantenedor não vende assinatura; o software é MIT") foi superado — o código passou a *source-available* com licença comercial de pagamento único (ver [`LICENSING.md`](../../LICENSING.md)). A cobrança do revendedor segue valendo como capacidade do núcleo; quem pode revender passa a depender da modalidade da licença.
 - **Desenho que a detalha:** o documento de desenho de 2026-09-29 do projeto de origem (não acompanha este repositório)
 
 ---

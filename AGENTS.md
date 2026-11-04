@@ -12,8 +12,8 @@ CRM de WhatsApp com funil (Kanban), inbox, agentes de IA e campanhas em massa pe
 da Meta. Os números se conectam pela API Oficial (Meta Cloud API, recomendada para campanha) ou
 pelo WAHA/QR code (atendimento); quem responde a uma campanha cai no funil e no agente com o
 contexto do que foi enviado. CRM inteiro exposto por MCP. Multi-tenant com RLS desde o dia 1;
-LGPD nativa. Roda na VPS própria do dono (Hostinger) e vira open source depois da validação
-interna. Posicionamento: [`VISION.md`](VISION.md).
+LGPD nativa. Roda na VPS própria do dono (Hostinger) e tem o código público sob licença *source-available*
+(PolyForm Noncommercial; uso comercial exige licença — ver `LICENSING.md`). Posicionamento: [`VISION.md`](VISION.md).
 
 **Consequência que muda como você trabalha:** o produto é distribuído como código. Quem instala
 numa VPS **é** o usuário. Uma mudança que funciona na máquina do dev e quebra no clone fresco é

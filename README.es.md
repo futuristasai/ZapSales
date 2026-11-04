@@ -43,4 +43,4 @@ La stack, la estructura y las pruebas están en el [README en portugués](README
 
 ## 📜 Licencia
 
-[MIT](LICENSE).
+El código es público (_source-available_, **no open source**) bajo la [PolyForm Noncommercial 1.0.0](LICENSE): libre para estudiar, probar y usar **sin fines comerciales**. Usarlo en una empresa, alojarlo para terceros o revenderlo requiere una **licencia comercial** — ver [`LICENSING.md`](LICENSING.md) (en portugués). Las contribuciones siguen el [CLA](CLA.md); los avisos de terceros están en [`NOTICE`](NOTICE).
