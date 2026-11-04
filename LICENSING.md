@@ -74,4 +74,4 @@ pode tentar contornar qualquer verificação; fazer isso fora dos termos da lice
 
 ## Dúvidas e licença comercial
 
-Fale com a Futuristas.ai pelos canais do perfil [github.com/futuristasai](https://github.com/futuristasai).
+Escreva para **contato@futuristas.ai**.
