@@ -75,6 +75,8 @@ interface Excecao {
  * linhas da OUTRA organização, não uma leitura como superusuário.
  */
 const PROVA_PROPRIA: readonly Excecao[] = [
+  { tabela: "campaign_audience_lists", razao: "tests/invariants/listas-salvas-de-pessoas.test.ts — dois tenants reais por JWT (manager): leitura positiva local e ZERO do vizinho nos dois sentidos, authenticated só com SELECT (escrita só do servidor), anon sem leitura; migration 0555." },
+  { tabela: "campaign_audience_list_members", razao: "tests/invariants/listas-salvas-de-pessoas.test.ts — o mesmo isolamento por JWT, FK composta que impede apontar para a lista de outra organização, cascata ao apagar lista ou pessoa e junção de contatos alcançando o ponteiro; migration 0555." },
   { tabela: "ai_knowledge_source_pages", razao: "tests/invariants/treino-por-site-banco.test.ts — dois tenants reais por JWT: A lê as 2 páginas dela e ZERO do vizinho, B lê a 1 dela; authenticated sem insert/update/delete/truncate (só o servidor grava) e anon sem select; migration 0550." },
   { tabela: "meta_message_costs", razao: "tests/invariants/custo-da-campanha-oficial.test.ts — dois tenants reais por JWT (authenticated, row_security ligada): o vizinho lê ZERO, a própria organização lê as suas (controle positivo), e insert/update diretos de authenticated recebem permission denied (só o servidor grava custo; migration 0540)." },
   { tabela: "golden_candidates", razao: "tests/invariants/golden-candidates.test.ts — dois tenants reais por JWT (agent): leitura positiva local e ZERO do vizinho nos dois sentidos, a tabela inteira sem filtro igual à própria, anon recusado, e insert/update/delete de authenticated sem efeito (só o servidor grava)." },

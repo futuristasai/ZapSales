@@ -937,6 +937,10 @@ export const AUDIT_ACTIONS = [
   // precisa de resposta. O telefone NÃO entra no payload: só os últimos dígitos.
   "campaign.suppression_added",
   "campaign.suppression_removed",
+  // Listas salvas de pessoas (migration 0555). Criar e apagar audita: a lista decide para quem a
+  // próxima campanha pode ser montada. Só o NOME e o tamanho vão no payload — nunca as pessoas.
+  "campaign.audience_list_created",
+  "campaign.audience_list_deleted",
   // Padrões de campanha da organização (janela de atribuição de resposta e o
   // ritmo que campanha nova herda). Auditável porque muda o comportamento de
   // TODA campanha futura, e a de atribuição muda a métrica das já enviadas.

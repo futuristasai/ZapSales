@@ -97,16 +97,7 @@ export async function listarContatosDaTabela(
     entrada.organizationId,
     entrada.campanhaId,
   );
-  return linhas.map((l) => {
-    const candidato = paraCandidato(l);
-    return {
-      id: l.id,
-      nome: candidato.nome,
-      telefone: l.phone_number,
-      tags: l.tags ?? [],
-      motivo: motivoParaExcluir(candidato) ?? (jaEmCampanha.has(l.id) ? "ja_em_campanha" : null),
-    };
-  });
+  return linhas.map((l) => paraLinhaDaTabela(l, jaEmCampanha));
 }
 
 async function lerLinhas(
@@ -201,20 +192,71 @@ async function lerLinhas(
   const jaTem = new Set(linhas.map((l) => l.id));
   const tirados = new Set(filtro.excluir_contatos);
   const faltam = filtro.incluir_contatos.filter((id) => !jaTem.has(id) && !tirados.has(id));
-  if (faltam.length > 0) {
-    const { data: extras, error: erroExtras } = await admin
+  linhas.push(...(await lerPorIds(admin, organizationId, faltam)));
+
+  return linhas;
+}
+
+/**
+ * Quantos ids vão num só `in (...)`. O PostgREST recebe o filtro na URL, e 5.000 uuids (o teto de
+ * um público) passam de 180 KB — acima do que o proxy aceita. 200 ficam em ~7 KB.
+ */
+const IDS_POR_CONSULTA = 200;
+
+function emBlocos<T>(itens: readonly T[], tamanho: number): T[][] {
+  const blocos: T[][] = [];
+  for (let i = 0; i < itens.length; i += tamanho) blocos.push(itens.slice(i, i + tamanho));
+  return blocos;
+}
+
+/** Os contatos (pessoas, não mesclados) da organização com estes ids, lidos em blocos. */
+async function lerPorIds(
+  admin: SupabaseClient,
+  organizationId: string,
+  ids: readonly string[],
+): Promise<LinhaDeContato[]> {
+  const linhas: LinhaDeContato[] = [];
+  for (const bloco of emBlocos(ids, IDS_POR_CONSULTA)) {
+    const { data, error } = await admin
       .from("contacts")
       .select(COLUNAS_DO_CANDIDATO)
       .eq("organization_id", organizationId)
       .eq("kind", "person")
       // Cadastro mesclado é fantasma, também para quem entra à mão.
       .is("is_merged_into", null)
-      .in("id", faltam);
-    if (erroExtras) throw new Error(`audiência: incluídos — ${erroExtras.message}`);
-    linhas.push(...((extras ?? []) as LinhaDeContato[]));
+      .in("id", bloco);
+    if (error) throw new Error(`audiência: incluídos — ${error.message}`);
+    linhas.push(...((data ?? []) as LinhaDeContato[]));
   }
-
   return linhas;
+}
+
+/**
+ * As pessoas de uma lista de ids (uma lista salva), já com o motivo de não poderem receber. É a
+ * mesma régua da tabela de busca: lista salva não fura opt-out, anonimização nem "já em campanha".
+ */
+export async function listarContatosPorIds(
+  admin: SupabaseClient,
+  entrada: { organizationId: string; ids: readonly string[]; campanhaId?: string },
+): Promise<ContatoDaTabela[]> {
+  const linhas = await lerPorIds(admin, entrada.organizationId, entrada.ids);
+  const jaEmCampanha = await contatosJaEmCampanha(
+    admin,
+    entrada.organizationId,
+    entrada.campanhaId,
+  );
+  return linhas.map((l) => paraLinhaDaTabela(l, jaEmCampanha));
+}
+
+function paraLinhaDaTabela(l: LinhaDeContato, jaEmCampanha: Set<string>): ContatoDaTabela {
+  const candidato = paraCandidato(l);
+  return {
+    id: l.id,
+    nome: candidato.nome,
+    telefone: l.phone_number,
+    tags: l.tags ?? [],
+    motivo: motivoParaExcluir(candidato) ?? (jaEmCampanha.has(l.id) ? "ja_em_campanha" : null),
+  };
 }
 
 /**

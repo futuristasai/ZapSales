@@ -376,6 +376,27 @@
       "col": 7,
       "type": "database",
       "label": "contacts — o contato da planilha nasce (source import_csv) ou é reaproveitado"
+    },
+    {
+      "id": "listas-salvas",
+      "lane": "tela",
+      "col": 7,
+      "type": "ui",
+      "label": "Listas salvas — salvar o público com um nome, usar de novo, excluir (dentro do cartão Escolher pessoas)"
+    },
+    {
+      "id": "rota-listas",
+      "lane": "api",
+      "col": 9,
+      "type": "service",
+      "label": "GET/POST /api/v1/campaigns/listas e GET/DELETE /listas/[id] — manager+, audita criar e apagar"
+    },
+    {
+      "id": "listas-de-pessoas",
+      "lane": "dados",
+      "col": 8,
+      "type": "database",
+      "label": "campaign_audience_lists + campaign_audience_list_members — a lista fixa de pessoas (só o servidor grava; RLS de leitura por tenant)"
     }
   ],
   "edges": [
@@ -386,6 +407,11 @@
     { "id": "seletor-procura", "from": "seletor-de-pessoas", "to": "rota-contatos", "label": "busca e filtros" },
     { "id": "contatos-le-lista", "from": "rota-contatos", "to": "preparacao", "label": "mesma consulta do público e os mesmos vetos por pessoa" },
     { "id": "seletor-csv-soma", "from": "lista-csv", "to": "seletor-de-pessoas", "label": "a planilha soma às marcadas (X do CRM + Y da planilha)" },
+    { "id": "seletor-hospeda-listas", "from": "seletor-de-pessoas", "to": "listas-salvas", "label": "o cartão guarda e reaproveita o público marcado" },
+    { "id": "listas-chama-rota", "from": "listas-salvas", "to": "rota-listas", "label": "salvar, usar e excluir uma lista" },
+    { "id": "rota-grava-listas", "from": "rota-listas", "to": "listas-de-pessoas", "label": "grava a lista e os ponteiros; filtra a organização à mão" },
+    { "id": "listas-apontam-contatos", "from": "listas-de-pessoas", "to": "contatos", "label": "o membro é um ponteiro (FK com cascade); a junção de duplicados o reaponta" },
+    { "id": "rota-listas-veta", "from": "rota-listas", "to": "preparacao", "label": "usar a lista passa pelos mesmos vetos por pessoa (opt-out, anonimizado, sem telefone, já em campanha)" },
     { "id": "previa-le-lista", "from": "rota-previa", "to": "preparacao", "label": "mesma consulta e mesma classificação" },
     { "id": "detalhe-aciona", "from": "detalhe", "to": "rota-acao", "label": "preparar, testar, iniciar, pausar, cancelar" },
     { "id": "acao-consulta-maquina", "from": "rota-acao", "to": "maquina", "label": "a transição cabe neste estado?" },

@@ -7,7 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 
 import { FILTRO_VAZIO, type FiltroDeAudiencia } from "./audiencia";
-import { listarContatosDaTabela } from "./consulta-de-audiencia";
+import { buscarCandidatos, listarContatosDaTabela } from "./consulta-de-audiencia";
 
 const ORG = "22222222-2222-4222-8222-222222222222";
 const AGORA = new Date("2026-11-03T12:00:00Z");
@@ -151,5 +151,31 @@ describe("listarContatosDaTabela", () => {
     const c = consultasDeContatos[0]!;
     expect(c.some((x) => x.metodo === "overlaps" && x.args[0] === "tags")).toBe(true);
     expect(c.some((x) => x.metodo === "or")).toBe(true);
+  });
+});
+
+describe("pessoas incluídas à mão", () => {
+  it("vão ao banco em blocos: 5.000 ids numa consulta passariam do que a URL aceita", async () => {
+    const ids = Array.from(
+      { length: 450 },
+      (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+    );
+    const { admin, consultasDeContatos } = banco([linha("a")]);
+    await buscarCandidatos(admin, {
+      organizationId: ORG,
+      filtro: { ...FILTRO_VAZIO, incluir_contatos: ids },
+      agora: AGORA,
+    });
+    const tamanhos = consultasDeContatos.map(
+      (c) => (c.find((x) => x.metodo === "in")!.args[1] as unknown[]).length,
+    );
+    expect(tamanhos).toEqual([200, 200, 50]);
+    // Cada bloco continua preso à organização, a pessoas e a cadastros não mesclados.
+    for (const c of consultasDeContatos) {
+      expect(
+        c.some((x) => x.metodo === "eq" && x.args[0] === "organization_id" && x.args[1] === ORG),
+      ).toBe(true);
+      expect(c.some((x) => x.metodo === "is" && x.args[0] === "is_merged_into")).toBe(true);
+    }
   });
 });
