@@ -206,6 +206,14 @@ vi.mock("@/hooks/campanhas/useCampanhas", () => ({
 }));
 
 vi.mock("@/components/campanhas/SubirListaCsv", () => ({ SubirListaCsv: () => null }));
+// O seletor tem prova própria (`SeletorDePessoas.test.tsx`); aqui basta um botão que escolhe uma pessoa.
+vi.mock("@/components/campanhas/SeletorDePessoas", () => ({
+  SeletorDePessoas: ({ onMarcados }: { onMarcados: (ids: string[]) => void }) => (
+    <button type="button" onClick={() => onMarcados(["p1"])}>
+      Escolher uma pessoa
+    </button>
+  ),
+}));
 vi.mock("@/components/campanhas/RespostaDaCampanha", () => ({ RespostaDaCampanha: () => null }));
 
 describe("Nova campanha", () => {
@@ -232,7 +240,7 @@ describe("Nova campanha", () => {
   it("só falta o nome: Vai disparar? diz isso, em vez de 'tudo certo' com o Salvar cinza", async () => {
     await montar();
     fireEvent.change(screen.getByLabelText("Enviar pelo número"), { target: { value: "c1" } });
-    fireEvent.change(screen.getByLabelText("Com alguma destas etiquetas"), { target: { value: "vip" } });
+    fireEvent.click(screen.getByRole("button", { name: "Escolher uma pessoa" }));
     fireEvent.change(screen.getByLabelText("Texto da mensagem"), { target: { value: "Oi!" } });
     act(() => void vi.advanceTimersByTime(700));
     expect(screen.getByTestId("vai-disparar-estado")).toHaveTextContent("1 pede atenção");
@@ -253,15 +261,12 @@ describe("Nova campanha", () => {
   it("mexer no público conta sozinho, uma vez, depois de uma pausa na digitação", async () => {
     await montar();
     fireEvent.change(screen.getByLabelText("Enviar pelo número"), { target: { value: "c1" } });
-    const campo = screen.getByLabelText("Com alguma destas etiquetas");
-    fireEvent.change(campo, { target: { value: "v" } });
-    act(() => void vi.advanceTimersByTime(300));
-    fireEvent.change(campo, { target: { value: "vip" } });
+    fireEvent.click(screen.getByRole("button", { name: "Escolher uma pessoa" }));
     act(() => void vi.advanceTimersByTime(699));
     expect(chamadasDaPrevia).toHaveLength(0);
     act(() => void vi.advanceTimersByTime(1));
     expect(chamadasDaPrevia).toHaveLength(1);
-    expect((chamadasDaPrevia[0]!.audience_filter as { com_alguma_tag: string[] }).com_alguma_tag).toEqual(["vip"]);
+    expect((chamadasDaPrevia[0]!.audience_filter as { incluir_contatos: string[] }).incluir_contatos).toEqual(["p1"]);
     expect(screen.getByTestId("resumo-disparo-quem")).toHaveTextContent("312 pessoas");
     // Número novo, limite de 100/dia e 312 pessoas: 20/dia por 4 dias, 50/dia por 4, depois 100/dia
     // (o limite do número) — a conta simula o aquecimento subindo, dia a dia.

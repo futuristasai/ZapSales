@@ -37,45 +37,55 @@ export const CAMPANHAS_VIVAS = [
   "paused",
 ] as const;
 
-export const filtroDeAudienciaSchema = z
-  .strictObject({
-    /** Contato precisa ter TODAS estas etiquetas. */
-    com_todas_tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
-    /** Contato precisa ter PELO MENOS UMA destas. */
-    com_alguma_tag: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
-    /** Contato não pode ter NENHUMA destas. */
-    sem_tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
+/**
+ * O filtro SEM a regra "pelo menos um critério". É o formato da busca da tabela de contatos
+ * (`POST /api/v1/campaigns/contatos`): ali a pessoa pode estar só procurando pelo nome, e
+ * quem exige um recorte é a rota, que também aceita uma busca digitada no lugar dele.
+ * Uma audiência de campanha continua passando por `filtroDeAudienciaSchema`.
+ */
+export const filtroDeBuscaSchema = z.strictObject({
+  /** Contato precisa ter TODAS estas etiquetas. */
+  com_todas_tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
+  /** Contato precisa ter PELO MENOS UMA destas. */
+  com_alguma_tag: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
+  /** Contato não pode ter NENHUMA destas. */
+  sem_tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
 
-    /** Tem negócio aberto em algum destes funis. */
-    funis: z.array(z.string().uuid()).max(20).default([]),
-    /** ...em alguma destas etapas. */
-    etapas: z.array(z.string().uuid()).max(50).default([]),
-    /** ...com algum destes donos. */
-    responsaveis: z.array(z.string().uuid()).max(50).default([]),
-    /** Situação do negócio: `open`, `won`, `lost`. */
-    situacoes_do_negocio: z.array(z.enum(["open", "won", "lost"])).max(3).default([]),
+  /** Tem negócio aberto em algum destes funis. */
+  funis: z.array(z.string().uuid()).max(20).default([]),
+  /** ...em alguma destas etapas. */
+  etapas: z.array(z.string().uuid()).max(50).default([]),
+  /** ...com algum destes donos. */
+  responsaveis: z.array(z.string().uuid()).max(50).default([]),
+  /** Situação do negócio: `open`, `won`, `lost`. */
+  situacoes_do_negocio: z
+    .array(z.enum(["open", "won", "lost"]))
+    .max(3)
+    .default([]),
 
-    /** Sem interação há N dias (silêncio) — o filtro de reativação. */
-    sem_interacao_ha_dias: z.number().int().min(1).max(3650).nullable().default(null),
-    /** Com interação nos últimos N dias. */
-    com_interacao_ha_dias: z.number().int().min(0).max(3650).nullable().default(null),
-    /** Cadastrado a partir de / até (ISO). */
-    cadastrado_de: z.string().datetime().nullable().default(null),
-    cadastrado_ate: z.string().datetime().nullable().default(null),
-    /** `contacts.source` — de onde o contato veio. */
-    origens: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
+  /** Sem interação há N dias (silêncio) — o filtro de reativação. */
+  sem_interacao_ha_dias: z.number().int().min(1).max(3650).nullable().default(null),
+  /** Com interação nos últimos N dias. */
+  com_interacao_ha_dias: z.number().int().min(0).max(3650).nullable().default(null),
+  /** Cadastrado a partir de / até (ISO). */
+  cadastrado_de: z.string().datetime().nullable().default(null),
+  cadastrado_ate: z.string().datetime().nullable().default(null),
+  /** `contacts.source` — de onde o contato veio. */
+  origens: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
 
-    /** Contatos a incluir mesmo que o recorte não os pegue. */
-    incluir_contatos: z.array(z.string().uuid()).max(5000).default([]),
-    /** Contatos a tirar, mesmo que o recorte os pegue. */
-    excluir_contatos: z.array(z.string().uuid()).max(5000).default([]),
+  /** Contatos a incluir mesmo que o recorte não os pegue. */
+  incluir_contatos: z.array(z.string().uuid()).max(5000).default([]),
+  /** Contatos a tirar, mesmo que o recorte os pegue. */
+  excluir_contatos: z.array(z.string().uuid()).max(5000).default([]),
 
-    /** Teto do lote. A mesma régua do import de CSV para "quanta gente de uma vez". */
-    limite: z.number().int().min(1).max(5000).default(500),
-  })
-  .refine((f) => temRecorte(f) || f.incluir_contatos.length > 0, {
-    message: "Escolha pelo menos um critério — audiência sem recorte não se confere.",
-  });
+  /** Teto do lote. A mesma régua do import de CSV para "quanta gente de uma vez". */
+  limite: z.number().int().min(1).max(5000).default(500),
+});
+
+export const filtroDeAudienciaSchema = filtroDeBuscaSchema.refine(
+  (f) => temRecorte(f) || f.incluir_contatos.length > 0,
+  { message: "Escolha pelo menos um critério — audiência sem recorte não se confere." },
+);
 
 export type FiltroDeAudiencia = z.infer<typeof filtroDeAudienciaSchema>;
 

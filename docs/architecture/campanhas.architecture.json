@@ -350,11 +350,25 @@
       "label": "SubirListaCsv (nova e edição) — planilha modelo, formato do telefone, resumo por linha"
     },
     {
+      "id": "seletor-de-pessoas",
+      "lane": "tela",
+      "col": 6,
+      "type": "ui",
+      "label": "Escolher pessoas do CRM — busca, filtros e tabela com vetos à vista (Nova/Editar campanha)"
+    },
+    {
       "id": "importacao-contatos",
       "lane": "api",
       "col": 7,
       "type": "service",
       "label": "POST /api/v1/contacts/import (exigir_telefone) — devolve contact_ids: novos e já existentes"
+    },
+    {
+      "id": "rota-contatos",
+      "lane": "api",
+      "col": 8,
+      "type": "service",
+      "label": "POST /api/v1/campaigns/contatos — as pessoas que a busca acha, com o motivo de quem não recebe"
     },
     {
       "id": "contatos",
@@ -368,6 +382,10 @@
     { "id": "lista-abre-nova", "from": "lista", "to": "nova", "label": "Nova campanha" },
     { "id": "nova-cria", "from": "nova", "to": "rota-criar", "label": "POST cria o rascunho" },
     { "id": "nova-preve", "from": "nova", "to": "rota-previa", "label": "quantas pessoas isto pega" },
+    { "id": "nova-escolhe-pessoas", "from": "nova", "to": "seletor-de-pessoas", "label": "quem recebe: marcar na tabela" },
+    { "id": "seletor-procura", "from": "seletor-de-pessoas", "to": "rota-contatos", "label": "busca e filtros" },
+    { "id": "contatos-le-lista", "from": "rota-contatos", "to": "preparacao", "label": "mesma consulta do público e os mesmos vetos por pessoa" },
+    { "id": "seletor-csv-soma", "from": "lista-csv", "to": "seletor-de-pessoas", "label": "a planilha soma às marcadas (X do CRM + Y da planilha)" },
     { "id": "previa-le-lista", "from": "rota-previa", "to": "preparacao", "label": "mesma consulta e mesma classificação" },
     { "id": "detalhe-aciona", "from": "detalhe", "to": "rota-acao", "label": "preparar, testar, iniciar, pausar, cancelar" },
     { "id": "acao-consulta-maquina", "from": "rota-acao", "to": "maquina", "label": "a transição cabe neste estado?" },

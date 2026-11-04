@@ -2114,14 +2114,14 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="disparo-em-massa" data-titulo="Disparo em massa" data-grupo="crm" data-grupo-titulo="CRM" data-resumo="Manda a mesma mensagem para muita gente de uma vez: você escolhe o público (ou sobe uma planilha CSV), escreve o texto, prepara a lista, testa e inicia. Funciona por número de QR code ou pela API Oficial." data-palavras="disparo em massa campanha campanhas envio em massa broadcast csv planilha lista de contatos modelo aprovado api oficial banimento teto de gasto lista de exclusão textos salvos preparar lista enviar teste pausar cancelar duplicar" hidden>
+<article class="pagina" id="disparo-em-massa" data-titulo="Disparo em massa" data-grupo="crm" data-grupo-titulo="CRM" data-resumo="Manda a mesma mensagem para muita gente de uma vez: você escolhe o público (marcando pessoas do CRM, ou subindo uma planilha CSV), escreve o texto, prepara a lista, testa e inicia. Funciona por número de QR code ou pela API Oficial." data-palavras="disparo em massa campanha campanhas envio em massa broadcast csv planilha lista de contatos modelo aprovado api oficial banimento teto de gasto lista de exclusão textos salvos preparar lista enviar teste pausar cancelar duplicar" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › CRM › Disparo em massa</p>
   <h1>Disparo em massa</h1>
-  <p class="lede">Manda a mesma mensagem para muita gente de uma vez: você escolhe o público (ou sobe uma planilha CSV), escreve o texto, prepara a lista, testa e inicia. Funciona por número de QR code ou pela API Oficial.</p>
+  <p class="lede">Manda a mesma mensagem para muita gente de uma vez: você escolhe o público (marcando pessoas do CRM, ou subindo uma planilha CSV), escreve o texto, prepara a lista, testa e inicia. Funciona por número de QR code ou pela API Oficial.</p>
   <dl class="ficha"><dt>Onde fica</dt><dd>CRM › Disparo em massa</dd><dt>Quem pode usar</dt><dd>Gerente ou acima, em todas as telas. Atendente e Somente leitura veem o menu escondido e, se digitarem o endereço, a tela dá erro de permissão.</dd><dt>Endereço</dt><dd><code>/app/campaigns</code> · <code>/app/campaigns/new</code> · <code>/app/campaigns/[id]</code> · <code>/app/campaigns/[id]/edit</code> · <code>/app/campaigns/settings</code></dd></dl>
   <div class="conteudo-pagina">
 <h2 id="disparo-em-massa--visao-geral">Para que serve</h2>
-<p>O <strong>Disparo em massa</strong> (as “campanhas”) fala com uma lista de pessoas de uma só vez: uma promoção, um aviso, a reativação de quem sumiu. Você <strong>escolhe o público</strong> (por etiquetas, tempo sem falar, funil… ou <strong>subindo uma planilha CSV</strong>), <strong>escreve a mensagem</strong>, o sistema <strong>monta a lista</strong> e você <strong>inicia o envio</strong>. Quem responde cai no funil e no agente certos, com o contexto da campanha.</p>
+<p>O <strong>Disparo em massa</strong> (as “campanhas”) fala com uma lista de pessoas de uma só vez: uma promoção, um aviso, a reativação de quem sumiu. Você <strong>escolhe o público</strong> (<strong>marcando pessoas do CRM</strong> numa tabela, com busca e filtros por etiqueta, funil, etapa e tempo sem falar… ou <strong>subindo uma planilha CSV</strong>), <strong>escreve a mensagem</strong>, o sistema <strong>monta a lista</strong> e você <strong>inicia o envio</strong>. Quem responde cai no funil e no agente certos, com o contexto da campanha.</p>
 <p>São cinco telas: a <a href="#disparo-em-massa--lista">lista</a>, <a href="#disparo-em-massa--nova">nova campanha</a>, o <a href="#disparo-em-massa--detalhe">detalhe</a> (onde você conduz), <a href="#disparo-em-massa--editar">editar</a> e a <a href="#disparo-em-massa--config">configuração</a>.</p>
 <aside class="nota perigo"><strong>Iniciar um envio manda mensagens reais a muitas pessoas e não tem volta.</strong><p>Criar a campanha e preparar a lista <em>não enviam nada</em>. O envio só começa em <span class="ui">Iniciar envio</span> (ou <span class="ui">Retomar</span>). Cancelar impede quem ainda não recebeu, mas <strong>o que já saiu não volta</strong>.</p></aside>
 
@@ -2186,12 +2186,12 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Subir uma lista de contatos (CSV).</strong> Veja <a href="#disparo-em-massa--csv">abaixo</a>.</li>
   <li><strong>Baixar planilha modelo.</strong> Baixa o arquivo <code>lista-para-disparo.csv</code>, já com as colunas e três linhas de exemplo.</li>
   <li><strong>Enviar lista.</strong> Lê o arquivo escolhido e cria os contatos.</li>
-  <li><strong>Com alguma destas etiquetas.</strong> Separe por vírgula. Entra quem tem <em>qualquer uma</em>.</li>
-  <li><strong>Sem nenhuma destas etiquetas.</strong> Tira quem tem alguma destas.</li>
+  <li><strong>Escolher pessoas do CRM.</strong> A busca (nome, telefone, e-mail ou etiqueta), os filtros e a tabela com as pessoas que eles acham. Veja <a href="#disparo-em-massa--pessoas">Escolher pessoas do CRM</a>.</li>
+  <li><strong>Filtros de etiqueta.</strong> Escolha entre as etiquetas que já existem nos contatos, sem digitar. <em>Com alguma destas</em> acha quem tem qualquer uma; <em>Sem nenhuma destas</em> tira quem tem alguma.</li>
   <li><strong>Sem falar com a gente há (dias).</strong> Quem está parado há pelo menos esse número de dias. Quem nunca interagiu <em>entra</em>.</li>
-  <li><strong>Com negócio no funil / Na etapa.</strong> Filtra por quem tem negócio num funil (e, opcionalmente, numa etapa).</li>
-  <li><strong>Máximo de contatos nesta campanha.</strong> De 1 a 5.000 (padrão 100). Vale só para o recorte por critérios; a planilha entra <em>além</em> dele.</li>
-  <li><strong>Ver quantas pessoas.</strong> Faz a conta sem gravar nada: “<em>N</em> podem receber · <em>M</em> ficam de fora”, com o motivo de cada exclusão. Fica apagado sem critério. A conta também se refaz <strong>sozinha</strong>, um instante depois de você mexer no público, na mensagem ou no número, e alimenta a faixa do alto; o botão continua para quem quiser contar na hora. Em campanha oficial com modelo mostra também o <strong>custo estimado</strong> pela tabela da Meta.</li>
+  <li><strong>Com negócio nos funis.</strong> Marque um ou mais funis e, se quiser, só algumas etapas de cada um. Funil sem etapa marcada vale por inteiro.</li>
+  <li><strong>A tabela e o contador.</strong> Marque quem vai receber. O contador mostra quantas pessoas há no público e, quando há planilha, de onde vêm: “<em>X</em> do CRM + <em>Y</em> da planilha”.</li>
+  <li><strong>Ver quantas pessoas.</strong> Faz a conta sem gravar nada: “<em>N</em> podem receber · <em>M</em> ficam de fora”, com o motivo de cada exclusão. Fica apagado enquanto não houver ninguém no público. A conta também se refaz <strong>sozinha</strong>, um instante depois de você mexer no público, na mensagem ou no número, e alimenta a faixa do alto; o botão continua para quem quiser contar na hora. Em campanha oficial com modelo mostra também o <strong>custo estimado</strong> pela tabela da Meta.</li>
   <li><strong>Texto da mensagem</strong> (número de QR code). Obrigatório, até 4.096 caracteres. “Escreva como você falaria com uma pessoa só.”.</li>
   <li><strong>Variáveis.</strong> Os botões <code>{{nome}}</code>, <code>{{primeiro_nome}}</code> e <code>{{saudacao}}</code> acrescentam o marcador ao fim do texto. Quem não tiver o dado que a mensagem usa <strong>fica de fora</strong>, com o motivo — “mensagem com buraco não sai”. Variável desconhecida (por exemplo <code>{{xyz}}</code>) <strong>vai literal</strong> para o cliente.</li>
   <li><strong>Vira card no funil / Na etapa.</strong> Para onde vai quem responder. Em branco, o card nasce no funil do número.</li>
@@ -2202,7 +2202,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Cancelar.</strong> Volta à lista sem criar nada.</li>
   <li><strong>Salvar rascunho.</strong> Cria a campanha em <em>Rascunho</em> e abre o detalhe. Só habilita quando o essencial está preenchido.</li>
 </ol>
-<p>O botão <span class="ui">Salvar rascunho</span> só habilita com: nome, número, um critério ou lista subida, texto (ou modelo, no número oficial) e, quando a base é interesse legítimo, a referência LIA. Não existe “todos os contatos”: o público sempre exige um recorte.</p>
+<p>O botão <span class="ui">Salvar rascunho</span> só habilita com: nome, número, pessoas escolhidas (marcadas na tabela ou vindas da planilha), texto (ou modelo, no número oficial) e, quando a base é interesse legítimo, a referência LIA. Não existe “todos os contatos”: o público sempre exige um recorte.</p>
 <p>Quando a organização tem mais de um número, o cartão <em>Informações</em> mostra também <strong>Falar também por estes números</strong>: marque outros números para a campanha <strong>revezar</strong> entre eles, usando a cada envio o que tem mais folga no teto do dia (quem já conversa com você por um deles recebe por esse mesmo). Se marcar, o intervalo e os tetos da campanha somam todos os números: para o rodízio aumentar o volume, deixe o ritmo da campanha em branco.</p>
 
 <h3 id="disparo-em-massa--faixa">A faixa de resumo e o “Vai disparar?”</h3>
@@ -2210,7 +2210,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <table class="tabela">
   <thead><tr><th>Célula</th><th>O que mostra</th></tr></thead>
   <tbody>
-    <tr><td><strong>Quem recebe</strong></td><td>Quantas pessoas entram (“<em>N</em> pessoas”, com “<em>M</em> ficam de fora”). Antes de escolher um critério diz “Escolha o público”; enquanto conta, “Contando…”.</td></tr>
+    <tr><td><strong>Quem recebe</strong></td><td>Quantas pessoas entram (“<em>N</em> pessoas”, com “<em>M</em> ficam de fora”). Antes de escolher pessoas diz “Escolha o público”; enquanto conta, “Contando…”.</td></tr>
     <tr><td><strong>Por onde</strong></td><td>O número escolhido e o modo: “QR code · texto livre” ou “API Oficial · modelo aprovado”.</td></tr>
     <tr><td><strong>Quanto tempo</strong></td><td>Uma estimativa de dias para enviar a todos, calculada com as regras do próprio envio: o ritmo do número, a janela de horário, o domingo e o aquecimento de número novo, que sobe com os dias. Diz o que limita (“limitado pelo aquecimento do número”, “pelo teto por hora”…). Na API Oficial pode dizer “No mesmo dia”, lembrando que o limite da Meta pode estender. Se o horário digitado não fecha, mostra “O horário de envio não fecha”.</td></tr>
     <tr><td><strong>Quanto custa</strong></td><td>Número de QR code: “Sem tarifa da Meta”. API Oficial: o custo estimado pela tabela da Meta, com o teto de gasto ao lado (ou “Sem teto de gasto”). Aparece depois de contar o público.</td></tr>
@@ -2242,8 +2242,24 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </table>
 <p><strong>Esses vetos são revalidados na hora de cada envio</strong>: quem pediu para parar entre “Preparar” e o envio é pulado. A campanha <em>nunca</em> alcança grupos de WhatsApp: só contatos do tipo pessoa.</p>
 
+<h3 id="disparo-em-massa--pessoas">Escolher pessoas do CRM</h3>
+<p>O público de uma campanha é a <strong>lista de pessoas que você marca</strong>. Os filtros e a busca servem para <em>encontrar</em> gente; quem entra no público é quem está marcado na tabela (e quem veio da planilha).</p>
+<figure>
+  <img src="img/campanhas-publico-pessoas.png" alt="Cartão Público com a busca, os filtros de etiqueta, funil e tempo sem falar, o contador de pessoas no público e a tabela de pessoas com caixas de marcar; duas linhas esmaecidas mostram o motivo de não poderem receber" loading="lazy">
+  <figcaption>A tabela de pessoas: quem não pode receber aparece esmaecido, sem caixa de marcar, com o motivo.</figcaption>
+</figure>
+<ol class="passos">
+  <li>Digite na busca (pelo menos 2 letras: nome, telefone, e-mail ou etiqueta) <strong>ou</strong> escolha um filtro. Sem busca e sem filtro a tabela fica vazia de propósito: “todos os contatos” não é um público que alguém consiga conferir.</li>
+  <li>As etiquetas aparecem como botões — as que já existem nos seus contatos. Clique para ligar e desligar. <em>Com alguma destas</em> e <em>Sem nenhuma destas</em> funcionam juntas.</li>
+  <li>Em <em>Com negócio nos funis</em>, marque <strong>vários funis</strong> e, dentro de cada um, as etapas que interessam.</li>
+  <li>Marque uma pessoa pela caixa da linha, ou clique em <span class="ui">Marcar todas as N que podem receber</span> para marcar de uma vez tudo o que a busca achou. O botão vira <span class="ui">Desmarcar as encontradas</span>. O limite é <strong>5.000 pessoas</strong> por público; passando disso, a tela diz quantas ficaram de fora.</li>
+  <li>A tabela mostra 25 pessoas por página. Se a busca achou mais gente do que ela mostra, um aviso pede para afinar os filtros.</li>
+</ol>
+<p><strong>Quem não pode receber</strong> aparece na tabela, mas esmaecido e sem caixa de marcar, com o motivo: pediu para não receber, está anonimizado, recusou contato comercial, não tem telefone (ou o telefone está fora do formato) ou já está em outra campanha que ainda não terminou. Esconder essas pessoas faria parecer que sumiram do CRM. São os mesmos vetos da conta “Ver quantas pessoas” — a tabela só os mostra mais cedo.</p>
+<aside class="nota atencao"><strong>Marcar é uma lista fixa.</strong><p>Quem você marca fica no público até você tirar. Uma etiqueta que alguém ganhar <em>depois</em> não traz essa pessoa para a campanha — para pegar os novos, volte e marque de novo. Campanhas salvas antes desta tela continuam valendo pelos critérios que já tinham: elas mostram uma caixa <em>Esta campanha guarda critérios de público</em>, e você escolhe se os mantém ou troca por pessoas marcadas.</p></aside>
+
 <h3 id="disparo-em-massa--csv">Subir uma planilha CSV</h3>
-<p>Em vez de (ou além de) critérios, você pode subir uma planilha de pessoas. Quem está na planilha <strong>entra em Contatos</strong> (se já existir, é reaproveitado) e recebe a campanha.</p>
+<p>Em vez de (ou além de) marcar pessoas do CRM, você pode subir uma planilha de pessoas. Quem está na planilha <strong>entra em Contatos</strong> (se já existir, é reaproveitado) e recebe a campanha.</p>
 <ol class="passos">
   <li>Clique em <span class="ui">Baixar planilha modelo</span> e preencha. As colunas: <code>nome</code>, <code>telefone</code> (as que importam para o WhatsApp), e opcionais <code>email</code>, <code>cpf</code>, <code>nascimento</code> e <code>tags</code> (várias etiquetas separadas por <kbd>|</kbd>).</li>
   <li>Salve como <strong>CSV UTF-8</strong> (no Excel: Salvar como). No Excel, deixe a coluna telefone como <strong>Texto</strong>, senão ele troca o número por 5,51E+12.</li>
@@ -2311,7 +2327,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <table class="tabela">
   <thead><tr><th>Ação</th><th>O que faz de verdade</th></tr></thead>
   <tbody>
-    <tr><td><strong>Preparar lista</strong></td><td>Roda na hora: busca as pessoas do recorte, aplica os vetos e <strong>congela</strong> um destinatário por pessoa (com o texto já pronto). Nada é enviado. Se o recorte não achar ninguém — “O recorte não encontrou nenhum contato. Ajuste o filtro.” — ou ninguém puder receber, a campanha volta a Rascunho.</td></tr>
+    <tr><td><strong>Preparar lista</strong></td><td>Roda na hora: lê as pessoas do público, aplica os vetos e <strong>congela</strong> um destinatário por pessoa (com o texto já pronto). Nada é enviado. Se o recorte não achar ninguém — “O recorte não encontrou nenhum contato. Ajuste o filtro.” — ou ninguém puder receber, a campanha volta a Rascunho.</td></tr>
     <tr><td><strong>Enviar teste</strong></td><td>Manda <strong>uma mensagem real</strong>, pelo número da campanha, a um contato que você escolher. Veja abaixo.</td></tr>
     <tr><td><strong>Iniciar envio</strong></td><td>Pede confirmação (“Começar a enviar para N pessoa(s)? O envio segue o ritmo do número e pode levar horas.”). Depois a campanha vira <em>Enviando</em>. Em número de QR code exige antes o aceite do risco de banimento.</td></tr>
     <tr><td><strong>Pausar</strong></td><td>Para os novos envios. Sem confirmação. A mensagem que já estava saindo não é desfeita.</td></tr>
@@ -2398,7 +2414,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="disparo-em-massa--auditoria">O que fica registrado</h2>
 <p>Criar, preparar, iniciar, retomar, agendar, pausar, cancelar, duplicar, aceitar o risco, enviar teste, a pausa automática, as mudanças de configuração e a lista de exclusão geram registro na <a href="#auditoria">Auditoria</a>. <strong>Editar um rascunho e os textos salvos não são auditados.</strong> Na conversa de quem respondeu, o <a href="#inbox">Inbox</a> mostra “Respondendo à campanha [nome]” com um link para a campanha (só para Gerente ou acima).</p>
-<aside class="nota dica"><strong>Uma ordem segura para a primeira campanha.</strong><p>Comece com um recorte pequeno (máximo de 10 a 20 pessoas), prepare a lista, confira quem ficou fora, envie um <strong>teste para você mesmo</strong> e só então inicie. Prefira o número da API Oficial para volume.</p></aside>
+<aside class="nota dica"><strong>Uma ordem segura para a primeira campanha.</strong><p>Comece com um público pequeno (10 a 20 pessoas marcadas), prepare a lista, confira quem ficou fora, envie um <strong>teste para você mesmo</strong> e só então inicie. Prefira o número da API Oficial para volume.</p></aside>
   </div>
 </article>
 
@@ -8974,7 +8990,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 03 de novembro de 2026 a partir do código na revisão <code>b912cbe</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 03 de novembro de 2026 a partir do código na revisão <code>f57c487</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>
