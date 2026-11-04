@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@8bbe26057562 -->
+<!-- traduzido-de: docs/white-label.md@e2848e64bdc2 -->
 
 [🇧🇷 Português](white-label.md) · [🇺🇸 English](white-label.en.md) · 🇪🇸 Español
 
