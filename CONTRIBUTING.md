@@ -8,6 +8,14 @@
 2. Leia [`ARCHITECTURE.md`](ARCHITECTURE.md) — visão de 1 página.
 3. Identifique o epic de origem em [`docs/stories/epics/MASTER.md`](docs/stories/epics/MASTER.md).
 
+## Contrato de contribuição (CLA)
+
+Antes de aceitar o seu primeiro PR, pedimos que você assine o [`CLA.md`](CLA.md). **Você continua
+dono do que enviou**; o contrato só permite ao projeto distribuí-lo, inclusive sob licença
+comercial. O robô de CLA comenta no seu PR com a frase exata para você responder, e assinar uma
+vez vale para as próximas contribuições. Quem contribui em nome de uma empresa precisa da
+autorização dela.
+
 ## Fluxo
 
 ### Branches

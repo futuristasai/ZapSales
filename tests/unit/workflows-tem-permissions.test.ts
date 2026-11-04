@@ -62,6 +62,18 @@ const ESCRITA_JUSTIFICADA: Record<string, string> = {
     "abre a issue `implantacao-falhou` quando a implantação contínua da produção falha (ou é " +
     "recusada) e a fecha na seguinte que passa — é o aviso que o critério da issue #24 exige; " +
     "o job não faz checkout de código de PR (só roda por push na main)",
+  // cla.yml: cobra a assinatura do CLA em PR de terceiros. Os quatro escopos são o que a ação de
+  // terceiro (fixada por hash) pede para ler o PR, comentar, gravar a assinatura na branch
+  // `cla-assinaturas` (nunca na `main`, que a regra da branch protege) e publicar o status.
+  // O job não faz checkout nem tem `run:`: nenhum código de PR é executado.
+  "cla.yml::actions: write":
+    "a ação reexecuta o próprio check depois que o contribuidor assina (comentário `recheck`)",
+  "cla.yml::contents: write":
+    "grava o arquivo de assinaturas na branch `cla-assinaturas` — fora da `main`, que exige PR",
+  "cla.yml::pull-requests: write":
+    "comenta no PR pedindo a assinatura e confirmando quando todos assinaram",
+  "cla.yml::statuses: write":
+    "publica o resultado (assinou / falta assinar) no PR",
   "acolhida.yml::pull-requests: write":
     "comenta a acolhida no PR de fork; é o ÚNICO escopo do workflow (o bloco zera o resto), " +
     "e o job não faz checkout nem usa action nenhuma — ver tests/unit/acolhida-nao-toca-no-fork.test.ts",
