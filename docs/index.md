@@ -149,6 +149,7 @@ e vai morar em `kit/`; o kit herdado da origem e os guias dele foram removidos.
 | [`runbooks/instalacao-vps-convivio.md`](runbooks/instalacao-vps-convivio.md) | **Instalar o ZapSales numa VPS que já roda outros apps** — o `kit/instalar.sh`, passo a passo e conferências |
 | [`runbooks/backup-e-restauracao.md`](runbooks/backup-e-restauracao.md) | **Backup e restauração** — dump diário, cópia semanal criptografada no R2, ensaio mensal e desastre |
 | [`runbooks/deploy.md`](runbooks/deploy.md) | **Deploy em produção — o roteamento em todo `up -d`, verificação pós-deploy, build de emergência** |
+| [`runbooks/seguranca-do-github.md`](runbooks/seguranca-do-github.md) | **Segurança do GitHub** — regra da `main`, detecção de segredos, o que é da conta do dono e o que fazer se um segredo vazar |
 | [`runbooks/custo-e-cota-do-supabase.md`](runbooks/custo-e-cota-do-supabase.md) | **“Meu Supabase estourou a cota”** — como medir a origem do consumo, os dois intervalos da fila e as duas tabelas que só crescem |
 | [`runbooks/postgrest-replay-do-gateway.md`](runbooks/postgrest-replay-do-gateway.md) | PostgREST em 503 `PGRST002` com o banco saudável — replay do gateway do Supabase |
 | [`runbooks/relogio-http.md`](runbooks/relogio-http.md) | Relógio HTTP para instalação sem agendador de minuto |
