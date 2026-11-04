@@ -58,8 +58,8 @@ O "CRM" é a categoria de entrada, não o teto. O ZapSales é o lugar onde a ven
 ## Modelo do projeto (sem letra miúda)
 
 - **Hoje:** o ZapSales roda na VPS própria do dono (Hostinger), para a operação dele.
-- **Depois da validação interna:** o código vira open source (MIT, ver [`LICENSE`](LICENSE)), completo, sem versão paga e sem feature travada.
-- **Quem instala pode cobrar os próprios clientes** ([ADR-0004](docs/adr/0004-cobranca-do-revendedor.md)) — capacidade do núcleo, desligada por padrão.
+- **Licença:** o código é público (*source-available*) sob a [PolyForm Noncommercial 1.0.0](LICENSE) — qualquer pessoa lê, estuda e testa sem fins comerciais. **Usar numa empresa exige licença comercial**, de pagamento único e sem assinatura ([`LICENSING.md`](LICENSING.md)). O produto **não é open source** no sentido da OSI; as versões até a tag `ultima-versao-mit` foram MIT e seguem MIT para quem as obteve.
+- **Quem instala pode cobrar os próprios clientes** ([ADR-0004](docs/adr/0004-cobranca-do-revendedor.md)) — capacidade do núcleo, desligada por padrão. Revender ou instalar para terceiros exige a licença comercial de **revenda** ([`LICENSING.md`](LICENSING.md)).
 - **O caminho genérico nunca é sabotado:** `docker compose` funciona em qualquer VPS; o kit da Hostinger é o caminho recomendado, nunca o único.
 
 ## Princípios de comunicação
@@ -73,3 +73,5 @@ O "CRM" é a categoria de entrada, não o teto. O ZapSales é o lugar onde a ven
 ---
 
 *Última revisão: 2026-10-04 — reposicionamento para ZapSales: CRM de WhatsApp com campanhas pela API Oficial da Meta, VPS Hostinger, open source depois da validação interna.*
+
+*Revisão 2026-11-04 — licença: de MIT para *source-available* (PolyForm Noncommercial + licença comercial de pagamento único). Os trechos de 2026-10-04 acima que falam em "open source" descrevem a decisão anterior.*

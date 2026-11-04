@@ -4,7 +4,7 @@
 
 Guia para quem instala o ZapSales **para outras empresas** — agência, consultoria, revendedor — e cobra por isso.
 
-A licença é MIT: você pode modificar, hospedar para terceiros, revender e cobrar o que quiser. Não há royalty, não há cláusula proibindo hospedagem comercial e não existe versão paga que trave funcionalidade do seu cliente.
+O código é público sob a PolyForm Noncommercial, e **uso comercial exige licença comercial** — inclusive instalar para outras empresas e cobrar por isso. Quem faz isso precisa da modalidade de **revenda** ([`LICENSING.md`](../LICENSING.md)), de pagamento único e sem assinatura. Operar como serviço, instalar na VPS do cliente, entregar o código e autorizar redistribuição são permissões separadas, definidas no contrato.
 
 ---
 

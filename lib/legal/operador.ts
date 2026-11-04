@@ -1,7 +1,7 @@
 /**
  * Quem é o responsável legal por ESTA instalação.
  *
- * O ZapSales é MIT e self-host: quem instala numa VPS opera o próprio
+ * O ZapSales é self-host: quem instala numa VPS opera o próprio
  * sistema, decide o que fazer com os dados dos clientes dele e responde por
  * eles. Os mantenedores do projeto não têm acesso ao banco de ninguém e não são
  * parte de nenhum contrato entre o operador e os clientes dele.

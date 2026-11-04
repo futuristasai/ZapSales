@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@8bbe26057562 -->
+<!-- traduzido-de: docs/white-label.md@e2848e64bdc2 -->
 
 [🇧🇷 Português](white-label.md) · [🇺🇸 English](white-label.en.md) · 🇪🇸 Español
 
@@ -6,7 +6,7 @@
 
 Guía para quien instala ZapSales **para otras empresas** — agencia, consultoría, revendedor — y cobra por ello.
 
-La licencia es MIT: puedes modificarlo, alojarlo para terceros, revenderlo y cobrar lo que quieras. No hay regalías, no hay cláusula que prohíba el alojamiento comercial y no existe una versión de pago que bloquee funciones a tu cliente.
+El código es público bajo la licencia PolyForm Noncommercial, y **el uso comercial requiere una licencia comercial** — incluido instalarlo para otras empresas y cobrar por ello. Eso requiere la modalidad de **reventa** ([`LICENSING.md`](../LICENSING.md), en portugués): pago único, sin suscripción. Operarlo como servicio, instalarlo en la VPS del cliente, entregar el código y autorizar la redistribución son permisos separados, definidos en el contrato.
 
 ---
 

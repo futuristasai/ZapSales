@@ -16,18 +16,18 @@ owner: dono do produto
 
 Este PRD nasceu (v0.1, abril/2026) com o produto posicionado como **CRM operacional para e-commerce**. Após a abertura do código, a realidade da adoção mudou o produto: a maioria da comunidade roda o ZapSales em **clínicas, infoprodutos, imobiliárias, agências e serviços**, e os pedidos de feature nos especializaram em **agentes de IA integrados via MCP**. O posicionamento vigente está em [`VISION.md`](../../VISION.md):
 
-> **Sistema operacional de vendas open source com agentes de IA nativos e WhatsApp — self-hosted, multi-tenant, para qualquer negócio que vende conversando.**
+> **Sistema operacional de vendas com agentes de IA nativos e WhatsApp — self-hosted, multi-tenant, para qualquer negócio que vende conversando.**
 
 Implicações de leitura deste documento e dos sub-PRDs:
 - **E-commerce passa de definição do produto a primeiro vertical.** Referências a pipeline de pedidos e vocabulário de e-commerce continuam válidas como o template do vertical de origem — o mecanismo que as generaliza é o `vocabulary` configurável por pipeline (Sub-PRD 02 §3.7).
-- **O modelo é self-host em VPS própria** (hoje a VPS Hostinger do dono), com o código aberto depois da validação interna — não venda de assinatura. Menções a "modo SaaS" descrevem uma opção arquitetural preservada, não o plano comercial corrente.
+- **O modelo é self-host em VPS própria** (hoje a VPS Hostinger do dono), com o código público (*source-available*) e licença comercial de pagamento único — não venda de assinatura. Menções a "modo SaaS" descrevem uma opção arquitetural preservada, não o plano comercial corrente.
 - Requisitos, contratos e decisões técnicas dos sub-PRDs permanecem válidos — a arquitetura multi-tenant com `vocabulary` configurável foi o que permitiu a expansão multi-nicho sem refactor.
 
 ---
 
 ## 1. Sumário Executivo
 
-**O que é.** ZapSales é um sistema operacional de vendas open source com agentes de IA nativos — um CRM operacional onde a IA atende, qualifica e move o funil junto com humanos. Unifica atendimento humano, agentes com RAG por tenant, gestão de pedidos/negócios e pipeline de pós-venda numa única plataforma multi-tenant, tendo WhatsApp como canal primário (via WAHA, API não-oficial). Nasceu especializado em e-commerce (vertical de origem); hoje serve qualquer negócio que vende conversando — ver Nota de transição (§0).
+**O que é.** ZapSales é um sistema operacional de vendas com agentes de IA nativos — um CRM operacional onde a IA atende, qualifica e move o funil junto com humanos. Unifica atendimento humano, agentes com RAG por tenant, gestão de pedidos/negócios e pipeline de pós-venda numa única plataforma multi-tenant, tendo WhatsApp como canal primário (via WAHA, API não-oficial). Nasceu especializado em e-commerce (vertical de origem); hoje serve qualquer negócio que vende conversando — ver Nota de transição (§0).
 
 **Quem usa.** Cada pessoa opera as organizações às quais possui vínculo ativo, com papel próprio em cada uma. A administração da plataforma gerencia a instalação; quando precisa acompanhar dados de uma organização, abre uma sessão temporária de edição ou somente leitura, vinculada à sessão autenticada e auditada com o ator real. Esse acompanhamento não cria membership nem uma caixa unificada cross-tenant. O contrato vigente está em [`docs/support-sessions.md`](../support-sessions.md).
 
@@ -61,7 +61,7 @@ Implicações de leitura deste documento e dos sub-PRDs:
 
 > "ZapSales é o sistema operacional de vendas onde agentes de IA e humanos atendem juntos os clientes de qualquer negócio que vende pelo WhatsApp, com Customer 360° unificado, compliance LGPD nativa, operação multi-tenant pronta pra escala — e agentes que se auto-aprimoram a cada conversa resolvida."
 
-Em três anos: ser a resposta padrão pra "melhor CRM open source com agentes de IA e WhatsApp" — milhares de instâncias self-hosted (VPS Hostinger como caminho recomendado), ecossistema de agentes plugados via MCP público, templates prontos por nicho (e-commerce, clínica, imobiliária, infoproduto), e o flywheel de auto-aprimoramento medido em produção. Posicionamento completo em [`VISION.md`](../../VISION.md).
+Em três anos: ser a resposta padrão pra "melhor CRM self-host com agentes de IA e WhatsApp" — milhares de instâncias self-hosted (VPS Hostinger como caminho recomendado), ecossistema de agentes plugados via MCP público, templates prontos por nicho (e-commerce, clínica, imobiliária, infoproduto), e o flywheel de auto-aprimoramento medido em produção. Posicionamento completo em [`VISION.md`](../../VISION.md).
 
 ---
 

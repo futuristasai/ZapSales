@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@8bbe26057562 -->
+<!-- traduzido-de: docs/white-label.md@e2848e64bdc2 -->
 
 [🇧🇷 Português](white-label.md) · 🇺🇸 English · [🇪🇸 Español](white-label.es.md)
 
@@ -6,7 +6,7 @@
 
 A guide for whoever installs ZapSales **for other companies** — agency, consultancy, reseller — and charges for it.
 
-The license is MIT: you may modify it, host it for third parties, resell it and charge whatever you want. There is no royalty, no clause forbidding commercial hosting, and there is no paid edition that locks features away from your client.
+The code is public under the PolyForm Noncommercial license, and **commercial use requires a commercial license** — including installing it for other companies and charging for it. That takes the **resale** tier ([`LICENSING.md`](../LICENSING.md), in Portuguese): one-time payment, no subscription. Operating it as a service, installing it on a client's VPS, handing over the code and allowing redistribution are separate permissions, set in the contract.
 
 ---
 

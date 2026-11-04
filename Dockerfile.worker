@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Procedência (doutrina de packaging, invariante 2).
 LABEL org.opencontainers.image.source="https://github.com/futuristasai/ZapSales" \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0" \
       org.opencontainers.image.title="ZapSales worker"
 
 # pnpm fixado na versão do lockfile do repo (pnpm 10 bloquearia build scripts).

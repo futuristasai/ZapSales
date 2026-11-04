@@ -1,6 +1,6 @@
 # ZapSales
 
-> WhatsApp CRM with a Kanban pipeline, a shared inbox, AI agents and bulk campaigns over Meta's official WhatsApp API. Numbers connect through the official Meta Cloud API (recommended for campaigns) or through WAHA/QR code (support); whoever replies to a campaign lands in the pipeline and in the AI agent with the context of what was sent. Self-hosted and multi-tenant; runs on its owner's VPS (Hostinger) and becomes open source (MIT) after internal validation.
+> WhatsApp CRM with a Kanban pipeline, a shared inbox, AI agents and bulk campaigns over Meta's official WhatsApp API. Numbers connect through the official Meta Cloud API (recommended for campaigns) or through WAHA/QR code (support); whoever replies to a campaign lands in the pipeline and in the AI agent with the context of what was sent. Self-hosted and multi-tenant; runs on its owner's VPS (Hostinger) and its source code is public under a source-available license (PolyForm Noncommercial; commercial use requires a license).
 
 Key facts:
 - Category: WhatsApp CRM / bulk campaigns over the official API / AI sales agents
@@ -11,7 +11,7 @@ Key facts:
 - Multi-niche: configurable vocabulary per pipeline (lead = Customer/Patient/Buyer; won = Paid/Booked/Closed)
 - Compliance: multi-tenant Postgres RLS (isolation tested in CI), LGPD by design (redact, data_request, anonymization), append-only audit log
 - Stack: Next.js 16, React 19, TypeScript, Supabase (Postgres + Auth + Realtime + Storage), Vercel AI SDK, WAHA
-- License: MIT. Self-hosted; your data stays on your VPS.
+- License: PolyForm Noncommercial 1.0.0 (source-available, not open source); commercial use requires a commercial license (see LICENSING.md). Self-hosted; your data stays on your VPS.
 
 ## Docs
 

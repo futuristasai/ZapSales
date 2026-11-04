@@ -42,4 +42,4 @@ Stack, structure and tests are described in the [Portuguese README](README.md) a
 
 ## 📜 License
 
-[MIT](LICENSE).
+The code is public (_source-available_, **not open source**) under the [PolyForm Noncommercial 1.0.0](LICENSE): free to study, test and use **for noncommercial purposes**. Using it in a company, hosting it for third parties or reselling it requires a **commercial license** — see [`LICENSING.md`](LICENSING.md) (Portuguese). Contributions follow the [CLA](CLA.md); third-party notices are in [`NOTICE`](NOTICE).

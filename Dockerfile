@@ -87,7 +87,7 @@ WORKDIR /app
 # para qualquer build, inclusive o local de docker-compose.build.yml, que não
 # passa pelo metadata-action e sem isto sairia sem origem nenhuma.
 LABEL org.opencontainers.image.source="https://github.com/futuristasai/ZapSales" \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0" \
       org.opencontainers.image.title="ZapSales"
 
 # ⚠️ NADA de ARG de versão acima das camadas caras deste estágio. No BuildKit a

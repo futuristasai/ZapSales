@@ -17,7 +17,7 @@ A especificação do produto e o plano por fases estão na issue #1 do GitHub; a
 
 ## Visão (1 parágrafo)
 
-ZapSales é um CRM de WhatsApp com funil (Kanban), inbox, agentes de IA e campanhas em massa pela API Oficial da Meta. Os números se conectam de dois jeitos — API Oficial (recomendada para campanha) e WAHA/QR code (atendimento) —, e quem responde a uma campanha cai no funil e no agente com o contexto do que foi enviado. Agentes com RAG por tenant atendem, qualificam e movem o funil junto com humanos; CRM inteiro exposto via MCP. Roda em VPS própria (Hostinger), e depois da validação interna vira open source. Arquitetura multi-tenant com RLS desde o dia 1; LGPD nativa. Posicionamento completo: `VISION.md`.
+ZapSales é um CRM de WhatsApp com funil (Kanban), inbox, agentes de IA e campanhas em massa pela API Oficial da Meta. Os números se conectam de dois jeitos — API Oficial (recomendada para campanha) e WAHA/QR code (atendimento) —, e quem responde a uma campanha cai no funil e no agente com o contexto do que foi enviado. Agentes com RAG por tenant atendem, qualificam e movem o funil junto com humanos; CRM inteiro exposto via MCP. Roda em VPS própria (Hostinger), com o código público sob licença *source-available* (PolyForm Noncommercial; uso comercial exige licença — ver [`LICENSING.md`](LICENSING.md)). Arquitetura multi-tenant com RLS desde o dia 1; LGPD nativa. Posicionamento completo: `VISION.md`.
 
 ---
 
@@ -521,7 +521,7 @@ Ao mexer em schema, RLS, RBAC, atribuição, escopo, roteamento, follow-up, webh
 
 ## QA Visual com Recursos Reais — DOUTRINA (produto self-host)
 
-**O ZapSales é distribuído open-source: a experiência de quem instala numa VPS É o produto.** Toda feature nova (ou fix de comportamento visível) DEVE ser provada como um **usuário leigo a usaria de verdade** — pelo frontend, num ambiente que imita a instalação fresca — antes de "pronto". Não é opcional; é critério de aceite de toda sessão que toca UI ou fluxo de usuário.
+**O ZapSales é distribuído para self-host, com o código público (*source-available*): a experiência de quem instala numa VPS É o produto.** Toda feature nova (ou fix de comportamento visível) DEVE ser provada como um **usuário leigo a usaria de verdade** — pelo frontend, num ambiente que imita a instalação fresca — antes de "pronto". Não é opcional; é critério de aceite de toda sessão que toca UI ou fluxo de usuário.
 
 **O que "recurso real" significa (e o que NÃO conta):**
 - **Conta.** Prova pela tela, dirigindo o browser (Playwright), logando com conta de teste real. `curl`/chamada de API **não** provam UX — validam o backend, mas não o que o usuário vê, clica e entende. Use curl só como diagnóstico.
@@ -554,9 +554,9 @@ Ao mexer em schema, RLS, RBAC, atribuição, escopo, roteamento, follow-up, webh
 
 ---
 
-## Migrations & Banco — DOUTRINA (projeto open-source)
+## Migrations & Banco — DOUTRINA (código público, instalado por terceiros)
 
-**Este projeto é open-source. Toda mudança de schema DEVE sair como migration versionada** — quem clonou uma versão antiga do banco precisa conseguir atualizar aplicando as migrations em ordem. **Nunca** aplique `ALTER`/`CREATE` solto no banco sem o arquivo correspondente. Isto é critério de aceite de TODA sessão, não opcional.
+**O código deste projeto é público e instalado por terceiros. Toda mudança de schema DEVE sair como migration versionada** — quem clonou uma versão antiga do banco precisa conseguir atualizar aplicando as migrations em ordem. **Nunca** aplique `ALTER`/`CREATE` solto no banco sem o arquivo correspondente. Isto é critério de aceite de TODA sessão, não opcional.
 
 Processo padrão (siga sempre):
 
@@ -651,6 +651,28 @@ Processo padrão (siga sempre):
     apêndice é o mecanismo padrão desta casa.
 
 **Resumo do fluxo de uma mudança de schema:** arquivo em `migrations/` (fonte da verdade p/ Supabase CLI) **+** apêndice idempotente no `baseline.sql` (p/ a instalação) **+** linha `-- manifest:` no cabeçalho do `.sql`. Os dois artefatos de schema andam juntos. Nunca edite migrations já aplicadas — corrija com uma "forward-fix" nova (e mais um apêndice no baseline).
+
+---
+
+## Licença e contribuição — DOUTRINA (NÃO NEGOCIÁVEL)
+
+Lei completa em [`LICENSING.md`](LICENSING.md). O não-negociável:
+
+1. **Não é open source — nunca escreva isso.** O código é público sob a PolyForm Noncommercial
+   1.0.0, mais licença comercial para uso em empresa. O termo correto é *source-available*. As
+   versões até a tag `ultima-versao-mit` foram MIT e seguem MIT para quem as obteve; nada depois
+   dela volta a ser.
+2. **Contribuição de terceiros exige CLA** (`CLA.md`, robô em `.github/workflows/cla.yml`). Sem
+   assinatura não se mescla: código sem esse direito não pode ser vendido junto. Confira o check
+   `cla` antes de mesclar PR de fora.
+3. **Dependência nova de produção tem licença permissiva.** Nada GPL, AGPL, SSPL, BUSL nem "não
+   comercial". LGPL e MPL só sem modificação e com aviso no `NOTICE`. Confira com
+   `pnpm licenses list --prod`.
+4. **O texto da licença não se edita.** O `LICENSE` é o texto oficial da PolyForm, intacto (a
+   PolyForm exige tirar o nome dela de qualquer texto alterado). O contrato comercial é outro
+   documento.
+5. **Nada aqui é trava técnica.** A licença é o fundamento legal. Verificação de licença por
+   servidor é outra peça, ainda não construída.
 
 ---
 
