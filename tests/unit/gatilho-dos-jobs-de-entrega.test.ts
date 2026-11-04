@@ -255,6 +255,21 @@ const GATILHO_ESPERADO: Record<string, { condicao: string | null; efeito: string
       "boas-vindas de robô; sem a de dono, o fork de cada self-hoster herda um bot que fala pela " +
       "gente no repositório dele, prometendo um prazo que ninguém lá concordou em cumprir.",
   },
+  "cla.yml::cla": {
+    condicao:
+      "github.repository_owner == 'futuristasai' && " +
+      "((github.event_name == 'pull_request_target' && github.actor != 'dependabot[bot]') || " +
+      "(github.event_name == 'issue_comment' && " +
+      "(github.event.comment.body == 'recheck' || " +
+      "github.event.comment.body == 'Li o CLA (v1.0) e concordo com os seus termos.')))",
+    efeito:
+      "Este job cobra a assinatura do CLA em PR de terceiros — é o que garante ao Titular o direito " +
+      "de licenciar, inclusive de forma comercial, o código que não é dele. Quando não roda, o PR de " +
+      "terceiro chega sem o pedido de assinatura e ninguém é avisado; por isso quem mescla confere o " +
+      "check `cla`. As condições são deliberadas: a de dono impede o fork de herdar o robô, e a do " +
+      "Dependabot evita falha de token só-leitura que pareceria falta de assinatura. Não é check " +
+      "obrigatório de propósito: se a ação (de 2024, node20) quebrar, o repositório não trava.",
+  },
   "implantar.yml::portao": {
     condicao:
       "vars.DEPLOY_AUTOMATICO == 'ligado' && (github.event_name == 'workflow_dispatch' || " +

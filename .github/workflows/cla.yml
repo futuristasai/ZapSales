@@ -1,0 +1,66 @@
+# CLA — pede a assinatura do Contrato de Licença de Contribuidor em PR de terceiros.
+#
+# POR QUE EXISTE. Para o Titular poder distribuir o ZapSales sob licença comercial,
+# ele precisa ter, por escrito, o direito de licenciar tudo o que está no repositório.
+# Código de terceiro aceito sem CLA fica preso à licença com que chegou, e não pode ser
+# vendido junto. O texto do contrato é o `CLA.md`; as assinaturas ficam num arquivo da
+# branch `cla-assinaturas`, e não na `main`, porque a regra da `main` exige PR com checks
+# verdes e um robô não assina PR.
+#
+# SEGURANÇA — este é um `pull_request_target`, o gatilho mais valioso do repositório:
+#   1. Ele roda no contexto da BASE, com token de escrita. Por isso NÃO há
+#      `actions/checkout` aqui: nenhum código do PR é baixado nem executado.
+#   2. A ação é de terceiro (SAP) e está fixada pelo hash do commit, com a versão ao lado
+#      (cerca: tests/unit/acoes-fixadas-por-hash.test.ts).
+#   3. Os escopos de escrita estão justificados em tests/unit/workflows-tem-permissions.test.ts.
+#   4. Só roda no repositório do dono (`repository_owner`): o fork de cada pessoa herda
+#      este arquivo, e ali não há branch de assinaturas nem Titular.
+#   5. NENHUM dado do PR entra em `run:` — não há `run:`.
+#
+# QUEM NÃO ASSINA: o dono, o robô de release e o github-actions (allowlist). O Dependabot
+# fica de fora do `if`: nos PRs dele o token de `pull_request_target` é só leitura, e a
+# ação falharia por isso, não por falta de assinatura.
+#
+# É CHECK INFORMATIVO, não obrigatório, de propósito: se a ação quebrar (ela é de uma
+# versão de 2024 e roda em node20), o repositório não trava — só deixa de cobrar. Quem
+# mescla PR de terceiro confere o `cla` verde. Depois de provado com um PR real, vale
+# acrescentar `cla` à regra da `main`.
+name: cla
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, closed, synchronize]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  cla:
+    if: github.repository_owner == 'futuristasai' && ((github.event_name == 'pull_request_target' && github.actor != 'dependabot[bot]') || (github.event_name == 'issue_comment' && (github.event.comment.body == 'recheck' || github.event.comment.body == 'Li o CLA (v1.0) e concordo com os seus termos.')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Conferir a assinatura do CLA
+        uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-signatures: assinaturas/cla.json
+          path-to-document: https://github.com/futuristasai/ZapSales/blob/main/CLA.md
+          branch: cla-assinaturas
+          allowlist: futuristasai,leandromastelliniai,dependabot[bot],zapsales-release[bot],github-actions[bot]
+          lock-pullrequest-aftermerge: "false"
+          create-file-commit-message: "CLA: cria o arquivo de assinaturas"
+          signed-commit-message: "CLA: $contributorName assinou em #$pullRequestNo"
+          custom-notsigned-prcomment: >-
+            Obrigado pela contribuição! Antes de poder aceitá-la, precisamos do seu
+            **Contrato de Licença de Contribuidor (CLA)**. Você continua dono do que enviou;
+            o contrato só nos permite distribuir o ZapSales, inclusive sob licença comercial.
+            Leia o texto abaixo e, se concordar, assine.
+          custom-pr-sign-comment: "Li o CLA (v1.0) e concordo com os seus termos."
+          custom-allsigned-prcomment: "Todos os autores deste PR assinaram o CLA. Obrigado!"

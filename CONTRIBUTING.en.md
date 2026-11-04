@@ -8,6 +8,13 @@
 2. Read [`ARCHITECTURE.md`](ARCHITECTURE.md) — the 1-page view.
 3. Identify the source epic in [`docs/stories/epics/MASTER.md`](docs/stories/epics/MASTER.md).
 
+## Contributor agreement (CLA)
+
+Before we accept your first PR we ask you to sign the [`CLA.md`](CLA.md). **You keep ownership of
+what you submit**; the agreement only lets the project distribute it, including under a commercial
+license. The CLA bot comments on your PR with the exact sentence to reply with, and signing once
+covers your later contributions. If you contribute on behalf of a company, you need their permission.
+
 ## Flow
 
 ### Branches
