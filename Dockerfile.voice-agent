@@ -4,7 +4,7 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-LABEL org.opencontainers.image.source="https://github.com/leandromastelliniai/ZapSales" \
+LABEL org.opencontainers.image.source="https://github.com/futuristasai/ZapSales" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="ZapSales voice-agent"
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # kit/obter.sh — o comando único: baixa o ZapSales para /opt/zapsales e instala.
 #
-#   curl -fsSL https://raw.githubusercontent.com/leandromastelliniai/ZapSales/main/kit/obter.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash
 #
 # Feito para a VPS que ainda não tem nada (issue #12): ele é baixado SOZINHO,
 # então não pode depender de nenhum outro arquivo do kit. O que faz:
@@ -31,7 +31,7 @@
 # arquivo nunca toma esse caminho.
 set -Eeuo pipefail
 
-REPO="${ZAPSALES_REPO:-https://github.com/leandromastelliniai/ZapSales}"
+REPO="${ZAPSALES_REPO:-https://github.com/futuristasai/ZapSales}"
 PASTA="${ZAPSALES_PASTA:-/opt/zapsales}"
 
 msg()   { printf '%s\n' "$*"; }

@@ -226,7 +226,7 @@ echo "obter — o comando único escolhe a versão"
 ZAPSALES_OBTER_SO_FUNCOES=1 . kit/obter.sh
 set +e  # o obter.sh liga -e; este gate conta falhas, não aborta na primeira
 release='{
-  "url": "https://api.github.com/repos/leandromastelliniai/ZapSales/releases/1",
+  "url": "https://api.github.com/repos/futuristasai/ZapSales/releases/1",
   "tag_name": "v0.2.0",
   "name": "v0.2.0 — tag_name falso no nome"
 }'
@@ -239,8 +239,8 @@ igual "limite da API com versão em uso: fica a versão" "v0.1.0" \
   "$(printf '{"message":"API rate limit exceeded"}\n' | ref_pela_resposta 403 v0.1.0)"
 verdade "sem rede e sem versão em uso: erro, não main" \
   grep -q '^erro:' <<<"$(printf '' | ref_pela_resposta 000 '')"
-igual "API do repositório" "https://api.github.com/repos/leandromastelliniai/ZapSales" \
-  "$(api_do_repo https://github.com/leandromastelliniai/ZapSales.git)"
+igual "API do repositório" "https://api.github.com/repos/futuristasai/ZapSales" \
+  "$(api_do_repo https://github.com/futuristasai/ZapSales.git)"
 igual "o obter não depende de outro arquivo do kit" "" "$(grep -nE '^[[:space:]]*(\.|source) ' kit/obter.sh)"
 verdade "obter.sh e instalar.sh são executáveis no git" \
   test "$(git ls-files -s kit/obter.sh kit/instalar.sh | awk '{print $1}' | sort -u)" = "100755"

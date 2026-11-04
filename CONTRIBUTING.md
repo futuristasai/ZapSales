@@ -103,7 +103,7 @@ Ao finalizar um epic:
    > Esta lista dizia "três obrigatórios" e chamava o `e2e` de não-bloqueante. Estava
    > desatualizada nos dois pontos, e quem a usasse como régua mediria contra a régua errada.
    > Confira na fonte antes de confiar em qualquer lista escrita:
-   > `gh api repos/leandromastelliniai/ZapSales/branches/main/protection --jq '.required_status_checks.contexts'`
+   > `gh api repos/futuristasai/ZapSales/branches/main/protection --jq '.required_status_checks.contexts'`
 
 ### Pegando uma issue — o protocolo
 
@@ -216,12 +216,12 @@ Veja [`README.md`](README.md) §Como rodar local.
 
 ## Suporte
 
-**[GitHub Discussions](https://github.com/leandromastelliniai/ZapSales/discussions)** — é o canal público,
+**[GitHub Discussions](https://github.com/futuristasai/ZapSales/discussions)** — é o canal público,
 funciona para qualquer pessoa e é onde a resposta fica registrada para quem vier depois. Para bug,
-[abra uma issue](https://github.com/leandromastelliniai/ZapSales/issues/new/choose).
+[abra uma issue](https://github.com/futuristasai/ZapSales/issues/new/choose).
 
 Se for algo que não cabe em público: vulnerabilidade vai pelo
-[relato privado do GitHub](https://github.com/leandromastelliniai/ZapSales/security/advisories/new)
+[relato privado do GitHub](https://github.com/futuristasai/ZapSales/security/advisories/new)
 (ver [`SECURITY.md`](SECURITY.md)); conduta, pelo canal de [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 
 > Esta seção apontava para um Discord interno cujo convite mora num Notion privado — inalcançável

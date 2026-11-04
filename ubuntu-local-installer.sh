@@ -37,7 +37,7 @@ fi
 # Se não estivermos na raiz do projeto, clona e entra nele.
 if [ ! -f "package.json" ]; then
   step "Clonando o repositório ZapSales..."
-  git clone https://github.com/leandromastelliniai/ZapSales.git
+  git clone https://github.com/futuristasai/ZapSales.git
   cd ZapSales
 fi
 

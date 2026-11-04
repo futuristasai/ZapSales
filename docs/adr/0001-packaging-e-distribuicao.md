@@ -31,6 +31,10 @@ enxergou o defeito mais caro, que era o motivo real para escrever esta doutrina.
 
 ### D1 — O namespace é `ghcr.io/leandromastelliniai/*`. Não migramos para uma org.
 
+> **Superada em 2026-11-04.** O repositório foi transferido para a conta comercial `futuristasai`, e o namespace
+> passou a ser `ghcr.io/futuristasai/*`. O texto abaixo é o registro da decisão original e foi mantido como estava;
+> a decisão vigente e o que mudou estão em `docs/doctrine/packaging.md` ("Decisões registradas").
+
 **Escolhido porque** é o namespace que o CI já publica (`IMAGE_NAME: ${{ github.repository }}`),
 que o compose já consome, e — decisivo — que está **gravado no `.env` de cada cliente
 instalado**, por `install.sh` e por `update.sh`, como string literal.
@@ -46,7 +50,7 @@ instalação (`IMG_NS`), mais o default de cada serviço em `docker-compose.prod
 que nenhum commit alcança. Os testes que vigiavam a consistência do namespace saíram junto com
 o kit da origem; o kit novo (issues #3 e #12) precisa repor essa vigilância. Régua para
 reconferir antes de citar este parágrafo:
-`grep -rln "ghcr.io/leandromastelliniai" --exclude-dir=node_modules .`
+`grep -rln "ghcr.io/futuristasai" --exclude-dir=node_modules .`
 
 **Reconsideraríamos se:** o projeto ganhar mantenedores com necessidade de publicar sem
 credencial pessoal, ou o repositório mudar de dono. Nesse caso a migração é **aditiva**:

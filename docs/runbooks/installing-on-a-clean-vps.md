@@ -46,7 +46,7 @@ Log in to the VPS from a terminal (`ssh root@VPS-IP`; on Windows, PowerShell alr
 or through the **browser terminal** in the Hostinger panel, and paste:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leandromastelliniai/ZapSales/main/kit/obter.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash
 ```
 
 It downloads the latest published version of ZapSales to `/opt/zapsales` (while there is none

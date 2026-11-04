@@ -22,7 +22,7 @@ ZapSales reúne, en un solo producto, lo que el equipo comercial usa para vender
   Ads, Prospección y Propuestas.
 
 La especificación completa y el plan por fases están en la issue
-[#1](https://github.com/leandromastelliniai/ZapSales/issues/1).
+[#1](https://github.com/futuristasai/ZapSales/issues/1).
 
 > **Estado:** fase 0 — la base del CRM está en el repositorio con la identidad ZapSales. El kit
 > de instalación en la VPS (Hostinger) y el canal oficial completo llegan en las próximas fases.
@@ -30,7 +30,7 @@ La especificación completa y el plan por fases están en la issue
 ## 🧑‍💻 Desarrollo
 
 ```bash
-git clone https://github.com/leandromastelliniai/ZapSales.git
+git clone https://github.com/futuristasai/ZapSales.git
 cd ZapSales
 nvm use && npm install -g pnpm && pnpm install
 cp .env.example .env.local   # guía completa en docs/SETUP.md

@@ -52,7 +52,7 @@ ainda não tem tela de troca de senha, e o "esqueci a senha" depende de e-mail c
 ### Imagens: registro ou construção local
 
 O padrão é **puxar** as imagens publicadas pelo CI, na tag da versão
-(`ghcr.io/leandromastelliniai/zapsales:<versão>`) — doutrina de packaging. Enquanto o
+(`ghcr.io/futuristasai/zapsales:<versão>`) — doutrina de packaging. Enquanto o
 repositório e as imagens forem privados, a VPS não as alcança sem `docker login ghcr.io`
 com um token `read:packages`; nesse caso use `ZAPSALES_IMAGENS=construir`, que constrói as
 três imagens na própria VPS (~10 min numa máquina de 8 núcleos). **É exceção e é dívida**

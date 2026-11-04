@@ -48,8 +48,8 @@ if [ -f "$AQUI/lib/implantar.sh" ]; then LIB="$AQUI/lib"; else LIB=/usr/local/li
 
 RAIZ="${ZAPSALES_PASTA:-/opt/zapsales}"
 ENV_ARQ="$RAIZ/.env"
-REPO_GITHUB="leandromastelliniai/ZapSales"
-REGISTRO_IMAGENS="ghcr.io/leandromastelliniai"
+REPO_GITHUB="futuristasai/ZapSales"
+REGISTRO_IMAGENS="ghcr.io/futuristasai"
 IMAGENS=(zapsales zapsales-worker zapsales-scheduler)
 USUARIO=zapsales-deploy
 COMANDO=/usr/local/sbin/zapsales-implantar

@@ -591,4 +591,4 @@ Bem-vindo ao ZapSales. 🛠️
 
 ---
 
-> **Achou um erro neste guia?** Abra uma [issue](https://github.com/leandromastelliniai/ZapSales/issues) ou mande um PR — esse doc vive da contribuição da comunidade.
+> **Achou um erro neste guia?** Abra uma [issue](https://github.com/futuristasai/ZapSales/issues) ou mande um PR — esse doc vive da contribuição da comunidade.

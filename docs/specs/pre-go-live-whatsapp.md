@@ -1,6 +1,6 @@
 # Pré-go-live do WhatsApp
 
-Contrato implementado na issue [#573](https://github.com/leandromastelliniai/ZapSales/issues/573).
+Contrato implementado na issue [#573](https://github.com/futuristasai/ZapSales/issues/573).
 Estado: **CONFIRMADO por código e testes**, não um simulador de mensagens.
 
 ## Comportamento

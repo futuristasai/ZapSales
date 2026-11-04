@@ -21,7 +21,7 @@ ZapSales puts in a single product what a sales team uses to sell over WhatsApp:
   Prospecting and Proposals.
 
 The full specification and phased plan are in issue
-[#1](https://github.com/leandromastelliniai/ZapSales/issues/1).
+[#1](https://github.com/futuristasai/ZapSales/issues/1).
 
 > **Status:** phase 0 — the CRM base is in the repository with the ZapSales identity. The VPS
 > install kit (Hostinger) and the complete official channel come in the next phases.
@@ -29,7 +29,7 @@ The full specification and phased plan are in issue
 ## 🧑‍💻 Development
 
 ```bash
-git clone https://github.com/leandromastelliniai/ZapSales.git
+git clone https://github.com/futuristasai/ZapSales.git
 cd ZapSales
 nvm use && npm install -g pnpm && pnpm install
 cp .env.example .env.local   # full guide in docs/SETUP.md

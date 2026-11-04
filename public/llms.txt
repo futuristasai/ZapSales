@@ -15,14 +15,14 @@ Key facts:
 
 ## Docs
 
-- [README (Portuguese)](https://github.com/leandromastelliniai/ZapSales/blob/main/README.md): visão geral, quickstart, stack
-- [README (English)](https://github.com/leandromastelliniai/ZapSales/blob/main/README.en.md): project overview, quickstart, stack
-- [README (Spanish)](https://github.com/leandromastelliniai/ZapSales/blob/main/README.es.md): visión general en español
-- [Vision & positioning](https://github.com/leandromastelliniai/ZapSales/blob/main/VISION.md): what the product is and what it believes about AI agents
-- [Architecture](https://github.com/leandromastelliniai/ZapSales/blob/main/ARCHITECTURE.md): one-page architecture
-- [Setup guide](https://github.com/leandromastelliniai/ZapSales/blob/main/docs/SETUP.md): step-by-step setup of every integration
-- [Production deploy runbook](https://github.com/leandromastelliniai/ZapSales/blob/main/docs/runbooks/deploy.md): how the published images reach the VPS (the Hostinger install kit is being rebuilt)
+- [README (Portuguese)](https://github.com/futuristasai/ZapSales/blob/main/README.md): visão geral, quickstart, stack
+- [README (English)](https://github.com/futuristasai/ZapSales/blob/main/README.en.md): project overview, quickstart, stack
+- [README (Spanish)](https://github.com/futuristasai/ZapSales/blob/main/README.es.md): visión general en español
+- [Vision & positioning](https://github.com/futuristasai/ZapSales/blob/main/VISION.md): what the product is and what it believes about AI agents
+- [Architecture](https://github.com/futuristasai/ZapSales/blob/main/ARCHITECTURE.md): one-page architecture
+- [Setup guide](https://github.com/futuristasai/ZapSales/blob/main/docs/SETUP.md): step-by-step setup of every integration
+- [Production deploy runbook](https://github.com/futuristasai/ZapSales/blob/main/docs/runbooks/deploy.md): how the published images reach the VPS (the Hostinger install kit is being rebuilt)
 
 ## Repository
 
-- [GitHub](https://github.com/leandromastelliniai/ZapSales): source code, issues, discussions
+- [GitHub](https://github.com/futuristasai/ZapSales): source code, issues, discussions

@@ -510,7 +510,7 @@ Checks **obrigatórios** na branch protection da `main` (verificado na configura
 Quais desses checks são obrigatórios para mergear é configuração da branch protection, não deste arquivo. Para conferir na fonte:
 
 ```console
-$ gh api repos/leandromastelliniai/ZapSales/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
+$ gh api repos/futuristasai/ZapSales/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
 ```
 
 **Onde os jobs rodam.** Todos os jobs rodam nas máquinas do GitHub (`ubuntu-latest`, e `ubuntu-24.04-arm` para as imagens ARM). Não há executor próprio.
@@ -564,7 +564,7 @@ Processo padrão (siga sempre):
 
    ```bash
    # A POPULAÇÃO da pergunta: main do PRODUTO (o remoto que aponta para
-   # leandromastelliniai/ZapSales, com qualquer nome) + TODO PR ABERTO, inclusive de
+   # futuristasai/ZapSales, com qualquer nome) + TODO PR ABERTO, inclusive de
    # fork. O `ls` abaixo mede o DISCO, que responde uma pergunta menor.
    pnpm checar:colisao-de-migration   # declara o que mediu e o que não mediu
    ```
@@ -668,7 +668,7 @@ Processo padrão (siga sempre):
 
 ### Issue tracker
 
-Issues e especificações ficam no GitHub Issues de leandromastelliniai/ZapSales (via `gh`). See `docs/agents/issue-tracker.md`.
+Issues e especificações ficam no GitHub Issues de futuristasai/ZapSales (via `gh`). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
