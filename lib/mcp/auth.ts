@@ -19,6 +19,8 @@ import type { Actor } from "@/lib/api/handlers/types";
 import { registrarFalhaDeToken, tokenFailureLimited } from "@/lib/auth/rate-limit";
 import type { Role } from "@/lib/auth/types";
 import { ROLE_RANK } from "@/lib/auth/types";
+import { consultarPorta } from "@/lib/licenca/porta";
+import { MENSAGEM_DA_RECUSA } from "@/lib/licenca/recusa";
 import { ehOperante } from "@/lib/organizacao/operante";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -245,6 +247,13 @@ export async function validateBearerToken(
       );
     }
     throw err;
+  }
+
+  // PORTA DA LICENÇA (token `zps_`): MCP e toda rota REST com Bearer passam por aqui, e o proxy não
+  // decide nelas. Depois de validar o token — recusa de licença não é chute de token e não debita balde.
+  const licenca = await consultarPorta("api_token");
+  if (licenca.aplicar) {
+    throw new McpAuthError(-32002, 403, MENSAGEM_DA_RECUSA, "license_blocked");
   }
 
   const role = scopesRole(resolved.scopes);

@@ -5,6 +5,8 @@ import { env } from "@/lib/env";
 import { fetchDoServidor } from "@/lib/supabase/fetch-do-servidor";
 import { urlDoSupabaseNoServidor } from "@/lib/supabase/url-do-servidor";
 import { isPublicPath } from "@/lib/auth/public-paths";
+import { caminhoLiberadoDaLicenca, consultarPorta } from "@/lib/licenca/porta";
+import { respostaDeRecusa, respostaDeRecusaDaTela } from "@/lib/licenca/recusa";
 import { CABECALHO_SESSAO, assinarSessao } from "@/lib/auth/sessao-repassada";
 import {
   verifyImpersonateCookieEdge,
@@ -122,6 +124,20 @@ export async function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname + search);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // PORTA DA LICENÇA (telas e API de sessão). Em modo `sombra` (o padrão) só calcula e registra; em
+  // `valendo`, instalação bloqueada ou vencida recebe 403 — JSON em /api/, página mínima nas telas.
+  // Saúde, login, exportação dos próprios dados e a tela de licença ficam liberados. As rotas de
+  // `PUBLIC_PATHS` (cron, webhooks, token) o proxy nem alcança: cada uma tem a sua porta (ver
+  // `lib/licenca/porta.ts` e a cerca `tests/unit/licenca-portas-chamam-a-decisao.test.ts`).
+  if (!caminhoLiberadoDaLicenca(pathname)) {
+    const licenca = await consultarPorta("proxy");
+    if (licenca.aplicar) {
+      return pathname.startsWith("/api/")
+        ? respostaDeRecusa("proxy", licenca, requestId)
+        : respostaDeRecusaDaTela(requestId);
+    }
   }
 
   // EPIC-11 S-11.07: validate impersonate cookie on /app/* paths. Middleware

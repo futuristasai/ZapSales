@@ -11,6 +11,7 @@ import { extrairJsonDoTexto } from '@/lib/agent-engine/texto/extrair-json-do-tex
 import { runModelCall, type LlmEdgeConfig } from '../edge/llm/run-model-call';
 import type { Logger } from '../obs/logger';
 import { aggregateFollowupOutcomes, type FlowOutcomeStat } from '../../followup/outcome-stats';
+import { licencaRecusaOLaco } from '@/lib/licenca/laco';
 
 // Os dois pontos do flywheel NÃO fixam modelo aqui. Fixavam `claude-haiku-4-5`,
 // e um id de modelo só é válido no vocabulário do provedor que a instalação usa:
@@ -257,6 +258,8 @@ export async function runFlywheelLoop(
       }, { once: true });
     });
     if (signal.aborted) return;
+    // PORTA DA LICENÇA (worker): a rodada gasta LLM; bloqueada/vencida em modo `valendo` → pula.
+    if (await licencaRecusaOLaco()) continue;
     try {
       const result = await runFlywheelOnce(pool, llmCfg, { limit: opts.limit, log: opts.log });
       opts.log.info('flywheel: rodada agendada concluída', result as unknown as Record<string, unknown>);

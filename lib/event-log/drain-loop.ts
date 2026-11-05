@@ -48,6 +48,7 @@ import { sincronizarAvisoDoLacoDeEventLog } from '@/lib/event-log/aviso-do-laco'
 // `import type` e nunca import de valor: em runtime esta linha desaparece, e é
 // isso que mantém a cadeia que termina em `@/lib/env` fora do boot do worker.
 import type { DrainSummary } from '@/lib/event-log/drain';
+import { licencaRecusaOLaco } from '@/lib/licenca/laco';
 
 export interface EventLogDrainKnobs {
   /** Espera entre ticks que FIZERAM trabalho. */
@@ -209,6 +210,11 @@ export async function runEventLogDrainLoop(
   if (!deps) return;
 
   while (!signal.aborted) {
+    // PORTA DA LICENÇA (worker): bloqueada/vencida em modo `valendo` → pula a rodada.
+    if (await licencaRecusaOLaco()) {
+      await esperar(knobs.idleIntervalMs, signal);
+      continue;
+    }
     // Tick que EXPLODE não pode acelerar o laço: sem resumo, vale a espera
     // ociosa. Um banco fora do ar lançaria a cada iteração, e o ritmo rápido
     // transformaria a indisponibilidade numa tempestade de tentativas.

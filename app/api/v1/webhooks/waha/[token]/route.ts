@@ -21,6 +21,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { conferirContratoWaha, lerRoteamentoWahaPorToken } from "@/lib/waha/envelope";
 import { processarEventoWaha, REENTREGA_EM_SEGUNDOS } from "@/lib/waha/desfecho-do-webhook";
 import { authenticateWahaWebhook } from "@/lib/waha/webhook-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,6 +32,9 @@ interface RouteCtx {
 
 export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextResponse> {
   const requestId = randomUUID();
+  // PORTA DA LICENÇA (webhook): bloqueada/vencida em modo `valendo` → 503 com Retry-After, e o remetente tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("webhook", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const { token } = await ctx.params;
 
   if (!token || token.length < 8) {

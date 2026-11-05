@@ -6,6 +6,7 @@ import { getRequestPool } from "@/lib/agent-engine/db/request-pool";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { tickProspecting } from "@/lib/prospecting/worker";
 import { logger } from "@/lib/logger";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -13,6 +14,9 @@ async function handle(req: NextRequest) {
   const requestId = randomUUID();
   if (!autorizaCron(req))
     return fail("forbidden", "Credencial de execução inválida.", 403, { requestId });
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   try {
     return ok(await tickProspecting(getRequestPool(), createAdminClient()), { requestId });
   } catch (err) {

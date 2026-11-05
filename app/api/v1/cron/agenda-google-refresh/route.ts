@@ -40,6 +40,7 @@ import { classificarErroDoGoogle, estadoDaConexaoApos } from "@/lib/agenda/googl
 import { fundirTokens, precisaRenovar, type TokenDoGoogle } from "@/lib/agenda/google/oauth";
 import { renovarToken } from "@/lib/agenda/google/token";
 import { autorizaCron } from "@/lib/auth/cron-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 
@@ -207,6 +208,9 @@ async function executar(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return NextResponse.json({ error: { code: "unauthenticated", message: "cron secret inválido" } }, { status: 401 });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const resumo = await renovarAgendasDoGoogle(createAdminClient(), { agora: new Date() });
   return NextResponse.json({ data: resumo });
 }

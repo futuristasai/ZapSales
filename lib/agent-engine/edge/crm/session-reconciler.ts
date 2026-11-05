@@ -31,6 +31,7 @@ import { parseWahaMessageId, wahaEchoExternalIds } from '@/lib/waha/message-id';
 import { lerNumerosDeTeste, numeroPodeTestar, preGoLiveAtivo } from '@/lib/ai/elegibilidade/pre-go-live';
 
 import type { Logger } from '../../obs/logger';
+import { licencaRecusaOLaco } from '@/lib/licenca/laco';
 
 export interface WatchdogConfig {
   wahaBaseUrl: string;
@@ -469,6 +470,17 @@ export async function runSessionWatchdogLoop(
   signal: AbortSignal,
 ): Promise<void> {
   while (!signal.aborted) {
+    // PORTA DA LICENÇA (worker): o redrive reenvia mensagens; bloqueada/vencida em modo `valendo` → pula.
+    if (await licencaRecusaOLaco()) {
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, cfg.intervalMs);
+        signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          resolve();
+        }, { once: true });
+      });
+      continue;
+    }
     try {
       const fixed = await reconcileSessions(pool, cfg, log);
       const redriven = await redriveQueued(pool, cfg, log);
