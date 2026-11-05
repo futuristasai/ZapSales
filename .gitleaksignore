@@ -44,3 +44,19 @@ dc2b4970009445d3d56b4521fe69580860ec2b85:tests/shell/kit-implantar-saida.test.sh
 6ca40aa519e24b098ed57d31151bcb40447a978c:tests/unit/onboarding-chave-da-ia-vale-para-a-empresa.test.ts:generic-api-key:179
 6ca40aa519e24b098ed57d31151bcb40447a978c:tests/unit/onboarding-chave-da-ia-vale-para-a-empresa.test.ts:generic-api-key:323
 6ca40aa519e24b098ed57d31151bcb40447a978c:tests/unit/supabase-server-url-opcional.test.ts:generic-api-key:215
+
+# PR #228 (licenca, #222): os 12 selos de EXEMPLO do commit dbad12f, ANTES de o gerador passar a gravar
+# `gitleaks:allow` na linha de cada um. Sao JWTs assinados com a chave de TESTE publica
+# (tests/support/licenca-chave-de-teste.ts), conferidos um a um: nenhum e segredo.
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:19
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:28
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:37
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:46
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:55
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:64
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:73
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:82
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:91
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:100
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:109
+dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:118

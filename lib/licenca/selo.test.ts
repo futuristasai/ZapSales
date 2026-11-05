@@ -50,6 +50,16 @@ describe("selos de exemplo (os mesmos que o servidor de licenças consome)", () 
     expect(arquivo).toEqual(await montarConjuntoDeExemplo());
   });
 
+  it("toda linha com um selo declara o falso positivo do detector de segredos (gitleaks:allow)", () => {
+    const linhas = readFileSync(
+      path.resolve(__dirname, "../../tests/fixtures/licenca/selos-de-exemplo.json"),
+      "utf8",
+    ).split("\n");
+    const comSelo = linhas.filter((l) => /eyJ[A-Za-z0-9_-]{20,}\./.test(l));
+    expect(comSelo.length).toBeGreaterThan(0);
+    for (const linha of comSelo) expect(linha).toContain("gitleaks:allow");
+  });
+
   it("cobre os casos do contrato, seção 6", () => {
     const nomes = arquivo.selos.map((s) => s.nome);
     expect(nomes).toEqual([

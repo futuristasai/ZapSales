@@ -231,6 +231,18 @@ const MARCA_CONGELADA: Record<string, EntradaDeMarca> = {
       "é a guarda do contrato acima: este teste é o que reprova quem renomear o header. Trocar a string aqui para 'limpar a marca' desarmaria a única proteção que o contrato tem",
     marcas: ["x-zapsales-event", "x-zapsales-signature", "x-zapsales-signature", "x-zapsales-signature"],
   },
+  "lib/licenca/selo.ts": {
+    categoria: "PROTOCOLO",
+    motivo:
+      "o emissor (`iss`) e o tipo do cabeçalho (`typ`) do selo de licença, fixados em docs/specs/licenca-contrato-entre-as-pontas-v1.md. Quem emite é o servidor de licenças, fora deste processo, que grava a MESMA string; renomear faz todo selo legítimo ser rejeitado, e o sintoma é instalação bloqueada sem explicação. Não é texto de interface e não varia por marca própria",
+    marcas: ["zapsales-licencas", "zapsales-selo"],
+  },
+  "lib/licenca/selo.test.ts": {
+    categoria: "PROTOCOLO",
+    motivo:
+      "guarda do contrato acima: monta selos com o emissor exato e prova que um emissor diferente é rejeitado. Trocar a string aqui para 'limpar a marca' desarmaria a única proteção do contrato",
+    marcas: ["zapsales-licencas"],
+  },
   "lib/mcp/server.ts": {
     categoria: "PROTOCOLO",
     motivo:

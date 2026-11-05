@@ -1,7 +1,7 @@
 /**
  * Os SELOS DE EXEMPLO: o conjunto que o aplicativo e o servidor de licenças consomem para provar
  * que falam o mesmo formato (contrato, seção 6). É gerado aqui e gravado em
- * `tests/fixtures/licenca/selos-de-exemplo.json` por `scripts/gerar-selos-de-exemplo.ts`; um teste
+ * `tests/fixtures/licenca/selos-de-exemplo.json` por `tests/support/gerar-selos-de-exemplo.ts`; um teste
  * reprova se o arquivo versionado divergir do que este gerador produz.
  *
  * Cada selo vem com o veredito esperado, para o outro lado não precisar adivinhar. Todos valem
@@ -23,11 +23,20 @@ const VALIDADE_DO_TEMPORARIO = 48 * HORA;
 export type Esperado =
   { ok: true; tipo: "temporario" | "permanente" } | { ok: false; motivo: string };
 
+/**
+ * Vai na MESMA linha de cada selo no arquivo gravado. O detector de segredos reconhece um JWT
+ * ali; estes são exemplos públicos, assinados com a chave de teste, e o marcador `gitleaks:allow`
+ * é a forma que o repositório usa para declarar o falso positivo na própria linha.
+ */
+export const AVISO_DO_SELO_DE_EXEMPLO =
+  "gitleaks:allow - selo de EXEMPLO assinado com a chave de TESTE publica; nao e segredo";
+
 export interface SeloDeExemplo {
   nome: string;
   descricao: string;
   selo: string;
   esperado: Esperado;
+  aviso: string;
 }
 
 function jti(n: number): string {
@@ -86,7 +95,7 @@ export async function montarConjuntoDeExemplo() {
 
   const iatFuturo = AGORA_DE_REFERENCIA + HORA;
 
-  const selos: SeloDeExemplo[] = [
+  const casos: Omit<SeloDeExemplo, "aviso">[] = [
     {
       nome: "temporario_valido",
       descricao: "Emitido há 1 hora, vale 48 horas.",
@@ -168,11 +177,16 @@ export async function montarConjuntoDeExemplo() {
     },
   ];
 
+  const selos: SeloDeExemplo[] = casos.map((caso) => ({
+    ...caso,
+    aviso: AVISO_DO_SELO_DE_EXEMPLO,
+  }));
+
   return {
     _leia_me:
       "Selos de exemplo do licenciamento do ZapSales, gerados com a chave de TESTE (jamais usada em producao). " +
       "Cada selo vale para `instalacao_id` e para o instante `agora_de_referencia` (segundos Unix UTC). " +
-      "Gerado por scripts/gerar-selos-de-exemplo.ts; nao edite a mao. Contrato: docs/specs/licenca-contrato-entre-as-pontas-v1.md.",
+      "Gerado por tests/support/gerar-selos-de-exemplo.ts; nao edite a mao. Contrato: docs/specs/licenca-contrato-entre-as-pontas-v1.md.",
     algoritmo: "EdDSA",
     typ: "zapsales-selo",
     chave_publica: chavePublicaDeTeste,
