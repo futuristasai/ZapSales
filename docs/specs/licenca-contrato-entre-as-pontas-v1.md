@@ -58,8 +58,12 @@ de produção pode-se acrescentar chaves de teste.
 
 ### O que a instalação guarda
 
-Uma linha por instalação (não é tabela de organização; sem acesso pelo PostgREST), com o conceito abaixo. O
-desenho exato da migration é da Fase 1.
+Uma linha por instalação (não é tabela de organização; sem acesso pelo PostgREST), com o conceito abaixo.
+Implementado na tabela `platform_licenca` (migration 0556, singleton `id = 1`; leitura e escrita só por
+`lib/licenca/armazem.ts`, a parte pura em `lib/licenca/estado.ts`). O banco garante por gatilho que o
+`maior_horario_visto` só avança, que `ativada_em` não se desfaz e que `instalacao_id` não muda, e `service_role`
+não tem `delete`/`truncate` nela. O UUID nasce do `INSTALACAO_ID` do `.env` (o `kit/instalar.sh` o grava) ou, na
+falta dele, é gerado pelo app; depois de criada a linha, o banco vale mais que o `.env`.
 
 | Campo                   | Para quê                                                                                   |
 | ----------------------- | ------------------------------------------------------------------------------------------ |

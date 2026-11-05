@@ -383,6 +383,9 @@ preparar_env() {
   env_garantir "$ENV_ARQ" CPF_ENCRYPTION_KEY "$(openssl rand -base64 32)"
   env_garantir "$ENV_ARQ" WAHA_BYO_ENCRYPTION_KEY "$(openssl rand -base64 32)"
   env_garantir "$ENV_ARQ" AI_CRED_AES_KEY "$(openssl rand -base64 32)"
+  # Identidade da instalação (licenciamento, ADR-0005): UUID v4, nunca o IP. Só nasce se faltar, então
+  # reinstalar por cima e atualizar não o trocam; o .env vai no backup.
+  env_garantir "$ENV_ARQ" INSTALACAO_ID "$(cat /proc/sys/kernel/random/uuid)"
   env_garantir "$ENV_ARQ" INTEGRATIONS_OAUTH_ENCRYPTION_KEY "$(segredo_hex 32)"
   env_garantir "$ENV_ARQ" LGPD_SIGNING_KEY "$(segredo_hex 32)"
   env_garantir "$ENV_ARQ" WAHA_API_KEY "$(segredo_hex 24)"

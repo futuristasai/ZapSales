@@ -152,6 +152,13 @@ const schema = z.object({
    */
   AI_CRED_AES_KEY: required("AI_CRED_AES_KEY"),
 
+  /**
+   * UUID da instalação, para o licenciamento (ADR-0005). O kit o grava no `.env` na instalação
+   * (e o backup o leva junto); a fonte de verdade é a linha de `platform_licenca` no banco, e este
+   * valor só a SEMEIA quando a linha ainda não existe. Vazio = o app gera um e grava no banco.
+   */
+  INSTALACAO_ID: z.string().optional().default(""),
+
   // Postgres direto do Supabase (Settings → Database) — só as rotas de skills
   // instaláveis (import/install) usam `pg` cru (mesmo pool do agent-engine).
   SUPABASE_DB_URL: required("SUPABASE_DB_URL"),
