@@ -1,6 +1,6 @@
 # ADR-0005 — Licenciamento técnico: selo assinado, servidor de licenças e instalação guiada
 
-- **Status:** proposta de 2026-11-05, **aguardando aprovação do dono do produto**
+- **Status:** aceito em 2026-11-05 pelo dono do produto (aprovação do PR #221)
 - **Data:** 2026-11-05
 - **Contexto medido em:** `1f647c3` (topo de `origin/main` em 05/11/2026)
 - **Lei que muda quando aceita:** a doutrina "Licença e contribuição" do `CLAUDE.md` e do `AGENTS.md`, item 5 ("nada aqui é trava técnica"). A mudança só é feita quando a trava passar a valer (ver "Consequências")
