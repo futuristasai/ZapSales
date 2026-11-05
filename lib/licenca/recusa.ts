@@ -7,9 +7,9 @@
  * desenho de `requireSupportWrite`.
  *
  * Status por porta, e a razão de cada um:
- *  - `cron` e `webhook` → 503 com `Retry-After`. Quem chama (o agendador, o WAHA, a Meta) trata 503 como
+ *  - `cron` e `webhook` → 503 com `Retry-After`. Quem chama (o agendador, o provedor do canal) trata 503 como
  *    "tente de novo", e é o que queremos: nada é perdido, só adiado até a licença voltar. Um 4xx faria
- *    o remetente desistir (a Meta chega a desativar a assinatura do webhook).
+ *    o remetente desistir (um provedor chega a desativar a assinatura do webhook).
  *  - `api_token` e `proxy` → 403, porque quem chama é uma pessoa ou uma integração que precisa
  *    entender que a licença é o problema, não que o servidor está caindo.
  */

@@ -12,7 +12,7 @@
  *  - `api_token` API por token `zps_…` (MCP e rotas com Bearer — o proxy não decide nelas);
  *  - `cron`      rotas de `app/api/v1/cron/` (o agendador bate nelas);
  *  - `worker`    os laços do processo `agent-worker`;
- *  - `webhook`   entradas de webhook (WAHA, Meta, fontes de webhook).
+ *  - `webhook`   entradas de webhook dos canais e das fontes de webhook.
  *
  * Cada porta tem cerca de teste (`tests/unit/licenca-portas-chamam-a-decisao.test.ts`): porta nova
  * sem a consulta reprova o CI. É o desenho da guarda `requireSupportWrite`.

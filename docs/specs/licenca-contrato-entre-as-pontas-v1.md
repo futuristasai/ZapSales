@@ -121,7 +121,7 @@ derruba o cliente. As portas e o que cada uma devolve quando a instalação não
 | `webhook`   | toda entrada de `app/api/v1/webhooks/`                                         | 503 + `Retry-After: 300`                             |
 | `worker`    | `claimar` da fila de jobs e os laços que enviam ou gastam                      | pula a rodada; os jobs esperam                       |
 
-Cron e webhook recebem 503, não 4xx, de propósito: quem chama (o agendador, o WAHA, a Meta) trata 503 como "tente
+Cron e webhook recebem 503, não 4xx, de propósito: quem chama (o agendador, o provedor do canal) trata 503 como "tente
 de novo" e nada se perde — um 4xx faria o remetente desistir. **Ficam liberados**: saúde, login, a exportação dos
 próprios dados e o fluxo de direitos do titular (LGPD) e a tela de licença. Os crons que cumprem **dever legal**
 (`lgpd-sla-watcher`, `data-retention`, `storage-redaction`, `media-retention`, `webhook-log-retention`) também
