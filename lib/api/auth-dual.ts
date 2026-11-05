@@ -43,6 +43,7 @@ import {
 import { JANELA_SEGUNDOS, TETO_DE_ESCRITA, TETO_POR_ORGANIZACAO } from "@/lib/mcp/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export type AuthDual =
   | {
@@ -138,6 +139,12 @@ export async function resolveAuthDual(
       apiTokenId: auth.apiTokenId,
     };
   }
+
+  // PORTA DA LICENÇA (sessão numa rota pública para o proxy): estas rotas estão em `PUBLIC_PATHS`, então o
+  // proxy não decide nelas — nem para quem entra por cookie. O ramo do Bearer é coberto em
+  // `validateBearerToken`.
+  const bloqueioDeLicenca = await guardaDeLicenca("proxy", requestId);
+  if (bloqueioDeLicenca) return { ok: false, response: bloqueioDeLicenca };
 
   const authz = await requireRole(role, { requestId, resource });
   if (!authz.ok) return { ok: false, response: authz.response };

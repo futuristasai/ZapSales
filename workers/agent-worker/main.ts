@@ -127,6 +127,7 @@ import {
   type JobKind,
   type JobRow,
 } from "@/lib/agent-engine/queue/queue";
+import { licencaRecusaOLaco } from "@/lib/licenca/laco";
 
 export interface JobHandlerContext {
   workerId: string;
@@ -595,7 +596,12 @@ export async function startWorker(
 
   const workerLoop = rodarLoopDaFila<JobRow>({
     relogio: () => faltaParaOProximoJob(pool),
-    claimar: () => claimJobs(pool, { workerId, maxConcurrency: env.QUEUE_MAX_CONCURRENCY }),
+    // PORTA DA LICENÇA (worker): bloqueada/vencida em modo `valendo` → não claima; os jobs esperam na
+    // fila (nada é perdido) e o laço dorme o intervalo de sempre.
+    claimar: async () =>
+      (await licencaRecusaOLaco())
+        ? []
+        : claimJobs(pool, { workerId, maxConcurrency: env.QUEUE_MAX_CONCURRENCY }),
     aoClaimar: (jobs) => {
       for (const job of jobs) {
         const running = runJob(job);

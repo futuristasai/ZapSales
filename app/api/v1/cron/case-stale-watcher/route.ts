@@ -56,6 +56,7 @@ import { normalizarIdioma, type Idioma } from "@/lib/i18n/idiomas";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { autorizaCron } from "@/lib/auth/cron-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,9 @@ async function handle(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   const admin = createAdminClient();
   const agora = Date.now();

@@ -13,6 +13,7 @@ import { loadAuthUser } from "@/lib/auth/server";
 import { requireRole } from "@/lib/auth/require-role";
 import { env } from "@/lib/env";
 import { executarTickDoRelogio } from "@/lib/relogio/executar";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -67,6 +68,9 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (!porSegredo && !(await sessaoAdmin(requestId))) {
     return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   try {
     const resultado = await executarTickDoRelogio();

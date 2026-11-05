@@ -16,6 +16,7 @@ import type { NextRequest } from "next/server";
 
 import { ok, fail } from "@/lib/api/wrappers";
 import { autorizaCron } from "@/lib/auth/cron-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,9 @@ async function handle(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   // Fase 0 (convergência, spec 2026-07-23): o dispatch nativo foi aposentado —
   // o agent-worker (drain) é o único consumidor de ai_agent.dispatch_requested.

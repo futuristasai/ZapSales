@@ -21,6 +21,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Logger } from "@/lib/agent-engine/obs/logger";
 
 import { rodadaOficialMexeu, resumoDaRodadaOficial, type ResultadoDaRodadaOficial } from "./rodada-oficial";
+import { licencaRecusaOLaco } from "@/lib/licenca/laco";
 
 export interface KnobsDoLacoOficial {
   /** Espera entre rodadas que FIZERAM algo. */
@@ -84,6 +85,15 @@ export async function rodarLacoDaCampanhaOficial(
   }
 
   while (!signal.aborted) {
+    // PORTA DA LICENÇA (worker): bloqueada/vencida em modo `valendo` → pula a rodada (nada é enviado).
+    if (await licencaRecusaOLaco()) {
+      try {
+        await dormir(knobs.ociosoMs);
+      } catch {
+        return;
+      }
+      continue;
+    }
     let trabalhou = false;
     try {
       const r = await deps.rodar(deps.admin);

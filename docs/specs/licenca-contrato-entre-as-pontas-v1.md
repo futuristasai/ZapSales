@@ -106,6 +106,33 @@ Pontos fixos:
   tela de licença (que mostra a mensagem e oferece "tentar renovar agora"). Nenhum dado é apagado.
 - Em modo `sombra` a decisão é calculada e registrada, **nunca aplicada**.
 
+### As portas e a recusa
+
+A decisão está em `lib/licenca/decidir.ts` (função pura, relógio por parâmetro). Todo ponto de entrada a consulta
+por **`consultarPorta(porta)`** (`lib/licenca/porta.ts`), que lê o estado, decide, aplica o modo e lembra o resultado
+por 30 s no processo. Estado ilegível (tabela ausente, banco fora do ar) **não recusa**: falha para o lado que não
+derruba o cliente. As portas e o que cada uma devolve quando a instalação não opera em modo `valendo`:
+
+| Porta       | Onde                                                                           | Recusa                                               |
+| ----------- | ------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `proxy`     | `proxy.ts` (telas e API de sessão) e o ramo de sessão de `resolveAuthDual`     | 403 JSON `license_blocked` / página mínima nas telas |
+| `api_token` | `validateBearerToken` (todo `zps_…`, inclusive o MCP)                          | 403 `license_blocked`                                |
+| `cron`      | toda rota de `app/api/v1/cron/`, `system/relogio/tick` e `internal/agents/run` | 503 + `Retry-After: 300`                             |
+| `webhook`   | toda entrada de `app/api/v1/webhooks/`                                         | 503 + `Retry-After: 300`                             |
+| `worker`    | `claimar` da fila de jobs e os laços que enviam ou gastam                      | pula a rodada; os jobs esperam                       |
+
+Cron e webhook recebem 503, não 4xx, de propósito: quem chama (o agendador, o WAHA, a Meta) trata 503 como "tente
+de novo" e nada se perde — um 4xx faria o remetente desistir. **Ficam liberados**: saúde, login, a exportação dos
+próprios dados e o fluxo de direitos do titular (LGPD) e a tela de licença. Os crons que cumprem **dever legal**
+(`lgpd-sla-watcher`, `data-retention`, `storage-redaction`, `media-retention`, `webhook-log-retention`) também
+seguem rodando sem licença: bloquear a licença não suspende o prazo do titular nem a retenção. A cerca
+`tests/unit/licenca-portas-chamam-a-decisao.test.ts` reprova porta nova sem a consulta e não deixa essa lista de
+exceções crescer sem razão escrita.
+
+Limite conhecido, dito com honestidade: as rotas públicas por desenho que não usam `resolveAuthDual` nem token
+(retorno de OAuth, redirecionamento de rastreio, provisionamento de organização, heartbeat do agente do host) não
+têm porta — não fazem trabalho comercial por conta própria.
+
 ## 3. API do servidor de licenças
 
 Base: `https://licencas.futuristas.app/api/v1`. Só HTTPS. JSON em `snake_case`, datas em ISO-8601 UTC. Sucesso

@@ -22,12 +22,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { conferirContratoWaha, lerRoteamentoWaha } from "@/lib/waha/envelope";
 import { processarEventoWaha, REENTREGA_EM_SEGUNDOS } from "@/lib/waha/desfecho-do-webhook";
 import { authenticateWahaWebhook } from "@/lib/waha/webhook-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID();
+  // PORTA DA LICENÇA (webhook): bloqueada/vencida em modo `valendo` → 503 com Retry-After, e o remetente tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("webhook", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   const rawBody = await req.text();
   // ─── O contrato do fio, em DOIS momentos ─────────────────────────────────

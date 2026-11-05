@@ -50,6 +50,7 @@ import {
 } from "@/lib/ai/catalogo/sincronizar";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 
@@ -141,6 +142,9 @@ async function handler(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return fail("unauthorized", "cron secret ausente ou inválido", 401, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   try {
     const resultado = await sincronizarCatalogo(createAdminClient(), buscarDaOpenRouter);
     logger.info("[sync-model-catalog] concluído", { ...resultado, request_id: requestId });

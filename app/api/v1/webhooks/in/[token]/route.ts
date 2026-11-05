@@ -41,6 +41,7 @@ import { decryptWebhookSecret } from "@/lib/webhooks/secrets";
 import { ApiError } from "@/lib/api/types";
 import { autorizarContatoParaIA } from "@/lib/ai/elegibilidade/autorizacao";
 import { kickLocalPipeline } from "@/lib/dev/kick-local-pipeline";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -72,6 +73,9 @@ function findRawPhoneIfUnnormalized(payload: Record<string, unknown>, fieldMap: 
 
 export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextResponse> {
   const requestId = randomUUID();
+  // PORTA DA LICENÇA (webhook): bloqueada/vencida em modo `valendo` → 503 com Retry-After, e o remetente tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("webhook", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const { token } = await ctx.params;
   if (!token || token.length < 8) {
     return fail("not_found", "unknown webhook token", 404, { requestId });

@@ -36,6 +36,10 @@ export const ApiErrorCodes = {
   // Conta da empresa suspensa (spec da cobrança §4): sessão, token `zps_` e MCP.
   // Só LGPD e cobrança passam, por `requireRole({ permiteOrgSuspensa: true })`.
   org_suspended: "org_suspended",
+  // Licença da INSTALAÇÃO bloqueada ou vencida, com o modo `valendo` ligado (ADR-0005, contrato
+  // `licenca-contrato-entre-as-pontas-v1`). Vale para sessão, token `zps_`, cron e webhook; saúde, login,
+  // exportação dos próprios dados e a tela de licença continuam liberados.
+  license_blocked: "license_blocked",
   // Platform admin `support_readonly` tentando ESCREVER (`requirePlatformAdminEscrita`).
   forbidden_scope: "forbidden_scope",
   lgpd_anonymization_irreversible: "lgpd_anonymization_irreversible",

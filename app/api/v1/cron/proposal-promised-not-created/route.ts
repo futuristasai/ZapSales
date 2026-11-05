@@ -16,6 +16,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { leitorDeIdiomaPeloCliente } from "@/lib/i18n/aviso-no-idioma";
 import { traduzir } from "@/lib/i18n/dicionario";
 import type { TaskSourceKind } from "@/lib/tarefas/vocabulario-de-origem";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 const PROMISED_PROPOSAL: TaskSourceKind = "promised_proposal";
@@ -106,6 +107,9 @@ async function handle(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   let result: PromessaSemPropostaResult;
   try {

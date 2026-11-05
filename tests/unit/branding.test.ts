@@ -237,6 +237,18 @@ const MARCA_CONGELADA: Record<string, EntradaDeMarca> = {
       "o emissor (`iss`) e o tipo do cabeçalho (`typ`) do selo de licença, fixados em docs/specs/licenca-contrato-entre-as-pontas-v1.md. Quem emite é o servidor de licenças, fora deste processo, que grava a MESMA string; renomear faz todo selo legítimo ser rejeitado, e o sintoma é instalação bloqueada sem explicação. Não é texto de interface e não varia por marca própria",
     marcas: ["zapsales-licencas", "zapsales-selo"],
   },
+  "lib/licenca/decidir.test.ts": {
+    categoria: "PROTOCOLO",
+    motivo:
+      "monta selos com o emissor exato (`iss`) do contrato de licença, para provar a decisão sobre selos que o servidor de licenças de verdade emitiria. Trocar a string aqui para 'limpar a marca' desarmaria a única proteção do contrato (ver `lib/licenca/selo.ts`)",
+    marcas: ["zapsales-licencas"],
+  },
+  "lib/licenca/porta.test.ts": {
+    categoria: "PROTOCOLO",
+    motivo:
+      "monta um selo com o emissor exato (`iss`) do contrato de licença para provar que a porta deixa operar com selo válido. Mesma razão de `lib/licenca/decidir.test.ts`",
+    marcas: ["zapsales-licencas"],
+  },
   "lib/licenca/selo.test.ts": {
     categoria: "PROTOCOLO",
     motivo:

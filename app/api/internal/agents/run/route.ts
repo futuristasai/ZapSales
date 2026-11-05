@@ -20,6 +20,7 @@ import { z } from "zod";
 import { runAgent } from "@/lib/ai/runtime/agent";
 import { ok, fail } from "@/lib/api/wrappers";
 import { env } from "@/lib/env";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -67,6 +68,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       details: { meta: { requestId } },
     });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   let raw: unknown;
   try {

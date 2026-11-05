@@ -5,6 +5,7 @@ import { reconcileAppointment } from "@/lib/agenda/google/sync-executor";
 import { audit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { autorizaCron } from "@/lib/auth/cron-auth";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 export const dynamic = "force-dynamic";
 async function executar(req: NextRequest) {
   if (!autorizaCron(req))
@@ -12,6 +13,9 @@ async function executar(req: NextRequest) {
       { error: { code: "unauthenticated", message: "cron secret inválido" } },
       { status: 401 },
     );
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const db = createAdminClient();
   const { data, error } = await googlePushCandidates(db);
   if (error)

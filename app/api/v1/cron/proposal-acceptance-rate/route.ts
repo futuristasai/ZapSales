@@ -10,6 +10,7 @@ import { capacidadesLigadas } from "@/lib/organizacao/capacidades";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { leitorDeIdiomaPeloCliente, preencher } from "@/lib/i18n/aviso-no-idioma";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 const PISO_DE_ACEITE = 0.3;
@@ -88,6 +89,9 @@ async function handle(req: NextRequest): Promise<Response> {
   if (!autorizaCron(req)) {
     return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
   }
+  // PORTA DA LICENÇA (cron): bloqueada/vencida em modo `valendo` → 503; o agendador tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("cron");
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
 
   let result: TaxaDeAceiteResult;
   try {

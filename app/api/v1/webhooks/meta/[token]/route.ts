@@ -47,6 +47,7 @@ import {
   type EmbedDoContato,
 } from "@/lib/messaging/falha-de-entrega";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,9 @@ export async function GET(req: NextRequest, ctx: RouteCtx): Promise<NextResponse
 
 export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextResponse> {
   const requestId = randomUUID();
+  // PORTA DA LICENÇA (webhook): bloqueada/vencida em modo `valendo` → 503 com Retry-After, e o remetente tenta de novo.
+  const bloqueioDeLicenca = await guardaDeLicenca("webhook", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const { token } = await ctx.params;
 
   const session = await metaSessionByWebhookToken(token);
