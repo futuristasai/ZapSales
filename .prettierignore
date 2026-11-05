@@ -1,0 +1,3 @@
+# Gerado por scripts/gerar-selos-de-exemplo.ts, com cada selo numa linha só para o
+# `gitleaks:allow` valer na linha do achado. O Prettier quebraria a linha.
+tests/fixtures/licenca/selos-de-exemplo.json
