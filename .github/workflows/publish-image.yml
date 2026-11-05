@@ -277,6 +277,10 @@ jobs:
             # conjunto está completo.
           labels: |
             org.opencontainers.image.title=${{ matrix.title }}
+            # O metadata-action preenche `licenses` sozinho com o que o GitHub detecta no
+            # repositório — para a PolyForm, `NOASSERTION` — e isso sobrescreve o rótulo do
+            # Dockerfile. Declarar aqui é o que faz a imagem dizer a licença de verdade.
+            org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
