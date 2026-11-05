@@ -54,8 +54,6 @@ export type LeituraDoEstado =
 
 export type ResultadoDeGravacao = { ok: true } | { ok: false; motivo: MotivoDoArmazem };
 
-const TABELA = "platform_licenca";
-
 /** As colunas do estado. O envelope da credencial NÃO está aqui: só `lerCredencial` o abre. */
 const COLUNAS =
   "instalacao_id, selo_atual, maior_horario_visto, ativada_em, bloqueio_codigo, bloqueio_em, ultima_consulta_ok_em, janela_termina_em, modo";
@@ -94,7 +92,7 @@ async function lerLinha(): Promise<
 > {
   try {
     const { data, error } = await createAdminClient()
-      .from(TABELA)
+      .from("platform_licenca")
       .select(COLUNAS)
       .eq("id", 1)
       .maybeSingle();
@@ -122,7 +120,7 @@ export async function garantirEstado(): Promise<LeituraDoEstado> {
   if (!linha) {
     try {
       const { error } = await createAdminClient()
-        .from(TABELA)
+        .from("platform_licenca")
         .upsert(
           { id: 1, instalacao_id: uuidDoAmbiente() ?? randomUUID() },
           { onConflict: "id", ignoreDuplicates: true },
@@ -153,7 +151,7 @@ async function atualizar(
 ): Promise<ResultadoDeGravacao> {
   try {
     const { data, error } = await createAdminClient()
-      .from(TABELA)
+      .from("platform_licenca")
       .update(campos)
       .eq("id", 1)
       .select("id");
@@ -280,7 +278,7 @@ export type LeituraDaCredencial =
 export async function lerCredencial(): Promise<LeituraDaCredencial> {
   try {
     const { data, error } = await createAdminClient()
-      .from(TABELA)
+      .from("platform_licenca")
       .select("credencial_ciphertext, credencial_iv, credencial_tag")
       .eq("id", 1)
       .maybeSingle();

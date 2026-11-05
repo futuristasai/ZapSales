@@ -46339,6 +46339,9 @@ revoke delete, truncate on public.platform_licenca from service_role;
 create or replace function public.fn_licenca_guarda_invariantes()
 returns trigger
 language plpgsql
+-- Só toca `new`/`old`: não resolve nome de objeto nenhum, então o caminho de busca vazio é de graça
+-- e fecha o aviso do Security Advisor (função sem `search_path` fixo).
+set search_path = ''
 as $$
 begin
   new.id := old.id;
