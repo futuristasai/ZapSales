@@ -42,8 +42,8 @@ Na revenda, cada permissão é concedida **separadamente**, nunca por implicaç�
 serviço para um cliente, instalá-lo na VPS dele, entregar o código a ele e autorizar redistribuição
 posterior são coisas diferentes.
 
-> **Estado atual:** o contrato da licença comercial ainda está em elaboração. Até ele ser publicado,
-> a licença comercial é concedida caso a caso, **por escrito**, pelo Titular.
+> **O contrato:** o modelo está em [`LICENCA-COMERCIAL.md`](LICENCA-COMERCIAL.md). Cada venda preenche
+> só o **Pedido** (Anexo I): modalidade, número de instalações, preço e as permissões de revenda.
 
 ## Versões anteriores (MIT)
 
