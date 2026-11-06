@@ -73,6 +73,26 @@ describe("o status de cada porta", () => {
 });
 
 describe("respostaDeRecusaDaTela", () => {
+  it("quem navega (GET/HEAD) vai para /app/licenca com 307, no mesmo endereço de origem", () => {
+    for (const method of ["GET", "HEAD"]) {
+      const r = respostaDeRecusaDaTela("abc", {
+        method,
+        url: "https://crm.exemplo.com/app/inbox?x=1",
+      });
+      expect(r.status).toBe(307);
+      expect(r.headers.get("location")).toBe("https://crm.exemplo.com/app/licenca");
+      expect(r.headers.get("x-request-id")).toBe("abc");
+      expect(r.headers.get("cache-control")).toBe("no-store");
+    }
+  });
+
+  it("quem não navega (POST, PUT, DELETE) NÃO é redirecionado: a ação não deve ser levada adiante", () => {
+    for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+      const r = respostaDeRecusaDaTela("abc", { method, url: "https://crm.exemplo.com/app/inbox" });
+      expect(r.status).toBe(403);
+    }
+  });
+
   it("é HTML 403, sem cache, com o id da requisição", async () => {
     const r = respostaDeRecusaDaTela("abc");
     expect(r.status).toBe(403);

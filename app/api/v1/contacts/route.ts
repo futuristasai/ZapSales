@@ -25,6 +25,7 @@ import {
 import { perfilDaOrganizacao } from "@/lib/legal/perfil-do-pais";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 
 import { listContactsHandler, createContactHandler } from "./_handler";
 
@@ -100,6 +101,10 @@ async function resolveContactsAuth(req: NextRequest, requestId: string): Promise
 
   const authz = await requireRole("viewer", { requestId, resource: "contacts" });
   if (!authz.ok) return { ok: false, response: authz.response };
+  // PORTA DA LICENÇA, ramo de sessão. Esta rota é pública para o `proxy` (Bearer), então o `proxy` não pergunta
+  // à licença por ela: quem autentica a sessão aqui é quem pergunta (o Bearer passa por `validateBearerToken`).
+  const bloqueioDeLicenca = await guardaDeLicenca("proxy", requestId);
+  if (bloqueioDeLicenca) return { ok: false, response: bloqueioDeLicenca };
   return {
     ok: true,
     organizationId: authz.org.orgId,
@@ -166,6 +171,10 @@ export async function POST(req: NextRequest): Promise<Response> {
   // spec 13 §4: escrita é agent+ (viewer é read-only).
   const authz = await requireRole("agent", { requestId, resource: "contacts" });
   if (!authz.ok) return authz.response;
+  // PORTA DA LICENÇA, ramo de sessão. Esta rota é pública para o `proxy` (Bearer), então o `proxy` não pergunta
+  // à licença por ela: quem autentica a sessão aqui é quem pergunta (o Bearer passa por `validateBearerToken`).
+  const bloqueioDeLicenca = await guardaDeLicenca("proxy", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const user = authz.user;
   const activeOrg = authz.org;
 

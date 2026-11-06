@@ -30,6 +30,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { isPublicPath } from "@/lib/auth/public-paths";
+
 import { emBarraNormal } from "./helpers/caminho";
 
 function arquivos(dir: string): string[] {
@@ -210,6 +212,50 @@ describe("worker", () => {
         "`await licencaRecusaOLaco()` no começo de cada rodada (lib/licenca/laco.ts); se só move estado " +
         "interno, declare em LACOS_SEM_PORTA com a razão.",
     ).toEqual(Object.keys(LACOS_SEM_PORTA).sort());
+  });
+});
+
+describe("rota pública para o proxy que também aceita sessão", () => {
+  /**
+   * O `proxy` pergunta à licença por TODA requisição de sessão — menos as que estão em `PUBLIC_PATHS`, que ele nem
+   * alcança (Bearer, cron, webhook). Rota que é pública para o proxy e MESMO ASSIM autentica sessão por conta
+   * própria (`requireRole`) fica sem a porta: foi o que a prova pela tela achou em `GET /api/v1/contacts`, que
+   * respondeu 200 com a licença em vigor e bloqueada. A rota que usa `resolveAuthDual` já pergunta lá dentro.
+   *
+   * Excluídas, por terem a PRÓPRIA porta ou nenhum trabalho comercial: cron e webhook (guardas dedicadas), saúde,
+   * `system/*`, provisionamento, retornos de OAuth, `internal/*` e `mcp` (pela `validateBearerToken`).
+   */
+  const COM_PORTA_PROPRIA =
+    /^\/api\/(v1\/(cron|webhooks|system|tenants|health|anuncios|plataformas-de-anuncio)(\/|$)|v1\/agenda\/google\/callback$|internal\/|mcp)/;
+  const UUID = "00000000-0000-4000-8000-000000000000";
+
+  const publicas = () =>
+    arquivos("app/api")
+      .filter((p) => p.endsWith("/route.ts"))
+      .map((p) => ({
+        caminho: p,
+        url: p
+          .replace(/^app/, "")
+          .replace(/\/route\.ts$/, "")
+          .replace(/\[[^\]]+\]/g, UUID),
+      }))
+      .filter(({ url }) => isPublicPath(url) && !COM_PORTA_PROPRIA.test(url));
+
+  it("a varredura enxerga rotas públicas com sessão (controle positivo)", () => {
+    const urls = publicas().map((r) => r.url);
+    expect(urls).toContain("/api/v1/contacts");
+    expect(urls).toContain("/api/v1/agenda/agendamentos");
+  });
+
+  it("toda rota assim que usa `requireRole`/`requireAuth` pergunta à licença no ramo de sessão", () => {
+    const semGuarda = publicas()
+      .filter(({ caminho }) => /(requireRole|requireAuth)\(/.test(ler(caminho)))
+      .filter(({ caminho }) => !ler(caminho).includes('guardaDeLicenca("proxy"'))
+      .map(({ caminho }) => caminho);
+    expect(
+      semGuarda,
+      'Rota pública para o proxy que autentica sessão com `requireRole` e NÃO pergunta à licença. Acrescente `await guardaDeLicenca("proxy", requestId)` depois do `requireRole` (lib/licenca/recusa.ts), como em `app/api/v1/contacts/route.ts`.',
+    ).toEqual([]);
   });
 });
 

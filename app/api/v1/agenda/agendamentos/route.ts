@@ -25,6 +25,7 @@ import { ApiError } from "@/lib/api/types";
 import { chaveDaRequisicao } from "@/lib/api/idempotency";
 import { fail, ok } from "@/lib/api/wrappers";
 import { requireRole } from "@/lib/auth/require-role";
+import { guardaDeLicenca } from "@/lib/licenca/recusa";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { IDIOMA_PADRAO } from "@/lib/i18n/idiomas";
 import { logger } from "@/lib/logger";
@@ -158,6 +159,10 @@ export async function GET(req: NextRequest): Promise<Response> {
   // integra agenda por token continua saindo pela ferramenta MCP.
   const authz = await requireRole("viewer", { requestId, resource: "agenda" });
   if (!authz.ok) return authz.response;
+  // PORTA DA LICENÇA, ramo de sessão. Esta rota é pública para o `proxy` (Bearer), então o `proxy` não pergunta
+  // à licença por ela: quem autentica a sessão aqui é quem pergunta (o Bearer passa por `validateBearerToken`).
+  const bloqueioDeLicenca = await guardaDeLicenca("proxy", requestId);
+  if (bloqueioDeLicenca) return bloqueioDeLicenca;
   const t = (texto: string) => traduzir(texto, authz.user.idioma);
   const { org: activeOrg } = authz;
 

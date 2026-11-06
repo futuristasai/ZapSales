@@ -22,10 +22,17 @@ interface AppShellProps {
    * 403 a cada minuto em nome de ninguém.
    */
   podeAtender: boolean;
+  /**
+   * Faixas de aviso da INSTALAÇÃO (hoje, a da licença), desenhadas no topo da coluna de conteúdo — e não acima
+   * da casca inteira. Acima da casca, a faixa empurrava a página 33 px para baixo e a barra lateral (que é
+   * `sticky h-screen`) passava da borda da janela: "Buscar" e o menu da conta ficavam cortados até a pessoa
+   * rolar, na primeira tela de toda instalação nova. Dentro da coluna, a barra lateral segue inteira.
+   */
+  faixas?: ReactNode;
   children: ReactNode;
 }
 
-export function AppShell({ sidebarCollapsed, podeAtender, children }: AppShellProps) {
+export function AppShell({ sidebarCollapsed, podeAtender, faixas, children }: AppShellProps) {
   useInboundMessageAlerts();
   useInboundCallAlerts();
   useCrmAlerts();
@@ -66,6 +73,7 @@ export function AppShell({ sidebarCollapsed, podeAtender, children }: AppShellPr
         cima da lista.
       */}
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        {faixas}
         <TopBar />
         {/*
           O RODAPÉ DESCONTA O QUE AS PEÇAS FIXAS OCUPAM (issue #1305).

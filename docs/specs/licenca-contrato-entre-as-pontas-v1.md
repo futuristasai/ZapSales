@@ -134,6 +134,33 @@ Limite conhecido, dito com honestidade: as rotas públicas por desenho que não 
 (retorno de OAuth, redirecionamento de rastreio, provisionamento de organização, heartbeat do agente do host) não
 têm porta — não fazem trabalho comercial por conta própria.
 
+### A faixa e a tela de licença
+
+A situação que a tela mostra é a **mesma decisão** das portas (`consultarPorta("tela")`, que nunca recusa): a tela
+não diz uma coisa e o produto faz outra. As frases moram num lugar só (`lib/licenca/textos.ts`) e não nomeiam o
+produto.
+
+| Estado                            | Faixa (topo da coluna de conteúdo)                                                                                                                 | Quem vê         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `sem_selo`                        | «Uso não comercial: uso em empresa exige licença.» (`status`)                                                                                      | quem administra |
+| `ativacao_pendente`               | «Ativação da licença pendente.» (`status`)                                                                                                         | quem administra |
+| `temporario_valido`               | «Licença temporária, faltam N dias.» (`status`)                                                                                                    | quem administra |
+| `permanente_valido`               | nenhuma                                                                                                                                            | —               |
+| `temporario_vencido`, `bloqueada` | «Autorização vencida por falta de contato…» / «Licença bloqueada.» (`alert`; em observação acrescenta «O sistema segue funcionando por enquanto.») | **todos**       |
+
+A faixa mora **dentro da coluna de conteúdo** (`AppShell`, prop `faixas`), em fluxo normal: acima da casca ela
+empurrava a página e cortava o rodapé da barra lateral na primeira tela. Situação ilegível (banco fora, tabela
+ausente) **não mostra faixa** — uma faixa «bloqueada» inventada por falha de leitura seria pior que nenhuma.
+
+`/app/licenca` (Configurações › Plano e regras, só administrador no menu) é a tela: qualquer pessoa logada vê a
+situação; **detalhes** (última conversa com o servidor, próxima consulta, fim do período, motivo registrado em
+código, identificador da instalação) e o botão **«Tentar renovar agora»** são de administrador. O botão chama
+`POST /api/v1/licenca/renovar` (administrador; guarda de suporte; renovação **forçada**, no máximo uma conversa com
+o servidor a cada 15 s; uma linha de auditoria só quando o estado mudou). Em modo `valendo`, **toda navegação
+recusada** (`GET`/`HEAD`) vai para `/app/licenca` por redirecionamento 307; quem não navega (um `POST` de ação de
+tela) recebe a página mínima 403, porque um redirecionamento levaria a ação adiante noutro lugar. As rotas
+`/app/licenca` e `/api/v1/licenca/*` nunca são trancadas.
+
 ## 3. API do servidor de licenças
 
 Base: `https://licencas.futuristas.app/api/v1`. Só HTTPS. JSON em `snake_case`, datas em ISO-8601 UTC. Sucesso

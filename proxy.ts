@@ -136,7 +136,7 @@ export async function proxy(request: NextRequest) {
     if (licenca.aplicar) {
       return pathname.startsWith("/api/")
         ? respostaDeRecusa("proxy", licenca, requestId)
-        : respostaDeRecusaDaTela(requestId);
+        : respostaDeRecusaDaTela(requestId, request);
     }
   }
 

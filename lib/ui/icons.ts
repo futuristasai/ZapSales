@@ -155,6 +155,7 @@ export {
   Pulse,
   Shuffle,
   Signature,
+  Certificate,
   Target,
   ToggleRight,
   TrendUp,
