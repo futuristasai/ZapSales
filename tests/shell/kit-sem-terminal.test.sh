@@ -58,14 +58,13 @@ done
   echo 'printf "dominio=%s\nemail=%s\nempresa=%s\nidioma=%s\nsenha=[%s]\n" "$DOMINIO" "$EMAIL" "$EMPRESA" "$IDIOMA" "$SENHA"'
 } > "$TMP/corpo.sh"
 
-# rodar ENV_ARQ [VAR=valor ...] — roda sem terminal, com limite de tempo; imprime a saída
-# e deixa o código de saída em $TMP/saida.
+# rodar ENV_ARQ [VAR=valor ...] — roda sem terminal, com limite de tempo; deixa a saída
+# em $TMP/stdout e $TMP/stderr e o código de saída em $TMP/saida.
 rodar() {
   local env_arq="$1"; shift
   env -i PATH="$PATH" HOME="$TMP" ENV_ARQ="$env_arq" "$@" \
     timeout 15 bash "$TMP/corpo.sh" < /dev/null > "$TMP/stdout" 2> "$TMP/stderr"
   echo $? > "$TMP/saida"
-  cat "$TMP/stdout" "$TMP/stderr"
 }
 campo() { sed -n "s/^$1=//p" "$TMP/stdout"; }
 saida() { cat "$TMP/saida"; }
@@ -73,7 +72,7 @@ saida() { cat "$TMP/saida"; }
 echo "1. com variáveis não pergunta nada"
 rodar "$TMP/nao-existe.env" \
   ZAPSALES_DOMINIO=zap.exemplo.com ZAPSALES_EMAIL=dono@exemplo.com \
-  ZAPSALES_EMPRESA="Loja do Zé" ZAPSALES_IDIOMA=es ZAPSALES_SENHA='Senha-Forte-123' >/dev/null
+  ZAPSALES_EMPRESA="Loja do Zé" ZAPSALES_IDIOMA=es ZAPSALES_SENHA='Senha-Forte-123'
 igual "termina (sem travar)" "0" "$(saida)"
 igual "domínio" "zap.exemplo.com" "$(campo dominio)"
 igual "e-mail" "dono@exemplo.com" "$(campo email)"
@@ -82,25 +81,25 @@ igual "idioma" "es" "$(campo idioma)"
 igual "senha vinda do ambiente" "[Senha-Forte-123]" "$(campo senha)"
 
 echo "2. sem variável e sem terminal falha rápido, nomeando o campo"
-rodar "$TMP/nao-existe.env" >/dev/null
+rodar "$TMP/nao-existe.env"
 igual "não pendura e recusa" "1" "$(saida)"
 igual "diz que o domínio é inválido" "1" "$(grep -c 'Domínio inválido' "$TMP/stderr")"
-rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com >/dev/null
+rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com
 igual "com domínio e sem e-mail: recusa" "1" "$(saida)"
 igual "diz que o e-mail é inválido" "1" "$(grep -c 'E-mail inválido' "$TMP/stderr")"
 
 echo "3. o que tem padrão usa o padrão"
-rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com ZAPSALES_EMAIL=dono@exemplo.com >/dev/null
+rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com ZAPSALES_EMAIL=dono@exemplo.com
 igual "termina" "0" "$(saida)"
 igual "empresa padrão" "Minha Empresa" "$(campo empresa)"
 igual "idioma padrão" "pt-BR" "$(campo idioma)"
 igual "senha vazia (o kit gera uma)" "[]" "$(campo senha)"
-rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com ZAPSALES_EMAIL=dono@exemplo.com ZAPSALES_IDIOMA=fr >/dev/null
+rodar "$TMP/nao-existe.env" ZAPSALES_DOMINIO=zap.exemplo.com ZAPSALES_EMAIL=dono@exemplo.com ZAPSALES_IDIOMA=fr
 igual "idioma que não existe é recusado, não perguntado" "1" "$(saida)"
 
 echo "4. atualizar (o .env já existe) não pede nada"
 printf 'DOMAIN=zap.exemplo.com\nACME_EMAIL=dono@exemplo.com\nZAPSALES_EMPRESA=Loja do Zé\nAPP_LOCALE=en\n' > "$TMP/existente.env"
-rodar "$TMP/existente.env" >/dev/null
+rodar "$TMP/existente.env"
 igual "termina sem variável nenhuma" "0" "$(saida)"
 igual "domínio lembrado" "zap.exemplo.com" "$(campo dominio)"
 igual "idioma lembrado" "en" "$(campo idioma)"
@@ -115,12 +114,32 @@ awk '
   !pulando { print }
   pulando && /^}/ { pulando = 0 }
 ' "$INSTALAR" > "$sem_as_duas"
+igual "a extração não engoliu o resto do arquivo (controle)" "1" \
+  "$(grep -cE '^ler_configuracao\(\) *\{' "$sem_as_duas")"
+# Qualquer `read`, com ou sem opção, com ou sem `IFS=` na frente; e o terminal direto.
 igual "fora de perguntar/perguntar_senha não há read de teclado" "0" \
-  "$(grep -vE '^\s*#' "$sem_as_duas" | grep -cE '(^|[;&| (])read +-|/dev/tty')"
+  "$(grep -vE '^\s*#' "$sem_as_duas" | grep -cE '(^|[^[:alnum:]_])read([^[:alnum:]_]|$)|/dev/tty')"
 igual "o read de perguntar tem a guarda de terminal" "1" \
   "$(funcao perguntar | grep -cE '\[ -t 0 \]; then read')"
-igual "a senha só é perguntada com terminal" "1" \
-  "$(grep -cE '\[ -z "\$SENHA" \] && \[ ! -f "\$ENV_ARQ" \] && \[ -t 0 \]' "$INSTALAR")"
+igual "perguntar tem um read só" "1" \
+  "$(funcao perguntar | grep -vE '^\s*#' | grep -cE '(^|[^[:alnum:]_])read([^[:alnum:]_]|$)')"
+igual "perguntar_senha é chamada num lugar só" "1" \
+  "$(grep -vE '^\s*#' "$INSTALAR" | grep -cE '\$\(perguntar_senha\)')"
+igual "e esse lugar exige terminal (e instalação nova)" "1" \
+  "$(grep -B1 -E 'SENHA="\$\(perguntar_senha\)"' "$INSTALAR" | grep -cE '\[ -z "\$SENHA" \] && \[ ! -f "\$ENV_ARQ" \] && \[ -t 0 \]')"
+
+echo "6. o apt não abre diálogo"
+# Sem terminal, um diálogo do debconf esperaria para sempre. A variável tem de valer ANTES do
+# primeiro apt-get de cada arquivo que o chama.
+for arq in kit/instalar.sh kit/obter.sh; do
+  export_linha="$(grep -nE '^export DEBIAN_FRONTEND=noninteractive$' "$arq" | head -1 | cut -d: -f1)"
+  apt_linha="$(grep -nE '^[^#]*apt-get' "$arq" | head -1 | cut -d: -f1)"
+  if [ -n "$export_linha" ] && [ -n "$apt_linha" ] && [ "$export_linha" -lt "$apt_linha" ]; then
+    ok "$arq exporta DEBIAN_FRONTEND=noninteractive antes do primeiro apt-get"
+  else
+    nok "$arq: export na linha [${export_linha:-nenhuma}], primeiro apt-get na linha [${apt_linha:-nenhuma}]"
+  fi
+done
 
 if [ "$fail" -ne 0 ]; then echo "FALHOU: kit-sem-terminal"; exit 1; fi
 echo "OK: kit-sem-terminal"
