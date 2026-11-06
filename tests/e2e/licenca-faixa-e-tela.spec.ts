@@ -240,7 +240,17 @@ test.describe("a faixa e a tela de licença", () => {
     await expect(page.getByRole("heading", { name: "Licença bloqueada" })).toBeVisible();
     await expect(page.getByText("Os seus dados estão preservados.")).toBeVisible();
     await expect(page.getByTestId("licenca-motivo")).toHaveText("reembolso");
-    await expect(page.getByText(/deixa de funcionar/)).toBeVisible();
+    // A página e o `proxy` lembram a decisão cada um no seu processo (30 s): o texto do modo pode ficar um
+    // instante atrás da recusa. Recarrega até alcançar.
+    await expect
+      .poll(
+        async () => {
+          await page.goto("/app/licenca");
+          return page.getByText(/deixa de funcionar/).count();
+        },
+        { timeout: 75_000, intervals: [5_000] },
+      )
+      .toBe(1);
     await page.screenshot({ path: "evidence/licenca/e2e-03-bloqueada-em-vigor.png" });
 
     // Qualquer outra tela do produto também vai parar aqui.
@@ -285,6 +295,15 @@ test.describe("a faixa e a tela de licença", () => {
         { timeout: 75_000, intervals: [5_000] },
       )
       .toBe("/app/settings");
-    await expect(faixaDeBloqueio(page)).toHaveCount(0);
+    // A faixa também lembra por 30 s no processo da página: espera ela sumir.
+    await expect
+      .poll(
+        async () => {
+          await page.goto("/app/settings");
+          return faixaDeBloqueio(page).count();
+        },
+        { timeout: 75_000, intervals: [5_000] },
+      )
+      .toBe(0);
   });
 });
