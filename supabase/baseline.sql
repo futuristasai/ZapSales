@@ -46369,6 +46369,17 @@ create trigger trg_platform_licenca_touch
 
 notify pgrst, 'reload schema';
 
+-- ---- próxima consulta da licença (migration 0557) ----
+-- Lembrete do cliente de renovação: quando falar de novo com o servidor de licenças. NULL = já.
+-- Não é prazo e não entra no gatilho de invariantes. Coluna nova, idempotente, sem dado a corrigir.
+alter table public.platform_licenca
+  add column if not exists proxima_consulta_em timestamptz;
+
+comment on column public.platform_licenca.proxima_consulta_em is
+  'Quando o cliente de renovação deve consultar o servidor de licenças de novo. NULL = já. Lembrete, não prazo: não decide se a instalação opera.';
+
+notify pgrst, 'reload schema';
+
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
 -- ⚠️ DE PROPÓSITO, NENHUMA FUNÇÃO É CRIADA DEPOIS DESTE BLOCO. Apêndice que cria

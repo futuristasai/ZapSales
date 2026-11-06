@@ -49,6 +49,7 @@ function estado(mudancas: Partial<EstadoLocal> = {}): EstadoLocal {
     bloqueio: null,
     ultimaConsultaOkEm: null,
     janelaTerminaEm: null,
+    proximaConsultaEm: null,
     modo: "sombra",
     ...mudancas,
   };

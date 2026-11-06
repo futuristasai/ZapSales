@@ -200,3 +200,37 @@ describe("o gatilho põe no BANCO o que a doutrina promete", () => {
     sql(`update public.${TABELA} set modo = 'sombra' where id = 1;`);
   });
 });
+
+describe("a próxima consulta (migration 0557) é lembrete do cliente, não prazo da licença", () => {
+  beforeAll(() => {
+    sql(`delete from public.${TABELA};`);
+    sql(`insert into public.${TABELA} (id, instalacao_id) values (1, '${INSTALACAO}');`);
+  });
+
+  it("a coluna existe, é timestamptz, aceita NULL e nasce NULL (= pode consultar já)", () => {
+    const tipo = sql(`
+      select data_type || '/' || is_nullable from information_schema.columns
+       where table_schema = 'public' and table_name = '${TABELA}' and column_name = 'proxima_consulta_em';
+    `).trim();
+    expect(tipo, "falta a coluna proxima_consulta_em (migration 0557 / apêndice do baseline)").toBe(
+      "timestamp with time zone/YES",
+    );
+    expect(coluna("proxima_consulta_em")).toBe("NULO");
+  });
+
+  it("pode ser gravada, regravada para trás e zerada: o gatilho não a prende (ela não decide nada)", () => {
+    sql(`update public.${TABELA} set proxima_consulta_em = '2027-01-15T09:00:00Z' where id = 1;`);
+    expect(coluna("proxima_consulta_em")).toContain("2027-01-15 09:00:00");
+    // Diferente do maior horário visto, esta pode voltar: o cliente reagenda quando o servidor pede.
+    sql(`update public.${TABELA} set proxima_consulta_em = '2027-01-15T08:00:00Z' where id = 1;`);
+    expect(coluna("proxima_consulta_em")).toContain("2027-01-15 08:00:00");
+    sql(`update public.${TABELA} set proxima_consulta_em = null where id = 1;`);
+    expect(coluna("proxima_consulta_em")).toBe("NULO");
+  });
+
+  it("a coluna nova não abriu a tabela: o grant continua sendo só de service_role", () => {
+    expect(privilegio("anon", "SELECT")).toBe(false);
+    expect(privilegio("authenticated", "SELECT")).toBe(false);
+    expect(privilegio("service_role", "UPDATE")).toBe(true);
+  });
+});

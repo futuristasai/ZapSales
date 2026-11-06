@@ -56,6 +56,7 @@ describe("estadoDaLinha", () => {
       bloqueio: null,
       ultimaConsultaOkEm: null,
       janelaTerminaEm: null,
+      proximaConsultaEm: null,
       modo: "sombra",
     });
   });
@@ -70,6 +71,7 @@ describe("estadoDaLinha", () => {
         bloqueio_em: "2027-01-15T07:00:00Z",
         ultima_consulta_ok_em: "2027-01-15T07:30:00Z",
         janela_termina_em: "2027-01-15T08:00:00Z",
+        proxima_consulta_em: "2027-01-15T08:30:00Z",
         modo: "valendo",
       }),
     );
@@ -79,7 +81,12 @@ describe("estadoDaLinha", () => {
     expect(e.bloqueio).toEqual({ codigo: "reembolso", em: 1_800_000_000 - 3600 });
     expect(e.ultimaConsultaOkEm).toBe(1_800_000_000 - 1800);
     expect(e.janelaTerminaEm).toBe(1_800_000_000);
+    expect(e.proximaConsultaEm).toBe(1_800_000_000 + 1800);
     expect(e.modo).toBe("valendo");
+  });
+
+  it("linha de banco antigo (sem a coluna da próxima consulta) vira null: pode consultar já", () => {
+    expect(estadoDaLinha(linha()).proximaConsultaEm).toBeNull();
   });
 
   it("modo desconhecido cai em sombra, o lado que não restringe ninguém", () => {

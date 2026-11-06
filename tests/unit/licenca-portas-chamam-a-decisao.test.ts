@@ -60,6 +60,20 @@ const CRONS_DE_DEVER_LEGAL: Record<string, string> = {
 };
 
 /**
+ * Crons que ficam SEM a porta por uma razão que não é dever legal: a porta os impediria de cumprir o próprio
+ * papel. Hoje é um só — o que busca a renovação da licença. Uma instalação com a autorização vencida (servidor
+ * de licenças fora do ar por dois dias, por exemplo) precisa conseguir pedir o selo novo; se a porta recusasse
+ * a rota que o pede, o vencimento viraria definitivo. Tirar o nome daqui liga a guarda e reprova o teste.
+ */
+const CRONS_SEM_PORTA: Record<string, string> = {
+  "licenca-renovar":
+    "é a rota que renova a licença: se a porta a recusasse, uma instalação vencida nunca se destravaria",
+};
+
+/** Os dois motivos de um cron ficar sem a guarda. */
+const CRONS_SEM_GUARDA = { ...CRONS_DE_DEVER_LEGAL, ...CRONS_SEM_PORTA };
+
+/**
  * Laços do worker que NÃO enviam nem gastam, e por isso não consultam a licença. A fila de jobs
  * (`claimar`) é o que impede qualquer envio ou turno de IA: estes só movem estado interno.
  */
@@ -113,19 +127,27 @@ describe("cron", () => {
       semGuarda,
       "Rota de cron SEM a guarda da licença: com o modo `valendo`, uma instalação bloqueada continuaria " +
         'trabalhando por ela. Acrescente `await guardaDeLicenca("cron")` depois da autenticação ' +
-        "(lib/licenca/recusa.ts) ou, se cumpre dever legal, declare em CRONS_DE_DEVER_LEGAL com a razão.",
-    ).toEqual(Object.keys(CRONS_DE_DEVER_LEGAL).sort());
+        "(lib/licenca/recusa.ts) ou, se cumpre dever legal, declare em CRONS_DE_DEVER_LEGAL com a razão " +
+        "(e em CRONS_SEM_PORTA só se a porta a impediria de cumprir o próprio papel).",
+    ).toEqual(Object.keys(CRONS_SEM_GUARDA).sort());
   });
 
-  it("as exceções de dever legal existem, e ainda seguem sem a guarda (a lista só encolhe)", () => {
-    for (const nome of Object.keys(CRONS_DE_DEVER_LEGAL)) {
+  it("as exceções existem, e ainda seguem sem a guarda (a lista só encolhe)", () => {
+    for (const nome of Object.keys(CRONS_SEM_GUARDA)) {
       const caminho = `app/api/v1/cron/${nome}/route.ts`;
       expect(existsSync(caminho), `exceção cita rota inexistente: ${nome}`).toBe(true);
       expect(
         ler(caminho),
-        `${nome} já chama a guarda: tire-o de CRONS_DE_DEVER_LEGAL, ele não é mais exceção`,
+        `${nome} já chama a guarda: tire-o de CRONS_DE_DEVER_LEGAL / CRONS_SEM_PORTA, ele não é mais exceção`,
       ).not.toContain('guardaDeLicenca("cron"');
     }
+  });
+
+  it("a rota que renova a licença não depende da porta nem a consulta (ela é quem destrava)", () => {
+    const fonte = ler("app/api/v1/cron/licenca-renovar/route.ts");
+    expect(fonte).not.toContain("guardaDeLicenca(");
+    expect(fonte).not.toContain("consultarPorta(");
+    expect(fonte).toContain("renovarLicenca(");
   });
 
   it("as duas entradas de máquina fora da pasta de cron também guardam", () => {

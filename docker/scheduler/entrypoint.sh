@@ -73,6 +73,11 @@ CRONS="
 # (channel_knobs + pacing_ledger) só sabem torná-la mais lenta.
 * * * * *|45|api/v1/cron/campaign-worker
 */5 * * * *|60|api/v1/cron/webhook-log-retention
+# A LICENÇA. A cada 5 minutos o cron só LÊ o lembrete proxima_consulta_em; a conversa de verdade com o
+# servidor de licenças acontece cerca de 1 vez por hora (variação de ±20 %, sugerida pelo servidor). Cinco
+# minutos é o menor intervalo que o contrato aceita entre consultas: depois de uma falha (rede fora, servidor
+# em manutenção) a tentativa seguinte não espera uma hora inteira, e nada dá erro enquanto o selo vigente vale.
+*/5 * * * *|30|api/v1/cron/licenca-renovar
 */5 * * * *|45|api/v1/cron/channel-health
 */10 * * * *|60|api/v1/cron/contact-avatars
 */10 * * * *|60|api/v1/cron/agenda-google-refresh
