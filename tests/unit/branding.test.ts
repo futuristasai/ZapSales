@@ -940,6 +940,12 @@ const HOSTS_DECLARADOS: Record<string, EntradaDeHost> = {
     categoria: "FORNECEDOR",
     motivo: "endpoint oficial da Google Data Manager API: recebe conversões e consulta o processamento na conta autorizada pela própria organização. O destino pertence ao fornecedor e não à instalação do CRM.",
   },
+  // ── licenciamento técnico (#222, ADR-0005) ──
+  "licencas.futuristas.app": {
+    categoria: "FORNECEDOR",
+    motivo:
+      "endereço oficial do servidor de licenças (`lib/licenca/servidor.ts`): é o destino da ativação e da renovação, e só leva o que o contrato permite (e-mail e código da compra, id da instalação, versão, domínio e a credencial). Quem confere o selo é a chave pública que vai DENTRO da imagem, então trocar este host pelo de um revendedor não faria a instalação operar nem bloquear: só a deixaria sem renovar. O ambiente (`LICENCA_SERVIDOR_URL`) pode apontar para homologação.",
+  },
   // ── localização compartilhada: o link que abre o pino do cliente ──
   "maps.google.com": {
     categoria: "PLATAFORMA",

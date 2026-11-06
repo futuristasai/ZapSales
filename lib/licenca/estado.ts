@@ -30,6 +30,8 @@ export interface EstadoLocal {
   readonly ultimaConsultaOkEm: number | null;
   /** Informado pelo servidor, só para a mensagem "faltam N dias". */
   readonly janelaTerminaEm: number | null;
+  /** Quando o cliente de renovação deve falar de novo com o servidor. `null` = já. Lembrete, não prazo. */
+  readonly proximaConsultaEm: number | null;
   readonly modo: ModoDaLicenca;
 }
 
@@ -43,6 +45,7 @@ export interface LinhaDaLicenca {
   readonly bloqueio_em: string | null;
   readonly ultima_consulta_ok_em: string | null;
   readonly janela_termina_em: string | null;
+  readonly proxima_consulta_em?: string | null;
   readonly modo: string;
 }
 
@@ -76,6 +79,7 @@ export function estadoDaLinha(linha: LinhaDaLicenca): EstadoLocal {
     bloqueio,
     ultimaConsultaOkEm: segundosDe(linha.ultima_consulta_ok_em),
     janelaTerminaEm: segundosDe(linha.janela_termina_em),
+    proximaConsultaEm: segundosDe(linha.proxima_consulta_em),
     modo: linha.modo === "valendo" ? "valendo" : "sombra",
   };
 }

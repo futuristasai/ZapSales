@@ -56,7 +56,7 @@ export type ResultadoDeGravacao = { ok: true } | { ok: false; motivo: MotivoDoAr
 
 /** As colunas do estado. O envelope da credencial NÃO está aqui: só `lerCredencial` o abre. */
 const COLUNAS =
-  "instalacao_id, selo_atual, maior_horario_visto, ativada_em, bloqueio_codigo, bloqueio_em, ultima_consulta_ok_em, janela_termina_em, modo";
+  "instalacao_id, selo_atual, maior_horario_visto, ativada_em, bloqueio_codigo, bloqueio_em, ultima_consulta_ok_em, janela_termina_em, proxima_consulta_em, modo";
 
 /** UUID v4, o formato do `sub` do selo. */
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -173,6 +173,13 @@ export async function registrarHorarioVisto(segundos: number): Promise<Resultado
   return atualizar("horario", { maior_horario_visto: isoDe(segundos) });
 }
 
+/** Instante opcional → ISO ou `null`. Não finito vira `null`: "pode consultar já" é o lado seguro. */
+function instanteOuNulo(segundos: number | null | undefined): string | null {
+  return segundos === null || segundos === undefined || !Number.isFinite(segundos)
+    ? null
+    : isoDe(segundos);
+}
+
 function credencialValida(credencial: string): boolean {
   return (
     credencial.startsWith(PREFIXO_DA_CREDENCIAL) &&
@@ -189,6 +196,8 @@ export interface DadosDaAtivacao {
   /** O "agora" efetivo desta resposta, em segundos. Vira `ativada_em` e o horário visto. */
   agora: number;
   janelaTerminaEm: number | null;
+  /** Quando consultar de novo (segundos). Ausente = o cliente de renovação decide na hora. */
+  proximaConsultaEm?: number | null;
 }
 
 /**
@@ -219,6 +228,7 @@ export async function gravarAtivacao(dados: DadosDaAtivacao): Promise<ResultadoD
     maior_horario_visto: agora,
     ultima_consulta_ok_em: agora,
     janela_termina_em: dados.janelaTerminaEm === null ? null : isoDe(dados.janelaTerminaEm),
+    proxima_consulta_em: instanteOuNulo(dados.proximaConsultaEm),
     bloqueio_codigo: null,
     bloqueio_em: null,
   });
@@ -229,6 +239,7 @@ export interface DadosDaRenovacao {
   selo: string;
   agora: number;
   janelaTerminaEm: number | null;
+  proximaConsultaEm?: number | null;
 }
 
 /** Grava um selo renovado. A resposta válida do servidor também limpa um bloqueio anterior. */
@@ -240,6 +251,7 @@ export async function gravarRenovacao(dados: DadosDaRenovacao): Promise<Resultad
     maior_horario_visto: agora,
     ultima_consulta_ok_em: agora,
     janela_termina_em: dados.janelaTerminaEm === null ? null : isoDe(dados.janelaTerminaEm),
+    proxima_consulta_em: instanteOuNulo(dados.proximaConsultaEm),
     bloqueio_codigo: null,
     bloqueio_em: null,
   });
@@ -250,7 +262,11 @@ export async function gravarRenovacao(dados: DadosDaRenovacao): Promise<Resultad
  * transforma "bloqueio registrado" em "não opera". O código é o que o servidor devolveu (nunca
  * texto livre); fora do formato, grava `desconhecido` — perder o motivo nunca pode perder o bloqueio.
  */
-export async function gravarBloqueio(codigo: string, agora: number): Promise<ResultadoDeGravacao> {
+export async function gravarBloqueio(
+  codigo: string,
+  agora: number,
+  proximaConsultaEm?: number | null,
+): Promise<ResultadoDeGravacao> {
   if (!Number.isFinite(agora)) return { ok: false, motivo: "banco_recusou" };
   const seguro = /^[a-z0-9_]{1,64}$/.test(codigo) ? codigo : "desconhecido";
   return atualizar("bloqueio", {
@@ -258,7 +274,18 @@ export async function gravarBloqueio(codigo: string, agora: number): Promise<Res
     bloqueio_em: isoDe(agora),
     maior_horario_visto: isoDe(agora),
     ultima_consulta_ok_em: isoDe(agora),
+    proxima_consulta_em: instanteOuNulo(proximaConsultaEm),
   });
+}
+
+/**
+ * Só o lembrete de quando consultar de novo — para quem consultou e NÃO recebeu selo novo (o servidor
+ * pediu para esperar, ou o selo veio recusado). O resto do estado não é tocado.
+ */
+export async function gravarProximaConsulta(
+  proximaConsultaEm: number | null,
+): Promise<ResultadoDeGravacao> {
+  return atualizar("proxima_consulta", { proxima_consulta_em: instanteOuNulo(proximaConsultaEm) });
 }
 
 /** Só o modo: `sombra` calcula e registra; `valendo` aplica. Ação administrativa. */

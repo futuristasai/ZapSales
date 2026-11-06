@@ -1079,6 +1079,13 @@ export const AUDIT_ACTIONS = [
   // cópia ficou no storage. Ocupa a cota do bucket e vira amostra de revisão:
   // precisa de dono, mesmo que o modelo nunca chegue a ser enviado.
   "meta_template.media_uploaded",
+
+  // O cliente de renovação da licença (#222, ADR-0005). UMA linha por rodada que de fato mudou o estado:
+  // `renewed` quando o servidor entregou um selo novo, `blocked_by_server` quando respondeu bloqueio.
+  // Rodada que não falou com o servidor, ou que falou e nada mudou (rede fora, 5xx), não é mutação e
+  // não ocupa trilha — o cron roda a cada 5 minutos e, numa instalação saudável, só 1 em ~12 conversa.
+  "license.renewed",
+  "license.blocked_by_server",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */

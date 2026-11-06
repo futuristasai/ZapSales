@@ -38,6 +38,7 @@ const LINHA_NOVA = {
   bloqueio_em: null,
   ultima_consulta_ok_em: null,
   janela_termina_em: null,
+  proxima_consulta_em: null,
   credencial_ciphertext: null,
   modo: "sombra",
 };

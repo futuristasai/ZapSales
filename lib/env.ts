@@ -28,9 +28,7 @@ const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
  * pra permitir setup parcial (ex: dev sem WAHA quando trabalhando só na UI).
  */
 const required = (name: string) =>
-  isProd
-    ? z.string().min(1, `${name} é obrigatória em produção`)
-    : z.string().default("");
+  isProd ? z.string().min(1, `${name} é obrigatória em produção`) : z.string().default("");
 
 const requiredAlways = (name: string) => z.string().min(1, `${name} é obrigatória`);
 
@@ -158,6 +156,13 @@ const schema = z.object({
    * valor só a SEMEIA quando a linha ainda não existe. Vazio = o app gera um e grava no banco.
    */
   INSTALACAO_ID: z.string().optional().default(""),
+  /**
+   * Base da API do servidor de licenças (ADR-0005). Vazio = o endereço oficial. Existe para teste e
+   * homologação, não para trocar de servidor: quem confere o selo é a chave pública que vai DENTRO
+   * da imagem, então um servidor que não seja o oficial não consegue fazer a instalação operar nem
+   * bloquear por engano — no máximo, deixá-la sem renovar. Só HTTPS (http apenas em loopback).
+   */
+  LICENCA_SERVIDOR_URL: z.string().optional().default(""),
 
   // Postgres direto do Supabase (Settings → Database) — só as rotas de skills
   // instaláveis (import/install) usam `pg` cru (mesmo pool do agent-engine).
@@ -490,14 +495,8 @@ const schema = z.object({
   GOOGLE_ADS_OAUTH_CLIENT_SECRET: z.string().optional().default(""),
 
   // App URLs
-  NEXT_PUBLIC_APP_URL: z
-    .string()
-    .url()
-    .default("http://localhost:3000"),
-  NEXT_PUBLIC_ADMIN_URL: z
-    .string()
-    .url()
-    .default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  NEXT_PUBLIC_ADMIN_URL: z.string().url().default("http://localhost:3000"),
   /**
    * URL pública opcional para os webhooks da Meta (WhatsApp Cloud API / canais oficiais).
    * Quando definida, é usada no lugar de NEXT_PUBLIC_APP_URL para compor a URL de callback

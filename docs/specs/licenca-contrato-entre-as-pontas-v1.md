@@ -65,17 +65,18 @@ Implementado na tabela `platform_licenca` (migration 0556, singleton `id = 1`; l
 não tem `delete`/`truncate` nela. O UUID nasce do `INSTALACAO_ID` do `.env` (o `kit/instalar.sh` o grava) ou, na
 falta dele, é gerado pelo app; depois de criada a linha, o banco vale mais que o `.env`.
 
-| Campo                   | Para quê                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| `instalacao_id`         | UUID gerado na instalação; também no `.env`, e acompanha o backup                          |
-| `credencial`            | o `zpl_…` recebido na ativação, protegido em repouso como os demais segredos da instalação |
-| `selo_atual`            | o último selo recebido                                                                     |
-| `maior_horario_visto`   | o maior instante já observado (relógio local e respostas do servidor)                      |
-| `ativada_em`            | marca de que a instalação **já foi ativada** alguma vez                                    |
-| `bloqueio`              | motivo (código) e instante, quando o servidor respondeu bloqueio                           |
-| `ultima_consulta_ok_em` | última resposta válida do servidor                                                         |
-| `janela_termina_em`     | informado pelo servidor, só para a mensagem "faltam N dias"                                |
-| `modo`                  | `sombra` (calcula e registra, não restringe) ou `valendo`                                  |
+| Campo                   | Para quê                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `instalacao_id`         | UUID gerado na instalação; também no `.env`, e acompanha o backup                                   |
+| `credencial`            | o `zpl_…` recebido na ativação, protegido em repouso como os demais segredos da instalação          |
+| `selo_atual`            | o último selo recebido                                                                              |
+| `maior_horario_visto`   | o maior instante já observado (relógio local e respostas do servidor)                               |
+| `ativada_em`            | marca de que a instalação **já foi ativada** alguma vez                                             |
+| `bloqueio`              | motivo (código) e instante, quando o servidor respondeu bloqueio                                    |
+| `ultima_consulta_ok_em` | última resposta válida do servidor                                                                  |
+| `janela_termina_em`     | informado pelo servidor, só para a mensagem "faltam N dias"                                         |
+| `proxima_consulta_em`   | lembrete do cliente de renovação: quando falar de novo com o servidor (não é prazo; migration 0557) |
+| `modo`                  | `sombra` (calcula e registra, não restringe) ou `valendo`                                           |
 
 ### O agora efetivo
 
@@ -168,6 +169,37 @@ deixa de renovar.
 Erros: `401 credencial_invalida`, `403 licenca_bloqueada`, `403 instalacao_bloqueada` (com `motivo_codigo`, nunca
 texto livre), `429 rate_limited`. O app trata `403 …bloqueada` gravando o estado `bloqueada` (sem selo novo).
 
+O `motivo_codigo` vem **dentro de `error`**: `{ "error": { "code": "instalacao_bloqueada", "message": "…",
+"motivo_codigo": "reembolso" } }`. Código e motivo só valem no formato `[a-z0-9_]{1,64}`; fora dele o app grava
+`desconhecido` e nunca o texto que o servidor mandou.
+
+### 3.2.1 O que o cliente faz com cada resposta
+
+Implementado em `lib/licenca/renovar.ts` (rota de cron `licenca-renovar`, a cada 5 minutos; só conversa com o
+servidor quando `proxima_consulta_em` venceu). Provado contra um servidor HTTP de mentira
+(`tests/support/servidor-de-licencas-falso.ts`).
+
+| Resposta                                              | O que o app faz                                                                                                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200` e selo que passa nas dez conferências           | grava o selo, `ultima_consulta_ok_em` e `proxima_consulta_em`; **limpa** um bloqueio anterior                                                           |
+| `200` com selo `permanente`                           | grava e **nunca mais consulta** (`proxima_consulta_em` fica nula; o permanente não se revoga)                                                           |
+| `403` `licenca_bloqueada` / `instalacao_bloqueada`    | grava o bloqueio (motivo = `motivo_codigo`, senão o código do erro) **sem tocar no selo**; segue consultando de hora em hora para um desbloqueio chegar |
+| `200` com selo recusado, ou resposta fora do contrato | **não grava nada**; espera e tenta de novo                                                                                                              |
+| `401`, `429`, `5xx`, rede fora, tempo esgotado        | **não muda o estado**; espera e tenta de novo                                                                                                           |
+
+Uma falha do servidor ou da rede **nunca bloqueia** ninguém: o selo vigente vale até vencer, e é o vencimento — não
+a falha — que leva a "autorização vencida por falta de contato". A espera após falha começa em 5 minutos, dobra a
+cada falha seguida até 1 hora (com variação de ±20 %) e obedece o `Retry-After`, dentro da faixa de 5 minutos a
+24 horas; ela mora em memória, então reiniciar o processo só adianta a próxima tentativa.
+
+O corpo do pedido leva só `versao` e `dominio`, e a credencial vai em `Authorization` — nunca na URL, nunca em log.
+A resposta não é seguida se redirecionar, tem teto de 64 KB e prazo de 10 s. Só `https` (`http` apenas em loopback).
+O endereço padrão é o da seção 3; `LICENCA_SERVIDOR_URL` o troca para homologação, e isso não abre brecha: quem confere
+o selo é a chave pública que vai na imagem.
+
+**A rota de renovação não passa pela porta da licença** (seção 2): uma instalação vencida precisa conseguir pedir o
+selo que a destrava. É a única rota de cron fora da porta que não é dever legal, declarada com a razão na cerca.
+
 ### 3.3 `POST /instalacao/eventos`
 
 Usado no modo manual (comando colado), para a página mostrar o progresso. `Authorization: Bearer zpl_…`. Corpo:
@@ -187,9 +219,12 @@ as chaves aceitas vão na imagem. Rotacionar uma chave é lançar uma versão qu
 | Validade do selo temporário | 48 horas                          | o servidor, ao emitir                            |
 | Janela de Validação         | 10 dias a partir do Marco Inicial | o servidor (o app só mostra `janela_termina_em`) |
 | Intervalo aceito pelo app   | entre 5 minutos e 24 horas        | o app ignora sugestão fora da faixa              |
+| Espera após falha           | 5 min, dobrando até 1 hora        | o app; `Retry-After` do servidor manda, na faixa |
 
 Os valores de consulta e de validade são configuráveis no servidor. O cálculo de qualquer prazo usa o "agora" do
-**servidor**, nunca o do comprador.
+**servidor**, nunca o do comprador. No cliente, o intervalo até a próxima consulta é a diferença entre dois instantes
+do servidor (a sugestão menos o `iat` do selo recebido), então um relógio local adiantado ou atrasado não o encurta
+nem o alonga.
 
 ## 5. O que o canal pode levar
 
