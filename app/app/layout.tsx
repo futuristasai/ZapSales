@@ -23,6 +23,8 @@ import {
   ImpersonateBanner,
 } from "@/components/app/ImpersonateBanner";
 import { ConexaoCaidaBanner } from "@/components/app/ConexaoCaidaBanner";
+import { LicencaBanner } from "@/components/app/LicencaBanner";
+import { situacaoDaLicenca } from "@/lib/licenca/situacao";
 import { IdiomaProvider } from "@/lib/i18n/IdiomaProvider";
 import { listarConexoesCaidas, type ConexaoCaida } from "@/lib/channels/health";
 import { VoiceCallProvider } from "@/components/voice/VoiceCallContext";
@@ -70,6 +72,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const fimDaMedicao = medirLayout();
   const user = await loadAuthUser();
   if (!user) redirect("/login");
+
+  // A situação da licença (a faixa). Dispara já e corre junto com as outras leituras; é lembrada 30 s no
+  // processo, então quase sempre é um acerto de memória. NUNCA rejeita: a faixa não pode derrubar a casca.
+  const licencaPromise = situacaoDaLicenca().catch(() => null);
 
   let activeOrg = await resolveActiveOrg(user);
 
@@ -257,6 +263,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // cookie "1", gravado por `toggleSidebar` — vê o trilho de ícones. Decisão do dono
   // (14/10/2026), que reverte a de 07/10: sem o nome, os três "Ver tudo" eram a mesma
   // seta e ninguém sabia para onde cada ícone levava.
+  const licenca = await licencaPromise;
   const store = await cookiesPromise;
   const collapsed = store.get("sidebar_collapsed")?.value === "1";
 
@@ -276,6 +283,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <AppShell
           sidebarCollapsed={collapsed}
           podeAtender={Boolean(activeOrg && roleAtLeast(activeOrg.role, "agent"))}
+          faixas={<LicencaBanner situacao={licenca} />}
         >
           {children}
         </AppShell>

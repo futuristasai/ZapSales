@@ -951,6 +951,18 @@ export const NAV_CATALOG = [
     menu: { grupo: "empresa-plano", ordem: 4 },
   },
   {
+    // A situação da licença desta instalação e o "tentar renovar agora" (#222, ADR-0005). É a única tela de
+    // `/app` que uma instalação barrada continua alcançando (`caminhoLiberadoDaLicenca`). A porta aqui é para
+    // quem quer SABER em que pé está a licença sem esperar a faixa aparecer — o permanente, por exemplo,
+    // nunca mostra faixa.
+    href: "/app/licenca",
+    label: "Licença",
+    description: "Se a licença está em dia, quando vence e como renovar.",
+    icon: "Certificate",
+    menu: { grupo: "empresa-plano", ordem: 5 },
+    minRole: "admin",
+  },
+  {
     // A porta da fonte de dados externa (migration 0372). Fica em "Dados e
     // acesso" porque é o MESMO eixo de API Tokens: por onde dado entra e sai do
     // CRM. NÃO é `admin` como as vizinhas de propósito — a decisão do dono (D2)

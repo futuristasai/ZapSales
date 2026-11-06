@@ -12,7 +12,9 @@
  *  - `api_token` API por token `zps_…` (MCP e rotas com Bearer — o proxy não decide nelas);
  *  - `cron`      rotas de `app/api/v1/cron/` (o agendador bate nelas);
  *  - `worker`    os laços do processo `agent-worker`;
- *  - `webhook`   entradas de webhook dos canais e das fontes de webhook.
+ *  - `webhook`   entradas de webhook dos canais e das fontes de webhook;
+ *  - `tela`      NÃO é porta: é a pergunta de quem só MOSTRA a situação (a faixa e a tela de licença). Nunca recusa
+ *                nada; usa a mesma decisão para a tela dizer o que as portas dizem.
  *
  * Cada porta tem cerca de teste (`tests/unit/licenca-portas-chamam-a-decisao.test.ts`): porta nova
  * sem a consulta reprova o CI. É o desenho da guarda `requireSupportWrite`.
@@ -42,7 +44,7 @@ import { chavesAceitas } from "./chaves";
 import { decidir, type Decisao } from "./decidir";
 import type { ModoDaLicenca } from "./estado";
 
-export type PortaDaLicenca = "proxy" | "api_token" | "cron" | "worker" | "webhook";
+export type PortaDaLicenca = "proxy" | "api_token" | "cron" | "worker" | "webhook" | "tela";
 
 export interface VereditoDaPorta {
   /** A porta deve RECUSAR agora. Só é `true` em modo `valendo` com `opera: false`. */
@@ -167,6 +169,9 @@ export async function consultarPorta(
     }
     const { veredito } = await (lembrada as Promise<Lembrada>);
 
+    // Quem só MOSTRA a situação (`tela`) não é porta: não recusa nada e não gera aviso de recusa.
+    if (porta === "tela") return veredito;
+
     if (veredito.aplicar) {
       avisarUmaVez(`recusa:${porta}`, agoraMs, "licenca: porta recusando o trabalho", {
         porta,
@@ -209,7 +214,7 @@ const CAMINHOS_LIBERADOS: readonly RegExp[] = [
   /^\/lgpd(\/.*)?$/,
   /^\/app\/lgpd(\/.*)?$/,
   // A tela de licença e a API dela (partes seguintes da Fase 1).
-  /^\/licenca(\/.*)?$/,
+  /^\/app\/licenca(\/.*)?$/,
   /^\/api\/v1\/licenca(\/.*)?$/,
 ];
 

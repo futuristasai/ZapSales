@@ -84,12 +84,20 @@ export interface OpcoesDaRenovacao {
 /** O estado do cliente no processo: a espera depois de falhas seguidas. Não vai ao banco. */
 let falhasSeguidas = 0;
 let naoAntesDeMs = 0;
+let ultimaForcadaMs = Number.NEGATIVE_INFINITY;
 let emAndamento: Promise<ResultadoDaRenovacao> | null = null;
+
+/**
+ * O "tentar renovar agora" não vira martelo: quem aperta o botão em sequência (ou um script com a sessão de
+ * um administrador) fala com o servidor de licenças no máximo uma vez por este intervalo.
+ */
+export const INTERVALO_MINIMO_DO_FORCADO_S = 15;
 
 /** Esquece a espera após falha. Para testes e para o botão "tentar agora". */
 export function esquecerFalhasDaRenovacao(): void {
   falhasSeguidas = 0;
   naoAntesDeMs = 0;
+  ultimaForcadaMs = Number.NEGATIVE_INFINITY;
   emAndamento = null;
 }
 
@@ -174,7 +182,11 @@ async function rodar(opcoes: OpcoesDaRenovacao): Promise<ResultadoDaRenovacao> {
     return registrarFalha(motivoDeLeitura(credencial.motivo), agoraMs, opcoes.aleatorio, null);
   }
 
-  if (!opcoes.forcar) {
+  if (opcoes.forcar) {
+    const livreEm = ultimaForcadaMs + INTERVALO_MINIMO_DO_FORCADO_S * 1000;
+    if (livreEm > agoraMs) return { resultado: "adiada", ateSegundos: Math.ceil(livreEm / 1000) };
+    ultimaForcadaMs = agoraMs;
+  } else {
     if (naoAntesDeMs > agoraMs) {
       return { resultado: "adiada", ateSegundos: Math.ceil(naoAntesDeMs / 1000) };
     }

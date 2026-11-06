@@ -62,8 +62,21 @@ describe("instalação bloqueada, modo valendo", () => {
     });
   });
 
-  it("a tela recebe uma página mínima 403 — sem nome de produto (white-label) e dizendo que os dados estão preservados", async () => {
+  it("quem NAVEGA vai para a tela de licença (307), que é a saída de quem está barrado", async () => {
     const r = await proxy(req("/app/inbox"));
+    expect(r.status).toBe(307);
+    expect(new URL(r.headers.get("location")!).pathname).toBe("/app/licenca");
+    expect(r.headers.get("x-request-id")).toBeTruthy();
+    expect(r.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("a tela de licença, de onde se sai, não redireciona para si mesma", async () => {
+    const r = await proxy(req("/app/licenca"));
+    expect(r.status).toBe(200);
+  });
+
+  it("quem NÃO navega (POST de ação de tela) recebe uma página mínima 403 — sem nome de produto (white-label) e dizendo que os dados estão preservados", async () => {
+    const r = await proxy(new NextRequest("https://exemplo.test/app/inbox", { method: "POST" }));
     expect(r.status).toBe(403);
     expect(r.headers.get("content-type")).toContain("text/html");
     const html = await r.text();
@@ -77,7 +90,7 @@ describe("instalação bloqueada, modo valendo", () => {
     "/app/lgpd/requests",
     "/api/v1/lgpd/requests",
     "/api/v1/audit/export",
-    "/licenca",
+    "/app/licenca",
   ])(
     "%s continua liberado: exportação e a tela de licença nunca são trancadas",
     async (caminho) => {

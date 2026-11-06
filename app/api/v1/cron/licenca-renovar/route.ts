@@ -27,7 +27,7 @@ import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { ok, fail } from "@/lib/api/wrappers";
-import { audit } from "@/lib/audit";
+import { auditarRenovacao } from "@/lib/licenca/auditoria";
 import { autorizaCron } from "@/lib/auth/cron-auth";
 import { renovarLicenca } from "@/lib/licenca/renovar";
 
@@ -42,24 +42,8 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   const rodada = await renovarLicenca();
 
-  // Só o que mudou o estado deixa rastro. O selo e a credencial nunca vão para a trilha: só o tipo e o código.
-  if (rodada.resultado === "renovada") {
-    void audit({
-      action: "license.renewed",
-      organizationId: null,
-      bypassedRls: true,
-      metadata: { tipo: rodada.tipo },
-      requestId,
-    });
-  } else if (rodada.resultado === "bloqueada") {
-    void audit({
-      action: "license.blocked_by_server",
-      organizationId: null,
-      bypassedRls: true,
-      metadata: { codigo: rodada.codigo },
-      requestId,
-    });
-  }
+  // Só o que mudou o estado deixa rastro (ver `lib/licenca/auditoria.ts`).
+  auditarRenovacao(rodada, requestId);
 
   return ok({ resultado: rodada.resultado }, { requestId });
 }

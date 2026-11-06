@@ -431,6 +431,19 @@ describe("renovação: espera depois de falha (o servidor fora do ar não é mar
     expect(await rodada(HORA + 301 + HORA + 1 + 301)).toMatchObject({ resultado: "falhou" });
   });
 
+  it("`forcar` não vira martelo: no máximo uma conversa a cada 15 segundos", async () => {
+    await instalacaoAtivada({ proximaEmS: HORA });
+    servidor.atender(() => respostaDeErro(500, "internal_error"));
+
+    await rodada(HORA, { forcar: true });
+    const logoDepois = await rodada(HORA + 5, { forcar: true });
+    expect(logoDepois).toMatchObject({ resultado: "adiada" });
+    expect(servidor.pedidos).toHaveLength(1);
+
+    await rodada(HORA + 16, { forcar: true });
+    expect(servidor.pedidos).toHaveLength(2);
+  });
+
   it("`forcar` ignora a espera", async () => {
     await instalacaoAtivada({ proximaEmS: HORA });
     servidor.atender(() => respostaDeErro(500, "internal_error"));

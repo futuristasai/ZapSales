@@ -51,12 +51,31 @@ export async function guardaDeLicenca(porta: PortaDaLicenca, requestId?: string)
   return veredito.aplicar ? respostaDeRecusa(porta, veredito, requestId) : null;
 }
 
+/** O caminho da tela de licença: a única tela que uma instalação barrada continua alcançando. */
+export const CAMINHO_DA_TELA_DE_LICENCA = "/app/licenca";
+
 /**
- * A recusa para quem está numa TELA. Texto fixo e página mínima, de propósito: o produto inteiro está
- * barrado, então ela não pode depender de componente, de i18n nem de banco. A tela de licença de
- * verdade (a faixa, o "tentar renovar agora") é da parte 5 da Fase 1 e passa a ser o destino daqui.
+ * A recusa para quem está numa TELA.
+ *
+ * Quem NAVEGA (GET/HEAD) vai para a tela de licença (`/licenca`), que explica o que aconteceu, mostra a
+ * situação e oferece o "tentar renovar agora" — é a saída de quem está barrado. O redirecionamento é
+ * temporário (307): amanhã a licença volta, e o endereço original tem de voltar a abrir.
+ *
+ * Quem NÃO navega (um POST de ação de tela, por exemplo) recebe a página mínima 403: uma resposta de
+ * redirecionamento a um POST faria o navegador repeti-lo noutro lugar, e a ação não deve rodar nem ser
+ * levada adiante. Texto fixo e sem componente, de propósito: o produto inteiro está barrado, então ela não
+ * pode depender de i18n nem de banco.
  */
-export function respostaDeRecusaDaTela(requestId: string) {
+export function respostaDeRecusaDaTela(
+  requestId: string,
+  pedido?: { readonly method: string; readonly url: string },
+) {
+  if (pedido && (pedido.method === "GET" || pedido.method === "HEAD")) {
+    return NextResponse.redirect(new URL(CAMINHO_DA_TELA_DE_LICENCA, pedido.url), {
+      status: 307,
+      headers: { "x-request-id": requestId, "cache-control": "no-store" },
+    });
+  }
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Licença</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;line-height:1.5"><h1 style="font-size:1.25rem">Licença bloqueada ou vencida</h1><p>Esta instalação não está autorizada a operar neste momento. Os seus dados estão preservados e a exportação continua disponível.</p><p>Fale com quem forneceu este sistema para regularizar a licença.</p><p lang="en" style="color:#555">License blocked or expired. Your data is preserved and export remains available.</p></body></html>`;
   return new NextResponse(html, {
     status: 403,

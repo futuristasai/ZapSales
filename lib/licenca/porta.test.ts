@@ -181,8 +181,8 @@ describe("caminhoLiberadoDaLicenca — o que continua aberto sem licença", () =
     "/api/v1/audit/export",
     "/api/v1/lgpd/requests",
     "/app/lgpd",
-    "/licenca",
-    "/licenca/renovar",
+    "/app/licenca",
+    "/app/licenca/historico",
     "/api/v1/licenca/renovar",
   ])("%s está liberado", (caminho) => {
     expect(caminhoLiberadoDaLicenca(caminho)).toBe(true);
@@ -194,7 +194,9 @@ describe("caminhoLiberadoDaLicenca — o que continua aberto sem licença", () =
     "/api/v1/messages",
     "/api/v1/health/extra",
     "/api/v1/audit/exports-novos",
+    "/licenca",
     "/licencas",
+    "/app/licencas",
     "/api/v1/licencas",
     "/admin/licenca",
   ])("%s NÃO está liberado (a âncora impede carona)", (caminho) => {
