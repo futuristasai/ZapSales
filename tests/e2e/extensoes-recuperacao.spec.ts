@@ -139,6 +139,15 @@ test("recupera preparação em HTTP real e mantém tema, idioma e fallback legí
       ),
     ).toBeVisible();
 
+    // O aviso «Catálogo admitido…» mora no canto superior direito — o mesmo canto do tema e do idioma — e o
+    // sonner PAUSA o relógio de um toast enquanto o ponteiro está por cima dele. Sem tirar o ponteiro e esperar
+    // o aviso sumir, ele pode ficar cobrindo o seletor de idioma e o clique abaixo repete até o teste estourar
+    // (240 s) — falha de ambiente que derrubou PRs sem relação com extensões.
+    await page.mouse.move(5, 400);
+    await expect(page.getByText("Catálogo admitido e disponível para instalação.")).toBeHidden({
+      timeout: 20_000,
+    });
+
     const { data, error } = await atores!.db
       .from("extension_catalogs")
       .select("id")
