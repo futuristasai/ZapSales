@@ -69,6 +69,23 @@ env_remover() {
   mv "$tmp" "$arq"
 }
 
+# classificar_sistema ID VERSION_ID [ID_LIKE] — onde o kit foi (ou não) provado. Imprime UMA palavra:
+#   testado        instalação fresca, atualização e backup provados nesta versão
+#   a-testar       suportado de nome (é o padrão da Hostinger), ainda sem a prova numa VM real — issue #226
+#   nao-testado    Ubuntu/Debian de outra versão: o kit usa apt e costuma funcionar, mas ninguém provou
+#   nao-suportado  nem Ubuntu nem Debian nem derivado: o kit instala pacotes com apt
+# A matriz mora aqui e em docs/runbooks/instalacao-vps-limpa.md (seção «Sistemas»); o teste
+# tests/shell/kit-funcoes.test.sh cobra que as duas dizem o mesmo.
+classificar_sistema() {
+  local id="${1:-}" versao="${2:-}" like="${3:-}"
+  case "$id:$versao" in
+    ubuntu:24.04) printf 'testado' ;;
+    ubuntu:26.04) printf 'a-testar' ;;
+    ubuntu:*|debian:*) printf 'nao-testado' ;;
+    *) case " $like " in *" debian "*|*" ubuntu "*) printf 'nao-testado' ;; *) printf 'nao-suportado' ;; esac ;;
+  esac
+}
+
 # exigir_root — o kit mexe em /etc, no Docker e no proxy do sistema.
 exigir_root() {
   [ "$(id -u)" -eq 0 ] || falha "Rode como root (sudo $0)."

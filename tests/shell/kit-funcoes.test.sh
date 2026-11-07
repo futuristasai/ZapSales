@@ -274,6 +274,21 @@ falso "instalar.sh nunca regrava o INSTALACAO_ID (env_definir)" \
 verdade "o UUID nasce do kernel (v4), não do IP nem do domínio" \
   grep -qE 'INSTALACAO_ID "\$\(cat /proc/sys/kernel/random/uuid\)"' kit/instalar.sh
 
+echo "sistemas — a matriz do kit (#226)"
+igual "Ubuntu 24.04: testado" "testado" "$(classificar_sistema ubuntu 24.04 debian)"
+igual "Ubuntu 26.04: a testar (padrão da Hostinger, ainda sem VM de prova)" "a-testar" "$(classificar_sistema ubuntu 26.04 debian)"
+igual "Ubuntu 22.04: não testado" "nao-testado" "$(classificar_sistema ubuntu 22.04 debian)"
+igual "Debian 12: não testado" "nao-testado" "$(classificar_sistema debian 12 '')"
+igual "derivado de Debian pelo ID_LIKE: não testado" "nao-testado" "$(classificar_sistema linuxmint 22 'ubuntu debian')"
+igual "Rocky Linux: não suportado" "nao-suportado" "$(classificar_sistema rocky 9.4 'rhel centos fedora')"
+igual "Alpine: não suportado" "nao-suportado" "$(classificar_sistema alpine 3.20 '')"
+igual "sem os-release: não suportado" "nao-suportado" "$(classificar_sistema '' '' '')"
+igual "ID_LIKE só casa palavra inteira (nada de 'debianesco')" "nao-suportado" "$(classificar_sistema x 1 'debianesco')"
+# A prosa e o código dizem a mesma matriz: o runbook lista as duas versões com a situação certa.
+verdade "o runbook diz que 24.04 está testada"  grep -qE 'Ubuntu 24\.04 LTS \| \*\*testado\*\*' docs/runbooks/instalacao-vps-limpa.md
+verdade "o runbook diz que 26.04 está a testar" grep -qE 'Ubuntu 26\.04 LTS \| \*\*a testar\*\*' docs/runbooks/instalacao-vps-limpa.md
+verdade "a atualização nunca é recusada pela matriz" grep -qE 'if \[ -f "\$ENV_ARQ" \] \|\| \[ "\$\{ZAPSALES_IGNORAR_SO:-\}" = "1" \]' kit/instalar.sh
+
 echo "roteiros do kit — sintaxe"
 for f in kit/*.sh kit/lib/*.sh; do
   verdade "bash -n $f" bash -n "$f"
