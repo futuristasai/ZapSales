@@ -177,6 +177,15 @@ it after checking a backup.
   from a variable, to install without an interactive terminal:
   `curl … | sudo ZAPSALES_DOMINIO=… ZAPSALES_EMAIL=… ZAPSALES_EMPRESA=… ZAPSALES_IDIOMA=en bash`
   (without a terminal the password is generated; `ZAPSALES_SENHA` sets it).
+- The license is activated at the end of the install, with the purchase e-mail and the
+  transaction code (`HP…`): the kit asks (the code is not echoed) or, without a terminal, reads
+  the file `/etc/zapsales/licenca-compra` (two lines — e-mail and code —, mode 600; the kit
+  deletes it afterwards) or the variables `ZAPSALES_LICENCA_EMAIL` and `ZAPSALES_LICENCA_TRANSACAO`.
+  Prefer the file: `sudo VAR=value …` leaves the value visible in `ps` and in the typist's shell
+  history. With no data, a refused purchase or the license server down, **the install finishes the
+  same way**, as «activation pending», and `sudo /opt/zapsales/kit/ativar-licenca.sh` activates it
+  later. The kit does not pass the purchase as an argument, does not write it to `.env`, and it
+  does not show up on screen or in the kit log.
 - The mode is chosen by whoever owns ports 80/443 and saved as `ZAPSALES_MODO` in `.env`; the kit
   never switches modes by itself. To force one: `ZAPSALES_MODO=limpa` or `convivendo`.
 - In clean mode `COMPOSE_FILE` is `docker-compose.prod.yml:docker-compose.supabase.yml`: the

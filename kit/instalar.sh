@@ -28,7 +28,7 @@
 #   3. gera o .env (segredos só na primeira vez);
 #   4. prepara as imagens (puxa do registro ou constrói — ZAPSALES_IMAGENS);
 #   5. sobe o Supabase, aplica o schema, sobe o resto da stack;
-#   6. cria o primeiro administrador (só na primeira vez);
+#   6. cria o primeiro administrador (só na primeira vez) e ativa a licença da compra;
 #   7. (convivendo) acrescenta UM bloco ao proxy do sistema e recarrega;
 #   8. agenda os backups;
 #   9. prova: o domínio responde por HTTPS com certificado válido, nenhuma porta
@@ -46,6 +46,13 @@
 #                          se a implantação contínua a instalou; senão a do package.json)
 #   ZAPSALES_IGNORAR_DNS=1 instala mesmo com o DNS ainda não apontado
 #   ZAPSALES_IGNORAR_SO=1  instala mesmo num sistema que não é Ubuntu nem Debian (por sua conta e risco)
+#   ZAPSALES_LICENCA_EMAIL e ZAPSALES_LICENCA_TRANSACAO  e-mail da compra e código da transação (HP…):
+#                          ativam a licença. Sem eles a instalação TERMINA do mesmo jeito, em "ativação
+#                          pendente", e `kit/ativar-licenca.sh` ativa depois. O kit não os passa em
+#                          argumento nem os grava no .env. CUIDADO: `sudo VAR=valor` deixa o valor no `ps`
+#                          e no histórico de quem digitou; sem terminal, prefira o arquivo abaixo.
+#   ZAPSALES_LICENCA_ARQUIVO  arquivo de duas linhas (e-mail, código), modo 600, do usuário que roda o kit
+#                          (padrão: /etc/zapsales/licenca-compra). O kit lê e APAGA depois da tentativa.
 set -Eeuo pipefail
 
 KIT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,6 +65,8 @@ RAIZ="$(dirname "$KIT")"
 . "$KIT/lib/proxy.sh"
 # shellcheck source=lib/stack.sh
 . "$KIT/lib/stack.sh"
+# shellcheck source=lib/licenca.sh
+. "$KIT/lib/licenca.sh"
 
 ENV_ARQ="$RAIZ/.env"
 ESTADO=/etc/zapsales
@@ -740,6 +749,7 @@ resumo() {
     msg "  Primeiro acesso: sudo cat $ESTADO/primeiro-acesso"
     msg "  (guarde a senha num cofre de senhas e apague o arquivo: sudo rm $ESTADO/primeiro-acesso)"
   fi
+  [ "$LICENCA_RC" -eq 0 ] || msg "  Licença:    ativação pendente — sudo $KIT/ativar-licenca.sh (o sistema já funciona)"
   msg "  Logs:       cd $RAIZ && docker compose logs -f app"
   msg "  Atualizar:  curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash"
   msg "              (ou traga o código novo para $RAIZ e rode este kit de novo)"
@@ -755,6 +765,7 @@ preparar_env
 preparar_imagens
 subir_stack
 criar_primeiro_admin
+ativar_licenca_da_compra
 configurar_proxy
 agendar_backups
 provar
