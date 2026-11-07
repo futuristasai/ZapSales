@@ -45,6 +45,7 @@
 #   ZAPSALES_VERSAO        versão das imagens no registro (padrão: a do commit, `sha-<commit>`,
 #                          se a implantação contínua a instalou; senão a do package.json)
 #   ZAPSALES_IGNORAR_DNS=1 instala mesmo com o DNS ainda não apontado
+#   ZAPSALES_IGNORAR_SO=1  instala mesmo num sistema que não é Ubuntu nem Debian (por sua conta e risco)
 set -Eeuo pipefail
 
 KIT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -80,6 +81,28 @@ versao_maior_ou_igual() { # A B — A >= B (x.y.z)
   [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -1)" = "$2" ]
 }
 
+# verificar_sistema — a matriz de sistemas (classificar_sistema). A ATUALIZAÇÃO nunca é recusada por
+# causa dela: quem já instalou numa versão que funcionava não pode ser barrado pela atualização. Só a
+# PRIMEIRA instalação num sistema que nem apt tem é recusada, com a mensagem de como seguir.
+verificar_sistema() {
+  local id versao like situacao
+  id="$(. /etc/os-release && echo "${ID:-}")"
+  versao="$(. /etc/os-release && echo "${VERSION_ID:-}")"
+  like="$(. /etc/os-release && echo "${ID_LIKE:-}")"
+  situacao="$(classificar_sistema "$id" "$versao" "$like")"
+  case "$situacao" in
+    testado) ;;
+    a-testar) aviso "Ubuntu $versao ainda não foi provado de ponta a ponta com este kit (a validação está em andamento). Deve funcionar; se algo falhar, a mensagem do kit diz onde." ;;
+    nao-testado) aviso "${id:-este sistema} $versao não foi testado com este kit. Os testados são Ubuntu 24.04 (provado) e 26.04 (em validação). Seguindo." ;;
+    nao-suportado)
+      if [ -f "$ENV_ARQ" ] || [ "${ZAPSALES_IGNORAR_SO:-}" = "1" ]; then
+        aviso "${id:-sistema desconhecido} não é Ubuntu nem Debian, e o kit instala pacotes com apt. Seguindo porque já há uma instalação aqui (ou ZAPSALES_IGNORAR_SO=1)."
+      else
+        falha "O kit é para Ubuntu (24.04 ou 26.04) ou Debian: ele instala pacotes com apt, e esta máquina é '${id:-desconhecida}'. Crie a VPS com Ubuntu 24.04 ou 26.04 (ou use ZAPSALES_IGNORAR_SO=1 por sua conta e risco)."
+      fi ;;
+  esac
+}
+
 verificar_maquina() {
   passo "Conferindo a máquina"
   local faltam=()
@@ -98,6 +121,7 @@ verificar_maquina() {
   mem_mb="$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)"
   disco_gb="$(df -BG --output=avail "$RAIZ" | tail -1 | tr -dc '0-9')"
   msg "  $(. /etc/os-release && echo "$PRETTY_NAME") · $(uname -m) · ${mem_mb} MB de RAM · ${disco_gb} GB livres · Compose $v"
+  verificar_sistema
   [ "$mem_mb" -ge 3500 ] || aviso "Menos de 4 GB de RAM: a stack inteira tem teto somado acima disso."
   [ "$disco_gb" -ge 20 ] || aviso "Menos de 20 GB livres: banco, mídias e 30 dias de dump precisam de espaço."
 }

@@ -15,8 +15,17 @@ You need three things. Do them in this order, because the third one takes a whil
 
 ### 1. A VPS running Ubuntu
 
-On Hostinger: **VPS › KVM 2** (or bigger), operating system **Ubuntu 24.04**. ZapSales needs at
+On Hostinger: **VPS › KVM 2** (or bigger), operating system **Ubuntu 24.04** or **26.04**. ZapSales needs at
 least **4 GB of memory** and **20 GB of free disk**; with less, the kit warns you.
+
+**Systems** (the kit warns when yours is not on the first line):
+
+| System | Status |
+|---|---|
+| Ubuntu 24.04 LTS | **tested** — install, update and backup proven |
+| Ubuntu 26.04 LTS | **to be tested** — Hostinger's current default; validation on a clean VM is under way (issue #226). It should work |
+| Other Ubuntu / Debian | untested — the kit uses apt and usually works |
+| Anything else | a first install is refused; updating an existing ZapSales install only warns |
 
 Write down the VPS **IP address** (something like `203.0.113.10`) and the `root` password shown
 in the panel.
