@@ -751,7 +751,7 @@ resumo() {
   fi
   [ "$LICENCA_RC" -eq 0 ] || msg "  Licença:    ativação pendente — sudo $KIT/ativar-licenca.sh (o sistema já funciona)"
   msg "  Logs:       cd $RAIZ && docker compose logs -f app"
-  msg "  Atualizar:  curl -fsSL https://raw.githubusercontent.com/futuristasai/ZapSales/main/kit/obter.sh | sudo bash"
+  msg "  Atualizar:  curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash"
   msg "              (ou traga o código novo para $RAIZ e rode este kit de novo)"
   msg "  Backup:     sudo $KIT/backup.sh status"
 }

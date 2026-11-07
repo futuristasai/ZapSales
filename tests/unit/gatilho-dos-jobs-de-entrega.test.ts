@@ -80,6 +80,14 @@ const GATILHO_ESPERADO: Record<string, { condicao: string | null; efeito: string
       "tag nasce, nenhuma imagem sai, `stable` congela, e a descoberta é um cliente " +
       "rodando `update.sh` e não recebendo nada.",
   },
+  "publicar-obter.yml::publicar": {
+    condicao: "github.repository == 'futuristasai/ZapSales'",
+    efeito:
+      "Este job leva o `kit/obter.sh` da tag para https://zapinstalador.futuristas.app/obter.sh, " +
+      "o comando que o comprador cola na VPS. A condição só tira o fork (que herda o arquivo e " +
+      "não tem ambiente, chave nem servidor). Desligá-lo deixa o comando novo sem atualizar: a " +
+      "tag existe, as imagens saem, e quem instala continua recebendo o instalador antigo.",
+  },
   "publish-image.yml::a-tag-veio-da-main": {
     condicao: null,
     efeito:

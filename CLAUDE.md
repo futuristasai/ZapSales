@@ -271,7 +271,9 @@ pro login) e não 404. Verificações e o caso de build local em
 atualiza (rodar de novo é a atualização) — no modo "convivendo com outros apps atrás do
 proxy existente" (issue #3, runbook `docs/runbooks/instalacao-vps-convivio.md`) e no modo
 "VPS limpa" (issue #12, guia `docs/runbooks/instalacao-vps-limpa.md`), escolhido pelo dono das
-portas 80/443. Numa VPS nova o comando único é o `kit/obter.sh` (`curl … | sudo bash`). Onde
+portas 80/443. Numa VPS nova o comando único é o `kit/obter.sh` (`curl … | sudo bash`), servido de
+`https://zapinstalador.futuristas.app/obter.sh` e publicado por `publicar-obter.yml` a partir de uma tag
+(`docs/runbooks/publicar-obter-sh.md`) — nunca do `raw.githubusercontent.com`. Onde
 este arquivo diz `install.sh`/`update.sh`, leia
 `kit/instalar.sh`. Backup e restauração: `kit/backup.sh` e `kit/restaurar.sh`
 (`docs/runbooks/backup-e-restauracao.md`).
