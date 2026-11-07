@@ -41,7 +41,8 @@ Sem as variáveis, ele pergunta. Outras opcionais:
 | `ZAPSALES_EMPRESA` | nome da organização criada com o primeiro administrador |
 | `ZAPSALES_IDIOMA` | `pt-BR`, `es` ou `en` — idioma com que a organização nasce (padrão: pergunta; sem terminal, `pt-BR`) |
 | `ZAPSALES_SENHA` | senha do primeiro administrador (padrão: gerada) |
-| `ZAPSALES_LICENCA_EMAIL` e `ZAPSALES_LICENCA_TRANSACAO` | e-mail da compra e código da transação (`HP…`): ativam a licença. Sem eles a instalação termina igual, em «ativação pendente»; `sudo kit/ativar-licenca.sh` ativa depois. Nunca vão na linha de comando nem para o `.env` |
+| `ZAPSALES_LICENCA_EMAIL` e `ZAPSALES_LICENCA_TRANSACAO` | e-mail da compra e código da transação (`HP…`): ativam a licença. Sem eles a instalação termina igual, em «ativação pendente»; `sudo kit/ativar-licenca.sh` ativa depois. Não vão para o `.env`. Atenção: `sudo VAR=valor` os deixa visíveis no `ps` e no histórico — sem terminal, use o arquivo abaixo |
+| `ZAPSALES_LICENCA_ARQUIVO` | arquivo de duas linhas (e-mail e código), modo 600, do usuário que roda o kit (padrão: `/etc/zapsales/licenca-compra`). O kit o lê e o apaga depois da tentativa |
 | `ZAPSALES_IMAGENS=construir` | constrói as imagens na VPS em vez de puxar do registro (ver abaixo) |
 | `ZAPSALES_VERSAO` | versão das imagens do registro (padrão: a do `package.json`) |
 

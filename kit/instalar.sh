@@ -47,7 +47,11 @@
 #   ZAPSALES_IGNORAR_DNS=1 instala mesmo com o DNS ainda não apontado
 #   ZAPSALES_LICENCA_EMAIL e ZAPSALES_LICENCA_TRANSACAO  e-mail da compra e código da transação (HP…):
 #                          ativam a licença. Sem eles a instalação TERMINA do mesmo jeito, em "ativação
-#                          pendente", e `kit/ativar-licenca.sh` ativa depois. Nunca vão na linha de comando.
+#                          pendente", e `kit/ativar-licenca.sh` ativa depois. O kit não os passa em
+#                          argumento nem os grava no .env. CUIDADO: `sudo VAR=valor` deixa o valor no `ps`
+#                          e no histórico de quem digitou; sem terminal, prefira o arquivo abaixo.
+#   ZAPSALES_LICENCA_ARQUIVO  arquivo de duas linhas (e-mail, código), modo 600, do usuário que roda o kit
+#                          (padrão: /etc/zapsales/licenca-compra). O kit lê e APAGA depois da tentativa.
 set -Eeuo pipefail
 
 KIT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
