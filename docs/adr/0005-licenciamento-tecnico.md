@@ -180,7 +180,7 @@ Cada fase vira uma issue com critério de aceite. As Fases 1 e 2 andam em parale
 
 ## Consequências
 
-- **Doutrina.** Quando a trava passar a valer, o item 5 de "Licença e contribuição" no `CLAUDE.md` e no `AGENTS.md` deixa de ser verdadeiro e é reescrito na mesma mudança. Até lá o item continua como está.
+- **Doutrina.** O item 5 de "Licença e contribuição" no `CLAUDE.md` foi reescrito na Fase 3 (#224): ele dizia que a trava "não estava construída", e a Fase 1 a construiu em modo sombra. O texto novo diz que ela existe e só observa, e muda de novo na fase "Ligar", quando o modo passar a `valendo`.
 - **Destino da mudança** (doutrina de extensões): infraestrutura de distribuição e licenciamento, e núcleo para a trava. A pergunta "se nenhuma organização ativar isto, a operação comum continua inteira?" tem resposta **sim**: sem selo, o produto inteiro segue funcionando.
 - **Custos.** Uma VPS adicional (já existe), o GitHub Pro (US$ 4 por mês) e a operação do painel.
 - **Dependência nova.** O servidor de licenças vira dependência da instalação **só** durante a Janela. Depois dela, a instalação com selo permanente não depende de nada.

@@ -177,6 +177,9 @@ it after checking a backup.
   same way**, as «activation pending», and `sudo /opt/zapsales/kit/ativar-licenca.sh` activates it
   later. The kit does not pass the purchase as an argument, does not write it to `.env`, and it
   does not show up on screen or in the kit log.
+- The license lock starts in `sombra` (shadow) mode: it only observes, never restricts.
+  `sudo kit/licenca-modo.sh` shows the mode and `sudo kit/licenca-modo.sh valendo|sombra` switches
+  it; every switch is logged in `/var/log/zapsales/licenca.log`.
 - The mode is chosen by whoever owns ports 80/443 and saved as `ZAPSALES_MODO` in `.env`; the kit
   never switches modes by itself. To force one: `ZAPSALES_MODO=limpa` or `convivendo`.
 - In clean mode `COMPOSE_FILE` is `docker-compose.prod.yml:docker-compose.supabase.yml`: the

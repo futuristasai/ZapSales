@@ -671,8 +671,19 @@ Lei completa em [`LICENSING.md`](LICENSING.md). O não-negociável:
 4. **O texto da licença não se edita.** O `LICENSE` é o texto oficial da PolyForm, intacto (a
    PolyForm exige tirar o nome dela de qualquer texto alterado). O contrato comercial é outro
    documento.
-5. **Nada aqui é trava técnica.** A licença é o fundamento legal. Verificação de licença por
-   servidor é outra peça, ainda não construída.
+5. **A licença é o fundamento legal; a trava técnica é a peça que a acompanha, e hoje só observa**
+   ([ADR-0005](docs/adr/0005-licenciamento-tecnico.md)). Ela existe: um selo assinado pelo servidor de
+   licenças, conferido por `lib/licenca/` e aplicado nas quatro portas (telas e API, cron, worker,
+   webhooks) por UMA decisão, `consultarPorta`. **Está em modo sombra: calcula e registra, nunca
+   restringe** — passa a valer na fase «Ligar», por decisão do dono, trocando o modo da instalação
+   (`kit/licenca-modo.sh`). Não escreva nem anuncie que ela bloqueia antes disso. Para quem codifica:
+   (a) porta de entrada nova chama `consultarPorta` — a cerca
+   `tests/unit/licenca-portas-chamam-a-decisao.test.ts` reprova quem esquecer; (b) bloqueio nunca
+   apaga dado, e login, saúde, exportação dos próprios dados e a tela de licença seguem liberados;
+   (c) servidor fora do ar ou estado ilegível **nunca** bloqueia; (d) a regra não se reimplementa fora
+   de `lib/licenca`; (e) não há limite técnico de empresas, marca própria ou modalidade — isso é
+   contratual. Para ver o que está em vigor em vez de confiar nesta linha: `grep -n "modo" lib/licenca/estado.ts`
+   e a faixa «Uso não comercial / Ativação pendente» na tela.
 
 ---
 
