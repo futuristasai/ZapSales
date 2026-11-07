@@ -166,6 +166,14 @@ isso depois de conferir um backup.
   podem vir por variável, para instalar sem terminal interativo:
   `curl … | sudo ZAPSALES_DOMINIO=… ZAPSALES_EMAIL=… ZAPSALES_EMPRESA=… ZAPSALES_IDIOMA=en bash`
   (sem terminal, a senha é gerada; `ZAPSALES_SENHA` a fixa).
+- A licença é ativada no fim da instalação, com o e-mail da compra e o código da transação
+  (`HP…`): o kit pergunta (o código não aparece na tela) ou, sem terminal, lê o arquivo
+  `/etc/zapsales/licenca-compra` (duas linhas — e-mail e código —, modo 600; o kit o apaga depois)
+  ou as variáveis `ZAPSALES_LICENCA_EMAIL` e `ZAPSALES_LICENCA_TRANSACAO`. Prefira o arquivo:
+  `sudo VAR=valor …` deixa o valor visível no `ps` e no histórico de quem digitou. Sem os dados,
+  com a compra recusada ou com o servidor de licenças fora do ar, **a instalação termina do mesmo
+  jeito**, em «ativação pendente», e `sudo /opt/zapsales/kit/ativar-licenca.sh` ativa depois. O
+  kit não passa a compra em argumento, não a grava no `.env` e ela não aparece na tela nem no log.
 - O modo é escolhido pelo dono das portas 80/443 e gravado em `ZAPSALES_MODO` no `.env`; o kit
   nunca troca de modo sozinho. Forçar: `ZAPSALES_MODO=limpa` ou `convivendo`.
 - No modo limpa o `COMPOSE_FILE` é `docker-compose.prod.yml:docker-compose.supabase.yml`: o
