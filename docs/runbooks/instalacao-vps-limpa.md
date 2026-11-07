@@ -174,6 +174,9 @@ isso depois de conferir um backup.
   com a compra recusada ou com o servidor de licenças fora do ar, **a instalação termina do mesmo
   jeito**, em «ativação pendente», e `sudo /opt/zapsales/kit/ativar-licenca.sh` ativa depois. O
   kit não passa a compra em argumento, não a grava no `.env` e ela não aparece na tela nem no log.
+- A trava de licença nasce em modo `sombra` (só observa, nunca restringe). `sudo kit/licenca-modo.sh`
+  mostra o modo e `sudo kit/licenca-modo.sh valendo|sombra` o troca; cada troca fica em
+  `/var/log/zapsales/licenca.log`.
 - O modo é escolhido pelo dono das portas 80/443 e gravado em `ZAPSALES_MODO` no `.env`; o kit
   nunca troca de modo sozinho. Forçar: `ZAPSALES_MODO=limpa` ou `convivendo`.
 - No modo limpa o `COMPOSE_FILE` é `docker-compose.prod.yml:docker-compose.supabase.yml`: o

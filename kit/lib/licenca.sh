@@ -143,3 +143,39 @@ ativar_licenca_da_compra() {
   licenca_desfecho "$saida"
   return 0
 }
+
+# definir_modo_da_licenca [sombra|valendo] — o interruptor da trava (ADR-0005, D-7).
+#   sem argumento: mostra o modo em vigor;  com argumento: troca, por dentro do worker
+#   (scripts/definir-modo-da-licenca.ts). Devolve 0 ok · 1 não foi possível · 2 argumento inválido.
+# Não é uma tela nem uma API: quem tem root na máquina decide, como em qualquer outra configuração da
+# instalação. A troca fica registrada em $LOGS/licenca.log (quando e por quem).
+definir_modo_da_licenca() {
+  local pedido="${1:-}" atual
+  atual="$(sql_valor "select modo from public.platform_licenca limit 1")"
+  if [ -z "$pedido" ]; then
+    msg "  modo da trava de licença: ${atual:-desconhecido (a instalação ainda não consultou a licença)}"
+    msg "  sombra  = calcula e registra, nunca restringe (o padrão)"
+    msg "  valendo = recusa a instalação ativada cuja licença venceu ou foi bloqueada (dados e exportação ficam)"
+    return 0
+  fi
+  case "$pedido" in
+    sombra|valendo) ;;
+    *) aviso "Use: sudo $KIT/licenca-modo.sh [sombra|valendo]"; return 2 ;;
+  esac
+
+  local log="${LOGS:-/tmp}/licenca.log" bruto linha rc=0
+  (umask 077 && : >> "$log") 2>/dev/null || log=/dev/null
+  bruto="$(dc run --rm --no-deps -T \
+    -e NEXT_PUBLIC_SUPABASE_URL="http://caddy:8000" \
+    -e ZAPSALES_LICENCA_MODO="$pedido" \
+    worker pnpm exec tsx scripts/definir-modo-da-licenca.ts 2>>"$log")" || rc=$?
+  linha="$(printf '%s\n' "$bruto" | grep -E '^LICENCA_MODO=' | tail -1 || true)"
+  if [ "$rc" -eq 0 ] && [ "$linha" = "LICENCA_MODO=$pedido" ]; then
+    msg "  modo da trava de licença: ${atual:-?} → $pedido"
+    printf '%s modo %s -> %s por %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${atual:-?}" "$pedido" "${SUDO_USER:-${USER:-root}}" >> "$log" 2>/dev/null || true
+    [ "$pedido" != "valendo" ] || msg "  Atenção: a partir de agora a trava recusa. Volte com: sudo $KIT/licenca-modo.sh sombra"
+    return 0
+  fi
+  aviso "Não consegui trocar o modo (${linha:-sem resposta do worker}). Detalhes: $log"
+  return 1
+}
