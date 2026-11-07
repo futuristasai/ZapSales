@@ -33,6 +33,8 @@ set -Eeuo pipefail
 
 REPO="${ZAPSALES_REPO:-https://github.com/futuristasai/ZapSales}"
 PASTA="${ZAPSALES_PASTA:-/opt/zapsales}"
+# Sem terminal (SSH sem tty), um diálogo do apt/debconf esperaria para sempre.
+export DEBIAN_FRONTEND=noninteractive
 
 msg()   { printf '%s\n' "$*"; }
 passo() { printf '\n\033[32m▶ %s\033[0m\n' "$*"; }

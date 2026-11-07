@@ -259,6 +259,21 @@ env_garantir "$envsig" WAHA_WEBHOOK_REQUIRE_SIGNATURE "$(assinatura_padrao_do_we
 igual "a atualização não desfaz o ajuste do operador" "true" "$(env_ler "$envsig" WAHA_WEBHOOK_REQUIRE_SIGNATURE)"
 falso "instalar.sh não recalcula a chave com env_definir"   grep -qE 'env_definir .*WAHA_WEBHOOK_REQUIRE_SIGNATURE' kit/instalar.sh
 
+echo "identidade da instalação (licenciamento, #222) — reinstalar não a troca"
+# O prazo do selo vem do servidor e é amarrado a este UUID. Se a segunda rodada do kit
+# gerasse outro, reinstalar por cima viraria uma instalação nova e reiniciaria a janela.
+enviid="$TMP/instalacao-id.env"
+: > "$enviid"
+env_garantir "$enviid" INSTALACAO_ID "11111111-1111-4111-8111-111111111111"
+env_garantir "$enviid" INSTALACAO_ID "22222222-2222-4222-8222-222222222222"
+igual "a segunda rodada mantém o UUID da primeira" "11111111-1111-4111-8111-111111111111" "$(env_ler "$enviid" INSTALACAO_ID)"
+verdade "instalar.sh só semeia o INSTALACAO_ID (env_garantir)" \
+  grep -qE 'env_garantir "\$ENV_ARQ" INSTALACAO_ID ' kit/instalar.sh
+falso "instalar.sh nunca regrava o INSTALACAO_ID (env_definir)" \
+  grep -qE 'env_definir .*INSTALACAO_ID' kit/instalar.sh
+verdade "o UUID nasce do kernel (v4), não do IP nem do domínio" \
+  grep -qE 'INSTALACAO_ID "\$\(cat /proc/sys/kernel/random/uuid\)"' kit/instalar.sh
+
 echo "roteiros do kit — sintaxe"
 for f in kit/*.sh kit/lib/*.sh; do
   verdade "bash -n $f" bash -n "$f"

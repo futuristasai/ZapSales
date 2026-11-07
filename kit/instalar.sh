@@ -14,10 +14,13 @@
 # a versão publicada para /opt/zapsales e chama este arquivo). Guia de cada
 # pergunta: docs/runbooks/instalacao-vps-limpa.md.
 #
-# Sem as variáveis, o kit pergunta. Rodar de novo é seguro e é como se
-# atualiza: segredos nunca são regerados, o bloco do proxy é substituído (não
-# duplicado), o baseline.sql é reaplicado, o primeiro administrador não é
-# recriado e o modo não muda sozinho.
+# Sem as variáveis, o kit pergunta — mas só com terminal. Sem terminal (SSH sem
+# tty, como o instalador por SSH da Fase 3) ele nunca espera resposta: tudo vem
+# das variáveis, e o que tem padrão usa o padrão. Prova:
+# tests/shell/kit-sem-terminal.test.sh.
+# Rodar de novo é seguro e é como se atualiza: segredos nunca são regerados, o
+# bloco do proxy é substituído (não duplicado), o baseline.sql é reaplicado, o
+# primeiro administrador não é recriado e o modo não muda sozinho.
 #
 # O que ele faz, em ordem:
 #   1. confere a máquina e decide o modo pelo dono das portas 80/443;
@@ -60,6 +63,10 @@ ESTADO=/etc/zapsales
 LOGS=/var/log/zapsales
 BACKUPS=/var/backups/zapsales
 REGISTRO_IMAGENS="ghcr.io/futuristasai"
+
+# Sem terminal (SSH sem tty), um diálogo do apt/debconf esperaria para sempre. O kit só
+# instala pacotes simples; o padrão do pacote vale.
+export DEBIAN_FRONTEND=noninteractive
 
 exigir_root
 mkdir -p "$ESTADO" "$LOGS"
