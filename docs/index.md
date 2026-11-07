@@ -148,6 +148,7 @@ e vai morar em `kit/`; o kit herdado da origem e os guias dele foram removidos.
 | [`runbooks/banco-e-papel-do-worker.md`](runbooks/banco-e-papel-do-worker.md) | **Aplicar o schema e criar o papel do worker** — receita que todo kit de instalação cumpre |
 | [`runbooks/instalacao-vps-limpa.md`](runbooks/instalacao-vps-limpa.md) | **Instalar o ZapSales numa VPS limpa** — o comando único (`kit/obter.sh`) e cada pergunta do instalador, em linguagem simples |
 | [`runbooks/installing-on-a-clean-vps.md`](runbooks/installing-on-a-clean-vps.md) | O mesmo guia, em inglês |
+| [`runbooks/publicar-obter-sh.md`](runbooks/publicar-obter-sh.md) | **Publicar o `kit/obter.sh` em `zapinstalador.futuristas.app`** — o caminho tag → CI → VPS de licenças, por que a chave do CI é estreita, voltar versão e trocar a chave |
 | [`runbooks/instalacao-vps-convivio.md`](runbooks/instalacao-vps-convivio.md) | **Instalar o ZapSales numa VPS que já roda outros apps** — o `kit/instalar.sh`, passo a passo e conferências |
 | [`runbooks/backup-e-restauracao.md`](runbooks/backup-e-restauracao.md) | **Backup e restauração** — dump diário, cópia semanal criptografada no R2, ensaio mensal e desastre |
 | [`runbooks/deploy.md`](runbooks/deploy.md) | **Deploy em produção — o roteamento em todo `up -d`, verificação pós-deploy, build de emergência** |

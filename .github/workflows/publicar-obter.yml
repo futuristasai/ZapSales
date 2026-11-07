@@ -1,0 +1,157 @@
+name: Publicar obter.sh (zapinstalador)
+
+# Leva o kit/obter.sh de uma VERSÃO do GitHub para https://zapinstalador.futuristas.app/obter.sh, o
+# endereço que o comprador cola no terminal da VPS (issue #224 item 4, ADR-0005).
+#
+# Por que existe: esse arquivo roda como administrador na máquina de quem compra. Servi-lo do
+# GitHub (raw.githubusercontent.com) amarra a marca a um endereço que não é nosso e que qualquer
+# push na `main` muda. Servi-lo daqui o torna um ato: só sai de uma tag `vX.Y.Z` (ou, antes da
+# primeira release, de um disparo manual na `main`), sem edição à mão no servidor.
+#
+# O QUE ESTE WORKFLOW PODE E NÃO PODE:
+#   - A chave SSH que ele usa (segredo do ambiente `zapinstalador`) só consegue rodar UM comando
+#     na VPS de licenças, `zapinstalador-publicar`, que escreve UM arquivo (scripts/zapinstalador/
+#     publicar-no-servidor.sh). Não abre shell, não encaminha porta.
+#   - O ambiente `zapinstalador` só libera o segredo a runs da `main` e de tags `v*`: um PR, ou um
+#     branch de colaborador, não lê a chave nem editando este arquivo.
+#   - Nada aqui é check obrigatório de PR. Se falha, o arquivo no ar fica como estava.
+#
+# COMO USAR, ROTAÇÃO DA CHAVE E COMO VOLTAR UMA VERSÃO: docs/runbooks/publicar-obter-sh.md.
+#
+# Gatilhos: a tag `v*` (que o `cortar-tag` do release.yml empurra com o token do App, e por isso
+# dispara este workflow) e o disparo manual ("Run workflow" escolhendo a main ou uma tag).
+# Sem `release:` de propósito — mesma razão do publish-image.yml: `gh release create` também
+# empurra a tag, e o mesmo commit seria publicado duas vezes.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+# Só lê o repositório. A escrita acontece na VPS, por SSH, e não passa pelo GITHUB_TOKEN.
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    # Fork herda este arquivo mas não tem o ambiente, a chave nem o servidor: pula limpo em vez de
+    # falhar a cada tag que o fork empurrar.
+    if: github.repository == 'futuristasai/ZapSales'
+    runs-on: ubuntu-latest
+    environment: zapinstalador
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # As tags inteiras: abaixo se pergunta se esta é a mais nova.
+          fetch-depth: 0
+
+      - name: O que vai ser publicado?
+        id: alvo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # 1. O commit está contido na main? Mesma trava de procedência do publish-image.yml: o que
+          #    sai daqui roda como root em máquina de cliente, e só pode ser código que passou pelo
+          #    CI da main.
+          estado=$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${GITHUB_SHA}" --jq .status)
+          echo "compare main...${GITHUB_SHA} → ${estado}"
+          case "$estado" in
+            identical|behind) ;;
+            *)
+              echo "::error::${GITHUB_REF_NAME} aponta para um commit que a main NÃO contém (${estado}). Não publico."
+              exit 1
+              ;;
+          esac
+
+          # 2. O rótulo que fica registrado no servidor (obter.sh.versao).
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            rotulo="${GITHUB_REF_NAME}"
+            if [[ ! "$rotulo" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::notice::Tag ${rotulo} não é vX.Y.Z — nada a publicar."
+              echo "publicar=nao" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # Duas tags empurradas juntas rodam em paralelo, e a mais velha podia terminar por
+            # último e ficar no ar. Num push, só a MAIS NOVA publica; voltar de propósito para uma
+            # velha é o disparo manual, que não passa por esta conferência.
+            # (O filtro é um regex ancorado: o glob do git também casaria `v1.2.3-rc1`, que
+            # ordena DEPOIS de `v1.2.3` e travaria a publicação da versão de verdade.)
+            maior=$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "$maior" != "$rotulo" ]; then
+              echo "::notice::${rotulo} não é a tag mais nova (${maior}) — não publico por cima."
+              echo "publicar=nao" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          else
+            # Antes da primeira release o próprio obter.sh instala a `main`; o rótulo carrega o commit
+            # inteiro para o que está no ar ser rastreável.
+            if [ "${GITHUB_REF_NAME}" != "main" ]; then
+              echo "::error::Só a main ou uma tag vX.Y.Z publicam (veio ${GITHUB_REF_NAME})."
+              exit 1
+            fi
+            rotulo="main-${GITHUB_SHA}"
+          fi
+
+          # 3. O arquivo é um bash válido, antes de sair do runner.
+          bash -n kit/obter.sh
+          hash=$(sha256sum kit/obter.sh | cut -d' ' -f1)
+          echo "rotulo=${rotulo}" >> "$GITHUB_OUTPUT"
+          echo "hash=${hash}"     >> "$GITHUB_OUTPUT"
+          echo "publicar=sim"     >> "$GITHUB_OUTPUT"
+          echo "publicando ${rotulo} (${hash})"
+
+      - name: Publicar no servidor
+        if: steps.alvo.outputs.publicar == 'sim'
+        env:
+          ROTULO: ${{ steps.alvo.outputs.rotulo }}
+          HASH: ${{ steps.alvo.outputs.hash }}
+          SERVIDOR: ${{ vars.ZAPINSTALADOR_SERVIDOR }}
+          CHAVE_DO_SERVIDOR: ${{ vars.ZAPINSTALADOR_CHAVE_DO_SERVIDOR }}
+          CHAVE_SSH: ${{ secrets.ZAPINSTALADOR_CHAVE_SSH }}
+        run: |
+          set -euo pipefail
+          [ -n "${SERVIDOR}" ] && [ -n "${CHAVE_DO_SERVIDOR}" ] && [ -n "${CHAVE_SSH}" ] || {
+            echo "::error::Faltam ZAPINSTALADOR_SERVIDOR, ZAPINSTALADOR_CHAVE_DO_SERVIDOR ou ZAPINSTALADOR_CHAVE_SSH no ambiente zapinstalador."
+            exit 1
+          }
+
+          umask 077
+          chave="${RUNNER_TEMP}/zapinstalador_chave"
+          # A chave do SERVIDOR vem fixada numa variável do ambiente (impressão digital conferida
+          # na própria VPS): nada de ssh-keyscan, que aceitaria quem estivesse no meio do caminho.
+          printf '%s\n' "${CHAVE_DO_SERVIDOR}" > "${RUNNER_TEMP}/zapinstalador_hosts"
+          printf '%s\n' "${CHAVE_SSH}" > "${chave}"
+          trap 'rm -f "${chave}" "${RUNNER_TEMP}/zapinstalador_hosts"' EXIT
+
+          ssh -i "${chave}" \
+              -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+              -o StrictHostKeyChecking=yes -o UserKnownHostsFile="${RUNNER_TEMP}/zapinstalador_hosts" \
+              "zapinstalador-pub@${SERVIDOR}" "publicar ${ROTULO} ${HASH}" < kit/obter.sh
+
+      - name: O que está no ar é o que saiu daqui?
+        if: steps.alvo.outputs.publicar == 'sim'
+        env:
+          HASH: ${{ steps.alvo.outputs.hash }}
+          ROTULO: ${{ steps.alvo.outputs.rotulo }}
+        run: |
+          set -euo pipefail
+          # Prova a CONSEQUÊNCIA, pelo caminho do comprador (HTTPS, domínio público), e não o
+          # «publicado» que o servidor disse de si mesmo.
+          for tentativa in 1 2 3 4 5 6; do
+            # Em arquivo, e não em pipe: se o curl falhar, não se compara o hash de um corpo vazio.
+            no_ar=""
+            if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' -o "${RUNNER_TEMP}/no-ar.sh" "https://zapinstalador.futuristas.app/obter.sh"; then
+              no_ar=$(sha256sum "${RUNNER_TEMP}/no-ar.sh" | cut -d' ' -f1)
+            fi
+            if [ -n "${no_ar}" ] && [ "${no_ar}" = "${HASH}" ]; then
+              echo "zapinstalador.futuristas.app/obter.sh = ${ROTULO} (${HASH})"
+              exit 0
+            fi
+            echo "tentativa ${tentativa}: no ar está ${no_ar:-(sem resposta)}, esperado ${HASH}"
+            sleep 10
+          done
+          echo "::error::Publiquei ${ROTULO}, mas o que https://zapinstalador.futuristas.app/obter.sh serve NÃO é ele."
+          echo "::error::Quem colar o comando agora recebe outra coisa. Confira o Caddy e o contêiner estático na VPS (runbook publicar-obter-sh)."
+          exit 1
