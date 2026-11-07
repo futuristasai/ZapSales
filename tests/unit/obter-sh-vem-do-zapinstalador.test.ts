@@ -37,7 +37,7 @@ const ler = (rel: string) => readFileSync(join(RAIZ, rel), "utf8");
 function arquivosDeComando(): string[] {
   const saida = execFileSync(
     "git",
-    ["ls-files", "kit", "docs/runbooks", "docs/manual/conteudo", "docs/manual/index.html", ".changes", "README.md", "AGENTS.md", "CLAUDE.md"],
+    ["ls-files", "kit", "docs", ".changes", "README.md", "AGENTS.md", "CLAUDE.md", ":(exclude)docs/adr"],
     { cwd: RAIZ, encoding: "utf8" },
   );
   return saida.split("\n").filter(Boolean);

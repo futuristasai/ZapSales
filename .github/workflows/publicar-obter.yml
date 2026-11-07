@@ -76,7 +76,9 @@ jobs:
             # Duas tags empurradas juntas rodam em paralelo, e a mais velha podia terminar por
             # último e ficar no ar. Num push, só a MAIS NOVA publica; voltar de propósito para uma
             # velha é o disparo manual, que não passa por esta conferência.
-            maior=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -1)
+            # (O filtro é um regex ancorado: o glob do git também casaria `v1.2.3-rc1`, que
+            # ordena DEPOIS de `v1.2.3` e travaria a publicação da versão de verdade.)
+            maior=$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
             if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "$maior" != "$rotulo" ]; then
               echo "::notice::${rotulo} não é a tag mais nova (${maior}) — não publico por cima."
               echo "publicar=nao" >> "$GITHUB_OUTPUT"
@@ -138,12 +140,16 @@ jobs:
           # Prova a CONSEQUÊNCIA, pelo caminho do comprador (HTTPS, domínio público), e não o
           # «publicado» que o servidor disse de si mesmo.
           for tentativa in 1 2 3 4 5 6; do
-            no_ar=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://zapinstalador.futuristas.app/obter.sh" | sha256sum | cut -d' ' -f1 || true)
-            if [ "${no_ar}" = "${HASH}" ]; then
+            # Em arquivo, e não em pipe: se o curl falhar, não se compara o hash de um corpo vazio.
+            no_ar=""
+            if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' -o "${RUNNER_TEMP}/no-ar.sh" "https://zapinstalador.futuristas.app/obter.sh"; then
+              no_ar=$(sha256sum "${RUNNER_TEMP}/no-ar.sh" | cut -d' ' -f1)
+            fi
+            if [ -n "${no_ar}" ] && [ "${no_ar}" = "${HASH}" ]; then
               echo "zapinstalador.futuristas.app/obter.sh = ${ROTULO} (${HASH})"
               exit 0
             fi
-            echo "tentativa ${tentativa}: no ar está ${no_ar:-nada}, esperado ${HASH}"
+            echo "tentativa ${tentativa}: no ar está ${no_ar:-(sem resposta)}, esperado ${HASH}"
             sleep 10
           done
           echo "::error::Publiquei ${ROTULO}, mas o que https://zapinstalador.futuristas.app/obter.sh serve NÃO é ele."
