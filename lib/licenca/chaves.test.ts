@@ -20,6 +20,17 @@ describe("chavesAceitas", () => {
     expect(CHAVES_DE_PRODUCAO.map((c) => c.kid)).not.toContain(chavePublicaDeTeste.kid);
   });
 
+  it("a lista de produção tem a chave do servidor de licenças, só com a parte pública", () => {
+    const chave = CHAVES_DE_PRODUCAO.find((c) => c.kid === "lic-2026-11");
+    expect(chave?.jwk).toEqual({
+      kty: "OKP",
+      crv: "Ed25519",
+      x: "utryaWg74ko3mEbT3uWGv9QpA7olucyJcdgvqbyxCag",
+    });
+    // Chave privada nunca entra no repositório: o JWK público de Ed25519 não tem `d`.
+    for (const c of CHAVES_DE_PRODUCAO) expect(c.jwk).not.toHaveProperty("d");
+  });
+
   it("a chave de produção vem primeiro: uma extra com o mesmo kid não a sobrepõe", () => {
     const impostora = { kid: "prod-1", jwk: { kty: "OKP", crv: "Ed25519", x: "impostora" } };
     const lista = chavesAceitas({ producao: false, extras: [impostora] });
