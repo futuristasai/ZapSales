@@ -16,11 +16,21 @@
 import type { ChavePublica } from "./selo";
 
 /**
- * Chaves públicas de produção. Fica vazia até o servidor de licenças gerar o par de produção
- * (issue #223); enquanto está vazia, todo selo é rejeitado com `chave_desconhecida` — a falha é
- * para o lado seguro.
+ * Chaves públicas de produção — as que o servidor de licenças publica em
+ * `GET /api/v1/chaves-publicas` (issue #223). Só a parte PÚBLICA: a privada vive apenas no ambiente
+ * do servidor. A lista é fixa na imagem de propósito: se o app buscasse a chave em tempo de execução,
+ * quem controlasse o DNS ou o TLS do servidor injetaria a chave dele e fabricaria selo válido.
+ *
+ * Lista vazia rejeita todo selo com `chave_desconhecida` (lado seguro) — e, na prática, impede
+ * qualquer ativação, porque a ativação confere o selo que o servidor devolve. Para rotacionar, acrescente
+ * a chave nova AQUI numa versão que aceite as duas (cada uma tem o seu `kid`).
  */
-export const CHAVES_DE_PRODUCAO: readonly ChavePublica[] = [];
+export const CHAVES_DE_PRODUCAO: readonly ChavePublica[] = [
+  {
+    kid: "lic-2026-11",
+    jwk: { kty: "OKP", crv: "Ed25519", x: "utryaWg74ko3mEbT3uWGv9QpA7olucyJcdgvqbyxCag" },
+  },
+];
 
 export interface OpcoesDeChaves {
   /** `true` na imagem de produção (quem chama decide, normalmente por `NODE_ENV`). */
