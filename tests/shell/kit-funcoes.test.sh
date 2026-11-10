@@ -289,6 +289,12 @@ verdade "o runbook diz que 24.04 está testada"  grep -qE 'Ubuntu 24\.04 LTS \| 
 verdade "o runbook diz que 26.04 está testada" grep -qE 'Ubuntu 26\.04 LTS \| \*\*testado\*\*' docs/runbooks/instalacao-vps-limpa.md
 verdade "a atualização nunca é recusada pela matriz" grep -qE 'if \[ -f "\$ENV_ARQ" \] \|\| \[ "\$\{ZAPSALES_IGNORAR_SO:-\}" = "1" \]' kit/instalar.sh
 
+echo "versão das imagens — a da tag, não a do package.json"
+verdade "obter.sh fixa ZAPSALES_VERSAO pela tag da release" \
+  grep -qF 'export ZAPSALES_VERSAO="${ZAPSALES_VERSAO:-${ref#v}}"' kit/obter.sh
+verdade "instalar.sh tenta a tag exata ANTES do package.json" \
+  bash -c 'a=$(grep -n "describe --tags --exact-match" kit/instalar.sh | head -1 | cut -d: -f1); b=$(grep -n "package.json\" | head -1" kit/instalar.sh | head -1 | cut -d: -f1); [ -n "$a" ] && [ -n "$b" ] && [ "$a" -lt "$b" ]'
+
 echo "roteiros do kit — sintaxe"
 for f in kit/*.sh kit/lib/*.sh; do
   verdade "bash -n $f" bash -n "$f"

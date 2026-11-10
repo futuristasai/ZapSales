@@ -125,6 +125,11 @@ principal() {
     # `construir` que o .env lembra de antes da primeira release seguiria
     # valendo para sempre. Quem precisa construir passa ZAPSALES_IMAGENS.
     export ZAPSALES_IMAGENS="${ZAPSALES_IMAGENS:-registro}"
+    # A VERSÃO DAS IMAGENS É A DA TAG. Sem isto o instalador cai no `version` do package.json, que segue em
+    # 0.1.0 de propósito (a fonte da versão é a tag, docs/doctrine/versionamento.md) e pediria ao registro
+    # uma imagem `0.1.0` que nunca existiu. É também o que faz rodar o obter.sh de novo ATUALIZAR: a tag
+    # nova leva as imagens novas, sem o operador editar o .env. Quem precisa de outra passa ZAPSALES_VERSAO.
+    export ZAPSALES_VERSAO="${ZAPSALES_VERSAO:-${ref#v}}"
   fi
   obter_codigo "$ref"
 
