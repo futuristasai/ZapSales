@@ -15561,6 +15561,7 @@ export const DICIONARIO: Traducoes = {
   "problema a corrigir antes de publicar": { es: "problema por corregir antes de publicar" },
   "problemas a corrigir antes de publicar": { es: "problemas por corregir antes de publicar" },
   "Não precisa de agente: as mensagens são texto fixo.": { es: "No necesita agente: los mensajes son texto fijo." },
+  "Este gatilho só dispara quando um agente publicado está com o follow-up ligado, mesmo que as mensagens sejam texto fixo. Abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.": { es: "Este disparador solo se activa cuando un agente publicado tiene el seguimiento activado, aunque los mensajes sean texto fijo. Abre el agente, en Presupuestos y seguimientos › Seguimiento, y elige este flujo." },
   "Um agente publicado usa este fluxo": { es: "Un agente publicado usa este flujo" },
   "Nenhum agente publicado usa este fluxo, e ele pede IA. O gatilho só dispara quando um agente publicado o liga: abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.": { es: "Ningún agente publicado usa este flujo, y pide IA. El disparador solo se activa cuando un agente publicado lo conecta: abre el agente, en Presupuestos y seguimientos › Seguimiento, y elige este flujo." },
   "Está no ar.": { es: "Está en línea." },

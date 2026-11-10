@@ -94,6 +94,7 @@ export function ResumoDoFluxo({ grafo, triggerConfig, handoff, status, agentesQu
     if (c.id === "agente") {
       if (c.motivo === "nao_precisa") return t("Não precisa de agente: as mensagens são texto fixo.");
       if (c.motivo === "agente_arma") return `${t("Um agente publicado usa este fluxo")}: ${agentesQueArmam.map((a) => a.name).join(", ")}.`;
+      if (c.motivo === "sem_agente_texto_fixo") return t("Este gatilho só dispara quando um agente publicado está com o follow-up ligado, mesmo que as mensagens sejam texto fixo. Abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.");
       return t(
         "Nenhum agente publicado usa este fluxo, e ele pede IA. O gatilho só dispara quando um agente publicado o liga: abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.",
       );
@@ -179,7 +180,7 @@ export function ResumoDoFluxo({ grafo, triggerConfig, handoff, status, agentesQu
                         {c.detalhes.length > 3 ? <li>… {c.detalhes.length - 3} {t("a mais")}</li> : null}
                       </ul>
                     ) : null}
-                    {c.id === "agente" && c.motivo === "sem_agente" ? (
+                    {c.id === "agente" && (c.motivo === "sem_agente" || c.motivo === "sem_agente_texto_fixo") ? (
                       <Link href="/app/ai/agents" className="text-xs font-medium text-ia underline-offset-2 hover:underline">
                         {t("Escolher o agente")}
                       </Link>
