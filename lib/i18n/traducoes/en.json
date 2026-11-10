@@ -10421,6 +10421,7 @@
   "problemas a corrigir antes de publicar": "problems to fix before publishing",
   "Não precisa de agente: as mensagens são texto fixo.": "Needs no agent: the messages are fixed text.",
   "Um agente publicado usa este fluxo": "A published agent uses this flow",
+  "Este gatilho só dispara quando um agente publicado está com o follow-up ligado, mesmo que as mensagens sejam texto fixo. Abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.": "This trigger only fires when a published agent has follow-up turned on, even if the messages are fixed text. Open the agent, under Quotes and follow-ups › Follow-up, and choose this flow.",
   "Nenhum agente publicado usa este fluxo, e ele pede IA. O gatilho só dispara quando um agente publicado o liga: abra o agente, em Propostas e retornos › Follow-up, e escolha este fluxo.": "No published agent uses this flow, and it needs AI. The trigger only fires when a published agent turns it on: open the agent, under Quotes and follow-ups › Follow-up, and choose this flow.",
   "Está no ar.": "It is live.",
   "Está desativado: nada dispara.": "It is disabled: nothing fires.",
