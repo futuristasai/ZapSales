@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/i18n/useT";
 
 import { Button } from "@/components/ui/button";
+import { ArrowRight, PaperPlaneTilt, Robot } from "@/lib/ui/icons";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { marcarTesteFeito, pularTeste } from "@/app/actions/onboarding/marcarTeste";
@@ -25,6 +26,9 @@ const EXEMPLO = "Oi! Vocês atendem hoje? Queria saber o preço.";
 export function TestarClient({ nome, agenteId, versaoId }: Props) {
   const t = useT();
   const [mensagem, setMensagem] = useState(EXEMPLO);
+  // O que foi de fato enviado: a caixa de texto pode ser editada depois da resposta,
+  // e a conversa na tela tem de continuar mostrando a pergunta que gerou a resposta.
+  const [enviada, setEnviada] = useState("");
   const [desfecho, setDesfecho] = useState<Desfecho | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -41,6 +45,7 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
     if (!agenteId || !versaoId) return;
     setCarregando(true);
     setDesfecho(null);
+    setEnviada(mensagem.trim());
     try {
       const res = await fetch(`/api/v1/ai/agents/${agenteId}/versions/${versaoId}/test`, {
         method: "POST",
@@ -92,7 +97,7 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
   return (
     <div className="space-y-4">
       {semAgente && (
-        <div className="rounded-lg border bg-background p-6" role="status">
+        <div className="rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6" role="status">
           <p className="text-sm font-medium">{t("Você ainda não montou seu funcionário.")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {t(
@@ -103,7 +108,7 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
       )}
 
       {rascunho && (
-        <div className="rounded-lg border bg-background p-6" role="status">
+        <div className="rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6" role="status">
           <p className="text-sm font-medium">
             {funcionario} {t("está como")} <strong>{t("rascunho")}</strong> — {t("ainda não foi para o ar.")}
           </p>
@@ -116,15 +121,16 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
       )}
 
       {!semAgente && !rascunho && (
-        <div className="space-y-4 rounded-lg border bg-background p-6">
+        <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
           <div className="space-y-2">
-            <Label htmlFor="mensagem">{t("Escreva como se fosse um cliente")}</Label>
+            <Label htmlFor="mensagem" className="text-base font-semibold">{t("Escreva como se fosse um cliente")}</Label>
             <Textarea
               id="mensagem"
               value={mensagem}
               onChange={(e) => setMensagem(e.target.value)}
               rows={3}
               maxLength={4000}
+              className="text-base"
             />
           </div>
           <div className="flex sm:justify-end">
@@ -132,18 +138,42 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
               type="button"
               onClick={ensaiar}
               disabled={carregando || mensagem.trim() === ""}
-              className="w-full sm:w-auto"
+              className="w-full gap-2 sm:w-auto"
             >
               {carregando ? t("Ele está pensando...") : t("Mandar mensagem")}
+              {carregando ? null : <PaperPlaneTilt aria-hidden size={16} weight="bold" />}
             </Button>
           </div>
 
           {desfecho?.tipo === "resposta" && (
-            <div className="space-y-2 rounded-md border bg-muted/40 p-4">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                {funcionario} {t("respondeu")}
-              </p>
-              <p className="whitespace-pre-wrap text-sm">{desfecho.texto}</p>
+            // A conversa como o cliente a veria: a pergunta à direita, a resposta à esquerda.
+            // O violeta é o da IA (DESIGN.md): quem fala pelo funcionário é o automático.
+            <div className="space-y-3 rounded-xl bg-surface-elevated/60 p-4" aria-live="polite">
+              {enviada ? (
+                <div className="flex justify-end">
+                  <p className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md border border-border bg-surface px-3.5 py-2 text-sm">
+                    {enviada}
+                  </p>
+                </div>
+              ) : null}
+              <div className="flex justify-start">
+                <div className="flex max-w-[90%] items-start gap-2.5">
+                  <span
+                    aria-hidden
+                    className="mt-5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ia text-white"
+                  >
+                    <Robot size={18} weight="fill" />
+                  </span>
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">
+                      {funcionario} {t("respondeu")}
+                    </p>
+                    <p className="whitespace-pre-wrap rounded-2xl rounded-bl-md bg-ia-fundo px-4 py-2.5 text-[0.9375rem] leading-relaxed">
+                      {desfecho.texto}
+                    </p>
+                  </div>
+                </div>
+              </div>
               <p className="text-xs text-muted-foreground">
                 {t("Esta conversa não foi enviada a ninguém e não aparece no seu inbox.")}
               </p>
@@ -187,6 +217,7 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
         <Button
           type="button"
           disabled={pending}
+          className="h-12 gap-2 px-7 text-base"
           onClick={() =>
             startTransition(async () => {
               // `respondeu` guarda a diferença entre "vi funcionando" e "passei
@@ -205,6 +236,7 @@ export function TestarClient({ nome, agenteId, versaoId }: Props) {
           }
         >
           {t("Continuar")}
+          <ArrowRight aria-hidden size={18} weight="bold" />
         </Button>
       </div>
     </div>

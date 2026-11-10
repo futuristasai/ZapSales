@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ArrowRight } from "@/lib/ui/icons";
 import { sendOnboardingInvites } from "@/app/actions/onboarding/sendOnboardingInvites";
 import { ROLES, type Role } from "@/lib/schemas/team";
 import { ROTULO_DO_PAPEL } from "@/lib/auth/types";
@@ -69,22 +70,23 @@ export function InviteTeamForm() {
   };
 
   return (
-    <div className="space-y-4 rounded-lg border bg-background p-6">
+    <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
       <div className="space-y-2">
-        <Label htmlFor="emails">{t("E-mail de quem vai trabalhar com ele")}</Label>
+        <Label htmlFor="emails" className="text-base font-semibold">{t("E-mail de quem vai trabalhar com ele")}</Label>
         <Textarea
           id="emails"
           value={emailsRaw}
           onChange={(e) => setEmailsRaw(e.target.value)}
           rows={6}
+          className="text-base"
           placeholder={"alice@empresa.com\nbob@empresa.com"}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="role">{t("O que essas pessoas podem fazer")}</Label>
+        <Label htmlFor="role" className="text-base font-semibold">{t("O que essas pessoas podem fazer")}</Label>
         <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-          <SelectTrigger id="role">
+          <SelectTrigger id="role" className="h-12 text-base">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -144,8 +146,9 @@ export function InviteTeamForm() {
         <Button type="button" variant="ghost" disabled={pending} onClick={() => submit(true)}>
           {t("Pular por enquanto")}
         </Button>
-        <Button type="button" disabled={pending} onClick={() => submit(false)}>
+        <Button type="button" disabled={pending} onClick={() => submit(false)} className="h-12 gap-2 px-7 text-base">
           {pending ? t("Enviando...") : t("Enviar convites")}
+          {pending ? null : <ArrowRight aria-hidden size={18} weight="bold" />}
         </Button>
       </div>
     </div>

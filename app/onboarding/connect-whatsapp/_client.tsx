@@ -9,6 +9,10 @@ import { PairingOptions } from "@/components/connections/PairingOptions";
 import { Button } from "@/components/ui/button";
 import { skipWhatsapp, markWhatsappConfigured } from "@/app/actions/onboarding/skipWhatsapp";
 import { CanalOficialClient } from "@/components/connections/CanalOficialClient";
+import { useIdioma } from "@/lib/i18n/IdiomaProvider";
+import { formasDeConectar } from "@/lib/onboarding/ajuda";
+import { QrCode, ShieldCheck } from "@/lib/ui/icons";
+import { Opcao } from "../_components/Opcao";
 
 interface Props {
   wahaConfigured: boolean;
@@ -102,51 +106,6 @@ function explicacaoDoEstado(s: Status, t: (texto: string) => string): string {
   }
 }
 
-/**
- * Um cartão de escolha — a MESMA forma que o resto do produto já usa
- * (`app/app/settings/atendimento/_form.tsx`): `<label>` embrulhando um radio
- * nativo. Não é `RadioGroup` porque esse componente não existe neste repo, e
- * trazê-lo criaria um quarto dialeto de escolha ao lado de três iguais.
- */
-function Escolha({
-  valor,
-  atual,
-  titulo,
-  corpo,
-  onEscolher,
-}: {
-  valor: Forma;
-  atual: Forma | null;
-  titulo: string;
-  corpo: string;
-  onEscolher: (v: Forma) => void;
-}) {
-  const marcada = atual === valor;
-  return (
-    <label
-      data-testid={`forma-${valor}`}
-      data-marcada={marcada ? "sim" : "nao"}
-      className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-        marcada ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
-      }`}
-    >
-      <input
-        type="radio"
-        name="forma-de-conectar"
-        value={valor}
-        checked={marcada}
-        onChange={() => onEscolher(valor)}
-        className="mt-1 h-4 w-4 shrink-0 accent-primary"
-        aria-label={titulo}
-      />
-      <span className="space-y-1">
-        <span className="block text-sm font-medium">{titulo}</span>
-        <span className="block text-xs text-muted-foreground">{corpo}</span>
-      </span>
-    </label>
-  );
-}
-
 /** Voltar à pergunta. Escolher errado não pode ser uma porta que tranca. */
 function VoltarParaEscolha({ onVoltar }: { onVoltar: () => void }) {
   const t = useT();
@@ -221,6 +180,7 @@ export function ConnectWhatsappClient({
   oficialPodeReceber,
 }: Props) {
   const t = useT();
+  const formas = formasDeConectar(useIdioma());
   const [pending, startTransition] = useTransition();
   const [forma, setForma] = useState<Forma | null>(null);
   const createKey = useRef<string | null>(null);
@@ -348,30 +308,44 @@ export function ConnectWhatsappClient({
   // é o único estado em que esta tela não tem efeito colateral nenhum.
   if (forma === null) {
     return (
-      <div className="space-y-4 rounded-lg border bg-background p-6">
+      <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium">{t("Como você já usa esse número?")}</legend>
-          <p className="text-xs text-muted-foreground">
+          <legend className="text-xl font-bold font-[family-name:var(--font-titulo)] tracking-[-0.02em]">{t("Como você já usa esse número?")}</legend>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {t(
               "Existe mais de um jeito de ter WhatsApp para empresa, e cada um conecta de um jeito. Se você nunca ouviu falar do outro, é o primeiro.",
             )}
           </p>
-          <div className="grid gap-2">
-            <Escolha
+          <div className="grid gap-3">
+            <Opcao
+              nome="forma-de-conectar"
               valor="qr"
-              atual={forma}
+              marcada={forma === "qr"}
+              onEscolher={() => setForma("qr")}
+              idDoCartao="forma-qr"
+              icone={QrCode}
+              rotuloDoRadio={t("Uso o WhatsApp no celular")}
               titulo={t("Uso o WhatsApp no celular")}
-              corpo={t(
-                "Conecte com QR Code ou digite um código de pareamento no WhatsApp do celular.",
-              )}
-              onEscolher={setForma}
+              descricao={t("Conecte com QR Code ou digite um código de pareamento no WhatsApp do celular.")}
+              pontos={[
+                ...formas.qr.bom.map((texto) => ({ tipo: "bom" as const, texto })),
+                ...formas.qr.atencao.map((texto) => ({ tipo: "atencao" as const, texto })),
+              ]}
             />
-            <Escolha
+            <Opcao
+              nome="forma-de-conectar"
               valor="oficial"
-              atual={forma}
+              marcada={forma === "oficial"}
+              onEscolher={() => setForma("oficial")}
+              idDoCartao="forma-oficial"
+              icone={ShieldCheck}
+              rotuloDoRadio={t("Tenho conta oficial na Meta")}
               titulo={t("Tenho conta oficial na Meta")}
-              corpo={t("Você cadastrou o número na Meta e tem as credenciais em mãos. Não usa o celular para conectar.")}
-              onEscolher={setForma}
+              descricao={t("Você cadastrou o número na Meta e tem as credenciais em mãos. Não usa o celular para conectar.")}
+              pontos={[
+                ...formas.oficial.bom.map((texto) => ({ tipo: "bom" as const, texto })),
+                ...formas.oficial.atencao.map((texto) => ({ tipo: "atencao" as const, texto })),
+              ]}
             />
           </div>
         </fieldset>
@@ -382,7 +356,7 @@ export function ConnectWhatsappClient({
 
   if (forma === "oficial") {
     return (
-      <div className="space-y-4 rounded-lg border bg-background p-6">
+      <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
         <VoltarParaEscolha onVoltar={() => setForma(null)} />
 
         {!oficialPodeReceber && (
@@ -409,7 +383,7 @@ export function ConnectWhatsappClient({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border bg-background p-6">
+    <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
       <VoltarParaEscolha onVoltar={() => setForma(null)} />
       {!wahaConfigured && (
         <div className="rounded-md border border-warning/60 bg-warning-bg p-4 text-sm text-warning-fg">

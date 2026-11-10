@@ -2,6 +2,7 @@ import { emailConfigurado } from "@/lib/email/roteador";
 import { InviteTeamForm } from "./_form";
 import { requireAuth } from "@/lib/auth/server";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { Passo } from "../_components/Passo";
 
 export const dynamic = "force-dynamic";
 
@@ -10,16 +11,15 @@ export default async function InviteTeamPage() {
   const idioma = user.idioma;
   const emailReady = await emailConfigurado();
   return (
-    <div className="space-y-6">
-      <header>
-        <h2 className="text-2xl font-semibold tracking-tight">{traduzir("Quem trabalha com ele", idioma)}</h2>
-        <p className="text-sm text-muted-foreground">
-          {traduzir(
-            "Seu funcionário não trabalha sozinho: quando ele passar uma conversa adiante, é uma dessas pessoas que atende.",
-            idioma,
-          )}
-        </p>
-      </header>
+    <Passo
+      segmento="invite-team"
+      idioma={idioma}
+      titulo={traduzir("Quem trabalha com ele", idioma)}
+      descricao={traduzir(
+        "Seu funcionário não trabalha sozinho: quando ele passar uma conversa adiante, é uma dessas pessoas que atende.",
+        idioma,
+      )}
+    >
       {!emailReady ? (
         <div className="rounded-md border border-warning/60 bg-warning-bg p-4 text-sm text-warning-fg">
           <p className="font-medium">{traduzir("Esta instalação ainda não envia e-mail.", idioma)}</p>
@@ -39,6 +39,6 @@ export default async function InviteTeamPage() {
         </div>
       ) : null}
       <InviteTeamForm />
-    </div>
+    </Passo>
   );
 }

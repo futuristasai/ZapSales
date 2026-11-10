@@ -72,6 +72,7 @@ migrar (plano, pacote X1).
 | `AvatarDoContato` | `components/inbox/visual/AvatarDoContato.tsx` | foto ou iniciais, com selo de canal e de quem atende |
 | `LinhaDoFunil` | `components/inbox/visual/LinhaDoFunil.tsx` | etapas passadas cheias, a atual maior, as futuras vazadas |
 | `NavHub` | `components/shell/NavHub.tsx` | páginas de área (CRM, IA, Análise, Configurações) como lista em painel |
+| `Trilha` / `Passo` / `AjudaDoPasso` / `Opcao` | `app/onboarding/_components/` | o assistente de instalação: trilha lateral (barra no celular) com estado de cada passo e minutos que faltam; moldura de passo com cabeçalho e selos (tempo, pode pular); ajuda detalhada do passo à direita no `xl` (embaixo no celular), texto em `lib/onboarding/ajuda.ts` nos três idiomas; cartão de opção com «bom para»/«atenção» sempre visíveis e o detalhe só quando marcada |
 | Ícones próprios | `components/icons/produto/` | os conceitos do produto que o Phosphor não desenha |
 
 **Duas famílias de tela, e só uma usa o cabeçalho padrão.** Tela de *assunto* (lista, painel, configuração: "Contatos",
