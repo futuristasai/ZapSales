@@ -295,6 +295,11 @@ verdade "obter.sh fixa ZAPSALES_VERSAO pela tag da release" \
 verdade "instalar.sh tenta a tag exata ANTES do package.json" \
   bash -c 'a=$(grep -n "describe --tags --exact-match" kit/instalar.sh | head -1 | cut -d: -f1); b=$(grep -n "package.json\" | head -1" kit/instalar.sh | head -1 | cut -d: -f1); [ -n "$a" ] && [ -n "$b" ] && [ "$a" -lt "$b" ]'
 
+echo "instalação sem revisão implantada — sem ruído"
+falso "o erro de arquivo ausente não vaza para a tela (2>/dev/null antes do <)" \n  grep -qF 'tr -d "[:space:]" < "$RAIZ/.zapsales-revisao"' kit/instalar.sh
+saida=$(RAIZ=/nao/existe bash -c 'rev="$(tr -d "[:space:]" 2>/dev/null < "$RAIZ/.zapsales-revisao" || true)"; echo "[$rev]"' 2>&1)
+igual "sem o arquivo, a leitura da revisão não imprime nada além do vazio" "[]" "$saida"
+
 echo "roteiros do kit — sintaxe"
 for f in kit/*.sh kit/lib/*.sh; do
   verdade "bash -n $f" bash -n "$f"

@@ -485,7 +485,9 @@ preparar_imagens() {
       # O commit vem do .zapsales-revisao, que é quem a implantação grava, e não
       # do `git HEAD`: num clone, o código sobreposto pela implantação não move o HEAD.
       local rev_implantada
-      rev_implantada="$(tr -d '[:space:]' < "$RAIZ/.zapsales-revisao" 2>/dev/null || true)"
+      # `2>/dev/null` ANTES do `<`: o shell abre os redirecionamentos da esquerda para a direita, e com o `<` primeiro o erro
+      # de arquivo ausente (toda instalação que não veio da implantação contínua) aparecia na tela do comprador.
+      rev_implantada="$(tr -d '[:space:]' 2>/dev/null < "$RAIZ/.zapsales-revisao" || true)"
       if [ -z "$versao" ] && [ -n "$rev_implantada" ]; then
         case "$(env_ler "$ENV_ARQ" APP_IMAGE)" in
           *":sha-$rev_implantada") versao="sha-$rev_implantada" ;;
