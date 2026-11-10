@@ -79,27 +79,32 @@ export function Opcao({
         className,
       )}
     >
-      <input
-        type="radio"
-        name={nome}
-        value={valor}
-        checked={marcada}
-        onChange={onEscolher}
-        aria-label={rotuloDoRadio}
-        data-testid={idDoRadio}
-        className="peer sr-only"
-      />
-      {/* O desenho do radio: vazio com contorno, cheio e com «✓» quando escolhido. */}
-      <span
-        aria-hidden
-        className={cn(
-          "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-          marcada
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-border-strong bg-surface group-hover:border-primary/60",
-        )}
-      >
-        {marcada ? <Check size={14} weight="bold" /> : null}
+      {/* O radio de verdade fica POR CIMA do marcador desenhado: transparente, mas com o mesmo tamanho e
+          clicável (leitor de tela, teclado e testes de tela o enxergam e clicam nele); só o desenho
+          — vazio com contorno, cheio e com «✓» — é trocado. O clique no cartão inteiro continua
+          valendo, porque o cartão é o `<label>`. */}
+      <span className="relative mt-0.5 h-6 w-6 shrink-0">
+        <input
+          type="radio"
+          name={nome}
+          value={valor}
+          checked={marcada}
+          onChange={onEscolher}
+          aria-label={rotuloDoRadio}
+          data-testid={idDoRadio}
+          className="peer absolute inset-0 z-10 m-0 h-full w-full cursor-pointer opacity-0"
+        />
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors",
+            marcada
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border-strong bg-surface group-hover:border-primary/60",
+          )}
+        >
+          {marcada ? <Check size={14} weight="bold" /> : null}
+        </span>
       </span>
       {Icone ? (
         <span
