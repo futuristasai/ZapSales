@@ -4,6 +4,7 @@ import { loadAuthUser } from "@/lib/auth/server";
 import { haAvisoDeTrocaDeModo } from "@/lib/auth/aviso-da-troca-de-modo";
 import { modoDeCadastro } from "@/lib/auth/politica-de-cadastro";
 import { listPendingRegistrationRequests } from "@/lib/auth/registration-requests";
+import { COMANDO_DE_ATUALIZAR } from "@/lib/atualizacao/comandos";
 import { traduzir } from "@/lib/i18n/dicionario";
 
 import { FormularioDeCadastro } from "./_form";
@@ -45,14 +46,14 @@ export default async function Page() {
   const modo = await modoDeCadastro();
   const pedidos = modo === "com_aprovacao" ? await listPendingRegistrationRequests() : null;
 
-  // #1668 — o kit só leva o modo novo ao GoTrue no `install`/`update.sh`, então
+  // #1668 — o kit só leva o modo novo ao GoTrue na instalação e na atualização (`kit/instalar.sh`), então
   // a troca feita aqui vale para a regra do CRM na hora e para o cadastro DIRETO
   // só na próxima atualização. Se dá para perguntar ao GoTrue e ele está com
   // outro valor, a tela conta; não deu para perguntar, não há o que contar.
   const aviso = await haAvisoDeTrocaDeModo(modo);
-  // O `update.sh` só grava o `DISABLE_SIGNUP` sob `SINGLE_SERVER=1` (a mesma
+  // O kit só grava o `DISABLE_SIGNUP` sob `SINGLE_SERVER=1` (a mesma
   // variável, no mesmo `.env` que o compose passa ao app). Com Supabase
-  // separado, mandar rodar o update.sh seria instrução errada e aviso eterno:
+  // separado, mandar rodar a atualização seria instrução errada e aviso eterno:
   // ali quem muda é o operador, no painel ou no env do GoTrue próprio.
   const kitSincroniza = process.env.SINGLE_SERVER === "1";
   const alvoDoGoTrue = modo === "so_convite" ? "true" : "false";
@@ -87,7 +88,7 @@ export default async function Page() {
                 {traduzir("Para aplicar agora, rode isto na VPS:", usuario.idioma)}
               </p>
               <code className="mt-1 block overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-xs">
-                bash kit/update.sh
+                {COMANDO_DE_ATUALIZAR}
               </code>
             </>
           ) : (

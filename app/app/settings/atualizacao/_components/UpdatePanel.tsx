@@ -13,37 +13,9 @@ import { textoDaRodadaDoBanco } from "@/lib/system/update-run";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/hooks/i18n/useT";
+import { COMANDO_DE_ATUALIZAR, comandoDeVolta, semV } from "@/lib/atualizacao/comandos";
 
-// Sem `cd <pasta>`: quem tem acesso ao servidor já sabe entrar na pasta onde
-// instalou. `kit/` é a pasta do kit de instalação na VPS (issues #3 e #12),
-// onde ficarão os scripts de atualização e restauração.
-const PASTA_DO_KIT = "kit";
-const COMANDO_MANUAL = `bash ${PASTA_DO_KIT}/update.sh`;
-
-/** Tira o "v" das versões: a tela fala "1.1.0", não "v1.1.0". */
-function semV(versao: string | undefined): string {
-  return (versao ?? "").replace(/^v/i, "");
-}
-
-/**
- * O comando que RESOLVE depois de uma tentativa fracassada — e resolver aqui é
- * voltar para a versão que funcionava, não reinstalar a que acabou de quebrar.
- *
- * O código do servidor já está na versão nova (a troca acontece antes de o app
- * subir): sem `--force` o script responde "você já está na versão mais recente"
- * e não faz nada, e sem `--to` ele reinstalaria exatamente a release ruim —
- * caminho sem volta se o problema for a release, e não um azar de rede.
- *
- * Só aponta para trás quando sabe para onde: `from_version` pode ser uma marca
- * de desenvolvimento (instalação fora de release), e aí não existe imagem
- * publicada com esse nome para puxar — nesse caso, só `--force`.
- */
-function comandoDeVolta(fromVersion: string | undefined): string {
-  const anterior = semV(fromVersion);
-  return /^\d+\.\d+\.\d+/.test(anterior)
-    ? `bash ${PASTA_DO_KIT}/update.sh --to v${anterior} --force`
-    : `bash ${PASTA_DO_KIT}/update.sh --force`;
-}
+const COMANDO_MANUAL = COMANDO_DE_ATUALIZAR;
 
 const PASSOS = [
   { chave: "backup", texto: "Guardando uma cópia de segurança dos seus dados" },
@@ -230,7 +202,7 @@ export function UpdatePanel() {
           )}{" "}
           {anterior}{" "}
           {t("funciona com ele. Se quiser desfazer também o banco, use a cópia de segurança feita antes da tentativa (")}
-          <code>bash {PASTA_DO_KIT}/restore.sh</code>).
+          <code>docs/runbooks/backup-e-restauracao.md</code>).
         </p>
         {contaDoBanco ? (
           <p className="mt-3 text-sm text-muted-foreground">{t(contaDoBanco)}</p>
