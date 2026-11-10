@@ -71,8 +71,7 @@ export type CreateAgentResult =
    * para decidir a publicação; ausente = publicado (ou rascunho deliberado por
    * ainda não haver número, caso em que o wizard já seguiu com um `redirect`).
    *
-   * Mesmo contrato do passo de convites, que também recusa redirecionar quando
-   * a parte que podia falhar falhou (`sendOnboardingInvites` → `undelivered`):
+   * Quando a parte que podia falhar falhou, o wizard recusa redirecionar:
    * avançar calado seria a UI mentindo sobre o que o servidor conseguiu fazer.
    */
   /**

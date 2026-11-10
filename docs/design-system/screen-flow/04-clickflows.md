@@ -35,8 +35,7 @@ flowchart TD
     J -- não --> K[/onboarding/welcome]
     K --> K1[/onboarding/connect-whatsapp]
     K1 --> K3[/onboarding/configure-ai]
-    K3 --> K4[/onboarding/invite-team]
-    K4 --> K5[/onboarding/done]
+    K3 --> K5[/onboarding/done]
     K5 --> L
     J -- sim & super-admin --> M[/admin/inbox]
     J -- sim & tenant-user --> L[/app/inbox]

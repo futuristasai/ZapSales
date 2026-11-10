@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import { passosVisiveis, proximoPasso, resumoDoOnboarding } from "@/lib/onboarding/passos";
-import type { OnboardingState } from "@/lib/schemas/onboarding";
+import { onboardingStateSchema, type OnboardingState } from "@/lib/schemas/onboarding";
 
 const VAZIO: OnboardingState = {};
 
@@ -26,8 +26,10 @@ describe("passos visíveis", () => {
       // time: é a prova de que ele funciona, e ela precisa acontecer enquanto a
       // pessoa ainda está no wizard.
       "testar",
-      "invite-team",
+      // Convidar a equipe NÃO é passo (#246): mora em Equipe › Convidar. O wizard
+      // termina em "testar" — este é o ÚLTIMO, e cercá-lo evita o passo voltar.
     ]);
+    expect(passosVisiveis().map((p) => p.segmento)).not.toContain("invite-team");
   });
 });
 
@@ -59,7 +61,34 @@ describe("próximo passo", () => {
       ai: { agent_id: "a", prompt_template: "p" },
       funil: { pipeline_id: "f", origem: "ia", etapas: 6 },
       teste: { respondeu: true },
-      team: { invites_sent: 0, skipped: true },
+    };
+    expect(proximoPasso(s)).toBeNull();
+  });
+});
+
+describe("quem já passou pelo passo de convite que saiu (#246)", () => {
+  it("o estado salvo com `team` continua legível e o wizard segue para o fim", () => {
+    // Organizações antigas têm `team: { invites_sent, skipped }` no JSON. O passo
+    // saiu; o dado não pode derrubar a leitura nem reabrir o wizard.
+    const salvo = {
+      welcome: { accepted_at: "x", timezone: "America/Sao_Paulo", display_name: "N" },
+      whatsapp: { status: "WORKING" },
+      ai: { agent_id: "a", prompt_template: "p" },
+      funil: { pipeline_id: "f", origem: "ia", etapas: 6 },
+      teste: { respondeu: true },
+      team: { invites_sent: 2, skipped: false },
+    };
+    const lido = onboardingStateSchema.parse(salvo);
+    expect(proximoPasso(lido)).toBeNull();
+  });
+
+  it("quem parou justamente no convite antigo vai direto para o fim", () => {
+    const s: OnboardingState = {
+      welcome: { accepted_at: "x", timezone: "America/Sao_Paulo", display_name: "N" },
+      whatsapp: { status: "WORKING" },
+      ai: { agent_id: "a", prompt_template: "p" },
+      funil: { pipeline_id: "f", origem: "ia", etapas: 6 },
+      teste: { respondeu: true },
     };
     expect(proximoPasso(s)).toBeNull();
   });

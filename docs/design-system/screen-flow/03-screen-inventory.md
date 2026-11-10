@@ -42,7 +42,7 @@ date: 2026-04-28
 | 7 | `/onboarding/mfa-setup` | P3 admin, P2 | default, qr-loading, totp-invalid, success | `<TOTPSetup>`, `<RecoveryCodesPanel>` | — | P0 |
 | 8 | `/onboarding/connect-whatsapp` | P3 | qr-loading, scan-qr, expired (60s), connected, failed | `<ChannelSessionCard>`, `<QRCodePanel>` | sim | P0 |
 | 10 | `/onboarding/configure-ai` | P3 | default, ingestion-pending, ingestion-success, error | `<PromptTemplateSelector>`, `<KnowledgeUploader>` | — | P1 |
-| 11 | `/onboarding/invite-team` | P3 | default, sending, sent, partial-failure | `<InviteForm>`, `<InviteList>` | — | P1 |
+| 11 | ~~`/onboarding/invite-team`~~ (removida em #246) | P3 | default, sending, sent, partial-failure | `<InviteForm>`, `<InviteList>` | — | P1 |
 | 12 | `/onboarding/done` | P3, P4 | default | `<OnboardingDone>`, `<NextStepsChecklist>` | — | P0 |
 | 13 | `/onboarding` (router resolve) | todos | redirect-by-state | — | — | P0 |
 

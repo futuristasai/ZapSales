@@ -62,7 +62,6 @@ export const onboardingStepSchema = z.enum([
   "whatsapp",
   "ai",
   "funil",
-  "team",
   "done",
 ]);
 export type OnboardingStep = z.infer<typeof onboardingStepSchema>;
@@ -116,24 +115,8 @@ export const onboardingStateSchema = z.object({
       skipped: z.boolean().optional(),
     })
     .optional(),
-  team: z
-    .object({
-      invites_sent: z.number(),
-      skipped: z.boolean().optional(),
-    })
-    .optional(),
+  // `team` (convite no wizard) saiu em #246. Organizações que já passaram por ele
+  // têm a chave no JSON salvo; o zod ignora chave desconhecida, então ela some na
+  // próxima gravação sem quebrar a leitura.
 });
 export type OnboardingState = z.infer<typeof onboardingStateSchema>;
-
-export const inviteOnboardingSchema = z.object({
-  invitations: z
-    .array(
-      z.object({
-        email: z.string().email(),
-        role: z.enum(["viewer", "agent", "manager", "admin"]),
-      }),
-    )
-    .min(1)
-    .max(20),
-});
-export type InviteOnboardingInput = z.infer<typeof inviteOnboardingSchema>;

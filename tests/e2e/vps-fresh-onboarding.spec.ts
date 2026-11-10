@@ -377,37 +377,51 @@ test.describe("J1 — onboarding do dono numa instalação fresca", () => {
     await snap(page, "j1.24-testar-rascunho");
 
     await page.getByRole("button", { name: /^continuar$/i }).click();
-    await page.waitForURL(/\/onboarding\/invite-team/, { timeout: 20_000 });
+    // Convidar a equipe não é passo do wizard (#246): depois de "Ver ele atender"
+    // vem direto o fim. O convite é testado em J1.9, pela tela de Equipe.
+    await page.waitForURL(/\/onboarding\/done/, { timeout: 20_000 });
+    await expect(page.getByText(/quem trabalha com ele/i)).toHaveCount(0);
 
     const org = await orgRow();
     expect((org.onboarding_state as { teste?: unknown })?.teste).toBeTruthy();
   });
 
-  test("J1.8 convite SEM Resend: a UI não pode mentir que enviou email", async ({ page }) => {
+  test("J1.8 done → onboarded_at setado e cai no inbox", async ({ page }) => {
     await login(page);
-    await page.waitForURL(/\/onboarding\/invite-team/);
+    await page.waitForURL(/\/onboarding\/done/);
+    await snap(page, "j1.8-done-recap");
+
+    await page.getByRole("button", { name: /começar a usar/i }).click();
+    await page.waitForURL(/\/app\/inbox/, { timeout: 30_000 });
+
+    const org = await orgRow();
+    expect(org.onboarded_at).not.toBeNull();
+  });
+
+  test("J1.9 convite SEM e-mail, por Equipe › Convidar: a UI não pode mentir que enviou", async ({
+    page,
+  }) => {
+    // O convite saiu do wizard (#246) e vive só aqui. Este caso mudou de porta
+    // sem perder o que guardava: numa instalação sem serviço de e-mail (o estado
+    // do primeiro deploy) a tela diz a verdade e entrega o link para copiar.
+    await login(page);
+    await page.waitForURL(/\/app\//, { timeout: 30_000 });
+    await page.goto("/app/team/invite");
 
     await page.locator("#emails").fill("atendente@qa.local");
     await page.getByRole("button", { name: /enviar convites/i }).click();
 
-    // Honestidade: sem RESEND_API_KEY nenhum email sai. A UI deve dizer isso
-    // e oferecer o link de aceite copiável (nunca redirecionar em silêncio).
-    //
-    // A frase que este caso procurava ("não está configurado neste servidor")
-    // não existe mais no produto — `git grep` devolve zero. O texto de hoje é
-    // o do bloco âmbar de `app/onboarding/invite-team/_form.tsx:109`, e a tela
-    // ainda diz a verdade: medido no job 105816595263 (parte 4), ela mostra
-    // "Esta instalação não envia e-mail" com o link e o botão de copiar.
-    await expect(page.getByText(/não envia e-mail/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    // O nome deste caso é "a UI não pode MENTIR que enviou": o controle
-    // negativo é o que o torna verdade, e ele faltava. Nenhuma frase de envio
-    // bem-sucedido pode aparecer numa instalação sem serviço de e-mail.
+    await expect(page.getByText(/não envia e-mail/i).first()).toBeVisible({ timeout: 15_000 });
+    // O controle negativo é o que torna o nome deste caso verdade: nenhuma frase
+    // de envio bem-sucedido pode aparecer numa instalação sem serviço de e-mail.
     await expect(page.getByText(/convites? enviad/i)).toHaveCount(0);
+    await expect(page.getByText("Email enviado.")).toHaveCount(0);
+    // Sem jargão de desenvolvedor na frente do dono do negócio.
+    await expect(page.getByText(/\(DEV\)|Resend/)).toHaveCount(0);
     // E a pessoa convidada aparece nominalmente ao lado do link dela, senão
     // "copie o link" não diz de quem é o link.
     await expect(page.getByText("atendente@qa.local").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /copiar link/i })).toBeVisible();
     const acceptUrl = (
       await page.locator("code", { hasText: /team\/accept-invite/ }).first().innerText()
     ).trim();
@@ -416,23 +430,7 @@ test.describe("J1 — onboarding do dono numa instalação fresca", () => {
       path.join(process.cwd(), ".e2e-invite-url.json"),
       JSON.stringify({ email: "atendente@qa.local", accept_url: acceptUrl }, null, 2),
     );
-    await snap(page, "j1.8-convite-sem-resend");
-
-    // e o wizard segue em frente conscientemente
-    await page.getByRole("button", { name: /^continuar$/i }).click();
-    await page.waitForURL(/\/onboarding\/done/, { timeout: 20_000 });
-  });
-
-  test("J1.9 done → onboarded_at setado e cai no inbox", async ({ page }) => {
-    await login(page);
-    await page.waitForURL(/\/onboarding\/done/);
-    await snap(page, "j1.9-done-recap");
-
-    await page.getByRole("button", { name: /começar a usar/i }).click();
-    await page.waitForURL(/\/app\/inbox/, { timeout: 30_000 });
-
-    const org = await orgRow();
-    expect(org.onboarded_at).not.toBeNull();
+    await snap(page, "j1.9-convite-sem-email");
   });
 
   test("J1.10 verificação em duas etapas: ativa pela tela e VÊ os códigos de recuperação", async ({ page }) => {

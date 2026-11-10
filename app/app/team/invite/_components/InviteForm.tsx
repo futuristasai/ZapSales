@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { useT } from "@/hooks/i18n/useT";
+import { copyToClipboard } from "@/lib/clipboard";
 import { useInviteMembers } from "@/hooks/team/useInviteMembers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,11 +58,21 @@ export function InviteForm() {
         invitations: unique.map((email) => ({ email, role, interface_settings: settings })),
       });
       setResult(res.data);
-      const ok = res.data.sent.length;
       const ko = res.data.failed.length;
-      toast.success(
-        `${ok} ${t("convite(s) enviado(s)")}${ko > 0 ? `, ${ko} ${t("falha(s).")}` : "."}`,
-      );
+      // Só diz "enviado" do que SAIU. Sem serviço de e-mail (o normal num primeiro
+      // deploy) o convite está criado, mas quem o entrega é quem convidou: dizer
+      // "enviado" aqui fazia a pessoa esperar um e-mail que nunca chegaria.
+      const saiu = res.data.sent.filter((s) => s.email_dispatched).length;
+      const naoSaiu = res.data.sent.length - saiu;
+      if (naoSaiu > 0) {
+        toast.warning(
+          `${naoSaiu} ${t("convite(s) não puderam ser enviados por email. Copie os links abaixo e envie você mesmo.")}`,
+        );
+      } else {
+        toast.success(
+          `${saiu} ${t("convite(s) enviado(s)")}${ko > 0 ? `, ${ko} ${t("falha(s).")}` : "."}`,
+        );
+      }
       setEmailsRaw("");
     } catch {
       /* showApiError handled */
@@ -120,8 +131,15 @@ export function InviteForm() {
             {result.sent.length > 0 ? (
               <section>
                 <h2 className="text-sm font-semibold">
-                  {t("Enviados")} ({result.sent.length})
+                  {t("Convites criados")} ({result.sent.length})
                 </h2>
+                {result.sent.some((s) => !s.email_dispatched) ? (
+                  <p className="mt-2 rounded-md border border-warning/60 bg-warning-bg p-3 text-sm">
+                    {t(
+                      "Esta instalação não envia e-mail. Os convites estão prontos — copie o link de cada pessoa e mande por onde você já fala com ela:",
+                    )}
+                  </p>
+                ) : null}
                 <ul className="mt-2 space-y-2 text-sm">
                   {result.sent.map((s) => (
                     <li key={s.email} className="rounded-md border p-2">
@@ -129,10 +147,28 @@ export function InviteForm() {
                       <div className="text-xs text-muted-foreground">
                         {s.email_dispatched
                           ? t("Email enviado.")
-                          : t("Resend não configurado — link copiável abaixo (DEV).")}
+                          : t("O e-mail não saiu. Copie o link e envie você mesmo.")}
                       </div>
                       {!s.email_dispatched ? (
-                        <code className="mt-1 block text-xs break-all">{s.accept_url}</code>
+                        <div className="mt-1 flex items-center gap-2">
+                          <code className="min-w-0 flex-1 text-xs break-all">{s.accept_url}</code>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              void copyToClipboard(s.accept_url).then((ok) => {
+                                if (ok) toast.success(t("Link copiado."));
+                                else
+                                  toast.error(
+                                    t("Não consegui copiar — selecione e copie o link manualmente."),
+                                  );
+                              });
+                            }}
+                          >
+                            {t("Copiar link")}
+                          </Button>
+                        </div>
                       ) : null}
                     </li>
                   ))}

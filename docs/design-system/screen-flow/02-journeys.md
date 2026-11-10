@@ -138,7 +138,7 @@ date: 2026-04-28
 | 9 | `/onboarding/configure-ai` | escolhe template prompt ("Atendimento e-commerce padrão") | seleção radio + preview | `<PromptTemplateSelector>` (Sub-PRD 05 §3.1) |
 | 10 | idem | upload PDF "Política de troca" | drop zone | `<KnowledgeUploader>` |
 | 11 | idem | salva | banner "Bot pronto • 1 fonte ingerida" | — |
-| 12 | `/onboarding/invite-team` | digita 2 emails de atendentes + role | tabela de pendentes | `<InviteForm>`, `<InviteList>` |
+| 12 | ~~`/onboarding/invite-team`~~ (removida em #246 — convite em Equipe › Convidar) | digita 2 emails de atendentes + role | tabela de pendentes | `<InviteForm>`, `<InviteList>` |
 | 13 | idem | envia convites | toast "2 convites enviados" | — |
 | 14 | `/onboarding/done` | resumo + CTA "Ir pra Inbox" | confetti opcional + checklist | `<OnboardingDone>` |
 | 15 | `/app/inbox` | landing pós-onboarding | inbox vazio com empty state friendly | `<EmptyState type=first_inbox>` |
