@@ -8540,7 +8540,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>Lista os agentes de IA da empresa, só para leitura: nome, “Ativo/Inativo”, <em>Tipo</em>, <em>Versão publicada</em> (<code>vN · provedor · modelo</code> ou “Nenhum agente publicado”) e <em>Publicado em</em>. Vazio: “Nenhum agente publicado”.</p>
 
 <h2 id="admin-tenants--suspender">Suspender e reativar</h2>
-<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Tenant suspenso há N dias. Sem razão registrada.”. A faixa informa há quanto tempo, mas, pelo que o código mostra, <strong>não exibe o motivo digitado</strong> na suspensão (ele fica só na auditoria).</p>
+<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Tenant suspenso há N dias.” seguida do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
 <figure class="print media">
   <img src="img/admin-suspender.png" alt="Janela Suspender tenant com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
   <figcaption>A janela “Suspender tenant” (cancelada nesta captura).</figcaption>
@@ -8998,7 +8998,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 09 de novembro de 2026 a partir do código na revisão <code>c251c3bc</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 10 de novembro de 2026 a partir do código na revisão <code>63b95206</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>
