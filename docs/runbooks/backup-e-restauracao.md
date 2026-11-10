@@ -114,3 +114,4 @@ dados do dump. Faça primeiro um ensaio com o snapshot do R2 para conferir o pro
 | Data | Snapshot | Resultado | Quem |
 |---|---|---|---|
 | 2026-10-04 | `a6de0ca7` (repositório restic **local**, no lugar do R2 ainda sem credenciais) | ✓ 8 contagens iguais às do dump; mídia de prova devolvida byte a byte; app `307`; administrador entrou no ensaio com a senha de produção, pela tela | Claude (issue #3) |
+| 2026-11-10 | `785556af` (repositório restic **local**, VPS **Ubuntu 26.04.1**; R2 não exercitado) | ✓ 8 contagens iguais às do dump (1 usuário, 1 organização, 0 contatos/mensagens/arquivos — instalação recém-criada); app `307`; login (Auth) do ensaio de pé; ensaio removido e instalação no ar intacta (sem reinício) | Claude (issue #226) |

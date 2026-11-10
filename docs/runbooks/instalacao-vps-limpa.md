@@ -23,7 +23,7 @@ pelo menos **4 GB de memória** e **20 GB livres de disco**; com menos, o kit av
 | Sistema | Situação |
 |---|---|
 | Ubuntu 24.04 LTS | **testado** — instalação, atualização e backup provados |
-| Ubuntu 26.04 LTS | **a testar** — é o padrão atual da Hostinger; a validação numa VM limpa está em andamento (issue #226). Deve funcionar |
+| Ubuntu 26.04 LTS | **testado** — é o padrão atual da Hostinger; instalação fresca, reinício, atualização, backup e ensaio de restauração provados numa VM Ubuntu 26.04.1 (issue #226, 09 e 10/11/2026) |
 | Outro Ubuntu / Debian | não testado — o kit usa apt e costuma funcionar |
 | Qualquer outro | a primeira instalação é recusada; atualização de quem já tem o ZapSales apenas avisa |
 
