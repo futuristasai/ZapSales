@@ -54,6 +54,18 @@ export const GATILHOS_QUE_EXIGEM_AGENTE = [
   "lead_created",
 ] as const;
 
+/**
+ * Os gatilhos que exigem agente publicado MESMO quando o fluxo é só de texto fixo (#174).
+ *
+ * Nos outros, quem decide é o grafo (`fluxoPedeAgente`): texto fixo dispara com
+ * `agent_id = null`. `appointment_no_show` dispara por `fn_appointment_recover`, em SQL,
+ * que só confere o vínculo do agente (`ai_agent_versions` publicadas com
+ * `followup->'enabled'` e o ponteiro em `flow_pointer_ids`) e **não lê o grafo**.
+ * Quando o SQL passar a respeitar o grafo, esta lista esvazia — e o teste
+ * `resumo-do-fluxo.test.ts` que a cobra deve ser revisto junto.
+ */
+export const GATILHOS_QUE_EXIGEM_AGENTE_ATE_COM_TEXTO_FIXO: readonly string[] = ["appointment_no_show"];
+
 export type GatilhoQueExigeAgente = (typeof GATILHOS_QUE_EXIGEM_AGENTE)[number];
 
 export function exigeAgente(kind: string): kind is GatilhoQueExigeAgente {

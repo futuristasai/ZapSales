@@ -10,7 +10,11 @@
  *  - conferência de publicar: `validateFlowForPublish`, a mesma que o botão Publicar roda.
  * Sem texto de tela: o componente traduz.
  */
-import { exigeAgente, fluxoPedeAgente } from "./agent-followup-gate";
+import {
+  GATILHOS_QUE_EXIGEM_AGENTE_ATE_COM_TEXTO_FIXO,
+  exigeAgente,
+  fluxoPedeAgente,
+} from "./agent-followup-gate";
 import type { FlowGraph } from "./graph-schema";
 import { horizonteDoModeloMs, toquesDoModelo } from "./modelos/tipos";
 import { validateFlowForPublish, type PublishValidationError } from "./validate-publish";
@@ -85,7 +89,7 @@ export interface Conferencia {
   /** Só em `validacao`: quantos problemas. */
   quantidade?: number;
   /** Só em `agente`: por que o resultado é este. */
-  motivo?: "nao_precisa" | "agente_arma" | "sem_agente";
+  motivo?: "nao_precisa" | "agente_arma" | "sem_agente" | "sem_agente_texto_fixo";
   /** Só em `publicado`: o status do fluxo. */
   status?: string;
 }
@@ -101,6 +105,10 @@ export interface EntradaDaProntidao {
 /**
  * As conferências de "vai disparar?". Só roda a de agente quando o gatilho é automático E o
  * fluxo pede IA: fluxo de texto fixo dispara sem agente, e avisar nele seria alarme falso.
+ *
+ * Exceção (#174): `appointment_no_show` dispara por SQL que não lê o grafo, então ele exige
+ * agente com o follow-up ligado MESMO com texto fixo — dizer "não precisa de agente" ali seria
+ * prometer um disparo que não acontece.
  */
 export function prontidaoDoFluxo(e: EntradaDaProntidao): Conferencia[] {
   const kind = e.gatilho.kind ?? "manual";
@@ -118,12 +126,18 @@ export function prontidaoDoFluxo(e: EntradaDaProntidao): Conferencia[] {
 
   if (exigeAgente(kind)) {
     const pede = fluxoPedeAgente(e.grafo);
+    const exigeMesmoComTextoFixo = GATILHOS_QUE_EXIGEM_AGENTE_ATE_COM_TEXTO_FIXO.includes(kind);
     itens.push(
-      !pede
+      !pede && !exigeMesmoComTextoFixo
         ? { id: "agente", estado: "ok", motivo: "nao_precisa", detalhes: [] }
         : e.agentesQueArmam > 0
           ? { id: "agente", estado: "ok", motivo: "agente_arma", detalhes: [] }
-          : { id: "agente", estado: "atencao", motivo: "sem_agente", detalhes: [] },
+          : {
+              id: "agente",
+              estado: "atencao",
+              motivo: pede ? "sem_agente" : "sem_agente_texto_fixo",
+              detalhes: [],
+            },
     );
   }
 

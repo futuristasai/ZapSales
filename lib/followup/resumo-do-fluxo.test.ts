@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { FlowGraph } from "./graph-schema";
 import { MODELOS_DE_FOLLOWUP, modeloPorId } from "./modelos";
 import { horizonteDoModeloMs, toquesDoModelo } from "./modelos/tipos";
+import { GATILHOS_QUE_EXIGEM_AGENTE_ATE_COM_TEXTO_FIXO } from "./agent-followup-gate";
 import { prontidaoDoFluxo, resumoDoFluxo, temCiclo } from "./resumo-do-fluxo";
 
 const consulta = modeloPorId("clinica-consulta-retomada")!;
@@ -84,6 +85,33 @@ describe("prontidaoDoFluxo", () => {
   it("o mesmo fluxo, com um agente publicado armando: ok", () => {
     const itens = prontidaoDoFluxo({ ...base, grafo: comMensagemPorIa(consulta.grafo), agentesQueArmam: 1 });
     expect(achar(itens, "agente")).toMatchObject({ estado: "ok", motivo: "agente_arma" });
+  });
+
+  it("falta confirmada, de texto fixo e sem agente: atenção — o SQL não lê o grafo (#174)", () => {
+    const itens = prontidaoDoFluxo({ ...base, gatilho: { kind: "appointment_no_show" } });
+    expect(achar(itens, "agente")).toMatchObject({ estado: "atencao", motivo: "sem_agente_texto_fixo" });
+  });
+
+  it("falta confirmada com um agente publicado armando: ok, mesmo com texto fixo", () => {
+    const itens = prontidaoDoFluxo({ ...base, gatilho: { kind: "appointment_no_show" }, agentesQueArmam: 1 });
+    expect(achar(itens, "agente")).toMatchObject({ estado: "ok", motivo: "agente_arma" });
+  });
+
+  it("falta confirmada que pede IA e sem agente segue com o aviso de sempre", () => {
+    const itens = prontidaoDoFluxo({
+      ...base,
+      gatilho: { kind: "appointment_no_show" },
+      grafo: comMensagemPorIa(consulta.grafo),
+    });
+    expect(achar(itens, "agente")).toMatchObject({ estado: "atencao", motivo: "sem_agente" });
+  });
+
+  it("só a falta confirmada exige agente com texto fixo; os demais seguem o grafo", () => {
+    expect([...GATILHOS_QUE_EXIGEM_AGENTE_ATE_COM_TEXTO_FIXO]).toEqual(["appointment_no_show"]);
+    for (const kind of ["silence", "stage_change", "case_opened", "lead_created", "inbound_after_silence"]) {
+      const itens = prontidaoDoFluxo({ ...base, gatilho: { kind } });
+      expect(achar(itens, "agente")).toMatchObject({ estado: "ok", motivo: "nao_precisa" });
+    }
   });
 
   it("gatilho manual ou webhook não entra na conferência de agente (alarme falso)", () => {

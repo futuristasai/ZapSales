@@ -140,6 +140,28 @@ describe("'Vai disparar?'", () => {
     expect(screen.getByTestId("conferencia-agente")).toHaveTextContent("Sofia");
   });
 
+  it("falta confirmada, mesmo de texto fixo, avisa que precisa de agente (#174)", () => {
+    render(<ResumoDoFluxo {...base} triggerConfig={{ kind: "appointment_no_show" }} />);
+    expect(screen.getByTestId("vai-disparar-estado")).toHaveAttribute("data-estado", "atencao");
+    const item = screen.getByTestId("conferencia-agente");
+    expect(item).toHaveAttribute("data-estado", "atencao");
+    expect(item).toHaveTextContent("mesmo que as mensagens sejam texto fixo");
+    expect(item).not.toHaveTextContent("Não precisa de agente");
+    expect(within(item).getByRole("link", { name: "Escolher o agente" })).toHaveAttribute("href", "/app/ai/agents");
+  });
+
+  it("falta confirmada com um agente publicado usando: tudo certo", () => {
+    render(
+      <ResumoDoFluxo
+        {...base}
+        triggerConfig={{ kind: "appointment_no_show" }}
+        agentesQueArmam={[{ id: "a1", name: "Sofia" }]}
+      />,
+    );
+    expect(screen.getByTestId("vai-disparar-estado")).toHaveAttribute("data-estado", "ok");
+    expect(screen.getByTestId("conferencia-agente")).toHaveTextContent("Sofia");
+  });
+
   it("gatilho manual não entra na conferência de agente (alarme falso)", () => {
     render(<ResumoDoFluxo {...base} grafo={comIa(consulta.grafo)} triggerConfig={{ kind: "manual" }} />);
     expect(screen.queryByTestId("conferencia-agente")).toBeNull();
