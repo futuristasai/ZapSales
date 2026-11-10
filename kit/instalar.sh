@@ -491,6 +491,11 @@ preparar_imagens() {
           *":sha-$rev_implantada") versao="sha-$rev_implantada" ;;
         esac
       fi
+      # Rodado de dentro de um clone NUMA TAG de versão (`git checkout v1.0.0`), a versão é a da tag. O
+      # package.json não serve de fonte: segue em 0.1.0 (docs/doctrine/versionamento.md).
+      if [ -z "$versao" ]; then
+        versao="$(git -C "$RAIZ" describe --tags --exact-match 2>/dev/null | sed -nE 's/^v([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' || true)"
+      fi
       versao="${versao:-$(sed -nE 's/^ *"version": *"([^"]+)".*/\1/p' "$RAIZ/package.json" | head -1)}"
       env_definir "$ENV_ARQ" COMPOSE_FILE "$compose"
       # APP_VERSION só serve ao build na VPS. Deixado no .env, o `env_file` do
