@@ -105,12 +105,12 @@ describe("o PostgREST não serve o estado da licença", () => {
 });
 
 describe("o estado nasce certo", () => {
-  it("o UUID da instalação sai do banco, é v4, e o modo padrão é sombra", () => {
+  it("o UUID da instalação sai do banco, é v4, e o modo padrão é valendo (migration 0558)", () => {
     sql(`insert into public.${TABELA} (id) values (1);`);
     expect(coluna("instalacao_id")).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     );
-    expect(coluna("modo")).toBe("sombra");
+    expect(coluna("modo")).toBe("valendo");
     expect(coluna("ativada_em")).toBe("NULO");
     expect(coluna("bloqueio_codigo")).toBe("NULO");
   });
@@ -194,10 +194,10 @@ describe("o gatilho põe no BANCO o que a doutrina promete", () => {
 
   it("updated_at acompanha a escrita", () => {
     const antes = sql(`select updated_at from public.${TABELA} where id = 1;`).trim();
-    sql(`select pg_sleep(0.05); update public.${TABELA} set modo = 'valendo' where id = 1;`);
+    sql(`select pg_sleep(0.05); update public.${TABELA} set modo = 'sombra' where id = 1;`);
     const depois = sql(`select updated_at from public.${TABELA} where id = 1;`).trim();
     expect(depois).not.toBe(antes);
-    sql(`update public.${TABELA} set modo = 'sombra' where id = 1;`);
+    sql(`update public.${TABELA} set modo = 'valendo' where id = 1;`);
   });
 });
 

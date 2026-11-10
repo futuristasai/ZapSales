@@ -186,7 +186,7 @@ it after checking a backup.
   same way**, as «activation pending», and `sudo /opt/zapsales/kit/ativar-licenca.sh` activates it
   later. The kit does not pass the purchase as an argument, does not write it to `.env`, and it
   does not show up on screen or in the kit log.
-- The license lock starts in `sombra` (shadow) mode: it only observes, never restricts.
+- The license lock starts in `valendo` (enforcing) mode: an activated installation whose license expired or was blocked stops operating (your data and export stay available).
   `sudo kit/licenca-modo.sh` shows the mode and `sudo kit/licenca-modo.sh valendo|sombra` switches
   it; every switch is logged in `/var/log/zapsales/licenca.log`.
 - The mode is chosen by whoever owns ports 80/443 and saved as `ZAPSALES_MODO` in `.env`; the kit

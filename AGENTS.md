@@ -14,7 +14,7 @@ pelo WAHA/QR code (atendimento); quem responde a uma campanha cai no funil e no 
 contexto do que foi enviado. CRM inteiro exposto por MCP. Multi-tenant com RLS desde o dia 1;
 LGPD nativa. Roda na VPS própria do dono (Hostinger) e tem o código público sob licença *source-available*
 (PolyForm Noncommercial; uso comercial exige licença — ver `LICENSING.md`). Há uma trava técnica de licença
-(ADR-0005), hoje em modo sombra (só observa); não contorne `consultarPorta` — ver `CLAUDE.md`. Posicionamento: [`VISION.md`](VISION.md).
+(ADR-0005), nasce em modo `valendo` nas instalações novas (recusa licença vencida ou bloqueada); não contorne `consultarPorta` — ver `CLAUDE.md`. Posicionamento: [`VISION.md`](VISION.md).
 
 **Consequência que muda como você trabalha:** o produto é distribuído como código. Quem instala
 numa VPS **é** o usuário. Uma mudança que funciona na máquina do dev e quebra no clone fresco é

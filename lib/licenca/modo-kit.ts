@@ -1,9 +1,10 @@
 /**
  * O interruptor do modo sombra, pela linha de comando do OPERADOR (`kit/licenca-modo.sh`).
  *
- * ADR-0005 D-7: a trava nasce em modo `sombra` (calcula e registra, nunca restringe) e só passa a `valendo`
- * na fase "Ligar", por decisão do dono. Este é o único caminho para trocar — não há tela nem API: quem tem
- * root na máquina decide, como decide sobre qualquer outra configuração da instalação.
+ * ADR-0005 D-7: a trava nasceu em modo `sombra` (calcula e registra, nunca restringe) e, desde a migration
+ * 0558 (fase "Ligar", 10/11/2026), a instalação NOVA nasce em `valendo`. Este é o único caminho para trocar o
+ * modo de uma instalação — não há tela nem API: quem tem root na máquina decide, como decide sobre qualquer
+ * outra configuração da instalação.
  *
  * Contrato com o shell: uma linha `LICENCA_MODO=…` e um código de saída (0 gravou, 11 não foi possível,
  * 12 valor inválido). Valor desconhecido NUNCA vira um modo: um erro de digitação não pode ligar a trava.

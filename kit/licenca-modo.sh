@@ -2,8 +2,8 @@
 # kit/licenca-modo.sh — mostra ou troca o modo da trava de licença desta instalação.
 #
 #   sudo kit/licenca-modo.sh            mostra o modo em vigor
-#   sudo kit/licenca-modo.sh valendo    a trava passa a recusar (fase «Ligar», ADR-0005)
-#   sudo kit/licenca-modo.sh sombra     a trava volta a só observar (o padrão)
+#   sudo kit/licenca-modo.sh valendo    a trava recusa a licença vencida ou bloqueada (o padrão das instalações novas)
+#   sudo kit/licenca-modo.sh sombra     a trava só observa, nunca recusa (válvula de segurança do operador)
 #
 # Sai com 0 se deu certo, 1 se não foi possível e 2 se o argumento é inválido.
 set -Eeuo pipefail
