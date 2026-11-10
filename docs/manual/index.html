@@ -6623,9 +6623,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Emails.</strong> Cole até <strong>20</strong> e-mails, um por linha (também vale vírgula ou ponto e vírgula; repetidos são removidos).</li>
   <li><strong>Papel.</strong> O papel de <em>todos</em> os convidados deste envio: Atendente (padrão), Visualizador, Gerente ou Administrador.</li>
   <li><strong>Interface.</strong> O mesmo editor de interface; o convidado já nasce com o perfil escolhido.</li>
-  <li><strong>Enviar convites.</strong> “N convite(s) enviado(s), M falha(s).”</li>
+  <li><strong>Enviar convites.</strong> “N convite(s) enviado(s), M falha(s).” Se a instalação ainda não envia e-mail, o aviso muda: “N convite(s) não puderam ser enviados por email. Copie os links abaixo e envie você mesmo.” — o convite foi criado, mas quem o entrega é você.</li>
 </ol>
-<p><strong>Resultados.</strong> Depois do envio aparece, abaixo do botão, a lista de <em>Enviados</em> (“Email enviado.” ou “Resend não configurado — link copiável abaixo (DEV)”, com o link) e de <em>Falhas</em>, como “Já é membro desta organização.” Antes do envio a tela só diz “Resultados aparecerão aqui após o envio.”</p>
+<p><strong>Resultados.</strong> Depois do envio aparece, abaixo do botão, a lista de <em>Convites criados</em> (“Email enviado.” ou, sem serviço de e-mail, “Esta instalação não envia e-mail…” com “O e-mail não saiu. Copie o link e envie você mesmo.”, o link de cada pessoa e o botão <span class="ui">Copiar link</span>) e de <em>Falhas</em>, como “Já é membro desta organização.” Antes do envio a tela só diz “Resultados aparecerão aqui após o envio.”</p>
 <ul>
   <li>O e-mail traz “Você foi convidado para a &lt;empresa&gt;” e um botão <em>Aceitar convite</em>. Só sai se a instalação tem e-mail configurado.</li>
   <li><strong>O convite é do e-mail:</strong> se a pessoa entrar com outro e-mail, o aceite é recusado.</li>
@@ -8011,10 +8011,10 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="onboarding" data-titulo="Primeiros passos (onboarding)" data-grupo="entrada" data-grupo-titulo="Entrar e começar" data-resumo="O passo a passo que aparece quando uma empresa nova entra pela primeira vez: o negócio, o telefone, o treino do funcionário de IA, o funil, o teste e a equipe." data-palavras="onboarding primeiros passos boas-vindas seu negócio whatsapp treinar funil testar equipe convidar tudo pronto começar a usar" hidden>
+<article class="pagina" id="onboarding" data-titulo="Primeiros passos (onboarding)" data-grupo="entrada" data-grupo-titulo="Entrar e começar" data-resumo="O passo a passo que aparece quando uma empresa nova entra pela primeira vez: o negócio, o telefone, o treino do funcionário de IA, o funil e o teste." data-palavras="onboarding primeiros passos boas-vindas seu negócio whatsapp treinar funil testar tudo pronto começar a usar" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Entrar e começar › Primeiros passos (onboarding)</p>
   <h1>Primeiros passos (onboarding)</h1>
-  <p class="lede">O passo a passo que aparece quando uma empresa nova entra pela primeira vez: o negócio, o telefone, o treino do funcionário de IA, o funil, o teste e a equipe.</p>
+  <p class="lede">O passo a passo que aparece quando uma empresa nova entra pela primeira vez: o negócio, o telefone, o treino do funcionário de IA, o funil e o teste.</p>
   <dl class="ficha"><dt>Onde fica</dt><dd>Aparece sozinho no primeiro acesso de uma empresa nova (/onboarding)</dd><dt>Quem pode usar</dt><dd>Qualquer membro entra; o passo da chave de IA só aceita o Administrador</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="onboarding--visao-geral">Para que serve</h2>
@@ -8032,7 +8032,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <figcaption>Passo 1: “Boas-vindas ao ZapSales”.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>A barra de passos.</strong> Seis etapas: Seu negócio, O telefone dele, Treinar, Onde ele organiza, Ver ele atender, Quem trabalha com ele.</li>
+  <li><strong>A barra de passos.</strong> Cinco etapas: Seu negócio, O telefone dele, Treinar, Onde ele organiza, Ver ele atender. Convidar a equipe não é etapa daqui: é na <a href="#equipe">Equipe</a>, depois.</li>
   <li><strong>Isto aqui já está de pé.</strong> Uma lista com bolinha verde (pronto) ou amarela (falta): servidor no ar e banco instalado; inteligência contratada (ou “Falta a chave da inteligência artificial”); WhatsApp pronto para conectar; funil de vendas criado.</li>
   <li><strong>Como se chama o seu negócio?</strong> Obrigatório, 2 a 120 caracteres. Vem vazio quando a empresa ainda tem o nome padrão (“Minha Empresa”).</li>
   <li><strong>O que vocês fazem?</strong> Opcional, até 280 caracteres (“clínica odontológica, ou venda de roupa fitness pelo WhatsApp”). É com isso que o funcionário aprende com quem está falando.</li>
@@ -8094,19 +8094,12 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </figure>
 <p>“Escreva como se fosse um cliente. Nada é enviado pelo WhatsApp — é só um ensaio, entre você e ele.” Digite uma mensagem (até 4.000 caracteres; o texto inicial é “Oi! Vocês atendem hoje? Queria saber o preço.”) e clique em <span class="ui">Mandar mensagem</span> (“Ele está pensando…”); a resposta vem como “&lt;nome&gt; respondeu”, com o aviso “Esta conversa não foi enviada a ninguém e não aparece no seu inbox.”. <strong>Usa a IA de verdade (gasta centavos).</strong> Sem agente ou com agente em rascunho não há o que testar. Se falhar: “Ele não conseguiu responder — e é melhor descobrir isso agora do que com um cliente de verdade.”, com o motivo.</p>
 
-<h2 id="onboarding--passo6">Passo 6 — Quem trabalha com ele</h2>
-<figure class="print media">
-  <img src="img/onb-6-equipe.png" alt="Passo 6 com o aviso de que a instalação não envia e-mail, o campo de e-mails, o papel e os botões Pular e Enviar convites" loading="lazy">
-  <figcaption>Passo 6: convidar a equipe.</figcaption>
-</figure>
-<p>Cole os e-mails (um por linha, vírgula ou ponto e vírgula; até 20) e escolha “O que essas pessoas podem fazer” (Somente leitura, <strong>Atendente</strong> (padrão), Gerente ou Administrador). Sem servidor de e-mail, aparece “Esta instalação ainda não envia e-mail” e, depois de <span class="ui">Enviar convites</span>, um <span class="ui">Copiar link</span> para cada pessoa (“O link é o convite: quem abrir entra na sua empresa”). O convite vale 24 horas, não é cancelado depois por esta tela e não há lista de pendentes — o acompanhamento fica na <a href="#equipe">Equipe</a>.</p>
-
 <h2 id="onboarding--final">Tudo pronto!</h2>
 <figure class="print media">
   <img src="img/onb-7-pronto.png" alt="Tela final Tudo pronto com a lista dos seis passos e os sete cartões O que mais tem aqui" loading="lazy">
   <figcaption>A tela final.</figcaption>
 </figure>
-<p>O título é “Tudo pronto!” (se há agente publicado) ou “Quase lá!”, com uma frase sobre o que ficou pendente. Lista os 6 passos com bolinha verde (feito) ou cinza e a marca “(você pulou)” ou “(ainda não)”. A seção <strong>“O que mais tem aqui”</strong> traz sete cartões, cada um com “Como funciona”: <a href="#inbox">As conversas</a> (Inbox), <a href="#funis">O quadro de clientes</a> (Funis), <a href="#followups">Voltar a falar com quem sumiu</a> (Follow-ups), <a href="#radar">O que está esfriando</a> (Radar), <a href="#alertas">Quando ele pede ajuda</a> (Alertas), <a href="#aviso-whatsapp">Ser avisado no seu WhatsApp</a> e <a href="#sugestoes-ia">As ideias dele</a> (Sugestões da IA). O botão <span class="ui">Começar a usar</span> grava que a empresa concluiu os primeiros passos (<code>tenant.onboarded</code>) e leva ao Inbox. Dá para abrir esta tela direto e concluir sem passar pelos outros passos.</p>
+<p>O título é “Tudo pronto!” (se há agente publicado) ou “Quase lá!”, com uma frase sobre o que ficou pendente. Lista os 5 passos com bolinha verde (feito) ou cinza e a marca “(você pulou)” ou “(ainda não)”. A seção <strong>“O que mais tem aqui”</strong> traz sete cartões, cada um com “Como funciona”: <a href="#inbox">As conversas</a> (Inbox), <a href="#funis">O quadro de clientes</a> (Funis), <a href="#followups">Voltar a falar com quem sumiu</a> (Follow-ups), <a href="#radar">O que está esfriando</a> (Radar), <a href="#alertas">Quando ele pede ajuda</a> (Alertas), <a href="#aviso-whatsapp">Ser avisado no seu WhatsApp</a> e <a href="#sugestoes-ia">As ideias dele</a> (Sugestões da IA). O botão <span class="ui">Começar a usar</span> grava que a empresa concluiu os primeiros passos (<code>tenant.onboarded</code>) e leva ao Inbox. Dá para abrir esta tela direto e concluir sem passar pelos outros passos.</p>
   </div>
 </article>
 
@@ -9005,7 +8998,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 07 de novembro de 2026 a partir do código na revisão <code>1288833c</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 09 de novembro de 2026 a partir do código na revisão <code>c251c3bc</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

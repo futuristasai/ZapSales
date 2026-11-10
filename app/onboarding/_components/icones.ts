@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { Brain, ChatsCircle, Kanban, Storefront, UsersThree, WhatsappLogo } from "@/lib/ui/icons";
+import { Brain, ChatsCircle, Kanban, Storefront, WhatsappLogo } from "@/lib/ui/icons";
 
 type Icone = ComponentType<{
   size?: number;
@@ -19,5 +19,4 @@ export const ICONE_DO_PASSO: Readonly<Record<string, Icone>> = {
   "setup-ai": Brain as Icone,
   funil: Kanban as Icone,
   testar: ChatsCircle as Icone,
-  "invite-team": UsersThree as Icone,
 };

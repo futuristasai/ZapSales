@@ -485,6 +485,8 @@ exposes:
 
 ### S-02.07 — Step 4 `/onboarding/invite-team` (multi-invite)
 
+> **Removida em #246.** O passo saiu do wizard; convidar pessoas é só em Equipe › Convidar (`/app/team/invite`). Mantida abaixo como histórico do planejamento.
+
 **Points**: 4 | **Priority**: P0 | **Deps**: S-02.06 | **FR refs**: Jornada 4 §15-16, Spec 01 (invites)
 
 #### Contexto

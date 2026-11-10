@@ -72,12 +72,9 @@ export const PASSOS: readonly PassoDoOnboarding[] = [
     cumprido: (s) => marcado(s.teste),
     pulado: (s) => foiPulado(s.teste),
   },
-  {
-    segmento: "invite-team",
-    rotulo: "Quem trabalha com ele",
-    cumprido: (s) => marcado(s.team),
-    pulado: (s) => foiPulado(s.team),
-  },
+  // Convidar a equipe NÃO é passo do wizard (#246): o convite mora em
+  // Equipe › Convidar, onde fica registrado, dá para reenviar e revogar. Quem já
+  // passou pelo passo antigo tem `team` no estado salvo — o schema o ignora.
 ] as const;
 
 /** Os passos do wizard, na ordem. */

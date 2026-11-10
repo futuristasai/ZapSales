@@ -39,7 +39,7 @@ Notas: `/login/mfa` recebe usuário com sessão pré-MFA; admin/super-admin sem 
 | `/onboarding/mfa-setup` | P3 (admin), P2 | autenticada | `(onboarding)` | P0 | não |
 | `/onboarding/connect-whatsapp` | P3 | autenticada (admin+) | `(onboarding)` | P0 | sim (status sessão) |
 | `/onboarding/configure-ai` | P3 | autenticada (admin+) | `(onboarding)` | P1 | não |
-| `/onboarding/invite-team` | P3 | autenticada (admin+) | `(onboarding)` | P1 | não |
+| ~~`/onboarding/invite-team`~~ (removida em #246; convite em `/app/team/invite`) | P3 | autenticada (admin+) | `(onboarding)` | P1 | não |
 | `/onboarding/done` | P3, P4 | autenticada | `(onboarding)` | P0 | não |
 
 ## 3. App autenticado de tenant (`/app`)

@@ -35,7 +35,6 @@ function todosCumpridos(): ItemDoResumo[] {
     item("setup-ai"),
     item("funil"),
     item("testar"),
-    item("invite-team"),
   ];
 }
 

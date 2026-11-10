@@ -4,7 +4,7 @@ secao: alterado
 titulo: O assistente de instalação ficou mais fácil de seguir, com ajuda detalhada em cada passo e em cada escolha
 ---
 
-O assistente que aparece logo depois de instalar (Seu negócio, O telefone dele, Treinar, Onde ele organiza, Ver ele atender, Quem trabalha com ele) foi redesenhado. **Nenhuma pergunta mudou e nada precisa ser refeito**: quem já passou por ele não vê o assistente de novo.
+O assistente que aparece logo depois de instalar (Seu negócio, O telefone dele, Treinar, Onde ele organiza, Ver ele atender) foi redesenhado. **Nenhuma pergunta mudou e nada precisa ser refeito**: quem já passou por ele não vê o assistente de novo.
 
 No computador, uma **trilha à esquerda** mostra onde você está, o que já foi feito ou pulado e **quanto tempo falta** (cerca de 12 minutos no total, para quem tem o que precisa em mãos). No celular, a trilha vira uma barra no topo. Cada passo abre com o que ele é, quanto leva e se **pode ficar para depois**.
 

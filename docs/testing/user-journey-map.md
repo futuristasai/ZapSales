@@ -49,7 +49,7 @@ rede; registrado para investigar se o login precisa recusar envio antes de hidra
 Contexto do código: primeiro usuário nasce do `scripts/bootstrap-owner.ts`
 (install.sh); quem é convidado e ainda não tem conta entra por `/signup?invite=`.
 Wizard: welcome → whatsapp → setup-ai →
-**testar** → invite-team → done. A ordem, os rótulos e o resumo final saem de uma
+**testar** → done (convidar a equipe saiu do wizard em #246: vive em Equipe › Convidar). A ordem, os rótulos e o resumo final saem de uma
 fonte só (`lib/onboarding/passos.ts`) — eram três listas que discordavam. Gate:
 `organizations.onboarded_at`. MFA obrigatório pra admin logo após o wizard.
 
@@ -62,8 +62,8 @@ fonte só (`lib/onboarding/passos.ts`) — eram três listas que discordavam. Ga
 | J1.5 | Connect WhatsApp: WAHA ativo → QR aparece | sessão criada, QR renderiza via proxy, poll de status roda |
 | J1.6 | Connect WhatsApp: "Pular por enquanto" | avança pro step correto (setup-ai) |
 | J1.7 | Setup IA: criar agente default | `ai_agents` criado **e a versão publicada aponta para o provedor que a instalação escolheu**, com o modelo curado DAQUELE provedor; avança. **Sem chave de IA** (o `install.sh` deixa pular, e é o ambiente da VPS fresca no CI): o agente nasce rascunho, sem versão, o aviso nomeia o provedor e "Continuar sem publicar" avança para "Onde ele organiza" (`tests/e2e/vps-fresh-onboarding.spec.ts`) |
-| J1.8 | Invite team: enviar convite SEM Resend configurado (realidade da VPS fresca) | UI **não mente**: mostra que email não saiu + oferece `accept_url` copiável |
-| J1.9 | Done: "Ir para o Inbox" | seta `onboarded_at`, cai no `/app/inbox` |
+| J1.8 | Done: "Ir para o Inbox" | seta `onboarded_at`, cai no `/app/inbox`; o wizard NÃO tem passo "Quem trabalha com ele" (#246) |
+| J1.9 | Equipe › Convidar: enviar convite SEM e-mail configurado (realidade da VPS fresca) | UI **não mente**: aviso de que o e-mail não saiu, sem "enviado", sem "Resend"/"(DEV)"; mostra o `accept_url` de cada pessoa com botão **Copiar link** |
 | J1.10 | Gate MFA pós-onboarding | blocker aparece; enrolar TOTP + ver/salvar recovery codes funciona de ponta a ponta |
 | J1.11 | Abandonar no meio e voltar (fecha browser no step 3) | retoma exatamente no step pendente |
 | J1.12 | Tentar `/app/inbox` antes de concluir | redirect pro onboarding, sem loop |
@@ -1243,7 +1243,7 @@ Critério: nenhuma tela quebra, nenhum stack trace, nenhum texto de erro cru.
 | Bug | Arquivo | Correção |
 |-----|---------|----------|
 | M10 | `app/actions/onboarding/skipWhatsapp.ts` | `skipWhatsapp`/`markWhatsappConfigured` redirecionam pro roteador `/onboarding`, não pro step fixo |
-| M11 | `app/actions/onboarding/sendOnboardingInvites.ts` + `invite-team/_form.tsx` | retorna `undelivered[]` com accept_url; UI mostra links copiáveis quando email falha |
+| M11 | `app/app/team/invite/_components/InviteForm.tsx` (era `sendOnboardingInvites.ts` + `invite-team/_form.tsx`, removidos em #246) | UI mostra o `accept_url` com botão Copiar link e avisa que o e-mail não saiu |
 | M12 | `components/auth/MfaEnrollGate.tsx` + `app/app/layout.tsx` | gate latcha a decisão client-side; revalidação não derruba mais a tela de recovery codes |
 
 ---

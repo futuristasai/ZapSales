@@ -419,8 +419,8 @@ test.describe("o wizard monta um funcionário", () => {
     await page.waitForURL(/\/onboarding\/testar/, { timeout: 30_000 });
     await page.getByRole("button", { name: /^continuar$/i }).click();
 
-    await page.waitForURL(/\/onboarding\/invite-team/, { timeout: 30_000 });
-    await page.getByRole("button", { name: /pular por enquanto/i }).click();
+    // Convidar a equipe não é mais passo do wizard (#246): "Ver ele atender" é o
+    // último, e o "Continuar" dele leva direto ao fim.
     await page.waitForURL(/\/onboarding\/done/, { timeout: 30_000 });
 
     // O tour: as peças apresentadas pelo que fazem.
