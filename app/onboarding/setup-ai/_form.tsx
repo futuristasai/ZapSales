@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createDefaultAgent, skipAi } from "@/app/actions/onboarding/createDefaultAgent";
 import type { PromptTemplate } from "@/lib/schemas/onboarding";
-import { cn } from "@/lib/utils";
 import { PROVEDOR_POR_ID } from "@/lib/ai/pontos/provedores";
 import {
   IDS_DE_MODELO_DO_ONBOARDING,
@@ -18,7 +17,21 @@ import {
   type IdDoModelo,
 } from "@/lib/ai/agents/modelos";
 import { IDIOMAS_DO_AGENTE, type IdiomaDoAgente } from "@/lib/ai/agents/perfil";
+import {
+  ArrowRight,
+  Briefcase,
+  CalendarCheck,
+  Check,
+  Handshake,
+  Headset,
+  Lightning,
+  Smiley,
+  Sparkle,
+  X,
+} from "@/lib/ui/icons";
 import { useIdioma } from "@/lib/i18n/IdiomaProvider";
+import { exemploDoJeito, rotulosDaEscolha } from "@/lib/onboarding/ajuda";
+import { Opcao } from "../_components/Opcao";
 
 /**
  * O jeito de falar, não o "estilo de prompt".
@@ -33,6 +46,18 @@ function provedorLegivel(id: string | null, t: (texto: string) => string): strin
   if (!id) return t("da inteligência escolhida na instalação");
   return `${t("da")} ${PROVEDOR_POR_ID.get(id)?.rotulo ?? id}`;
 }
+
+const ICONE_DO_RAMO: Record<string, typeof Sparkle> = {
+  vendas: Handshake,
+  suporte: Headset,
+  agendamento: CalendarCheck,
+};
+
+const ICONE_DO_JEITO: Record<PromptTemplate, typeof Sparkle> = {
+  ecommerce_friendly: Smiley,
+  ecommerce_professional: Briefcase,
+  support_minimal: Lightning,
+};
 
 const JEITOS: { id: PromptTemplate; titulo: string; desc: string }[] = [
   {
@@ -67,7 +92,10 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
   const [ramo, setRamo] = useState<IdDoModelo | "">("");
   // O modelo vem no idioma da tela de quem instala; idioma sem modelo cai em português.
   const idiomaDaTela = useIdioma();
-  const idiomaDoModelo: IdiomaDoAgente = (IDIOMAS_DO_AGENTE as readonly string[]).includes(idiomaDaTela)
+  const escolha = rotulosDaEscolha(idiomaDaTela);
+  const idiomaDoModelo: IdiomaDoAgente = (IDIOMAS_DO_AGENTE as readonly string[]).includes(
+    idiomaDaTela,
+  )
     ? (idiomaDaTela as IdiomaDoAgente)
     : "pt-BR";
   const [regras, setRegras] = useState("");
@@ -125,10 +153,13 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
         });
       }}
     >
-      <div className="space-y-5 rounded-lg border bg-background p-6">
+      <div className="space-y-6 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
         <div className="space-y-2">
-          <Label htmlFor="name">{t("Como ele vai se chamar")}</Label>
+          <Label htmlFor="name" className="text-base font-semibold">
+            {t("Como ele vai se chamar")}
+          </Label>
           <Input
+            className="h-12 text-base"
             id="name"
             name="name"
             value={name}
@@ -142,100 +173,112 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
           </p>
         </div>
 
-        <fieldset className="space-y-2" data-testid="onboarding-ramo">
-          <legend className="text-sm font-medium">{t("O ramo do atendimento (opcional)")}</legend>
-          <p className="text-xs text-muted-foreground">
-            {t(
-              "Escolha o ramo e o perfil e as instruções já vêm prontos — dá para editar tudo depois. Ou pule e escolha só o jeito de falar.",
-            )}
-          </p>
-          <input type="hidden" name="idioma" value={idiomaDoModelo} />
-          <div className="grid gap-2">
-            {MODELOS_DE_AGENTE.filter((m) =>
-              (IDS_DE_MODELO_DO_ONBOARDING as readonly string[]).includes(m.id),
-            ).map((m) => {
-              const c = m.conteudo[idiomaDoModelo];
-              return (
-                <label
-                  key={m.id}
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors",
-                    ramo === m.id ? "border-primary bg-primary/5" : "hover:bg-muted/40",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="ramo"
-                    value={m.id}
-                    checked={ramo === m.id}
-                    onChange={() => setRamo(m.id)}
-                    className="mt-1"
-                    data-testid={`onboarding-ramo-${m.id}`}
-                  />
-                  <span>
-                    <span className="block text-sm font-medium">{c.titulo}</span>
-                    <span className="block text-xs text-muted-foreground">{c.descricao}</span>
-                  </span>
-                </label>
-              );
-            })}
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors",
-                ramo === "" ? "border-primary bg-primary/5" : "hover:bg-muted/40",
+        <div className="border-t border-border pt-6">
+          <fieldset className="space-y-3 border-0 p-0" data-testid="onboarding-ramo">
+            <legend className="mb-3 block w-full p-0 font-[family-name:var(--font-titulo)] text-xl font-bold tracking-[-0.02em]">
+              {t("O ramo do atendimento (opcional)")}
+            </legend>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {t(
+                "Escolha o ramo e o perfil e as instruções já vêm prontos — dá para editar tudo depois. Ou pule e escolha só o jeito de falar.",
               )}
-            >
-              <input
-                type="radio"
-                name="ramo"
-                value=""
-                checked={ramo === ""}
-                onChange={() => setRamo("")}
-                className="mt-1"
-                data-testid="onboarding-ramo-nenhum"
+            </p>
+            <input type="hidden" name="idioma" value={idiomaDoModelo} />
+            <div className="grid gap-2.5">
+              {MODELOS_DE_AGENTE.filter((m) =>
+                (IDS_DE_MODELO_DO_ONBOARDING as readonly string[]).includes(m.id),
+              ).map((m) => {
+                const c = m.conteudo[idiomaDoModelo];
+                return (
+                  <Opcao
+                    key={m.id}
+                    nome="ramo"
+                    valor={m.id}
+                    marcada={ramo === m.id}
+                    onEscolher={() => setRamo(m.id)}
+                    idDoRadio={`onboarding-ramo-${m.id}`}
+                    icone={ICONE_DO_RAMO[m.id] ?? Sparkle}
+                    titulo={c.titulo}
+                    descricao={c.descricao}
+                    detalhe={
+                      <>
+                        <span className="block">
+                          <strong className="font-medium text-foreground">
+                            {escolha.objetivo}
+                          </strong>{" "}
+                          {c.objetivo}
+                        </span>
+                        <span className="block">
+                          <strong className="font-medium text-foreground">
+                            {escolha.cumprimento}
+                          </strong>{" "}
+                          «{c.boasVindas}»
+                        </span>
+                        <span className="block text-text-subtle">{escolha.editavel}</span>
+                      </>
+                    }
+                  />
+                );
+              })}
+              <Opcao
+                nome="ramo"
+                valor=""
+                marcada={ramo === ""}
+                onEscolher={() => setRamo("")}
+                idDoRadio="onboarding-ramo-nenhum"
+                icone={Sparkle}
+                titulo={t("Nenhum — só o jeito de falar")}
+                descricao={t("Escolha abaixo como ele conversa.")}
               />
-              <span>
-                <span className="block text-sm font-medium">{t("Nenhum — só o jeito de falar")}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {t("Escolha abaixo como ele conversa.")}
-                </span>
-              </span>
-            </label>
-          </div>
-        </fieldset>
+            </div>
+          </fieldset>
+        </div>
 
         {/* Com um ramo, o modelo já define o tom; o jeito de falar só vale sem ele. O
             campo segue no formulário (oculto) para o envio ser sempre o mesmo. */}
         <input type="hidden" name="prompt_template" value={jeito} />
-        <fieldset className="space-y-2" hidden={ramo !== ""}>
-          <legend className="text-sm font-medium">{t("O jeito dele falar")}</legend>
-          <div className="grid gap-2">
-            {JEITOS.map((j) => (
-              <label
-                key={j.id}
-                className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors",
-                  jeito === j.id ? "border-primary bg-primary/5" : "hover:bg-muted/40",
-                )}
-              >
-                <input
-                  type="radio"
-                  value={j.id}
-                  checked={jeito === j.id}
-                  onChange={() => setJeito(j.id)}
-                  className="mt-1"
+        <div className="border-t border-border pt-6" hidden={ramo !== ""}>
+          <fieldset className="space-y-3 border-0 p-0">
+            <legend className="mb-3 block w-full p-0 font-[family-name:var(--font-titulo)] text-xl font-bold tracking-[-0.02em]">
+              {t("O jeito dele falar")}
+            </legend>
+            <div className="grid gap-2.5">
+              {JEITOS.map((j) => (
+                <Opcao
+                  key={j.id}
+                  nome="jeito_de_falar"
+                  valor={j.id}
+                  marcada={jeito === j.id}
+                  onEscolher={() => setJeito(j.id)}
+                  icone={ICONE_DO_JEITO[j.id]}
+                  titulo={t(j.titulo)}
+                  descricao={t(j.desc)}
+                  detalhe={
+                    <span className="block">
+                      <strong className="font-medium text-foreground">
+                        {escolha.exemploDeResposta}
+                      </strong>{" "}
+                      «
+                      {exemploDoJeito(
+                        j.id as "ecommerce_friendly" | "ecommerce_professional" | "support_minimal",
+                        idiomaDaTela,
+                      )}
+                      »
+                    </span>
+                  }
                 />
-                <span>
-                  <span className="block text-sm font-medium">{t(j.titulo)}</span>
-                  <span className="block text-xs text-muted-foreground">{t(j.desc)}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+              ))}
+            </div>
+          </fieldset>
+        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="regras_da_casa">{t("As regras da casa (opcional)")}</Label>
+        <div className="space-y-2 border-t border-border pt-6">
+          <Label
+            htmlFor="regras_da_casa"
+            className="font-[family-name:var(--font-titulo)] text-xl font-bold tracking-[-0.02em]"
+          >
+            {t("As regras da casa (opcional)")}
+          </Label>
           <Textarea
             id="regras_da_casa"
             name="regras_da_casa"
@@ -264,22 +307,33 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
         exatamente essa.
       */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <section className="rounded-lg border bg-background p-4">
-          <h3 className="text-sm font-medium">{t("Ele já vem sabendo")}</h3>
-          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+        <section className="rounded-xl border border-border bg-surface p-4 shadow-xs">
+          <h3 className="text-sm font-semibold">{t("Ele já vem sabendo")}</h3>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {capacidades.map((c) => (
-              <li key={c}>· {c}</li>
+              <li key={c} className="flex items-start gap-2 leading-snug">
+                <Check
+                  aria-hidden
+                  size={16}
+                  weight="bold"
+                  className="mt-0.5 shrink-0 text-success"
+                />
+                <span>{c}</span>
+              </li>
             ))}
           </ul>
         </section>
-        <section className="rounded-lg border bg-background p-4">
-          <h3 className="text-sm font-medium">{t("E nunca vai fazer")}</h3>
-          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+        <section className="rounded-xl border border-border bg-surface p-4 shadow-xs">
+          <h3 className="text-sm font-semibold">{t("E nunca vai fazer")}</h3>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {conferencias.map((c) => (
-              <li key={c}>· {c}</li>
+              <li key={c} className="flex items-start gap-2 leading-snug">
+                <X aria-hidden size={16} weight="bold" className="mt-0.5 shrink-0 text-error" />
+                <span>{c}</span>
+              </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
             {t("Essas conferências acontecem antes de cada mensagem sair, e não têm interruptor.")}
           </p>
         </section>
@@ -321,7 +375,9 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
           ) : (
             <p className="text-sm">
               {t("Não achei chave")} {provedorLegivel(provedor, t)}{" "}
-              {t("nem cadastrada aqui, nem vinda da instalação. Cole a chave no campo acima («o cérebro dele») e crie o atendente de novo — ou cadastre em")}{" "}
+              {t(
+                "nem cadastrada aqui, nem vinda da instalação. Cole a chave no campo acima («o cérebro dele») e crie o atendente de novo — ou cadastre em",
+              )}{" "}
               <strong>{t("IA › Credenciais")}</strong>.
             </p>
           )}
@@ -373,8 +429,8 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
             </p>
           ) : (
             <p className="text-sm">
-              {t("Esta instalação ainda não tem a lista de modelos")} {provedorLegivel(provedor, t)}.{" "}
-              {t("Ela é baixada automaticamente uma vez por dia; depois disso, publique em")}{" "}
+              {t("Esta instalação ainda não tem a lista de modelos")} {provedorLegivel(provedor, t)}
+              . {t("Ela é baixada automaticamente uma vez por dia; depois disso, publique em")}{" "}
               <strong>{t("IA › Agentes")}</strong>.
             </p>
           )}
@@ -408,7 +464,9 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
             {t("Erro do banco de dados:")} <code className="break-all">{naoPublicado}</code>
           </p>
           <p className="text-sm">
-            {t("Tente de novo no botão abaixo (clicar de novo não cria um segundo agente) ou siga agora e publique depois em")}{" "}
+            {t(
+              "Tente de novo no botão abaixo (clicar de novo não cria um segundo agente) ou siga agora e publique depois em",
+            )}{" "}
             <strong>{t("IA › Agentes")}</strong>.
           </p>
           <div className="flex sm:justify-end">
@@ -426,7 +484,7 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
         </div>
       )}
 
-      <div className="flex flex-wrap justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Button
           type="button"
           variant="ghost"
@@ -435,8 +493,9 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
         >
           {t("Pular")}
         </Button>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="h-12 gap-2 px-7 text-base">
           {pending ? t("Criando...") : t("Criar e continuar")}
+          {pending ? null : <ArrowRight aria-hidden size={18} weight="bold" />}
         </Button>
       </div>
     </form>

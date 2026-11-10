@@ -102,7 +102,7 @@ export function InteligenciaDele({ inicial }: { inicial: EstadoDaChave }) {
 
   if (!temChave) {
     return (
-      <section className="space-y-3 rounded-lg border border-warning/40 bg-warning-bg p-5">
+      <section className="space-y-3 rounded-xl border border-warning/40 bg-warning-bg p-5">
         <div>
           <h3 className="text-sm font-medium">{t("Ele ainda não tem cérebro")}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -206,7 +206,7 @@ export function InteligenciaDele({ inicial }: { inicial: EstadoDaChave }) {
   }
 
   return (
-    <section className="space-y-1 rounded-lg border bg-background p-5">
+    <section className="space-y-1 rounded-xl border border-border bg-surface p-5 shadow-xs">
       <h3 className="text-sm font-medium">
         {t("O cérebro dele:")} {chave.rotulo}
         {chave.final ? (

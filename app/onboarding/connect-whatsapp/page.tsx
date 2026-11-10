@@ -6,6 +6,7 @@ import { nomeCurtoDaSessao } from "@/lib/channels/nome-da-sessao";
 import { getWahaClient } from "@/lib/waha/client";
 import { ConnectWhatsappClient } from "./_client";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { Passo } from "../_components/Passo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +29,15 @@ export default async function ConnectWhatsappPage() {
   // (and shows graceful banner if WAHA is not reachable).
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h2 className="text-2xl font-semibold tracking-tight">{traduzir("Dê um telefone a ele", idioma)}</h2>
-        <p className="text-sm text-muted-foreground">
-          {traduzir(
-            "É por este número que ele vai atender seus clientes. Se você conecta pelo celular, tenha ele por perto.",
-            idioma,
-          )}
-        </p>
-      </header>
+    <Passo
+      segmento="connect-whatsapp"
+      idioma={idioma}
+      titulo={traduzir("Dê um telefone a ele", idioma)}
+      descricao={traduzir(
+        "É por este número que ele vai atender seus clientes. Se você conecta pelo celular, tenha ele por perto.",
+        idioma,
+      )}
+    >
       <p className="text-sm text-muted-foreground">
         {traduzir("Novos canais começam em modo de teste. Após concluir a configuração, abra Conexões para autorizar seus números de teste ou liberar o público.", idioma)}
       </p>
@@ -46,6 +46,6 @@ export default async function ConnectWhatsappPage() {
         sessionName={nomeCurtoDaSessao(activeOrg.orgId)}
         oficialPodeReceber={oficialPodeReceber}
       />
-    </div>
+    </Passo>
   );
 }

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/i18n/useT";
 
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "@/lib/ui/icons";
 import { Input } from "@/components/ui/input";
 import { aplicarQuadro, pularQuadro, type QuadroAtual } from "@/app/actions/onboarding/montarQuadro";
 import { explicacaoDoPasso } from "@/lib/leads/agent-mapping";
@@ -106,9 +107,9 @@ export function QuadroClient({
         </div>
       )}
 
-      <div className="space-y-3 rounded-lg border bg-background p-6">
+      <div className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-xs sm:p-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium" htmlFor="nome_do_quadro">
+          <label className="block text-base font-semibold" htmlFor="nome_do_quadro">
             {t("Nome do quadro")}
           </label>
           <Input
@@ -119,14 +120,14 @@ export function QuadroClient({
           />
         </div>
 
-        <ol className="space-y-2">
+        <ol className="divide-y divide-border border-y border-border">
           {quadro.etapas.map((etapa, i) => {
             const explicacao = etapa.passo ? explicacaoDoPasso(etapa.passo) : null;
             return (
-              <li key={i} className="flex items-start gap-2 rounded-md border p-3">
+              <li key={i} className="flex items-start gap-3 py-3">
                 <span
                   aria-hidden
-                  className="mt-2 w-5 shrink-0 text-center text-xs text-muted-foreground"
+                  className="mt-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-xs font-medium tabular-nums text-text-muted"
                 >
                   {i + 1}
                 </span>
@@ -249,6 +250,7 @@ export function QuadroClient({
           ) : null}
         <Button
           type="button"
+          className="h-12 gap-2 px-7 text-base"
           disabled={pending || semNome}
           onClick={() =>
             startTransition(async () => {
@@ -262,6 +264,7 @@ export function QuadroClient({
           }
         >
           {pending ? t("Salvando...") : t("Usar este quadro")}
+          {pending ? null : <ArrowRight aria-hidden size={18} weight="bold" />}
         </Button>
         </div>
       </div>

@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 
 import { requireAuth, resolveActiveOrg } from "@/lib/auth/server";
 import { loadOnboardingState } from "@/app/actions/onboarding/_shared";
-import { Stepper } from "./_components/Stepper";
+import { Trilha, type PassoDaTrilha } from "./_components/Trilha";
+import { TITULO } from "./_components/fonte";
+import { fonteDeTitulo } from "./fonte-de-titulo";
 import { OutrasOrganizacoes } from "./_components/OutrasOrganizacoes";
 import { SkipToEnd } from "./_components/SkipToEnd";
 import { SimboloDoProduto } from "@/components/branding/MarcaDoProduto";
@@ -12,6 +14,7 @@ import { ICONE_DESENHADO, iconeDaAba } from "@/lib/branding/icone";
 import { marcaDaSaida } from "@/lib/branding/saida";
 import { baseDoStorage } from "@/lib/branding/logo";
 import { passosVisiveis } from "@/lib/onboarding/passos";
+import { AJUDA_DOS_PASSOS, textoDoPasso, textosDaCasca } from "@/lib/onboarding/ajuda";
 import { IdiomaProvider } from "@/lib/i18n/IdiomaProvider";
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
@@ -27,12 +30,18 @@ export default async function OnboardingLayout({ children }: { children: React.R
   const { state, onboardedAt } = await loadOnboardingState(activeOrg.orgId);
   if (onboardedAt) redirect("/app/inbox");
 
-  // Os passos que ESTA instalação oferece, com o que já foi resolvido. O
-  // indicador não decide mais nada sozinho — ele desenha o que recebe.
-  const passos = passosVisiveis().map((p) => ({
+  // Os passos que ESTA instalação oferece, com o que já foi resolvido. A trilha
+  // não decide mais nada sozinha — ela desenha o que recebe. "Pulado" vem do
+  // estado gravado, nunca de a pessoa estar adiante: estar adiante não conclui
+  // o que ficou para trás.
+  const idioma = user.idioma;
+  const casca = textosDaCasca(idioma);
+  const passos: PassoDaTrilha[] = passosVisiveis().map((p) => ({
     segmento: p.segmento,
     rotulo: p.rotulo,
-    cumprido: p.cumprido(state),
+    resumo: textoDoPasso(p.segmento, idioma)?.resumo ?? "",
+    minutos: AJUDA_DOS_PASSOS[p.segmento]?.minutos ?? 0,
+    estado: p.pulado(state) ? "pulado" : p.cumprido(state) ? "feito" : "pendente",
   }));
 
   const isDev = process.env.NODE_ENV !== "production";
@@ -55,13 +64,21 @@ export default async function OnboardingLayout({ children }: { children: React.R
 
   return (
     <IdiomaProvider locale={user.idioma}>
-      <div className="flex min-h-screen flex-col bg-muted/40">
-        <header className="border-b bg-background">
-          <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-3">
+      {/* A variável da fonte de título vive só aqui: o resto do app não carrega a Bricolage. O fundo
+          ganha um véu da cor de destaque da marca no alto — calor sem competir com o formulário. */}
+      <div
+        className={`${fonteDeTitulo.variable} flex min-h-screen flex-col bg-background bg-[radial-gradient(70rem_28rem_at_70%_-6rem,color-mix(in_srgb,var(--primary)_9%,transparent),transparent)]`}
+      >
+        <header className="border-b border-border bg-surface">
+          <div className="mx-auto flex w-full max-w-[84rem] items-center justify-between gap-4 px-4 py-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
               {/* O nome está escrito logo abaixo — o símbolo é reforço, não legenda. */}
               {simboloDoProduto ? (
-                <SimboloDoProduto nome={marcaDoIcone.nome} decorativo className="h-9 w-9" />
+                <SimboloDoProduto
+                  nome={marcaDoIcone.nome}
+                  decorativo
+                  className="h-9 w-9 shrink-0"
+                />
               ) : (
                 // <img> em vez de next/image de propósito, mesmo motivo de
                 // `components/shell/Sidebar.tsx`: a URL vem de quem hospeda (banco),
@@ -72,15 +89,15 @@ export default async function OnboardingLayout({ children }: { children: React.R
                   alt=""
                   aria-hidden
                   decoding="async"
-                  className="h-9 w-9 rounded-md object-contain"
+                  className="h-9 w-9 shrink-0 rounded-md object-contain"
                 />
               )}
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">{marcaDoIcone.nome}</p>
-                <h1 className="text-lg font-semibold tracking-tight">{activeOrg.name}</h1>
+              <div className="min-w-0">
+                <h1 className={`${TITULO} truncate text-lg leading-tight`}>{activeOrg.name}</h1>
+                <p className="truncate text-xs text-muted-foreground">{marcaDoIcone.nome}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               {/*
                 A SAÍDA, para quem tem outra organização. Ver o cabeçalho de
                 `OutrasOrganizacoes`: sem ela, trocar de organização pelo seletor
@@ -95,11 +112,34 @@ export default async function OnboardingLayout({ children }: { children: React.R
               {isDev ? <SkipToEnd /> : null}
             </div>
           </div>
-          <div className="mx-auto w-full max-w-3xl px-4 pb-2">
-            <Stepper passos={passos} />
-          </div>
         </header>
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
+
+        {/*
+          Duas colunas no computador: a trilha (onde estou, o que falta) e o passo.
+          No celular a trilha vira a barra fixa no topo e o passo ocupa a largura toda.
+        */}
+        <div className="mx-auto grid w-full max-w-[84rem] flex-1 grid-cols-1 gap-x-12 px-0 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:px-6 lg:pt-10">
+          <Trilha
+            passos={passos}
+            textos={{
+              titulo: casca.trilha,
+              navegacao: casca.navegacao,
+              funcionario: casca.funcionario,
+              emTreinamento: casca.emTreinamento,
+              prontoParaAtender: casca.prontoParaAtender,
+              passoDe: casca.passoDe,
+              faltam: casca.faltam,
+              faltamUm: casca.faltamUm,
+              tudoMontado: casca.tudoMontado,
+              progressoSalvo: casca.progressoSalvo,
+              feito: casca.feito,
+              pulado: casca.pulado,
+              atual: casca.atual,
+              chipMinutos: casca.chipMinutos,
+            }}
+          />
+          <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-0 lg:pt-0 lg:pb-16">{children}</main>
+        </div>
       </div>
     </IdiomaProvider>
   );
