@@ -3855,3 +3855,19 @@ no celular, e os opcionais desligados e ligados).
   distribuídos para que cada papel, cada idioma e cada tema apareça em computador e em celular. A matriz cheia custaria um
   login por combinação, e o do Dono espera a janela do TOTP (~30 s cada).
 - **O Leitor no celular** vê menos folhas que os outros papéis (a spec só exige que tenha ao menos uma).
+
+
+## Kit no Ubuntu 26.04 LTS — instalação, atualização, backup e restauração (2026-11-09/10, issue #226)
+
+Origem: o padrão da Hostinger é Ubuntu 26.04 LTS e o kit só tinha prova na 24.04. Provado numa VPS Ubuntu 26.04.1 LTS limpa, instalada **pela página do instalador** (`zapinstalador`), contra o servidor de licenças real.
+
+| caso | prioridade | estado |
+|---|---|---|
+| Instalação fresca (modo VPS limpa): 12 contêineres saudáveis, domínio com certificado Let's Encrypt e **307**, só 22/80/443 abertas, sem erro nos logs | `[P0]` | ✓ 09/11 e de novo 10/11 (reinstalação pela tela, depois da correção da etapa «Conferindo de fora») |
+| Reinício da máquina: todos os serviços voltam sozinhos e saudáveis | `[P0]` | ✓ 09/11 |
+| Atualização (rodar o `obter.sh` de novo): termina em 307; segredos, administrador e dados mantidos | `[P0]` | ✓ 09/11 |
+| Licença: ativada com selo válido, renovação horária ok, modo sombra | `[P0]` | ✓ 10/11 (depois do PR #244, chave pública de produção na imagem) |
+| Backup diário (dump + contagem) e semanal (restic) | `[P1]` | ✓ dump 03:15 de 10/11; semanal em repositório restic **local**, `restic check` sem erros |
+| Ensaio de restauração (`restaurar.sh ensaio`): banco novo + baseline + dados, 8 contagens conferidas, app 307, Auth de pé, sem tocar na instalação no ar | `[P1]` | ✓ 10/11 (ver «Registro dos ensaios» em `docs/runbooks/backup-e-restauracao.md`) |
+
+**Não coberto:** o repositório **R2 real** (Cloudflare) — o código é o mesmo (a API S3 do restic), mas as credenciais são do dono e não foram exercitadas nesta máquina; e a restauração de **desastre** (`restaurar.sh desastre`, VPS nova). A matriz do kit passa a dizer **Ubuntu 26.04 = testado** (`kit/lib/comum.sh`, runbooks PT/EN e `tests/shell/kit-funcoes.test.sh`).

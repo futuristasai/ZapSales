@@ -102,7 +102,7 @@ verificar_sistema() {
   case "$situacao" in
     testado) ;;
     a-testar) aviso "Ubuntu $versao ainda não foi provado de ponta a ponta com este kit (a validação está em andamento). Deve funcionar; se algo falhar, a mensagem do kit diz onde." ;;
-    nao-testado) aviso "${id:-este sistema} $versao não foi testado com este kit. Os testados são Ubuntu 24.04 (provado) e 26.04 (em validação). Seguindo." ;;
+    nao-testado) aviso "${id:-este sistema} $versao não foi testado com este kit. Os testados são Ubuntu 24.04 e 26.04. Seguindo." ;;
     nao-suportado)
       if [ -f "$ENV_ARQ" ] || [ "${ZAPSALES_IGNORAR_SO:-}" = "1" ]; then
         aviso "${id:-sistema desconhecido} não é Ubuntu nem Debian, e o kit instala pacotes com apt. Seguindo porque já há uma instalação aqui (ou ZAPSALES_IGNORAR_SO=1)."

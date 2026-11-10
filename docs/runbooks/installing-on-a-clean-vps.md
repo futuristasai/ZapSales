@@ -23,7 +23,7 @@ least **4 GB of memory** and **20 GB of free disk**; with less, the kit warns yo
 | System | Status |
 |---|---|
 | Ubuntu 24.04 LTS | **tested** — install, update and backup proven |
-| Ubuntu 26.04 LTS | **to be tested** — Hostinger's current default; validation on a clean VM is under way (issue #226). It should work |
+| Ubuntu 26.04 LTS | **tested** — Hostinger's current default; fresh install, reboot, update, backup and a restore rehearsal proven on an Ubuntu 26.04.1 VM (issue #226, Nov 9–10, 2026) |
 | Other Ubuntu / Debian | untested — the kit uses apt and usually works |
 | Anything else | a first install is refused; updating an existing ZapSales install only warns |
 
