@@ -255,6 +255,12 @@ const MARCA_CONGELADA: Record<string, EntradaDeMarca> = {
       "guarda do contrato acima: monta selos com o emissor exato e prova que um emissor diferente é rejeitado. Trocar a string aqui para 'limpar a marca' desarmaria a única proteção do contrato",
     marcas: ["zapsales-licencas"],
   },
+  "lib/atualizacao/comandos.ts": {
+    categoria: "PROTOCOLO",
+    motivo:
+      "o nome da variável de ambiente que o `kit/obter.sh` lê para fixar a versão (`ZAPSALES_REF`), dentro do comando que a tela Atualização mostra para voltar à versão anterior. É identificador técnico do kit, documentado no cabeçalho do `obter.sh`: renomeá-lo só aqui faria o comando copiado ser ignorado em silêncio e reinstalar a última versão. Não é texto de interface e não varia por marca própria",
+    marcas: ["zapsales_ref"],
+  },
   "lib/mcp/server.ts": {
     categoria: "PROTOCOLO",
     motivo:
@@ -945,6 +951,11 @@ const HOSTS_DECLARADOS: Record<string, EntradaDeHost> = {
     categoria: "FORNECEDOR",
     motivo:
       "endereço oficial do servidor de licenças (`lib/licenca/servidor.ts`): é o destino da ativação e da renovação, e só leva o que o contrato permite (e-mail e código da compra, id da instalação, versão, domínio e a credencial). Quem confere o selo é a chave pública que vai DENTRO da imagem, então trocar este host pelo de um revendedor não faria a instalação operar nem bloquear: só a deixaria sem renovar. O ambiente (`LICENCA_SERVIDOR_URL`) pode apontar para homologação.",
+  },
+  "zapinstalador.futuristas.app": {
+    categoria: "FORNECEDOR",
+    motivo:
+      "endereço oficial do instalador (`kit/obter.sh`, publicado pelo CI: docs/runbooks/publicar-obter-sh.md). Aparece no comando que as telas Atualização e Cadastro mandam o administrador copiar e rodar na VPS (`lib/atualizacao/comandos.ts`), o mesmo do guia de instalação; o código do app não chama o host. Trocar pelo domínio do revendedor faria o administrador baixar e rodar, como root, um script que não é o do produto — por isso o endereço é fixo e declarado.",
   },
   // ── localização compartilhada: o link que abre o pino do cliente ──
   "maps.google.com": {
