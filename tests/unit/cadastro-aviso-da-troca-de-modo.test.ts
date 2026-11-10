@@ -68,7 +68,7 @@ import Page from "@/app/admin/(protected)/cadastro/page";
 const TITULO = "A troca de modo ainda não chegou ao servidor.";
 const FRASE_DA_ISSUE =
   /A troca só vale para o cadastro direto depois da próxima atualização do servidor/;
-const COMANDO = "bash kit/update.sh";
+const COMANDO = "curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash";
 const CHAVE_DO_ROTULO = "Quem pode criar uma conta nesta instalação.";
 
 /** Abre a tela e mostra que ela ABRIU — sem isto, "sem aviso" seria verde com a página fora. */
@@ -188,11 +188,11 @@ describe("o aviso quando o GoTrue não acompanhou a troca", () => {
   });
 });
 
-describe("com Supabase separado, o update.sh não leva o modo ao GoTrue", () => {
+describe("com Supabase separado, a atualização do kit não leva o modo ao GoTrue", () => {
   const PAINEL = /Authentication → Sign In \/ Up/;
 
   for (const valor of ["0", undefined]) {
-    it(`SINGLE_SERVER=${String(valor)} e 'só convite' com o GoTrue aberto → ensina a DESLIGAR no painel, sem update.sh`, async () => {
+    it(`SINGLE_SERVER=${String(valor)} e 'só convite' com o GoTrue aberto → ensina a DESLIGAR no painel, sem o comando de atualização`, async () => {
       if (valor === undefined) delete process.env.SINGLE_SERVER;
       else vi.stubEnv("SINGLE_SERVER", valor);
       cena.modo = "so_convite";
@@ -204,7 +204,7 @@ describe("com Supabase separado, o update.sh não leva o modo ao GoTrue", () => 
       expect(screen.getByText(PAINEL).textContent).toMatch(/desligue "Allow new users to sign up"/);
       expect(screen.getByText("DISABLE_SIGNUP=true")).toBeInTheDocument();
       expect(screen.queryByText(COMANDO)).toBeNull();
-      expect(document.body.textContent).not.toMatch(/update\.sh/);
+      expect(document.body.textContent).not.toMatch(/obter\.sh|update\.sh/);
     });
   }
 
