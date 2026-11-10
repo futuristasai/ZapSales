@@ -19,7 +19,7 @@
  * Cada porta tem cerca de teste (`tests/unit/licenca-portas-chamam-a-decisao.test.ts`): porta nova
  * sem a consulta reprova o CI. É o desenho da guarda `requireSupportWrite`.
  *
- * ── MODO SOMBRA (o padrão) ────────────────────────────────────────────────────
+ * ── MODO SOMBRA (a válvula do operador; o padrão das instalações novas é `valendo`, desde a migration 0558) ────────────────────────────────────────────────────
  *
  * Em `sombra` a decisão é calculada e REGISTRADA, nunca aplicada: `aplicar` é sempre `false`. É o
  * estado de toda instalação até o kit ativar e a produção do projeto ter licença própria (ADR-0005).

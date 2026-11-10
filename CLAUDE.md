@@ -673,12 +673,14 @@ Lei completa em [`LICENSING.md`](LICENSING.md). O não-negociável:
 4. **O texto da licença não se edita.** O `LICENSE` é o texto oficial da PolyForm, intacto (a
    PolyForm exige tirar o nome dela de qualquer texto alterado). O contrato comercial é outro
    documento.
-5. **A licença é o fundamento legal; a trava técnica é a peça que a acompanha, e hoje só observa**
+5. **A licença é o fundamento legal; a trava técnica é a peça que a acompanha, e vale nas instalações novas**
    ([ADR-0005](docs/adr/0005-licenciamento-tecnico.md)). Ela existe: um selo assinado pelo servidor de
    licenças, conferido por `lib/licenca/` e aplicado nas quatro portas (telas e API, cron, worker,
-   webhooks) por UMA decisão, `consultarPorta`. **Está em modo sombra: calcula e registra, nunca
-   restringe** — passa a valer na fase «Ligar», por decisão do dono, trocando o modo da instalação
-   (`kit/licenca-modo.sh`). Não escreva nem anuncie que ela bloqueia antes disso. Para quem codifica:
+   webhooks) por UMA decisão, `consultarPorta`. **Instalação NOVA nasce em modo `valendo`** (migration 0558, fase «Ligar», decisão do dono em 10/11/2026):
+   reembolso ou chargeback bloqueia a licença no servidor e a instalação ATIVADA deixa de operar (dados,
+   login, saúde e exportação ficam). Instalação que nunca foi ativada opera como uso não comercial, e a que já
+   existia guarda o modo que tinha (o padrão é só o DEFAULT da coluna). `sombra` (calcula e registra, nunca
+   restringe) é a válvula do operador: `sudo kit/licenca-modo.sh sombra`. Para quem codifica:
    (a) porta de entrada nova chama `consultarPorta` — a cerca
    `tests/unit/licenca-portas-chamam-a-decisao.test.ts` reprova quem esquecer; (b) bloqueio nunca
    apaga dado, e login, saúde, exportação dos próprios dados e a tela de licença seguem liberados;

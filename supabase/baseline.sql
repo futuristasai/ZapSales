@@ -48900,4 +48900,13 @@ grant select on public.campaign_audience_list_members to authenticated;
 grant all on public.campaign_audience_lists to service_role;
 grant all on public.campaign_audience_list_members to service_role;
 
+-- ---- a trava de licença nasce em «valendo» (migration 0558) ----
+-- Só o DEFAULT da coluna: vale para a linha que o app cria na primeira leitura. Linha existente não é tocada
+-- (cada instalação guarda o modo que tem). Idempotente. Ver o cabeçalho da migration 0558.
+alter table if exists public.platform_licenca
+  alter column modo set default 'valendo';
+
+comment on column public.platform_licenca.modo is
+  'sombra = calcula e registra a decisão, nunca restringe; valendo = aplica (padrão das instalações novas, desde a 0558).';
+
 notify pgrst, 'reload schema';

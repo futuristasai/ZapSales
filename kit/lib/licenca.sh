@@ -154,8 +154,8 @@ definir_modo_da_licenca() {
   atual="$(sql_valor "select modo from public.platform_licenca limit 1")"
   if [ -z "$pedido" ]; then
     msg "  modo da trava de licença: ${atual:-desconhecido (a instalação ainda não consultou a licença)}"
-    msg "  sombra  = calcula e registra, nunca restringe (o padrão)"
-    msg "  valendo = recusa a instalação ativada cuja licença venceu ou foi bloqueada (dados e exportação ficam)"
+    msg "  valendo = recusa a instalação ativada cuja licença venceu ou foi bloqueada (dados e exportação ficam) — o padrão das instalações novas"
+    msg "  sombra  = calcula e registra, nunca restringe"
     return 0
   fi
   case "$pedido" in

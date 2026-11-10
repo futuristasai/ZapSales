@@ -83,6 +83,8 @@ A exportação dos próprios dados fica **sempre** liberada.
 
 ### D-7 — Sem selo, uso interno e modo sombra
 
+> **Atualização de 10/11/2026 (fase «Ligar»):** a trava passou a nascer em `valendo` nas instalações novas (migration 0558, só o default da coluna `modo`). Instalação existente guarda o modo que tem; `sombra` continua existindo como válvula do operador (`sudo kit/licenca-modo.sh sombra`). O texto abaixo é o desenho original.
+
 - **Quem compila do código** e quem instala sem licença cai no estado "sem selo" (D-1).
 - **A produção do dono** é tratada como um cliente qualquer: recebe uma licença interna do servidor, sem compartilhar máquina nem banco.
 - **CI, `test:db` e e2e** nunca dependem do servidor de licenças. Geram o próprio par de chaves a cada execução e assinam selos de teste. O aplicativo só aceita chaves extras fora de produção.
