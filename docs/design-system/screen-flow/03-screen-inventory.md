@@ -8,7 +8,7 @@ date: 2026-04-28
 
 # 03 — Screen Inventory
 
-> Tabela exaustiva de todas as telas mapeadas. Cada linha = uma tela única. Estados explícitos por tela. Total 89 telas. Componentes-chave referenciados pelos Sub-PRDs.
+> Tabela exaustiva de todas as telas mapeadas. Cada linha = uma tela única. Estados explícitos por tela. Total 88 telas. Componentes-chave referenciados pelos Sub-PRDs.
 
 > **Este doc é um PLANO, não um mapa do que existe.** Foi escrito em 2026-04-28 e a
 > construção divergiu dele nos dois sentidos. O que o plano previu e ainda não existe, e o
@@ -34,7 +34,7 @@ date: 2026-04-28
 | 4 | `/login/recovery` | todos | default, error, used-code | `<RecoveryCodeForm>` | — | P1 | idem |
 | 5 | `/logout` | todos | redirect | — | — | P0 | — |
 
-## B. Onboarding (7 telas)
+## B. Onboarding (6 telas)
 
 | # | Path | Persona | Estados | Componentes | RT | Prio |
 |---|---|---|---|---|---|---|
@@ -42,7 +42,6 @@ date: 2026-04-28
 | 7 | `/onboarding/mfa-setup` | P3 admin, P2 | default, qr-loading, totp-invalid, success | `<TOTPSetup>`, `<RecoveryCodesPanel>` | — | P0 |
 | 8 | `/onboarding/connect-whatsapp` | P3 | qr-loading, scan-qr, expired (60s), connected, failed | `<ChannelSessionCard>`, `<QRCodePanel>` | sim | P0 |
 | 10 | `/onboarding/configure-ai` | P3 | default, ingestion-pending, ingestion-success, error | `<PromptTemplateSelector>`, `<KnowledgeUploader>` | — | P1 |
-| 11 | ~~`/onboarding/invite-team`~~ (removida em #246) | P3 | default, sending, sent, partial-failure | `<InviteForm>`, `<InviteList>` | — | P1 |
 | 12 | `/onboarding/done` | P3, P4 | default | `<OnboardingDone>`, `<NextStepsChecklist>` | — | P0 |
 | 13 | `/onboarding` (router resolve) | todos | redirect-by-state | — | — | P0 |
 
@@ -201,9 +200,9 @@ Contados, não estimados. Os `~` saíram: os números abaixo são derivados das 
 por `scripts/inventario-de-telas.ts` e vigiados por `tests/unit/inventario-de-telas.test.ts`
 — mexer numa tabela sem mexer aqui reprova o `verify`.
 
-- **Total de telas únicas**: 89 (algumas têm sub-states relevantes mas mesma rota)
+- **Total de telas únicas**: 88 (algumas têm sub-states relevantes mas mesma rota)
 - **P0** (semana 1–4): 38 telas
-- **P1** (semana 5–8): 43 telas
+- **P1** (semana 5–8): 42 telas
 - **P2** (Fase 1.5+): 6 telas
 - **Entregues** fora da escala de prioridade (marcadas `**entregue**`): 2 telas
 - **Realtime obrigatório**: 26 telas
@@ -220,7 +219,7 @@ O plano tem **95** linhas; o disco tem **92** páginas; e a interseção é meno
 Isso não é defeito do produto — é o que acontece com um plano de 2026-04-28 depois de quatro
 meses de construção. É defeito quando ninguém escreve, e era esse o estado até esta passada.
 Depois desta passada, a remoção da integração de loja tirou do plano as linhas #9 e #48–#52
-(o plano tem hoje 89 linhas); os números acima são a foto da data.
+(o plano tem hoje 88 linhas); os números acima são a foto da data.
 
 ### Planejado e ainda não construído (38 rotas)
 
