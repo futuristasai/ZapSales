@@ -69,17 +69,39 @@ interface Lembrada {
   readonly veredito: VereditoDaPorta;
 }
 
-let lembrada: Promise<Lembrada> | null = null;
-let ultimoRegistroDoHorario = 0;
-let ultimoEstadoLogado: string | null = null;
-const ultimoAviso = new Map<string, number>();
+interface MemoriaDoProcesso {
+  lembrada: Promise<Lembrada> | null;
+  ultimoRegistroDoHorario: number;
+  ultimoEstadoLogado: string | null;
+  readonly ultimoAviso: Map<string, number>;
+}
+
+/**
+ * A memória mora no PROCESSO (`globalThis`), não no módulo. O Next compila o proxy, cada rota e cada página
+ * como pacotes separados, e uma variável de módulo vira UMA CÓPIA POR PACOTE: quem renovava a licença
+ * esquecia a decisão só na própria cópia, e as telas e a API seguiam recusando por até 30 s com a decisão
+ * velha (issue #255: «Licença renovada.» na tela, e a pessoa ainda barrada). Com uma memória só, esquecer
+ * numa porta esquece em todas. `Symbol.for` devolve o mesmo símbolo a qualquer cópia do módulo.
+ */
+const CHAVE_DA_MEMORIA = Symbol.for("licenca.porta.memoria");
+
+function memoriaDoProcesso(): MemoriaDoProcesso {
+  const global = globalThis as unknown as Record<symbol, MemoriaDoProcesso | undefined>;
+  return (global[CHAVE_DA_MEMORIA] ??= {
+    lembrada: null,
+    ultimoRegistroDoHorario: 0,
+    ultimoEstadoLogado: null,
+    ultimoAviso: new Map<string, number>(),
+  });
+}
 
 /** Esquece tudo o que o processo lembra. Para testes e para quem acabou de gravar uma renovação. */
 export function esquecerDecisaoDaLicenca(): void {
-  lembrada = null;
-  ultimoRegistroDoHorario = 0;
-  ultimoEstadoLogado = null;
-  ultimoAviso.clear();
+  const m = memoriaDoProcesso();
+  m.lembrada = null;
+  m.ultimoRegistroDoHorario = 0;
+  m.ultimoEstadoLogado = null;
+  m.ultimoAviso.clear();
 }
 
 function avisarUmaVez(
@@ -88,6 +110,7 @@ function avisarUmaVez(
   mensagem: string,
   ctx: Record<string, unknown>,
 ) {
+  const { ultimoAviso } = memoriaDoProcesso();
   const ultimo = ultimoAviso.get(chave);
   if (ultimo !== undefined && agora - ultimo < SILENCIO_DO_AVISO_MS) return;
   ultimoAviso.set(chave, agora);
@@ -110,8 +133,9 @@ async function calcular(agoraMs: number): Promise<VereditoDaPorta> {
   });
 
   // O maior horário visto só avança, e só vai ao banco de tempos em tempos.
-  if (agoraMs - ultimoRegistroDoHorario >= INTERVALO_DE_REGISTRO_DO_HORARIO_MS) {
-    ultimoRegistroDoHorario = agoraMs;
+  const memoria = memoriaDoProcesso();
+  if (agoraMs - memoria.ultimoRegistroDoHorario >= INTERVALO_DE_REGISTRO_DO_HORARIO_MS) {
+    memoria.ultimoRegistroDoHorario = agoraMs;
     void registrarHorarioVisto(decisao.agora);
   }
 
@@ -128,8 +152,8 @@ async function calcular(agoraMs: number): Promise<VereditoDaPorta> {
   }
 
   const resumo = `${decisao.estado}:${estado.modo}`;
-  if (resumo !== ultimoEstadoLogado) {
-    ultimoEstadoLogado = resumo;
+  if (resumo !== memoria.ultimoEstadoLogado) {
+    memoria.ultimoEstadoLogado = resumo;
     logger.info("licenca: decisão da instalação", {
       estado: decisao.estado,
       opera: decisao.opera,
@@ -156,18 +180,22 @@ export async function consultarPorta(
   agoraMs: number = Date.now(),
 ): Promise<VereditoDaPorta> {
   try {
-    if (!lembrada || (await lembrada).ate <= agoraMs) {
+    const memoria = memoriaDoProcesso();
+    let atual = memoria.lembrada;
+    if (!atual || (await atual).ate <= agoraMs) {
       const nova = calcular(agoraMs).then((veredito) => ({
         ate: agoraMs + VALIDADE_DA_DECISAO_MS,
         veredito,
       }));
-      lembrada = nova;
+      memoria.lembrada = atual = nova;
       // Falha inesperada não pode ficar lembrada: a próxima pergunta tenta de novo.
       nova.catch(() => {
-        if (lembrada === nova) lembrada = null;
+        if (memoria.lembrada === nova) memoria.lembrada = null;
       });
     }
-    const { veredito } = await (lembrada as Promise<Lembrada>);
+    // `atual`, e não `memoria.lembrada`: se alguém esquecer a decisão entre o `await` acima e aqui, esta
+    // pergunta termina com a decisão que ela mesma leu.
+    const { veredito } = await atual;
 
     // Quem só MOSTRA a situação (`tela`) não é porta: não recusa nada e não gera aviso de recusa.
     if (porta === "tela") return veredito;

@@ -172,6 +172,30 @@ describe("custo — a decisão é lembrada e o horário vai ao banco de tempos e
   });
 });
 
+describe("a memória é do PROCESSO, não do módulo (#255)", () => {
+  it("duas cópias do módulo (o proxy e uma rota, no Next) dividem a decisão: esquecer numa vale na outra", async () => {
+    // O Next compila o proxy, cada rota e cada página como pacotes separados; uma variável de módulo vira
+    // uma cópia por pacote. Aqui a segunda cópia vem de um registro de módulos novo, como lá.
+    vi.resetModules();
+    const outraCopia = await import("./porta");
+    expect(outraCopia.consultarPorta).not.toBe(consultarPorta);
+
+    // A instalação está barrada, e as DUAS cópias lembram da decisão.
+    garantirEstado.mockResolvedValue({ ok: true, estado: ativadaSemSelo("valendo") });
+    expect((await consultarPorta("proxy", AGORA_MS)).aplicar).toBe(true);
+    expect((await outraCopia.consultarPorta("proxy", AGORA_MS + 1000)).aplicar).toBe(true);
+
+    // A renovação grava um selo/limpa o bloqueio e esquece a decisão — numa cópia só...
+    garantirEstado.mockResolvedValue({ ok: true, estado: estado({ modo: "valendo" }) });
+    esquecerDecisaoDaLicenca();
+
+    // ...e a OUTRA cópia já vê o estado novo, sem esperar os 30 s da validade.
+    const depois = await outraCopia.consultarPorta("proxy", AGORA_MS + 2000);
+    expect(depois.aplicar).toBe(false);
+    expect(depois.motivo).toBe("opera");
+  });
+});
+
 describe("caminhoLiberadoDaLicenca — o que continua aberto sem licença", () => {
   it.each([
     "/api/v1/health",
