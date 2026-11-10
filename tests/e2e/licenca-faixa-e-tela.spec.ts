@@ -68,11 +68,18 @@ const faixaDeAviso = (page: Page) =>
 const faixaDeBloqueio = (page: Page) =>
   page.getByRole("alert").filter({ hasText: "Licença bloqueada." });
 
+/**
+ * Põe a licença no estado de partida DESTES casos: modo `sombra` (a observação), sem bloqueio.
+ *
+ * É `upsert` e não `update` porque a linha só nasce na primeira leitura do app, e numa instalação
+ * fresca ela ainda não existe quando o primeiro caso roda. Desde a migration 0558 uma linha nova nasce
+ * em `valendo`; sem criá-la aqui em `sombra`, o primeiro caso veria o texto «Em vigor» em vez do de
+ * observação. O que nasce em `valendo` é provado pelo invariante `licenca-estado-local`.
+ */
 async function restaurarEstado(): Promise<void> {
   await db
     .from("platform_licenca")
-    .update({ modo: "sombra", bloqueio_codigo: null, bloqueio_em: null })
-    .eq("id", 1);
+    .upsert({ id: 1, modo: "sombra", bloqueio_codigo: null, bloqueio_em: null }, { onConflict: "id" });
 }
 
 test.describe("a faixa e a tela de licença", () => {
