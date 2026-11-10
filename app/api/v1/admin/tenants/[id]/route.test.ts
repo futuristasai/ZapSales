@@ -30,12 +30,18 @@ const ORG = {
   display_name: "Org",
   legal_name: null,
   cnpj: null,
-  status: "active",
+  status: "active" as string,
   onboarded_at: "2026-01-01T00:00:00Z",
-  suspended_at: null,
+  suspended_at: null as string | null,
+  suspended_reason: null as string | null,
   created_at: "2026-01-01T00:00:00Z",
   settings: {},
 };
+
+/** O que a rota pediu ao banco na tabela `organizations` (a lista de colunas do `select`). */
+let colunasPedidas = "";
+/** A linha que o dublê devolve: o teste a troca por uma suspensa quando precisa. */
+let linhaDaOrg: typeof ORG = ORG;
 
 /** Linhas de lgpd_requests com status do vocabulário real do CHECK. */
 const LGPD_ROWS = [
@@ -87,19 +93,34 @@ function contadorVazio() {
   }
   builder.then = (resolve: (v: unknown) => unknown) =>
     Promise.resolve({ count: 0, data: [], error: null }).then(resolve);
-  builder.single = async () => ({ data: ORG, error: null });
+  builder.single = async () => ({ data: linhaDaOrg, error: null });
+  return builder;
+}
+
+function organizationsBuilder() {
+  const builder = contadorVazio();
+  builder.select = (colunas: string) => {
+    colunasPedidas += colunas;
+    return builder;
+  };
   return builder;
 }
 
 function makeAdminStub() {
   return {
     from: (table: string) =>
-      table === "lgpd_requests" ? lgpdBuilder() : contadorVazio(),
+      table === "lgpd_requests"
+        ? lgpdBuilder()
+        : table === "organizations"
+          ? organizationsBuilder()
+          : contadorVazio(),
   };
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  colunasPedidas = "";
+  linhaDaOrg = ORG;
   vi.mocked(requirePlatformAdmin).mockResolvedValue({
     user: { id: ADMIN_ID },
     platformAdmin: { user_id: ADMIN_ID, scope: "full", mfa_required: true },
@@ -120,5 +141,26 @@ describe("GET /api/v1/admin/tenants/[id]", () => {
       data: { counts: { lgpd_requests_pending: number } };
     };
     expect(body.data.counts.lgpd_requests_pending).toBe(2);
+  });
+
+  it("devolve o motivo da suspensão: sem a coluna no select a tela mostra 'Sem razão registrada' (#177)", async () => {
+    linhaDaOrg = {
+      ...ORG,
+      status: "suspended",
+      suspended_at: "2026-11-01T00:00:00Z",
+      suspended_reason: "Fatura vencida há 40 dias",
+    };
+    const { GET } = await import("./route");
+    const res = await GET(
+      new NextRequest(`http://localhost/api/v1/admin/tenants/${ORG_ID}`),
+      { params: Promise.resolve({ id: ORG_ID }) },
+    );
+    expect(res.status).toBe(200);
+    expect(colunasPedidas).toContain("suspended_reason");
+
+    const body = (await res.json()) as {
+      data: { organization: { suspended_reason: string | null } };
+    };
+    expect(body.data.organization.suspended_reason).toBe("Fatura vencida há 40 dias");
   });
 });

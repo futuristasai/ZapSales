@@ -17,6 +17,8 @@ export interface TenantOrganization {
   status: "active" | "suspended" | "redacted";
   onboarded_at: string | null;
   suspended_at: string | null;
+  /** Por que a empresa foi suspensa (gravado ao suspender); pode não existir. */
+  suspended_reason: string | null;
   created_at: string;
   settings: Record<string, unknown> | null;
 }
