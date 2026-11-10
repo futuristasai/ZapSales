@@ -1,6 +1,9 @@
 import type { RetratoDaInstalacao } from "@/lib/instalacao/retrato";
 import type { Idioma } from "@/lib/i18n/idiomas";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { Check, Warning } from "@/lib/ui/icons";
+
+import { TITULO } from "./fonte";
 
 /**
  * A primeira coisa que a pessoa lê no wizard: o que ela JÁ tem.
@@ -61,26 +64,34 @@ export function JaEstaPronto({
   return (
     <section
       aria-labelledby="ja-pronto"
-      className="rounded-lg border bg-background p-5"
+      className="rounded-3xl border border-border bg-surface p-5 shadow-sm sm:p-7"
     >
-      <h3 id="ja-pronto" className="text-sm font-medium">
+      <h3 id="ja-pronto" className={`${TITULO} text-2xl leading-snug`}>
         {t("Você já instalou o sistema. Isto aqui já está de pé:")}
       </h3>
-      <ul className="mt-3 space-y-1.5 text-sm">
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {itens.map((it) => (
-          <li key={it.texto} className="flex items-start gap-2">
+          <li
+            key={it.texto}
+            className={
+              "flex items-start gap-3 rounded-2xl p-3.5 " +
+              (it.pronto ? "bg-success-bg" : "bg-warning-bg")
+            }
+          >
             <span
               aria-hidden
               className={
-                "mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full " +
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white " +
                 (it.pronto ? "bg-success" : "bg-warning")
               }
-            />
-            <span className={it.pronto ? "" : "text-muted-foreground"}>{it.texto}</span>
+            >
+              {it.pronto ? <Check size={18} weight="bold" /> : <Warning size={18} weight="bold" />}
+            </span>
+            <span className="pt-1 text-[0.9375rem] leading-snug font-medium">{it.texto}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-5 text-base text-muted-foreground">
         {faltando === 0
           ? t("Agora é montar quem vai atender por você.")
           : t("O que falta a gente resolve nos próximos passos.")}

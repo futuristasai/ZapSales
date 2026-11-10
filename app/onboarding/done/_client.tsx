@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/i18n/useT";
 
 import { Button } from "@/components/ui/button";
+import { Selo } from "@/components/ui/selo";
+import { ArrowRight, CaretDown, Check, Warning } from "@/lib/ui/icons";
+
+import { TITULO } from "../_components/fonte";
 import { finishOnboarding } from "@/app/actions/onboarding/finishOnboarding";
 import type { ItemDoResumo } from "@/lib/onboarding/passos";
 import type { PecaDoSistema } from "@/lib/onboarding/o-que-mais-existe";
@@ -54,32 +58,59 @@ export function DoneClient({
       : t("Seu funcionário já está de pé. O que ficou para depois continua te esperando.");
 
   return (
-    <div className="space-y-6 rounded-lg border bg-background p-6">
-      <div className="space-y-1 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight">{titulo}</h2>
-        <p className="text-sm text-muted-foreground">{resumo}</p>
+    <div className="mx-auto max-w-[52rem] space-y-8">
+      <div
+        className={
+          "flex flex-col items-start gap-5 rounded-3xl p-6 sm:flex-row sm:items-center sm:p-8 " +
+          (noAr ? "bg-success-bg" : "bg-warning-bg")
+        }
+      >
+        {/* O único momento festivo do assistente: o selo entra uma vez e para. */}
+        <span
+          aria-hidden
+          className={
+            "pulso-de-estacao flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white " +
+            (noAr ? "bg-success" : "bg-warning")
+          }
+        >
+          {noAr ? <Check size={36} weight="bold" /> : <Warning size={36} weight="bold" />}
+        </span>
+        <div className="space-y-2">
+          <h2 className={`${TITULO} text-4xl leading-none sm:text-5xl`}>{titulo}</h2>
+          <p className="max-w-[56ch] text-lg leading-relaxed text-foreground/80">{resumo}</p>
+        </div>
       </div>
 
-      <ul className="mx-auto max-w-sm space-y-2 text-left text-sm">
+      <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
         {itens.map((it) => (
-          <li key={it.segmento} className="flex items-center gap-2">
-            <span
-              aria-hidden
-              className={
-                "inline-block h-2 w-2 rounded-full " +
-                (it.feito ? "bg-success" : "bg-muted-foreground/30")
-              }
-            />
-            <span className={it.feito ? "" : "text-muted-foreground"}>
-              {t(it.rotulo)}
-              {/*
-                "Pulado" é escolha da pessoa; "ainda não" é o que ela não
-                chegou a fazer. Antes tudo que não estivesse feito virava
-                "(pulado)", inclusive passo que a instalação nunca ofereceu —
-                o wizard cobrando o que ninguém pediu.
-              */}
-              {it.pulado ? ` (${t("você pulou")})` : it.feito ? "" : ` (${t("ainda não")})`}
+          <li key={it.segmento} className="flex items-center justify-between gap-3 px-5 py-3.5 text-sm">
+            <span className="flex items-center gap-3">
+              {it.feito ? (
+                <span
+                  aria-hidden
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-white"
+                >
+                  <Check size={14} weight="bold" />
+                </span>
+              ) : (
+                <span
+                  aria-hidden
+                  className="h-5 w-5 shrink-0 rounded-full border border-dashed border-border-strong"
+                />
+              )}
+              <span className={it.feito ? "font-medium" : "text-muted-foreground"}>{t(it.rotulo)}</span>
             </span>
+            {/*
+              "Pulado" é escolha da pessoa; "ainda não" é o que ela não
+              chegou a fazer. Antes tudo que não estivesse feito virava
+              "(pulado)", inclusive passo que a instalação nunca ofereceu —
+              o wizard cobrando o que ninguém pediu.
+            */}
+            {it.pulado ? (
+              <Selo>{t("você pulou")}</Selo>
+            ) : it.feito ? null : (
+              <Selo significado="funil">{t("ainda não")}</Selo>
+            )}
           </li>
         ))}
       </ul>
@@ -92,10 +123,10 @@ export function DoneClient({
         ficava por conta da curiosidade — e quase ninguém volta para explorar
         menu.
       */}
-      <section className="space-y-3 border-t pt-6">
-        <div>
-          <h3 className="text-sm font-medium">{t("O que mais tem aqui")}</h3>
-          <p className="text-xs text-muted-foreground">
+      <section className="space-y-3">
+        <div className="space-y-0.5">
+          <h3 className={`${TITULO} text-2xl`}>{t("O que mais tem aqui")}</h3>
+          <p className="text-sm text-muted-foreground">
             {t("Você não precisa mexer em nada disso agora. É só para saber que existe.")}
           </p>
         </div>
@@ -110,26 +141,37 @@ export function DoneClient({
           Fechado por padrão: quem acabou de montar o funcionário não precisa ler
           seis tutoriais agora. O que ele precisa é saber que a explicação existe
           e está a um clique.
+
+          Uma linha por peça, não uma grade de cartões iguais (DESIGN.md): são
+          coisas do mesmo tipo, sem imagem própria para comparar.
         */}
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
           {pecas.map((p) => (
-            <li key={p.href} className="rounded-md border p-3">
-              <a href={p.href} className="text-sm font-medium underline-offset-2 hover:underline">
-                {t(p.comoChamar)}
-              </a>
-              <span className="ml-1 text-xs text-muted-foreground">({t(p.label)})</span>
-              <p className="mt-1 text-xs text-muted-foreground">{t(p.porQue)}</p>
+            <li key={p.href} className="px-5 py-4">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <a href={p.href} className="text-base font-bold text-primary underline-offset-4 hover:underline">
+                  {t(p.comoChamar)}
+                </a>
+                <span className="text-xs text-muted-foreground">({t(p.label)})</span>
+              </div>
+              <p className="mt-1 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{t(p.porQue)}</p>
 
               <details className="group mt-2">
-                <summary className="cursor-pointer list-none text-xs text-muted-foreground underline underline-offset-2">
+                <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline [&::-webkit-details-marker]:hidden">
                   {t("Como funciona")}
+                  <CaretDown
+                    aria-hidden
+                    size={12}
+                    weight="bold"
+                    className="transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none"
+                  />
                 </summary>
-                <ol className="mt-2 space-y-1.5">
+                <ol className="mt-3 space-y-2">
                   {p.comoFunciona.map((passo, i) => (
-                    <li key={passo} className="flex gap-2 text-xs text-muted-foreground">
+                    <li key={passo} className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground">
                       <span
                         aria-hidden
-                        className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
+                        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-[11px] tabular-nums"
                       >
                         {i + 1}
                       </span>
@@ -143,9 +185,11 @@ export function DoneClient({
         </ul>
       </section>
 
-      <div className="flex justify-center">
+      <div className="flex justify-end border-t border-border pt-6">
         <Button
           type="button"
+          size="lg"
+          className="h-12 gap-2 px-8 text-base"
           disabled={pending}
           onClick={() =>
             startTransition(async () => {
@@ -155,6 +199,7 @@ export function DoneClient({
           }
         >
           {pending ? t("Finalizando...") : t("Começar a usar")}
+          {pending ? null : <ArrowRight aria-hidden size={18} weight="bold" />}
         </Button>
       </div>
     </div>
