@@ -95,6 +95,12 @@ test.describe("a faixa e a tela de licença", () => {
   test.describe.configure({ mode: "serial", timeout: 300_000 });
 
   test.beforeAll(async () => {
+    test.setTimeout(120_000);
+    // Estado de partida ANTES de qualquer caso: a linha pode ter nascido em `valendo` (o padrão da migration 0558)
+    // numa spec anterior, e o app lembra a decisão por 30 s. Sem esperar o prazo passar, o primeiro caso que olha o
+    // texto do modo ainda veria a decisão velha. O `afterAll` abaixo faz a mesma espera, na saída.
+    await restaurarEstado();
+    await new Promise((resolver) => setTimeout(resolver, 35_000));
     const { data, error } = await db
       .from("organizations")
       .insert({
