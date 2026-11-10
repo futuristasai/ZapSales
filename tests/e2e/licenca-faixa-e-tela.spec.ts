@@ -71,15 +71,24 @@ const faixaDeBloqueio = (page: Page) =>
 /**
  * Põe a licença no estado de partida DESTES casos: modo `sombra` (a observação), sem bloqueio.
  *
- * É `upsert` e não `update` porque a linha só nasce na primeira leitura do app, e numa instalação
- * fresca ela ainda não existe quando o primeiro caso roda. Desde a migration 0558 uma linha nova nasce
+ * Cria a linha antes de atualizá-la porque ela só nasce na primeira leitura do app, e numa instalação
+ * fresca ela ainda não existe quando o primeiro caso roda (um `update` sozinho não casaria com nada). Desde a migration 0558 uma linha nova nasce
  * em `valendo`; sem criá-la aqui em `sombra`, o primeiro caso veria o texto «Em vigor» em vez do de
  * observação. O que nasce em `valendo` é provado pelo invariante `licenca-estado-local`.
  */
 async function restaurarEstado(): Promise<void> {
-  await db
+  // 1) Cria a linha se ainda não existe, do jeito que o app a cria (`garantirEstado`: só o id, sem
+  //    sobrescrever). 2) Põe o estado de partida. Duas etapas, e não um `upsert` de uma vez: o gatilho do
+  //    banco que guarda os invariantes olha o INSERT, e o erro de um `upsert` recusado passaria calado.
+  const criar = await db
     .from("platform_licenca")
-    .upsert({ id: 1, modo: "sombra", bloqueio_codigo: null, bloqueio_em: null }, { onConflict: "id" });
+    .upsert({ id: 1 }, { onConflict: "id", ignoreDuplicates: true });
+  if (criar.error) throw new Error(`não consegui criar a linha da licença: ${criar.error.message}`);
+  const por = await db
+    .from("platform_licenca")
+    .update({ modo: "sombra", bloqueio_codigo: null, bloqueio_em: null })
+    .eq("id", 1);
+  if (por.error) throw new Error(`não consegui pôr a licença em sombra: ${por.error.message}`);
 }
 
 test.describe("a faixa e a tela de licença", () => {
