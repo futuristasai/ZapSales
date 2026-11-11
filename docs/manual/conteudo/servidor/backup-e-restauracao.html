@@ -15,7 +15,7 @@
 <p>As duas são agendadas pela instalação em <code>/etc/cron.d/zapsales</code>. O registro de cada rodada fica em <code>/var/log/zapsales/backup.log</code>.</p>
 
 <h3 id="por-que-env">Por que o arquivo .env entra na cópia</h3>
-<p>O <code>.env</code> guarda as <strong>chaves que trancam dados dentro do banco</strong>: CPF, chaves de IA e credenciais de integrações. Um banco restaurado <em>sem</em> o <code>.env</code> que o acompanhava volta com essas informações ilegíveis. Por isso a cópia semanal é criptografada inteira, e por isso você precisa guardar a senha dela (veja abaixo).</p>
+<p>O <code>.env</code> guarda as <strong>chaves que trancam dados dentro do banco</strong>: CPF, chaves de IA e credenciais de integrações. Um banco restaurado <em>sem</em> o <code>.env</code> que o acompanhava volta com essas informações ilegíveis. O <code>.env</code> também guarda o <strong>identificador da instalação</strong>, que a licença usa para reconhecê-la; o estado da licença em si está no banco, e por isso volta com ele. Por isso a cópia semanal é criptografada inteira, e por isso você precisa guardar a senha dela (veja abaixo).</p>
 
 <h2 id="comandos">Os comandos do dia a dia</h2>
 <p>Todos rodam no terminal do servidor, com <code>sudo</code>, a partir de <code>/opt/zapsales</code>:</p>

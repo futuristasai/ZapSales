@@ -1,9 +1,9 @@
-<!--meta {"id":"comandas","grupo":"crm","titulo":"Comandas","ordem":7,"resumo":"O balcão: registre o que foi feito ou vendido ao cliente, quanto ele paga e como pagou, e feche a conta. A entrada cai na conta financeira da forma de pagamento.","palavras":["comanda","comandas","balcão","caixa","pagamento","forma de pagamento","finalizar","estorno","fidelidade","pontos","comissão","faturar","atendimentos sem comanda"],"onde":"CRM › Ver tudo em CRM › Comandas (também pela busca ⌘K)","quem":"Todos veem. Abrir, incluir itens, finalizar e cancelar: Atendente ou acima. Estornar: Gerente ou acima.","rotas":["/app/comandas"]} -->
+<!--meta {"id":"comandas","grupo":"crm","titulo":"Comandas","ordem":7,"resumo":"O balcão: registre o que foi feito ou vendido ao cliente, quanto ele paga e como pagou, e feche a conta. A entrada cai na conta financeira da forma de pagamento.","palavras":["comanda","comandas","balcão","caixa","pagamento","forma de pagamento","finalizar","estorno","fidelidade","pontos","comissão","faturar","atendimentos sem comanda","se a sua empresa usa"],"onde":"Todo dia › Se a sua empresa usa › Comandas (também pela busca ⌘K)","quem":"Todos veem. Abrir, incluir itens, finalizar e cancelar: Atendente ou acima. Estornar: Gerente ou acima.","rotas":["/app/comandas"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>A <strong>comanda</strong> é a conta do cliente no balcão: você lista <em>o que foi feito</em> (serviços e produtos avulsos) e <em>quanto custa</em>, escolhe <strong>como o cliente pagou</strong> e <strong>fecha</strong>. Ao finalizar, o dinheiro entra, já como pago, na conta financeira ligada àquela forma de pagamento — e aparece em <a href="#faturamento">Faturamento</a>.</p>
-<aside class="nota atencao"><strong>Antes de usar, cadastre as formas de pagamento.</strong><p>Uma forma de pagamento <strong>sem conta de destino</strong> não fecha comanda (“Esta forma de pagamento ainda não tem conta de destino. Defina em Configurações › Financeiro.”). Veja <a href="#financeiro">Financeiro</a>. Numa instalação nova não existe nenhuma conta nem forma de pagamento: você cadastra as suas.</p></aside>
-<aside class="nota info"><strong>Onde fica a porta.</strong><p>Comandas não está no menu lateral diário. Abra por <span class="ui">Ver tudo em CRM</span> ou pela busca <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>.</p></aside>
+<aside class="nota atencao"><strong>Antes de usar, cadastre as formas de pagamento.</strong><p>Uma forma de pagamento <strong>sem conta de destino</strong> não fecha comanda (“Esta forma de pagamento ainda não tem conta de destino. Defina em Configurações › Financeiro.” — hoje a tela fica em <span class="ui">Configurar › Empresa › A empresa › Financeiro</span>). Veja <a href="#financeiro">Financeiro</a>. Numa instalação nova não existe nenhuma conta nem forma de pagamento: você cadastra as suas.</p></aside>
+<aside class="nota info"><strong>Onde fica a porta.</strong><p>Comandas fica no painel <span class="ui">Todo dia</span>, no grupo <span class="ui">Se a sua empresa usa</span> (clique em <span class="ui">Todo dia</span> na faixa à esquerda). Também abre pela busca <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>.</p></aside>
 
 <figure class="print">
   <img src="img/comandas.png" alt="Tela Comandas com a lista de comandas à esquerda, o bloco Atendimentos sem comanda e, à direita, a comanda aberta número 5 com itens, formulário e fechamento, numerada de 1 a 17" loading="lazy">
@@ -12,7 +12,7 @@
 <ol class="legenda">
   <li><strong>Nova comanda.</strong> Cria uma comanda vazia, aberta, com número sequencial. Quem a abriu fica como atendente.</li>
   <li><strong>A lista de comandas.</strong> As 50 mais novas, da maior para a menor. Cada linha mostra o número, a situação (<em>Aberta, Finalizada, Cancelada</em>) e o total. Sem nenhuma, a tela diz “Nenhuma comanda ainda.”; com nenhuma escolhida, a área à direita diz “Escolha uma comanda à esquerda.”.</li>
-  <li><strong>Atendimentos sem comanda.</strong> Compromissos da <a href="#agenda">Agenda</a> que já aconteceram e ninguém cobrou. A tela diz “Já aconteceram e ninguém faturou. Marque o que quer cobrar.” e <strong>nada vem marcado</strong>; cada linha mostra o serviço, a data e o preço. Só aparece com pelo menos um, para Atendente ou acima (últimos 30 dias, confirmados ou realizados).</li>
+  <li><strong>Atendimentos sem comanda.</strong> Compromissos marcados em <a href="#agenda">Compromissos</a> (antes chamada Agenda) que já aconteceram e ninguém cobrou. A tela diz “Já aconteceram e ninguém faturou. Marque o que quer cobrar.” e <strong>nada vem marcado</strong>; cada linha mostra o serviço, a data e o preço. Só aparece com pelo menos um, para Atendente ou acima (últimos 30 dias, confirmados ou realizados).</li>
   <li><strong>“sem preço no serviço”.</strong> O tipo de agendamento não tem preço padrão; esse atendimento <strong>não pode ser faturado</strong> em lote (a caixinha fica apagada).</li>
   <li><strong>Forma de pagamento</strong> (em lote). Escolha como esses atendimentos foram pagos.</li>
   <li><strong>Faturar.</strong> Mostra o total marcado, por moeda (“Faturar (R$ 150,00)”). Para cada atendimento marcado cria uma comanda com um item (o preço do serviço) e já a finaliza.</li>
@@ -54,7 +54,7 @@
   <li><strong>Motivo do estorno.</strong> Obrigatório: de 3 a 500 caracteres.</li>
   <li><strong>Estornar.</strong> Botão vermelho. Não tem confirmação.</li>
 </ol>
-<p>Estornar cria um <strong>contra-lançamento de saída</strong> (“Estorno da comanda #N”) na mesma conta, reverte as comissões e devolve os pontos. A entrada original <strong>não é alterada</strong>. O compromisso na Agenda <strong>não</strong> volta para “não realizado”. Estornar uma comanda já estornada devolve “já estornada”.</p>
+<p>Estornar cria um <strong>contra-lançamento de saída</strong> (“Estorno da comanda #N”) na mesma conta, reverte as comissões e devolve os pontos. A entrada original <strong>não é alterada</strong>. O compromisso marcado <strong>não</strong> volta para “não realizado”. Estornar uma comanda já estornada devolve “já estornada”.</p>
 
 <h2 id="papeis">Quem pode o quê</h2>
 <table class="tabela">

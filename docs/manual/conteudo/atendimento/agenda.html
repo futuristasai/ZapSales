@@ -1,12 +1,12 @@
-<!--meta {"id":"agenda","grupo":"atendimento","titulo":"Agenda","ordem":3,"resumo":"O calendário da equipe: veja o que está marcado (dia, semana ou mês), marque, remarque, cancele e registre se o cliente compareceu. Pode espelhar tudo com o Google Agenda.","palavras":["agenda","agendamento","compromisso","calendário","marcar","remarcar","cancelar","compareceu","faltou","horário livre","semana","mês","google agenda","confirmação de presença","aguardando confirmação"],"onde":"Atendimento › Agenda","quem":"Todos abrem e veem. Marcar, remarcar, cancelar e registrar presença: Atendente ou acima.","rotas":["/app/agenda"]} -->
+<!--meta {"id":"agenda","grupo":"atendimento","titulo":"Compromissos","ordem":3,"resumo":"O calendário da equipe (antes chamado Agenda): veja o que está marcado (dia, semana ou mês), marque, remarque, cancele e registre se o cliente compareceu. Pode espelhar tudo com o Google Agenda.","palavras":["agenda","agendamento","compromisso","calendário","marcar","remarcar","cancelar","compareceu","faltou","horário livre","semana","mês","google agenda","confirmação de presença","aguardando confirmação","compromissos"],"onde":"Todo dia › Leads › Compromissos (clique em Todo dia na faixa à esquerda)","quem":"Todos abrem e veem. Marcar, remarcar, cancelar e registrar presença: Atendente ou acima.","rotas":["/app/agenda"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>A <strong>Agenda</strong> mostra o que está marcado, com quem e quem atende — o seu e o da equipe. Dela saem os horários que o <a href="#agentes">agente de IA</a> oferece ao cliente, e nela você <strong>marca, remarca, cancela</strong> e registra se o cliente <strong>compareceu ou faltou</strong>.</p>
-<aside class="nota info"><strong>Para a agenda oferecer horários, falta configurar duas coisas.</strong><p>Cada tipo de agendamento precisa de uma <strong>pessoa responsável</strong>, e essa pessoa precisa ter publicado a sua <strong>jornada de atendimento</strong> (os dias e horas em que atende, em <em>Equipe › Atendimento</em>). Sem isso a tela avisa “A jornada de atendimento ainda não foi publicada” e ninguém consegue marcar clicando na grade — nem você, nem o agente. Os tipos são criados em <a href="#tipos-de-agendamento">Tipos de agendamento</a>.</p></aside>
+<p>A tela <strong>Compromissos</strong> (antes chamada <em>Agenda</em>) mostra o que está marcado, com quem e quem atende — o seu e o da equipe. Dela saem os horários que o <a href="#agentes">agente de IA</a> oferece ao cliente, e nela você <strong>marca, remarca, cancela</strong> e registra se o cliente <strong>compareceu ou faltou</strong>.</p>
+<aside class="nota info"><strong>Para a agenda oferecer horários, falta configurar duas coisas.</strong><p>Cada tipo de agendamento precisa de uma <strong>pessoa responsável</strong>, e essa pessoa precisa ter publicado a sua <strong>jornada de atendimento</strong> (os dias e horas em que atende, em <em>Configurar › Empresa › Equipe › Equipe</em>, aba <em>Atendimento</em>). Sem isso a tela avisa “A jornada de atendimento ainda não foi publicada” e ninguém consegue marcar clicando na grade — nem você, nem o agente. Os tipos são criados em <a href="#tipos-de-agendamento">Tipos de agendamento</a>.</p></aside>
 
 <figure class="print">
-  <img src="img/agenda-semana.png" alt="Tela Agenda na visão de semana, com o cartão do Google, a lista de próximos compromissos e a grade de horários, numerada de 1 a 12" loading="lazy">
-  <figcaption>A Agenda na visão de semana, com os próximos compromissos acima da grade.</figcaption>
+  <img src="img/agenda-semana.png" alt="Tela Compromissos (antes Agenda) na visão de semana, com o cartão do Google, a lista de próximos compromissos e a grade de horários, numerada de 1 a 12" loading="lazy">
+  <figcaption>A tela na visão de semana, com os próximos compromissos acima da grade. O print foi tirado quando a tela ainda se chamava <em>Agenda</em>; hoje o título é <span class="ui">Compromissos</span>, e o resto é igual.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Como funciona.</strong> Abre o painel de ajuda da tela.</li>
@@ -34,8 +34,8 @@
 <aside class="nota atencao"><strong>“Quem foi atendido recebe o aviso” depende de uma automação.</strong><p>Remarcar apenas move o compromisso e emite o evento <code>appointment.rescheduled</code>. Quem avisa o cliente é uma automação ou regra da sua organização que escute esse evento; a tela, sozinha, não manda mensagem.</p></aside>
 
 <figure class="print">
-  <img src="img/agenda-mes.png" alt="Agenda na visão de mês com a aba Aguardando confirmação aberta, numerada de 1 a 7" loading="lazy">
-  <figcaption>Visão de mês, com a aba “Aguardando confirmação” aberta.</figcaption>
+  <img src="img/agenda-mes.png" alt="Compromissos (antes Agenda) na visão de mês com a aba Aguardando confirmação aberta, numerada de 1 a 7" loading="lazy">
+  <figcaption>Visão de mês, com a aba “Aguardando confirmação” aberta (print do tempo em que a tela ainda se chamava <em>Agenda</em>).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Mês.</strong> Mostra seis semanas numa grade de 7 colunas, cada dia com os seus compromissos.</li>
@@ -47,7 +47,7 @@
   <li><strong>Um compromisso no dia.</strong> O dia de hoje vem destacado; quando há mais compromissos do que cabem, aparece “+1”.</li>
 </ol>
 <p>Na aba <strong>Passados</strong> aparecem, enquanto a presença não foi registrada, os botões <span class="ui">Realizado</span> e <span class="ui">Faltou</span>. A aba “Aguardando confirmação” só tem itens se algum tipo de agendamento pedir confirmação ou se o agente de IA criar um pedido pendente.</p>
-<aside class="nota info"><strong>Pedidos não decididos soltam o horário sozinhos.</strong><p>Um pedido que ninguém confirma volta a ficar livre depois do prazo configurado (24 horas por padrão, em <em>Configurações › Tipos de agendamento › Confirmação de presença</em>). O cliente não é avisado.</p></aside>
+<aside class="nota info"><strong>Pedidos não decididos soltam o horário sozinhos.</strong><p>Um pedido que ninguém confirma volta a ficar livre depois do prazo configurado (24 horas por padrão, em <em>Configurar › Vender › O seu funil › Tipos de agendamento › Confirmação de presença</em>). O cliente não é avisado.</p></aside>
 
 <h2 id="novo">Marcar ou remarcar</h2>
 <p>O painel que abre à direita se chama <strong>Novo agendamento</strong> (ou <strong>Remarcar agendamento</strong>, quando você remarca).</p>
@@ -57,7 +57,7 @@
 </figure>
 <ol class="legenda">
   <li><strong>Quem será atendido.</strong> Digite para procurar um contato. Deixe em branco (“Compromisso pessoal, sem cliente”) para marcar algo só seu. Se o nome não existir, a lista oferece <em>Criar “nome”</em>, que abre o formulário de novo contato. Ao remarcar, este campo some.</li>
-  <li><strong>Conversa vinculada (opcional).</strong> Só aparece com um cliente escolhido. Liga o compromisso a uma conversa dele no <a href="#inbox">Inbox</a>.</li>
+  <li><strong>Conversa vinculada (opcional).</strong> Só aparece com um cliente escolhido. Liga o compromisso a uma conversa dele em <a href="#inbox">Conversas</a>.</li>
   <li><strong>Tipo de agendamento.</strong> Botões com o nome e a duração. Só aparece quando existe mais de um tipo ativo.</li>
   <li><strong>E-mail do convidado (opcional).</strong> O cliente que tem e-mail na ficha já recebe o convite; preencha só para chamar mais alguém. Um e-mail inválido bloqueia a confirmação.</li>
   <li><strong>Endereço (opcional).</strong> Onde acontece. Vem preenchido com o local do tipo. Marque <em>“Salvar para os próximos agendamentos”</em> para guardar o endereço para a empresa.</li>
@@ -86,7 +86,7 @@
 </ul>
 
 <h2 id="detalhe">O detalhe de um compromisso</h2>
-<p>Clique num bloco da grade, no nome do cliente na lista, ou abra um link vindo do <a href="#radar">Radar</a>. O painel mostra tudo sobre o compromisso e se atualiza sozinho.</p>
+<p>Clique num bloco da grade, no nome do cliente na lista, ou abra um link vindo de <a href="#radar">Riscos de Perda</a>. O painel mostra tudo sobre o compromisso e se atualiza sozinho.</p>
 <figure class="print">
   <img src="img/agenda-detalhe.png" alt="Painel de detalhe de um compromisso, com a sincronização do Google, o envio ao cliente, os dados e os botões de presença, numerado de 1 a 13" loading="lazy">
   <figcaption>O detalhe de um compromisso que já passou e ainda não teve a presença registrada.</figcaption>
@@ -94,7 +94,7 @@
 <ol class="legenda">
   <li><strong>Título.</strong> Tipo e cliente.</li>
   <li><strong>Sincronização Google.</strong> O estado do espelho com o Google. Aqui, “Há alterações aguardando sincronização. Escolha uma agenda de destino nas configurações.” — o compromisso ainda não foi enviado porque nenhuma agenda de destino foi escolhida. O botão <em>Tentar sincronizar novamente</em> refaz a tentativa.</li>
-  <li><strong>Configurar suas agendas.</strong> Leva a <a href="#tipos-de-agendamento">Configurações › Tipos de agendamento</a>, onde se escolhe a agenda do Google.</li>
+  <li><strong>Configurar suas agendas.</strong> Leva a <a href="#tipos-de-agendamento">Configurar › Vender › O seu funil › Tipos de agendamento</a>, onde se escolhe a agenda do Google.</li>
   <li><strong>Mandar ao cliente.</strong> Um bloco para <em>enviar os dados do compromisso</em> ao cliente, na conversa que você escolher no seletor. Em compromissos do tipo Google Meet o bloco vira “Google Meet” e envia o <em>link</em> da reunião. Veja o alerta abaixo.</li>
   <li><strong>Data e hora</strong>, no fuso do compromisso.</li>
   <li><strong>Local.</strong> Presencial, Telefone, WhatsApp, Link de vídeo ou Google Meet, com o detalhe.</li>
@@ -142,11 +142,11 @@
 
 <h2 id="papeis">O que cada papel pode fazer</h2>
 <table class="tabela">
-  <thead><tr><th>Papel</th><th>Na Agenda</th></tr></thead>
+  <thead><tr><th>Papel</th><th>Em Compromissos</th></tr></thead>
   <tbody>
     <tr><td>Somente leitura</td><td>Vê a grade e a lista. Não vê o botão Novo agendamento nem o filtro de pessoas. Os botões da lista são desenhados, mas a ação volta recusada.</td></tr>
     <tr><td>Atendente</td><td>Marca, remarca, cancela e registra presença. Se a organização desligar “Atendentes podem mexer na agenda dos colegas”, só mexe nos compromissos de que é responsável.</td></tr>
     <tr><td>Gerente e Administrador</td><td>Mexem em todos os compromissos; Gerente também configura os tipos e desconecta o Google de outra pessoa.</td></tr>
   </tbody>
 </table>
-<aside class="nota dica"><strong>Atalho a partir do Inbox.</strong><p>O botão “Marcar compromisso” no painel do cliente, no <a href="#inbox">Inbox</a>, abre a Agenda com o painel de marcação já preenchido com aquele cliente e aquela conversa.</p></aside>
+<aside class="nota dica"><strong>Atalho a partir de Conversas.</strong><p>O botão “Marcar compromisso” no painel do cliente, em <a href="#inbox">Conversas</a>, abre Compromissos com o painel de marcação já preenchido com aquele cliente e aquela conversa.</p></aside>

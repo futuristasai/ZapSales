@@ -1,11 +1,11 @@
-<!--meta {"id":"guia-o-agente-errou","grupo":"guias","titulo":"O agente de IA errou. E agora?","ordem":4,"resumo":"O que fazer quando o agente respondeu errado a um cliente: assumir a conversa, achar a execução, reproduzir no teste, corrigir com uma proposta, ensinar a regra, pausar o automático e voltar a uma versão anterior se preciso.","palavras":["agente errou","ia errou","resposta errada","corrigir agente","pausar automático","assumir conversa","execuções","teste","proposta","memória","aprendizado","versão","reverter","publicar","caso","alucinação","parou de responder"],"onde":"Guia: passa por Inbox, Agente de IA › Execuções, Agentes (abas Teste, Propostas e Histórico), Memória e Casos","quem":"Atendente para assumir a conversa; Gerente para olhar Execuções e Memória; Administrador para testar, corrigir, publicar e reverter","rotas":[]} -->
+<!--meta {"id":"guia-o-agente-errou","grupo":"guias","titulo":"O agente de IA errou. E agora?","ordem":4,"resumo":"O que fazer quando o agente respondeu errado a um cliente: assumir a conversa, achar a execução, reproduzir no teste, corrigir com uma proposta, ensinar a regra, pausar o automático e voltar a uma versão anterior se preciso.","palavras":["agente errou","inbox","conversas","histórico do agente","logs","execuções de ia","aguardando humano","chave da ia","api key","credenciais","central de avisos","ia errou","resposta errada","corrigir agente","pausar automático","assumir conversa","execuções","teste","proposta","memória","aprendizado","versão","reverter","publicar","caso","alucinação","parou de responder"],"onde":"Guia: passa por Todo dia › Leads › Conversas e Aguardando Humano, Resultados › Quando algo dá errado › Histórico do agente, e Configurar › Agente (Agentes com as abas Teste, Propostas e Histórico, e Memória)","quem":"Atendente para assumir a conversa; Gerente para olhar o Histórico do agente e a Memória; Administrador para testar, corrigir, publicar e reverter","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>Nenhum agente de IA acerta sempre. Quando um cliente recebe uma resposta errada, a ordem certa é: <strong>1) proteger o cliente</strong> (assumir a conversa), <strong>2) entender o que aconteceu</strong> (Execuções), <strong>3) consertar na causa</strong> (teste, correção, regra ou conhecimento) e <strong>4) conferir</strong> que o conserto funcionou. Este guia segue essa ordem, com o atalho de emergência no passo 1.</p>
+<p>Nenhum agente de IA acerta sempre. Quando um cliente recebe uma resposta errada, a ordem certa é: <strong>1) proteger o cliente</strong> (assumir a conversa), <strong>2) entender o que aconteceu</strong> (Histórico do agente), <strong>3) consertar na causa</strong> (teste, correção, regra ou conhecimento) e <strong>4) conferir</strong> que o conserto funcionou. Este guia segue essa ordem, com o atalho de emergência no passo 1.</p>
 <aside class="nota atencao"><strong>Dois cuidados antes de mexer.</strong><ul><li><strong>Publicar e reverter valem na hora, para clientes reais.</strong> Uma versão nova de agente começa a responder já na próxima mensagem.</li><li><strong>O teste e as perguntas ao assistente gastam IA de verdade</strong> na sua conta no provedor, e o gasto entra no seu orçamento (<a href="#uso-ia">Uso e orçamento</a>).</li></ul></aside>
 
 <h2 id="agora">1. Proteja o cliente: assuma a conversa</h2>
-<p>No <a href="#inbox">Inbox</a>, abra a conversa. A faixa do alto diz quem atende (<a href="#inbox--faixa">Quem atende cada conversa</a>). Os botões (<a href="#inbox--botoes">Os botões da conversa</a>) são:</p>
+<p>Em <a href="#inbox">Conversas</a> (<span class="ui">Todo dia › Leads › Conversas</span>, antes chamada Inbox), abra a conversa. A faixa do alto diz quem atende (<a href="#inbox--faixa">Quem atende cada conversa</a>). Os botões (<a href="#inbox--botoes">Os botões da conversa</a>) são:</p>
 <table class="tabela">
   <thead><tr><th>Botão</th><th>O que faz</th><th>Quando usar aqui</th></tr></thead>
   <tbody>
@@ -20,24 +20,24 @@
   <li>Escreva uma <strong>nota interna</strong> na conversa para a equipe saber o que aconteceu (a nota não é vista pelo cliente).</li>
   <li>Quando terminar, clique em <span class="ui">Devolver ao automático</span>, ou deixe com a equipe.</li>
 </ol>
-<aside class="nota info"><strong>Responder pelo celular também cala o automático.</strong><p>Se alguém responde o cliente pelo próprio celular, fora do ZapSales, o atendimento automático é pausado naquela conversa até alguém clicar em <span class="ui">Devolver ao automático</span> (ou mandar <code>#on</code>). Veja o aviso em <a href="#inbox">Inbox</a>.</p></aside>
+<aside class="nota info"><strong>Responder pelo celular também cala o automático.</strong><p>Se alguém responde o cliente pelo próprio celular, fora do ZapSales, o atendimento automático é pausado naquela conversa até alguém clicar em <span class="ui">Devolver ao automático</span> (ou mandar <code>#on</code>). Veja o aviso em <a href="#inbox">Conversas</a>.</p></aside>
 
 <h2 id="parar">2. Se o erro pode se repetir, pause o agente</h2>
 <p>Se a resposta errada pode acontecer com o próximo cliente (um preço inventado, uma promessa que a empresa não cumpre), pare o agente inteiro enquanto você conserta:</p>
 <ol class="passos">
-  <li>Abra <a href="#agentes">Agentes</a> e entre no agente. No quadro <em>Como ele atende agora</em>, clique em <span class="ui">Pausar automático</span>. Ele passa a <em>Pausado</em> e <strong>a versão publicada fica preservada</strong>. O mesmo comando está no menu “⋯” da lista.</li>
+  <li>Abra <a href="#agentes">Agentes</a> (<span class="ui">Configurar › Agente › Montar o agente › Agentes</span>; clique em <span class="ui">Agente</span> na faixa à esquerda) e entre no agente. No quadro <em>Como ele atende agora</em>, clique em <span class="ui">Pausar automático</span>. Ele passa a <em>Pausado</em> e <strong>a versão publicada fica preservada</strong>. O mesmo comando está no menu “⋯” da lista.</li>
   <li>Alternativa mais branda: troque o <em>Modo de operação</em> para <em>Assistido: revisar antes de enviar</em>. A IA continua escrevendo, mas só vai ao cliente depois que alguém da equipe aprovar. A troca grava na hora.</li>
   <li>Quando consertar, use <span class="ui">Retomar automático</span> (ou volte o modo para <em>Automático</em>). Atenção: <strong>publicar uma versão nova não reativa um agente pausado</strong>.</li>
 </ol>
-<aside class="nota perigo"><strong>Pausado não é o mesmo que desligado.</strong><p>Enquanto o agente está pausado, os clientes que escrevem ficam sem resposta automática. Combine com a equipe quem atende no lugar da IA, assumindo as conversas no Inbox.</p></aside>
+<aside class="nota perigo"><strong>Pausado não é o mesmo que desligado.</strong><p>Enquanto o agente está pausado, os clientes que escrevem ficam sem resposta automática. Combine com a equipe quem atende no lugar da IA, assumindo as conversas em Conversas.</p></aside>
 
-<h2 id="achar">3. Ache o que aconteceu: Execuções</h2>
+<h2 id="achar">3. Ache o que aconteceu: Histórico do agente</h2>
 <ol class="passos">
-  <li>Abra <a href="#execucoes">Execuções</a> (Agente de IA › Execuções, Gerente ou acima). Se alguma execução <em>falhou</em>, o resumo no alto diz o que o cliente percebeu e o que fazer (<a href="#execucoes--erros">Os erros mais comuns</a>: chave recusada, saldo, modelo inexistente, orçamento esgotado…).</li>
+  <li>Abra <a href="#execucoes">Histórico do agente</a> (<span class="ui">Resultados › Quando algo dá errado › Histórico do agente</span>, Gerente ou acima; dentro da tela, o título é “Execuções de IA”). Se alguma execução <em>falhou</em>, o resumo no alto diz o que o cliente percebeu e o que fazer (<a href="#execucoes--erros">Os erros mais comuns</a>: chave recusada, saldo, modelo inexistente, orçamento esgotado…).</li>
   <li>Para o <strong>conteúdo</strong> de uma resposta, abra o agente e a aba <em>Execuções</em> (<a href="#agentes--abas">As outras abas</a>). A coluna <em>Tipo</em> separa <em>teste</em> de <em>produção</em> (atendimento real). Clique na linha da execução: o painel mostra o <strong>trace</strong> passo a passo, com cada ferramenta que o agente chamou, os argumentos, o resultado e o erro, e os botões <em>Ver conversa</em> e <em>Ver inbound</em>.</li>
   <li>Pergunte-se de onde veio o erro: <strong>faltou informação</strong> (o agente não sabia a resposta), <strong>informação errada</strong> (um material de <a href="#conhecimento">Conhecimento</a> desatualizado), <strong>instrução ruim</strong> (o texto do agente permite o erro) ou <strong>ferramenta falhando</strong> (a aba <em>Capacidades</em> mostra usos e falhas por ferramenta).</li>
 </ol>
-<p>Se o agente travou numa decisão que só uma pessoa resolve, ele abre um <strong>caso</strong> e continua conversando enquanto espera. Veja <a href="#casos">Casos</a> (“Aguardando você”) antes de concluir que ele “errou”.</p>
+<p>Se o agente travou numa decisão que só uma pessoa resolve, ele abre um <strong>caso</strong> e continua conversando enquanto espera. Veja <a href="#casos">Aguardando Humano</a> (<span class="ui">Todo dia › Leads › Aguardando Humano</span>, antes chamada Casos) antes de concluir que ele “errou”: a tela já abre na aba “Aguardando você”, e a aba “Todos” guarda o histórico dos casos que ele conduziu até o fim.</p>
 
 <h2 id="reproduzir">4. Reproduza e corrija no teste</h2>
 <ol class="passos">
@@ -50,7 +50,7 @@
 
 <h2 id="ensinar">5. Ensine a regra para todos os agentes: Memória e Conhecimento</h2>
 <ul>
-  <li><strong>A regra vale para a empresa toda?</strong> Use a <a href="#memoria">Memória</a>: o <a href="#memoria--documento">documento da organização</a> guarda as regras permanentes (tom de voz, horário, o que nunca prometer) e os <a href="#memoria--aprendizados">aprendizados</a> guardam correções pontuais (“Não oferecer frete grátis no primeiro contato”). Um aprendizado vale <em>imediatamente</em>; publicar o documento exige o papel de Administrador. Na proposta, o botão <span class="ui">Aplicar como memória da org.</span> cria um aprendizado que todos os agentes passam a usar.</li>
+  <li><strong>A regra vale para a empresa toda?</strong> Use a <a href="#memoria">Memória</a>: o <a href="#memoria--documento">documento da organização</a> guarda as regras permanentes (tom de voz, horário, o que nunca prometer) e os <a href="#memoria--aprendizados">aprendizados</a> guardam correções pontuais (“Não oferecer frete grátis no primeiro contato”). Um aprendizado vale <em>imediatamente</em>; publicar o documento exige o papel de Administrador. Na proposta, o botão <span class="ui">Aplicar como memória da org</span> cria um aprendizado que todos os agentes passam a usar.</li>
   <li><strong>O agente não sabia a resposta ou usou dado antigo?</strong> Corrija o material em <a href="#conhecimento">Conhecimento</a>: <span class="ui">Editar conteúdo</span> (perguntas e respostas), <span class="ui">Preparar de novo</span> ou <span class="ui">Arquivar</span> o material errado. Cada material mostra por quais agentes é consultado.</li>
   <li><strong>O agente fala do que não devia?</strong> Restrinja os assuntos: <a href="#agente-restringir-assuntos">Restringir os assuntos do agente</a>. Isso não impede o cliente de pedir uma pessoa ou de parar de receber mensagens.</li>
 </ul>
@@ -65,20 +65,20 @@
 
 <h2 id="conferir">7. Confira e acompanhe</h2>
 <ol class="passos">
-  <li>Repita a pergunta no <span class="ui">Teste</span> e releia as próximas conversas reais em <a href="#execucoes">Execuções</a> nos primeiros dias.</li>
+  <li>Repita a pergunta no <span class="ui">Teste</span> e releia as próximas conversas reais no <a href="#execucoes">Histórico do agente</a> nos primeiros dias.</li>
   <li>Deixe o agente em modo <em>Assistido</em> até confiar no conserto, como sugere a página <a href="#agentes--cuidados">Agentes</a>.</li>
-  <li>Confira o gasto em <a href="#uso-ia">Uso e orçamento</a>: o teste, as perguntas sobre casos e as respostas reais somam no orçamento mensal.</li>
+  <li>Confira o gasto em <a href="#uso-ia">Uso e orçamento</a> (<span class="ui">Resultados › Equipe e IA › Uso e orçamento</span>): o teste, as perguntas sobre casos e as respostas reais somam no orçamento mensal.</li>
 </ol>
-<p>Quer ser avisado quando o agente precisar de você? Veja <a href="#aviso-whatsapp">Aviso no WhatsApp</a> e a <a href="#alertas">Central de avisos</a>.</p>
+<p>Quer ser avisado quando o agente precisar de você? Veja <a href="#aviso-whatsapp">Aviso no WhatsApp</a> e os <a href="#alertas">Alertas</a> (a “Central de avisos”, também aberta pelo sino no topo da tela).</p>
 
 <h2 id="se-algo-der-errado">Se algo der errado</h2>
 <table class="tabela">
   <thead><tr><th>Situação</th><th>O que fazer</th></tr></thead>
   <tbody>
     <tr><td>Não vejo os botões <em>Teste</em>, <em>Corrigir</em> ou <em>Aplicar</em></td><td>O Gerente abre as abas só para leitura; testar, corrigir e aplicar exigem <strong>Administrador</strong>. A aba Teste também só liga depois que o agente tem ao menos uma versão salva. Veja <a href="#agente-teste-e-correcao--quem">Quem pode o quê</a>.</td></tr>
-    <tr><td>A execução falhou com “chave recusada”, “limite ou saldo” ou “orçamento esgotado”</td><td>Não é erro de resposta, é de conta. Confira <a href="#credenciais">Credenciais</a> e o saldo no provedor, ou ajuste o limite em <a href="#uso-ia--orcamento">Uso e orçamento</a>.</td></tr>
+    <tr><td>A execução falhou com “chave recusada”, “limite ou saldo” ou “orçamento esgotado”</td><td>Não é erro de resposta, é de conta. Confira a <a href="#credenciais">Chave da IA</a> (<span class="ui">Configurar › Agente › Conectar a IA › Chave da IA</span>; a tela se chama “Chaves de acesso à IA”) e o saldo no provedor, ou ajuste o limite em <a href="#uso-ia--orcamento">Uso e orçamento</a>.</td></tr>
     <tr><td>O teste recusa a mensagem</td><td>Se o orçamento está no modo “parar ao chegar no limite” e já estourou, o teste é recusado. Ajuste em Uso e orçamento. A página de teste lista outros limites (cerca de 20 trocas por conversa, 4.000 caracteres por mensagem).</td></tr>
-    <tr><td>Publiquei e o agente continua calado</td><td>Se ele estava <em>pausado</em>, publicar não o reativa: use <span class="ui">Retomar automático</span>. Confira também se o número está “Conectado” em <a href="#conexoes">Conexões</a>.</td></tr>
+    <tr><td>Publiquei e o agente continua calado</td><td>Se ele estava <em>pausado</em>, publicar não o reativa: use <span class="ui">Retomar automático</span>. Confira também se o número está “Conectado” em <a href="#conexoes">Conexões</a> (<span class="ui">Configurar › Conexões › WhatsApp e telefone › Conexões</span>).</td></tr>
     <tr><td>A resposta continua errada depois da correção</td><td>A correção é só uma linha nas instruções. Se o erro vem de dado antigo, corrija o material em <a href="#conhecimento">Conhecimento</a>; se é regra geral, use a <a href="#memoria">Memória</a>; se foi a versão nova que piorou, volte pelo <span class="ui">Reverter</span>.</td></tr>
   </tbody>
 </table>

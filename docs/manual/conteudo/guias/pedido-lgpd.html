@@ -1,9 +1,9 @@
-<!--meta {"id":"guia-pedido-lgpd","grupo":"guias","titulo":"Um cliente pediu para apagar os dados dele (LGPD)","ordem":3,"resumo":"O caminho completo quando um cliente exerce o direito da LGPD: confirmar o pedido, respeitar os prazos, olhar o que existe sobre a pessoa, aprovar ou anonimizar, e saber o que é preservado e por que não tem volta.","palavras":["lgpd","apagar dados","excluir dados","direito do titular","anonimizar","anonimização","pedido do cliente","cópia dos dados","exportar dados","prazo","sla","dpo","privacidade","esquecimento"],"onde":"Guia: passa por Contatos (ficha › aba LGPD) e Configurações › Dados e acesso › LGPD","quem":"Administrador (a aba LGPD da ficha e a tela de Solicitações só abrem para ele)","rotas":[]} -->
+<!--meta {"id":"guia-pedido-lgpd","grupo":"guias","titulo":"Um cliente pediu para apagar os dados dele (LGPD)","ordem":3,"resumo":"O caminho completo quando um cliente exerce o direito da LGPD: confirmar o pedido, respeitar os prazos, olhar o que existe sobre a pessoa, aprovar ou anonimizar, e saber o que é preservado e por que não tem volta.","palavras":["lgpd","solicitações lgpd","plano e regras","dados da empresa","organização","quem mexeu em quê","audit log","auditoria","apagar dados","excluir dados","direito do titular","anonimizar","anonimização","pedido do cliente","cópia dos dados","exportar dados","prazo","sla","dpo","privacidade","esquecimento"],"onde":"Guia: passa por Todo dia › Gestão de Clientes CRM › Contatos (ficha › aba LGPD), Configurar › Empresa › Plano e regras › LGPD (clique em Empresa na faixa à esquerda) e Resultados › Quando algo dá errado › Quem mexeu em quê","quem":"Administrador (a aba LGPD da ficha e a tela de Solicitações só abrem para ele)","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>A LGPD (Lei Geral de Proteção de Dados) dá a cada pessoa o direito de pedir uma <strong>cópia dos dados</strong> que você guarda sobre ela ou a <strong>anonimização</strong> deles, e a empresa tem <strong>prazo</strong> para responder. No ZapSales, “apagar os dados” de um cliente significa <strong>anonimizar o contato</strong>: o nome vira “Cliente Anonimizado #número”, os dados pessoais são removidos e o histórico de atendimento é preservado sem identificar ninguém.</p>
 <aside class="nota perigo"><strong>Anonimizar não tem volta.</strong><p>Depois de feita, não há como recuperar os dados da pessoa, e reverter dá erro (<code>lgpd_anonymization_irreversible</code>). O próprio sistema diz na tela: use somente após confirmação formal do titular ou ordem judicial. Só siga adiante com o pedido confirmado.</p></aside>
-<p>Só o <strong>Administrador</strong> faz isto. As duas telas envolvidas são a <em>ficha do contato</em> (<a href="#contatos--lgpd">Contatos › LGPD</a>) e a fila de <a href="#lgpd">LGPD (Solicitações)</a>.</p>
+<p>Só o <strong>Administrador</strong> faz isto. As duas telas envolvidas são a <em>ficha do contato</em> (<a href="#contatos--lgpd">Contatos › LGPD</a>) e a fila de <a href="#lgpd">LGPD (Solicitações)</a>, em <span class="ui">Configurar › Empresa › Plano e regras › LGPD</span> (a tela se chama “Solicitações LGPD”).</p>
 
 <h2 id="decidir">1. Entenda o que a pessoa pediu</h2>
 <table class="tabela">
@@ -20,7 +20,7 @@
 <ol class="passos">
   <li><strong>Anote o pedido fora do sistema</strong>: quem pediu, por qual meio (e-mail, WhatsApp, carta) e em que dia. A data do pedido é o começo da contagem do prazo.</li>
   <li>Confirme que quem pede é o titular dos dados (ou que há ordem judicial). O sistema só pede, na ficha, uma justificativa com no mínimo 10 caracteres, e o exemplo dado é “Solicitação formal do titular por e-mail em tal data”: guarde o registro que prova isso.</li>
-  <li>Se a empresa tem um encarregado de dados (DPO), confira se o e-mail dele está cadastrado em <a href="#dados-da-empresa">Configurações › Organização</a> (campo <em>DPO email</em>). É para ele que vai o alerta diário de prazo dos pedidos da fila.</li>
+  <li>Se a empresa tem um encarregado de dados (DPO), confira se o e-mail dele está cadastrado em <a href="#dados-da-empresa">Dados da empresa</a> (<span class="ui">Configurar › Empresa › A empresa › Dados da empresa</span>; dentro da tela o título é “Organização”), no campo <em>DPO email</em>. É para ele que vai o alerta diário de prazo dos pedidos da fila.</li>
 </ol>
 <aside class="nota info"><strong>A tela de Solicitações não cria pedidos.</strong><p>Ela só acompanha e aprova pedidos que já estão na fila. A página <a href="#lgpd">LGPD (Solicitações)</a> avisa que não foi confirmado como os pedidos nascem em produção. Por isso, o caminho que sempre existe para anonimizar uma pessoa é o da <strong>ficha do contato</strong>.</p></aside>
 
@@ -34,7 +34,7 @@
 
 <h2 id="olhar">4. Veja o que existe sobre a pessoa</h2>
 <ol class="passos">
-  <li>Abra <a href="#contatos">Contatos</a>, ache a pessoa e abra a ficha. Confira nome, telefone e e-mail para ter certeza de que é a pessoa certa (pode haver homônimos).</li>
+  <li>Abra <a href="#contatos">Contatos</a> (<span class="ui">Todo dia › Gestão de Clientes CRM › Contatos</span>), ache a pessoa e abra a ficha. Confira nome, telefone e e-mail para ter certeza de que é a pessoa certa (pode haver homônimos).</li>
   <li>Se o pedido está na fila de Solicitações, abra o pedido e clique em <span class="ui">Pré-visualizar dados</span>. A janela mostra, só para leitura, o cartão do contato com nome, e-mail e telefone mascarados, e sete contadores: conversas, mensagens, leads, pedidos, atividades, entradas de auditoria e consentimentos. Não grava nada (<a href="#lgpd--previa">Pré-visualizar dados</a>).</li>
   <li>Se há algo que a empresa precisa guardar por outro motivo legal, decida isso <strong>antes</strong> de anonimizar. O sistema não tem como desfazer.</li>
 </ol>
@@ -64,20 +64,20 @@
   <tbody>
     <tr><td>O nome (vira “Cliente Anonimizado #N”) e os demais dados pessoais do contato</td><td>O histórico de atendimento, sem identificar ninguém</td></tr>
     <tr><td>Conversas, mensagens (com a mídia removida) e atividades, anonimizadas</td><td>As datas e horas (os timestamps)</td></tr>
-    <tr><td>A pessoa deixa de poder ser editada e entra em campanhas só como excluída (“Contato anonimizado (LGPD)”)</td><td>O registro na Auditoria da aprovação e da justificativa</td></tr>
+    <tr><td>A pessoa deixa de poder ser editada e entra em campanhas só como excluída (“Contato anonimizado (LGPD)”)</td><td>O registro em Quem mexeu em quê (a Auditoria) da aprovação e da justificativa</td></tr>
   </tbody>
 </table>
 <ul>
   <li><strong>Excluir não é anonimizar.</strong> A lixeira da lista de Contatos tira a pessoa e a conversa do sistema. A anonimização preserva o histórico sem identificar ninguém, que é o que a LGPD pede quando a pessoa solicita a remoção. Se o pedido veio de um titular, use a anonimização (<a href="#contatos--excluir">Excluir um contato</a>).</li>
   <li>Se a pessoa chegou por um formulário do seu site, o histórico de captações guarda nome, telefone, e-mail e o formulário inteiro. A página de <a href="#webhooks--leads">Leads recebidos</a> informa que a anonimização do contato alcança as linhas ligadas a ele.</li>
-  <li>Arquivos de mídia de mensagens antigas também são removidos por uma rotina de retenção, que se ajusta em <a href="#dados-da-empresa">Organização</a>. Isso é uma regra geral da empresa, não substitui o pedido do titular.</li>
+  <li>Arquivos de mídia de mensagens antigas também são removidos por uma rotina de retenção, que se ajusta em <a href="#dados-da-empresa">Dados da empresa</a>. Isso é uma regra geral da empresa, não substitui o pedido do titular.</li>
 </ul>
 
 <h2 id="conferir">7. Confira e responda à pessoa</h2>
 <ol class="passos">
   <li>Reabra a ficha: deve estar como <em>Anonimizado</em>, com a data e hora na aba LGPD.</li>
   <li>Se o pedido estava na fila, confira que o status mudou para <em>Concluído</em> e que as colunas <em>Vence</em> e <em>SLA</em> mostram “—”.</li>
-  <li>Abra a <a href="#auditoria">Auditoria</a> para ver o registro (a aprovação grava <code>lgpd.manually_approved</code>, com a sua justificativa). Quem enxerga as linhas da Auditoria é, na prática, o Administrador.</li>
+  <li>Abra <a href="#auditoria">Quem mexeu em quê</a> (<span class="ui">Resultados › Quando algo dá errado › Quem mexeu em quê</span>; a tela se chama “Auditoria”) para ver o registro (a aprovação grava <code>lgpd.manually_approved</code>, com a sua justificativa). Quem enxerga as linhas dessa tela é, na prática, o Administrador.</li>
   <li>Responda ao titular, dentro do prazo, dizendo o que foi feito. Esse aviso a pessoa recebe de você, fora do sistema.</li>
 </ol>
 

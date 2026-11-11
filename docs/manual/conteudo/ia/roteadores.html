@@ -1,6 +1,7 @@
-<!--meta {"id":"roteadores","grupo":"ia","titulo":"Roteadores","ordem":5,"resumo":"Entende o que o cliente quer e entrega a conversa ao agente certo, num mesmo número de WhatsApp: quem quer comprar fala com o agente de vendas, quem já é cliente fala com o suporte.","palavras":["roteador","roteamento","intenção","intenções","classificador","fallback","agente certo","fluxo de atendimento","testar classificação"],"onde":"Agente de IA › Roteadores (Ver tudo em IA › Montar o agente)","quem":"Abrir e testar a classificação: Gerente. Criar, editar, ativar e excluir: Administrador.","rotas":["/app/ai/routers","/app/ai/routers/[id]"]} -->
+<!--meta {"id":"roteadores","grupo":"ia","titulo":"Quem atende cada conversa (roteadores)","ordem":5,"resumo":"No menu a tela se chama “Quem atende cada conversa” (antes, Roteadores); dentro dela, “Roteadores”. Entende o que o cliente quer e entrega a conversa ao agente certo, num mesmo número de WhatsApp: quem quer comprar fala com o agente de vendas, quem já é cliente fala com o suporte.","palavras":["roteador","roteamento","intenção","intenções","classificador","fallback","agente certo","fluxo de atendimento","testar classificação","quem atende cada conversa","roteadores"],"onde":"Configurar › Agente › Montar o agente › Quem atende cada conversa (clique em Agente na faixa à esquerda; também pela busca Ctrl K)","quem":"Abrir e testar a classificação: Gerente. Criar, editar, ativar e excluir: Administrador.","rotas":["/app/ai/routers","/app/ai/routers/[id]"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
+<p>No menu, esta tela se chama <span class="ui">Quem atende cada conversa</span> (antes, <em>Roteadores</em>; o termo técnico aparece embaixo do nome), e o título dentro dela é <em>“Roteadores”</em>.</p>
 <p>Se você tem mais de um agente (por exemplo, um de <em>vendas</em> e um de <em>suporte</em>) e um só número de WhatsApp, alguém precisa decidir <strong>qual agente atende cada conversa</strong>. É o trabalho do <strong>roteador</strong>: ele lê a mensagem, identifica a <em>intenção</em> do cliente (“quer comprar”, “já é cliente”) e entrega a conversa ao agente que você ligou àquela intenção.</p>
 
 <h2 id="lista">A lista de roteadores</h2>
@@ -10,7 +11,7 @@
 </figure>
 <ol class="legenda">
   <li><strong>Novo roteador.</strong> Só para Administrador.</li>
-  <li><strong>O cartão.</strong> Mostra o nome e o número de WhatsApp (ou “Número removido”). Clique para abrir o editor.</li>
+  <li><strong>O roteador.</strong> Mostra o nome e o número de WhatsApp (ou “Número removido”). Clique para abrir o editor.</li>
   <li><strong>Selo “ativo”</strong> (ou “inativo”).</li>
   <li><strong>Quantidade de intenções.</strong> “Sem intenções configuradas” significa que o roteador ainda não roteia nada.</li>
 </ol>
@@ -18,7 +19,7 @@
   <img src="img/ia-roteador-novo.png" alt="Janela Novo roteador, com os campos de nome e número de WhatsApp" loading="lazy">
   <figcaption>A janela “Novo roteador”.</figcaption>
 </figure>
-<p><strong>Como é a lista.</strong> Os roteadores aparecem em <strong>linhas dentro de um painel</strong>, e não em cartões: cada linha tem o nome (clique para abrir o editor), o selo <em>ativo</em> ou <em>inativo</em>, o número de WhatsApp (ou “Número removido”) e a quantidade de intenções (“Sem intenções configuradas” enquanto não houver nenhuma).</p>
+<p><strong>Como é a lista.</strong> Os roteadores aparecem em <strong>linhas dentro de um painel</strong>: cada linha tem o nome (clique para abrir o editor), o selo <em>ativo</em> ou <em>inativo</em>, o número de WhatsApp (ou “Número removido”) e a quantidade de intenções (“Sem intenções configuradas” enquanto não houver nenhuma).</p>
 <p>Para criar, clique em <span class="ui">Novo roteador</span>, dê um <strong>nome</strong> (até 120 caracteres) e escolha o <strong>número de WhatsApp</strong> que ele atenderá. O roteador nasce <strong>ativo</strong>, mas sem intenções; o sistema leva ao editor para você definir as intenções.</p>
 <aside class="nota atencao"><strong>Um roteador ativo por número, e o número não muda.</strong><p>Cada número de WhatsApp só pode ter <em>um</em> roteador ativo. Depois de criado, o número <strong>não pode ser trocado</strong>: para outro número, crie outro roteador.</p></aside>
 
@@ -33,18 +34,19 @@
   <li><strong>Ativo.</strong> Ligado, ele roteia as conversas deste número; desligado, não roteia nada.</li>
   <li><strong>Modelo que identifica a intenção.</strong> O “modelo do classificador”: <em>Automático</em> usa o provedor da organização; ou você escolhe um modelo entre os dos provedores com chave cadastrada. Se a conta do provedor estiver sem crédito, a identificação falha e tudo cai no fallback.</li>
   <li><strong>Se nenhuma intenção casar.</strong> O <em>agente de fallback</em>: quem atende quando a IA não tem certeza do que o cliente quer, em vez de travar a conversa. Sem fallback, atende o atendimento padrão.</li>
-  <li><strong>Testar classificação.</strong> Escreva uma frase como um cliente escreveria e veja qual intenção e qual agente o roteador escolheria, <em>sem afetar nenhuma conversa real</em>. Mostra a <em>confiança</em> (em %): abaixo de 60% a conversa cairia no atendimento padrão. O Gerente também pode testar.</li>
+  <li><strong>Testar classificação.</strong> Escreva uma frase como um cliente escreveria e veja qual intenção e qual agente o roteador escolheria, <em>sem afetar nenhuma conversa real</em>. Mostra a <em>confiança</em> (em %): abaixo do mínimo (60%) a conversa cairia no atendimento padrão. O botão só funciona com o roteador <strong>ativo</strong> (“Ative o roteador para poder testar a classificação”). O Gerente também pode testar.</li>
   <li><strong>Intenções.</strong> Cada uma descreve uma situação e diz qual agente deve assumir.</li>
   <li><strong>+ Intenção.</strong> Adiciona uma intenção.</li>
   <li><strong>Salvar.</strong> Só Administrador, e só quando há mudança válida.</li>
   <li><strong>Excluir roteador.</strong> O número volta a ser atendido pelos gatilhos normais dos agentes, e as intenções são apagadas junto. Não dá para desfazer.</li>
 </ol>
+<p>Quando o <a href="#provedores--jev">Jev</a> está ligado, o resultado do teste também mostra lado a lado <em>Sua IA escolheu</em> e <em>O Jev escolheu</em>, com a intenção e a confiança de cada uma, e uma frase que diz quem vale em produção (o Jev, ou a sua IA, quando ele só observa). Se o Jev não respondeu, o link <em>Ver o motivo no cartão do Jev</em> leva a <a href="#provedores">Qual IA usar</a>. O teste não grava nada como comparação: só o atendimento de verdade conta no cartão do Jev.</p>
 <h3>Como descrever uma intenção</h3>
 <ul>
-  <li><strong>Nome da intenção:</strong> curto e único (“quer comprar”).</li>
+  <li><strong>Nome da intenção:</strong> curto e único (“quer comprar”), até 120 caracteres.</li>
   <li><strong>Agente que atende:</strong> qual agente assume a conversa quando a intenção casar.</li>
-  <li><strong>Quando escolher esta intenção:</strong> escreva <em>como explicaria para um atendente novo</em> em que situação o cliente cai aqui.</li>
-  <li><strong>Frases de exemplo (opcional):</strong> até 10, como “quanto custa?”. Ajudam o classificador.</li>
+  <li><strong>Quando escolher esta intenção:</strong> escreva <em>como explicaria para um atendente novo</em> em que situação o cliente cai aqui (até 2.000 caracteres).</li>
+  <li><strong>Frases de exemplo (opcional):</strong> até 10, de até 200 caracteres cada, como “quanto custa?”. Digite e tecle <kbd>Enter</kbd> (ou clique em <span class="ui">Adicionar</span>). Ajudam o classificador.</li>
   <li><strong>Fluxo de atendimento (opcional):</strong> quando o módulo de Fluxos de atendimento está ligado, a intenção pode iniciar um roteiro de perguntas.</li>
 </ul>
 <aside class="nota atencao"><strong>O teste de classificação gasta IA, e o roteador ativo também.</strong><p>Cada classificação chama um modelo (barato). Ativo, o roteador decide <em>para qual agente vai cada mensagem nova</em>, então mexer nele afeta clientes reais. Dois ajustes — o mínimo de confiança (60%) e a regra de “continuar com o mesmo agente” na mesma conversa — <strong>não têm campo na tela</strong>.</p></aside>

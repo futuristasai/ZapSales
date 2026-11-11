@@ -1,7 +1,7 @@
-<!--meta {"id":"extensoes","grupo":"organizacao","titulo":"Extensões","ordem":22,"resumo":"Guias instalados para orientar o trabalho no CRM, sem entregar dados nem rodar código de terceiros. A empresa decide se ativa; o dono do servidor decide o que existe.","palavras":["extensões","guias","catálogo","instalar","ativar","pacote","orientação","manifesto","permissões","densidade dos cards","hub crm"],"onde":"Configurações › Sua empresa › Extensões (também pelo hub CRM, em “Orientações instaladas”)","quem":"Todos veem a lista e abrem guias ativos. Ativar e configurar na própria empresa: Administrador. Admitir catálogo, instalar, atualizar e remover (vale para todas as empresas): só o dono do servidor.","rotas":["/app/extensions"]} -->
+<!--meta {"id":"extensoes","grupo":"organizacao","titulo":"Extensões","ordem":22,"resumo":"Guias instalados para orientar o trabalho no CRM, sem entregar dados nem rodar código de terceiros. A empresa decide se ativa; o dono do servidor decide o que existe.","palavras":["extensões","guias","catálogo","instalar","ativar","pacote","orientação","manifesto","permissões","densidade dos cards","hub crm","gestão de clientes crm","página de área","plano e regras","orientações instaladas"],"onde":"Configurar › Empresa › Plano e regras › Extensões (clique em Empresa na faixa à esquerda). Os guias ativos também aparecem na página de área Gestão de Clientes CRM, em “Orientações instaladas”","quem":"Todos veem a lista e abrem guias ativos. Ativar e configurar na própria empresa: Administrador. Admitir catálogo, instalar, atualizar e remover (vale para todas as empresas): só o dono do servidor.","rotas":["/app/extensions"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>Uma <strong>extensão</strong> é um <em>guia</em>: cartões de orientação do trabalho (por exemplo, “Dia 1: leia dez conversas antes de responder uma”), com botões que abrem telas que já existem (Tarefas, Conversas, Funil, Contatos, Agenda ou Radar). Extensões <strong>não executam código nem leem os dados do CRM</strong>: só mostram texto e abrem uma tela.</p>
+<p>Uma <strong>extensão</strong> é um <em>guia</em>: cartões de orientação do trabalho (por exemplo, “Dia 1: leia dez conversas antes de responder uma”), com botões que abrem telas que já existem (Tarefas, Conversas, Funil, Contatos, Agenda ou Radar — os nomes que a tela de extensões mostra; no menu, Agenda é <em>Compromissos</em> e Radar é <em>Riscos de Perda</em>). Extensões <strong>não executam código nem leem os dados do CRM</strong>: só mostram texto e abrem uma tela.</p>
 <p>Há <strong>três níveis de poder</strong>:</p>
 <table class="tabela">
   <thead><tr><th>O que</th><th>Quem</th></tr></thead>
@@ -27,7 +27,7 @@
 <h2 id="instaladas">Uma extensão instalada</h2>
 <p>Cada pacote vira um cartão com ícone, título, resumo e um selo: <strong>Ativa</strong>, <strong>Desativada</strong>, <strong>Incompatível</strong> (“Esta versão não pode ser ativada”, com o botão “Desativar nesta organização”) ou <strong>Removida</strong>. Mostra <em>Versão</em>, <em>Origem</em> e <em>Permissão</em> (a frase que diz quais telas ela abre, como “Abre Tarefas e Contatos; não lê seus dados.”). Para o Administrador da empresa:</p>
 <ul>
-  <li><strong>Ativa no CRM</strong> — “Os guias aparecem no hub do CRM.” Desativar preserva a configuração.</li>
+  <li><strong>Ativa no CRM</strong> — “Os guias aparecem no hub do CRM.” (a página de área <a href="#crm-hub">Gestão de Clientes CRM</a>). Desativar preserva a configuração.</li>
   <li><strong>Densidade dos cards</strong> — Confortável ou Compacta.</li>
   <li><strong>Mostrar descrição nos cards.</strong></li>
   <li><span class="ui">Abrir guia</span> (se ativa; desativada, o texto é “Ative para abrir o guia.”) e <span class="ui">Salvar configuração</span> (só habilita quando algo mudou).</li>
@@ -36,7 +36,7 @@
 <aside class="nota atencao"><strong>Limite de 8 extensões ativas por empresa.</strong><p>“O limite de extensões ativas foi atingido. Desative uma antes de ativar outra.”</p></aside>
 
 <h2 id="guia">O guia</h2>
-<p>O botão <span class="ui">Abrir guia</span> leva a <code>/app/extensions/&lt;nome&gt;</code>. Qualquer papel abre, se a extensão está <strong>ativa</strong> na empresa. Há um link <em>Voltar às extensões</em>, o selo “Ativa” com a versão, o título, o resumo e a frase de permissão. Cada card do pacote tem ícone, título, descrição (se ligada), blocos de texto e um botão de ação (“Abrir as pessoas”…). Ao clicar, o servidor <strong>reconfere</strong> a ativação e a permissão e leva a uma lista <em>fechada</em> de telas — nunca a um endereço vindo do pacote. Erros: “Conferindo acesso…”, “A ação não foi aberta”. Se a extensão não está ativa: “Este guia não está disponível”. Os guias também aparecem no hub do <a href="#crm-hub">CRM</a>, na seção “Orientações instaladas”.</p>
+<p>O botão <span class="ui">Abrir guia</span> leva a <code>/app/extensions/&lt;nome&gt;</code>. Qualquer papel abre, se a extensão está <strong>ativa</strong> na empresa. Há um link <em>Voltar às extensões</em>, o selo “Ativa” com a versão, o título, o resumo e a frase de permissão. Cada card do pacote tem ícone, título, descrição (se ligada), blocos de texto e um botão de ação (“Abrir as pessoas”…). Ao clicar, o servidor <strong>reconfere</strong> a ativação e a permissão e leva a uma lista <em>fechada</em> de telas — nunca a um endereço vindo do pacote. Erros: “Conferindo acesso…”, “A ação não foi aberta”. Se a extensão não está ativa: “Este guia não está disponível”. Os guias também aparecem na página de área <a href="#crm-hub">Gestão de Clientes CRM</a> (<code>/app/crm</code>, que já não é o caminho do menu: abre pelo endereço ou pela busca <kbd>Ctrl</kbd> <kbd>K</kbd>), na seção “Orientações instaladas”.</p>
 
 <h2 id="dono">O que só o dono do servidor faz</h2>
 <ul>
@@ -52,7 +52,7 @@
   <tbody>
     <tr><td><strong>Primeira semana no atendimento</strong></td><td>Produtividade</td><td>Tarefas e Contatos</td><td>“Dia 1: leia dez conversas antes de responder uma”; “Dia 3: sua fila é sua responsabilidade”.</td></tr>
     <tr><td><strong>Carrinho abandonado</strong></td><td>Vendas</td><td>Conversas e Funil</td><td>“A primeira mensagem, em até 1 hora”; “Quando parar de insistir”.</td></tr>
-    <tr><td><strong>Retorno de paciente</strong></td><td>Atendimento</td><td>Conversas e Agenda</td><td>“Quem tratou e não remarcou”; “Encaixes que a semana ainda tem”.</td></tr>
+    <tr><td><strong>Retorno de paciente</strong></td><td>Atendimento</td><td>Conversas e Agenda (Compromissos no menu)</td><td>“Quem tratou e não remarcou”; “Encaixes que a semana ainda tem”.</td></tr>
   </tbody>
 </table>
 <p>Os pedidos de instalação deixam <em>recibos</em> no navegador (para não duplicar). Se algo ficar pendente, aparecem os alertas “O estado exibido está desatualizado”, “Pedidos aguardando confirmação” (com <span class="ui">Verificar recibo</span>) e “Os pedidos estão bloqueados neste navegador” (libere o armazenamento do site).</p>

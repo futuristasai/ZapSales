@@ -1,8 +1,9 @@
-<!--meta {"id":"conceitos","grupo":"comecando","titulo":"Conceitos básicos","ordem":2,"resumo":"As palavras que o ZapSales usa em todas as telas: organização, papéis, contato, lead, funil, etapa, conversa, canal e atendimento automático.","palavras":["glossário","dicionário","termos","significa","o que é","lead","negócio","pipeline","tenant","papel","permissão","admin","gerente","atendente","tag","etiqueta"],"rotas":[]} -->
+<!--meta {"id":"conceitos","grupo":"comecando","titulo":"Conceitos básicos","ordem":2,"resumo":"As palavras que o ZapSales usa em todas as telas: organização, papéis, contato, lead, funil, etapa, conversa, canal e atendimento automático.","palavras":["glossário","menu","todo dia","mesa de trabalho","faixa","painel","gaveta","termo técnico","página de área","configurar","resultados","vender","inbox","conversas","riscos de perda","radar","compromissos","agenda","casos","aguardando humano","visualizador","somente leitura","central de avisos","nomes antigos","dicionário","termos","significa","o que é","lead","negócio","pipeline","tenant","papel","permissão","admin","gerente","atendente","tag","etiqueta"],"rotas":[]} -->
 
 <h2 id="organizacao">Organização</h2>
 <p>A <strong>organização</strong> é a sua empresa dentro do ZapSales. Tudo o que você cadastra — contatos, funis, conversas, agentes — pertence a ela, e <strong>nunca se mistura</strong> com os dados de outra organização, mesmo quando as duas usam o mesmo servidor.</p>
 <p>Uma pessoa pode participar de mais de uma organização. Nesse caso aparece, no topo da tela, um seletor para trocar de uma para outra.</p>
+<p>Os dados da empresa (nome, contato do encarregado de dados e outros) ficam em <span class="ui">Configurar › Empresa › A empresa › Dados da empresa</span>; dentro dessa tela o título ainda é “Organização”. Veja <a href="#dados-da-empresa">Dados da empresa</a>.</p>
 
 <h2 id="papeis">Papéis: quem pode fazer o quê</h2>
 <p>Cada pessoa da equipe tem um <strong>papel</strong> dentro da organização. Os papéis são <strong>em escada</strong>: quem tem um papel pode tudo o que os papéis abaixo dele podem.</p>
@@ -11,12 +12,12 @@
   <tbody>
     <tr><td><strong>Somente leitura</strong></td><td>Vê as telas, mas não muda nada.</td></tr>
     <tr><td><strong>Atendente</strong></td><td>Atende: assume e responde conversas, cria e edita contatos e cartões do funil, move cartões, importa planilhas de cartões para um funil.</td></tr>
-    <tr><td><strong>Gerente</strong></td><td>Organiza o trabalho da equipe: cria e arquiva funis, faz disparo em massa, organiza as etiquetas e a distribuição de atendimento e acompanha os agentes de IA (a lista de agentes abre para o Gerente, mas só o Administrador cria e edita agentes).</td></tr>
+    <tr><td><strong>Gerente</strong></td><td>Organiza o trabalho da equipe: cria e arquiva funis, faz disparo em massa, organiza as etiquetas e o revezamento da equipe (a distribuição de atendimento) e acompanha os agentes de IA (a lista de agentes abre para o Gerente, mas só o Administrador cria e edita agentes).</td></tr>
     <tr><td><strong>Administrador</strong></td><td>Cuida da empresa no sistema: conecta números de WhatsApp, convida a equipe, cria e edita agentes de IA, anonimiza contatos (LGPD), mexe em plano, marca e chaves de integração.</td></tr>
   </tbody>
 </table>
-<p>Em algumas telas, como a <a href="#equipe">Equipe</a>, o papel <em>Somente leitura</em> aparece com o nome <em>Visualizador</em>: é o mesmo papel.</p>
-<p>Cada página deste manual diz, na ficha do topo, <strong>a partir de qual papel</strong> a tela pode ser usada. Se você não vê um item do menu, quase sempre é porque o seu papel não chega até ele.</p>
+<p>O papel de quem só consulta se chama <em>Somente leitura</em> em todas as telas, incluindo a <a href="#equipe">Equipe</a>. Em versões mais antigas ele aparecia como <em>Visualizador</em> ou <em>Leitor</em>: é o mesmo papel.</p>
+<p>Cada página deste manual diz, na ficha do topo, <strong>a partir de qual papel</strong> a tela pode ser usada. Se você não vê uma tela no menu, quase sempre é porque o seu papel não chega até ela.</p>
 <aside class="nota info"><strong>Por que um botão some ou fica cinza?</strong><p>O sistema esconde (ou desativa) o que o seu papel não pode fazer, para você não clicar à toa. Se precisar de uma permissão maior, peça a quem administra a organização.</p></aside>
 
 <h2 id="contato">Contato</h2>
@@ -33,14 +34,17 @@
 
 <h2 id="conversa">Conversa e canal</h2>
 <p>A <strong>conversa</strong> é a troca de mensagens com um contato. O <strong>canal</strong> é o número de WhatsApp pelo qual ela acontece. Você pode conectar mais de um número, e cada conversa lembra por qual deles o cliente entrou.</p>
-<p>Todas as conversas ficam no <a href="#inbox">Inbox</a>. Cada conversa tem um <strong>dono</strong>: a pessoa da equipe que está atendendo. Enquanto ninguém assumiu, ela espera na <strong>fila</strong>.</p>
+<p>Todas as conversas ficam em <a href="#inbox">Conversas</a> (<span class="ui">Todo dia › Leads › Conversas</span>; antes chamada <em>Inbox</em>). Cada conversa tem um <strong>dono</strong>: a pessoa da equipe que está atendendo. Enquanto ninguém assumiu, ela espera na <strong>fila</strong>.</p>
+
+<h2 id="riscos-e-compromissos">Riscos de Perda e Compromissos</h2>
+<p><strong>Riscos de Perda</strong> (<span class="ui">Todo dia › Leads › Riscos de Perda</span>; antes chamada <em>Radar</em>) é a lista dos cartões abertos no funil em que ninguém mexe há tempo e que podem morrer sem resposta: <a href="#radar">Riscos de Perda</a>. <strong>Compromissos</strong> (<span class="ui">Todo dia › Leads › Compromissos</span>; antes chamada <em>Agenda</em>) é o calendário da equipe, onde se marca, remarca e cancela um horário com o cliente e se registra se ele compareceu: <a href="#agenda">Compromissos</a>.</p>
 
 <h2 id="automatico">Atendimento automático (agente de IA)</h2>
 <p>O <strong>agente de IA</strong> é um atendente automático: ele lê as mensagens, responde, qualifica o cliente e pode mover o cartão no funil. A equipe e o agente trabalham juntos: quando uma pessoa <strong>assume</strong> a conversa, o atendimento automático para nela. Quando a pessoa termina, pode <strong>devolver</strong> a conversa ao automático.</p>
-<p>Na tela, o que é automático aparece com o nome <em>Automático</em>. Veja a seção do grupo Agente de IA para montar e acompanhar os agentes.</p>
+<p>Na tela, o que é automático aparece com o nome <em>Automático</em>. Os agentes se montam em <span class="ui">Configurar › Agente</span>, e o que eles fizeram se acompanha em <span class="ui">Resultados</span>.</p>
 
 <h2 id="tag">Tag (etiqueta)</h2>
-<p>A <strong>tag</strong> é uma etiqueta livre que você cola em contatos, cartões e conversas para agrupar e achar depois — “vip”, “recorrente”, “novo”. Você escolhe o texto. Os filtros de várias telas permitem buscar por tag, e escolher se o resultado precisa ter <strong>todas</strong> as tags marcadas (<em>E</em>) ou <strong>qualquer uma</strong> delas (<em>OU</em>).</p>
+<p>A <strong>tag</strong> (no menu, <em>Etiquetas</em>; a tela fica em <span class="ui">Configurar › Vender › Como a equipe vende › Etiquetas</span>) é uma etiqueta livre que você cola em contatos, cartões e conversas para agrupar e achar depois — “vip”, “recorrente”, “novo”. Você escolhe o texto. Os filtros de várias telas permitem buscar por tag, e escolher se o resultado precisa ter <strong>todas</strong> as tags marcadas (<em>E</em>) ou <strong>qualquer uma</strong> delas (<em>OU</em>).</p>
 
 <h2 id="lgpd">LGPD e anonimização</h2>
 <p>A LGPD é a lei brasileira de proteção de dados. O titular dos dados — a pessoa — pode pedir que você apague o que guarda sobre ela. No ZapSales isso se faz <strong>anonimizando</strong> o contato: o nome vira “Cliente Anonimizado #número” e os dados pessoais são removidos, mas o histórico de atendimento é preservado sem identificar ninguém. <strong>Não tem volta.</strong> Os detalhes estão em <a href="#contatos--lgpd">Contatos › LGPD</a>.</p>
@@ -54,36 +58,86 @@
 <p>Os dois aparecem em <a href="#conexoes">Conexões</a>. Quem responde a uma campanha cai no funil e no agente, não importa por qual dos dois chegou.</p>
 
 <h2 id="janela-24h">A janela de 24 horas e os modelos da Meta</h2>
-<p>Na <strong>API Oficial</strong>, você só pode escrever <strong>com texto livre</strong> enquanto o cliente escreveu para você nas <strong>últimas 24 horas</strong>. Passado esse prazo, só sai um <strong>modelo (template) aprovado pela Meta</strong> — se tentar texto livre, a plataforma recusa. O Inbox mostra quanto tempo falta para a janela fechar e, depois de fechada, há quanto tempo ela fechou. Os modelos são criados e acompanhados em <a href="#modelos-da-meta">Modelos de mensagem da Meta</a>. Nos números por QR essa regra não existe: o texto livre sai a qualquer hora.</p>
+<p>Na <strong>API Oficial</strong>, você só pode escrever <strong>com texto livre</strong> enquanto o cliente escreveu para você nas <strong>últimas 24 horas</strong>. Passado esse prazo, só sai um <strong>modelo (template) aprovado pela Meta</strong> — se tentar texto livre, a plataforma recusa. A tela Conversas mostra quanto tempo falta para a janela fechar e, depois de fechada, há quanto tempo ela fechou. Os modelos são criados e acompanhados em <a href="#modelos-da-meta">Modelos de mensagem da Meta</a>. Nos números por QR essa regra não existe: o texto livre sai a qualquer hora.</p>
 
 <h2 id="parar">PARAR: quando a pessoa pede para sair</h2>
 <p>Se um cliente pede para não receber mais mensagens, o sistema <strong>bloqueia o contato</strong>, e a partir daí nenhum envio sai para ele (nem do agente, nem de campanhas). O bloqueio automático só acontece quando o pedido é claro: a mensagem inteira ser uma palavra como <em>PARAR</em>, ou frases como “não quero mais receber”, “parar de me mandar” ou “sair da lista”. A <strong>palavra solta no meio de uma frase não bloqueia</strong>: “tem como parar a dor?” ou “preciso sair mais cedo” são conversa normal, não pedido de descadastro. Nos casos duvidosos (“me deixa em paz”), o agente <em>para de responder e chama uma pessoa</em>. Contatos bloqueados ficam sinalizados em <a href="#contatos">Contatos</a>, e só uma pessoa pode desbloquear.</p>
 
 <h2 id="protecao-de-envio">Proteção de envio e aquecimento</h2>
-<p>Para reduzir o risco de bloqueio do número, o sistema limita <strong>quantas mensagens ele envia por dia</strong> e <strong>com que pressa</strong>. Número novo é <em>aquecido</em>: nos primeiros dias o teto é baixo (até 20 envios por dia) e vai subindo com a idade do número, até não haver limite de aquecimento depois de 31 dias. Há também uma <strong>janela de horário</strong> para disparos em massa e prospecção (por padrão, das 7h às 22h) e um <strong>ritmo mínimo entre envios</strong>. Tudo isso se ajusta, por número, em <a href="#conexoes">Conexões › Proteção de envio</a>; a tabela completa está lá.</p>
+<p>Para reduzir o risco de bloqueio do número, o sistema limita <strong>quantas mensagens ele envia por dia</strong> e <strong>com que pressa</strong>. Número novo é <em>aquecido</em>: nos primeiros dias o teto é baixo (até 20 envios por dia) e vai subindo com a idade do número, até não haver limite de aquecimento depois de 31 dias. Há também uma <strong>janela de horário</strong> para disparos em massa e prospecção (por padrão, das 7h às 22h) e um <strong>ritmo mínimo entre envios</strong>. Tudo isso se ajusta, por número, em <a href="#conexoes">Conexões</a> (<span class="ui">Configurar › Conexões › WhatsApp e telefone › Conexões</span>), no ajuste <em>Proteção de envio</em>; a tabela completa está lá.</p>
 
 <h2 id="jev">Jev</h2>
-<p>O <strong>Jev</strong> é um ajudante de decisões rápidas do sistema (por exemplo, medir o clima de uma conversa). Ele <strong>não conversa com o cliente</strong>: a chave dele serve só para essas decisões, e ele é opcional. Ele nunca bloqueia ninguém sozinho: no máximo abre um aviso na <a href="#alertas">Central de avisos</a>. Configure em <a href="#provedores">Provedores</a>.</p>
+<p>O <strong>Jev</strong> é um ajudante de decisões rápidas do sistema (por exemplo, medir o clima de uma conversa). Ele <strong>não conversa com o cliente</strong>: a chave dele serve só para essas decisões, e ele é opcional. Ele nunca bloqueia ninguém sozinho: no máximo abre um aviso na <a href="#alertas">Central de avisos</a>. Configure em <a href="#provedores">Qual IA usar</a> (<span class="ui">Configurar › Agente › Conectar a IA › Qual IA usar</span>; antes chamada Provedores).</p>
 
 <h2 id="caso-handoff">Caso e passar para uma pessoa (handoff)</h2>
-<p><strong>Passar para uma pessoa</strong> (em inglês, <em>handoff</em>) é o agente entregar a conversa à equipe, e o atendimento automático para nela. Um <strong>caso</strong> é diferente: é o <em>pedido interno</em> que o agente abre quando esbarra em algo que só uma pessoa resolve (como aprovar um desconto) — ele <strong>continua conversando</strong> com o cliente enquanto espera a decisão. Os casos ficam em <a href="#casos">Casos</a>.</p>
+<p><strong>Passar para uma pessoa</strong> (em inglês, <em>handoff</em>) é o agente entregar a conversa à equipe, e o atendimento automático para nela. Um <strong>caso</strong> é diferente: é o <em>pedido interno</em> que o agente abre quando esbarra em algo que só uma pessoa resolve (como aprovar um desconto) — ele <strong>continua conversando</strong> com o cliente enquanto espera a decisão. Os casos ficam em <a href="#casos">Aguardando Humano</a> (<span class="ui">Todo dia › Leads › Aguardando Humano</span>; antes chamada <em>Casos</em>): a tela abre nos casos que esperam você, e a aba <em>Todos</em> guarda o histórico.</p>
 
 <h2 id="skill-roteador-followup">Skill, roteador e follow-up</h2>
 <ul>
-<li><strong>Skill</strong>: uma habilidade especializada (como contornar objeção de preço ou marcar horário) que o agente só carrega quando a conversa pede. Veja <a href="#skills">Skills</a>.</li>
-<li><strong>Roteador</strong>: entende o que o cliente quer e entrega a conversa ao agente certo, num mesmo número de WhatsApp (quem quer comprar fala com o agente de vendas; quem já é cliente, com o suporte). Veja <a href="#roteadores">Roteadores</a>.</li>
+<li><strong>Skill</strong>: uma habilidade especializada (como contornar objeção de preço ou marcar horário) que o agente só carrega quando a conversa pede. No menu, a tela se chama <a href="#skills">O que o agente sabe fazer</a> (skills).</li>
+<li><strong>Roteador</strong>: entende o que o cliente quer e entrega a conversa ao agente certo, num mesmo número de WhatsApp (quem quer comprar fala com o agente de vendas; quem já é cliente, com o suporte). No menu, a tela se chama <a href="#roteadores">Quem atende cada conversa</a> (roteadores).</li>
 <li><strong>Follow-up</strong>: um fluxo automático para retomar quem esfriou — por silêncio, mudança de etapa ou resposta do contato —, sem ninguém precisar lembrar de mandar cada mensagem. Veja <a href="#followups">Follow-ups</a>.</li>
 </ul>
 
 <h2 id="token-webhook-mcp">Token, webhook e MCP</h2>
 <ul>
-<li><strong>Token (chave de acesso)</strong>: uma “senha” para <em>outro sistema</em> falar com o seu ZapSales, sem login de pessoa. Veja <a href="#api-tokens">API Tokens</a> e <a href="#api-e-mcp">API e MCP</a>.</li>
-<li><strong>Webhook</strong>: um aviso automático entre sistemas. De entrada, recebe contatos de fora (formulários, páginas de captura) como leads no funil; de saída, avisa outro sistema quando algo acontece. Veja <a href="#webhooks">Webhooks</a>.</li>
-<li><strong>MCP</strong>: um jeito padrão de dar “ferramentas” a um agente de IA. O ZapSales pode <em>oferecer</em> as dele a um agente de fora (<a href="#api-e-mcp">API e MCP</a>) ou <em>usar</em> as de outra empresa (<a href="#agente-servidores-mcp">Servidores MCP</a>).</li>
+<li><strong>Token (chave de acesso)</strong>: uma “senha” para <em>outro sistema</em> falar com o seu ZapSales, sem login de pessoa. No menu, <a href="#api-tokens">Chaves de acesso</a> (API tokens); veja também <a href="#api-e-mcp">API e MCP</a>.</li>
+<li><strong>Webhook</strong>: um aviso automático entre sistemas. De entrada, recebe contatos de fora (formulários, páginas de captura) como leads no funil; de saída, avisa outro sistema quando algo acontece. No menu, a tela se chama <a href="#webhooks">Avisar outros sistemas</a> (webhooks).</li>
+<li><strong>MCP</strong>: um jeito padrão de dar “ferramentas” a um agente de IA. O ZapSales pode <em>oferecer</em> as dele a um agente de fora (<a href="#api-e-mcp">API e MCP</a>) ou <em>usar</em> as de outra empresa (<a href="#agente-servidores-mcp">Servidores MCP</a>, no menu <em>Conectar outros sistemas</em>).</li>
 </ul>
 
 <h2 id="modulo-extensao">Módulo e extensão</h2>
-<p>Um <strong>módulo</strong> (ou <em>recurso opcional</em>) é uma parte do produto que o <strong>dono do servidor</strong> liga ou desliga para a instalação inteira — por exemplo, Propostas, Honorários ou Fluxos de atendimento; sem ele, a tela nem aparece. Uma <strong>extensão</strong> é um guia instalado para orientar o trabalho no CRM: o dono do servidor decide o que existe, e a empresa decide se ativa. O sistema funciona inteiro sem nenhuma extensão. Veja <a href="#recursos-opcionais">Recursos opcionais</a> e <a href="#extensoes">Extensões</a>.</p>
+<p>Um <strong>módulo</strong> (ou <em>recurso opcional</em>) é uma parte do produto que o <strong>dono do servidor</strong> liga ou desliga para a instalação inteira — por exemplo, Propostas, Honorários ou Fluxos de atendimento; sem ele, a tela nem aparece. Uma <strong>extensão</strong> é um guia instalado para orientar o trabalho no CRM: o dono do servidor decide o que existe, e a empresa decide se ativa. O sistema funciona inteiro sem nenhuma extensão. Veja <a href="#recursos-opcionais">Recursos opcionais</a> e <a href="#extensoes">Extensões</a>, ambas em <span class="ui">Configurar › Empresa › Plano e regras</span>.</p>
 
 <h2 id="central-de-avisos">Central de avisos</h2>
-<p>É a tela do <strong>sino</strong> no topo: tudo o que o assistente precisou <em>escalar para a equipe</em> — conexões caídas, tarefas que falharam, atendimentos passados a humanos —, com um link para resolver cada coisa. Veja <a href="#alertas">Alertas</a>.</p>
+<p>É a tela do <strong>sino</strong> no topo, que no menu se chama <em>Alertas</em> (<span class="ui">Todo dia › Leads › Alertas</span>): tudo o que o assistente precisou <em>escalar para a equipe</em> — conexões caídas, tarefas que falharam, atendimentos passados a humanos —, com um link para resolver cada coisa. Veja <a href="#alertas">Alertas</a>.</p>
+
+<h2 id="menu-todo-dia">Todo dia, Configurar e Resultados (o menu)</h2>
+<p>O menu está organizado pelo que você faz, e não pelas partes do sistema. São três blocos:</p>
+<ul>
+<li><strong>Todo dia</strong> (também chamado de <em>mesa de trabalho</em>): o que se abre o dia inteiro. Tem os subtítulos <em>Leads</em> (Conversas, Aguardando Humano, Alertas, Riscos de Perda, Compromissos) e <em>Gestão de Clientes CRM</em> (Funis, Contatos, Tarefas, Disparo em massa). Mais abaixo, em <em>Se a sua empresa usa</em>, aparecem Propostas, Comandas e Chamadas, mas só quando a empresa usa esses recursos.</li>
+<li><strong>Configurar</strong>: o que se ajusta de vez em quando, em quatro áreas: <strong>Vender</strong> (funil, produtos, etiquetas), <strong>Agente</strong> (montar, ensinar e conectar a IA), <strong>Conexões</strong> (WhatsApp, telefone, outros sistemas, anúncios) e <strong>Empresa</strong> (equipe, dados, plano e regras).</li>
+<li><strong>Resultados</strong>: os números do negócio, o trabalho da equipe e da IA e o histórico para investigar quando algo dá errado.</li>
+</ul>
+<p>O painel ao lado da faixa começa sempre em Todo dia, a mesa de trabalho. As telas pessoais (Perfil, Segurança, Notificações) ficam no botão <strong>Você</strong>, no rodapé da faixa (no celular, no menu do avatar). Neste manual, o caminho de cada tela é escrito assim: <span class="ui">Configurar › Conexões › WhatsApp e telefone › Conexões</span>, ou seja, bloco, área, grupo e tela.</p>
+
+<h2 id="faixa-painel-gaveta">Faixa, painel e gaveta</h2>
+<ul>
+<li><strong>Faixa</strong>: a coluna estreita à esquerda, no computador. Tem Todo dia, as quatro áreas de Configurar, Resultados, Buscar e Você. O ícone de Todo dia mostra quantas conversas esperam uma pessoa, e o de Conexões acende um aviso quando um número do WhatsApp cai.</li>
+<li><strong>Painel</strong>: ao lado da faixa, com as telas de Todo dia. Ele pode ser recolhido pela setinha, e o sistema lembra a sua escolha. No rodapé dele fica o link para o Manual.</li>
+<li><strong>Gaveta</strong>: ao clicar em Vender, Agente, Conexões, Empresa ou Resultados, abre por cima da tela uma janela larga, em duas colunas, com as telas agrupadas pelo que você quer fazer e uma frase dizendo o que cada uma faz. Ela fecha com o <span class="ui">×</span>, com <kbd>Esc</kbd>, com um clique fora ou ao escolher uma tela.</li>
+<li>No celular, a faixa vira uma <strong>barra de baixo</strong> com Conversas, Todo dia, Configurar e Resultados; cada uma, menos Conversas, abre uma folha com a lista.</li>
+</ul>
+
+<h2 id="termo-tecnico">Termo técnico</h2>
+<p>Algumas telas têm um nome simples, que diz o que elas fazem, e o <strong>termo técnico</strong> escrito embaixo. Por exemplo, <em>Avisar outros sistemas</em> tem “webhooks” embaixo, e <em>Chave da IA</em> tem “API key”. Você acha a tela por qualquer um dos dois nomes, e pelo nome antigo também: a busca (<kbd>Ctrl</kbd> + <kbd>K</kbd>) entende os três. Neste manual, o termo técnico aparece entre parênteses, como em “Avisar outros sistemas (webhooks)”.</p>
+
+<h2 id="pagina-de-area">Página de área</h2>
+<p>Antes do menu novo, cada grupo do menu tinha uma página que reunia as suas telas: <em>Gestão de Clientes CRM</em>, <em>Agente de IA</em>, <em>Análise</em> e <em>Configurações</em>. Essas quatro <strong>páginas de área</strong> continuam existindo e aparecem na busca, na categoria <em>Páginas de área</em>, mas já não são o caminho do menu: hoje se chega às telas pela faixa, pelo painel e pelas gavetas.</p>
+
+<h2 id="nomes-antigos">Nomes que mudaram no menu</h2>
+<p>Se você já conhecia o sistema, ou lê um material mais antigo, estes são os nomes de antes. A busca continua achando pelos dois.</p>
+<table class="tabela">
+  <thead><tr><th>Antes</th><th>Agora, no menu</th></tr></thead>
+  <tbody>
+    <tr><td>Inbox</td><td>Conversas</td></tr>
+    <tr><td>Radar</td><td>Riscos de Perda</td></tr>
+    <tr><td>Agenda</td><td>Compromissos</td></tr>
+    <tr><td>Casos</td><td>Aguardando Humano</td></tr>
+    <tr><td>Roteadores</td><td>Quem atende cada conversa (roteadores)</td></tr>
+    <tr><td>Credenciais</td><td>Chave da IA (API key)</td></tr>
+    <tr><td>Provedores</td><td>Qual IA usar (provedores)</td></tr>
+    <tr><td>Ferramentas externas</td><td>Conectar outros sistemas (MCP)</td></tr>
+    <tr><td>Skills</td><td>O que o agente sabe fazer (skills)</td></tr>
+    <tr><td>Execuções</td><td>Histórico do agente (logs)</td></tr>
+    <tr><td>Webhooks</td><td>Avisar outros sistemas (webhooks)</td></tr>
+    <tr><td>Auditoria</td><td>Quem mexeu em quê (audit log)</td></tr>
+    <tr><td>Distribuição de atendimento</td><td>Revezamento da equipe (round-robin)</td></tr>
+    <tr><td>Tags</td><td>Etiquetas (tags)</td></tr>
+    <tr><td>Organização</td><td>Dados da empresa (organização)</td></tr>
+    <tr><td>API Tokens</td><td>Chaves de acesso (API tokens)</td></tr>
+    <tr><td>Dados externos</td><td>Dados de outro sistema (banco externo)</td></tr>
+    <tr><td>Grupo Atendimento / grupo CRM</td><td>Grupos Leads / Gestão de Clientes CRM</td></tr>
+  </tbody>
+</table>
+<p>Nem sempre o título dentro da tela mudou junto: por exemplo, a tela <em>Avisar outros sistemas</em> ainda se chama “Webhooks” por dentro. Quando for assim, a página do manual avisa.</p>

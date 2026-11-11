@@ -36,7 +36,7 @@
   <li><strong>Abrir (ler):</strong> qualquer administrador da plataforma <em>ativo</em>. Sem login, vai para a tela de entrada; sem ser administrador (ou revogado), vai para <a href="#admin-acesso-negado">Acesso negado</a>; se a linha dele exige verificação em duas etapas e a sessão não a provou, vai para a verificação.</li>
   <li><strong>Alterar (escrever):</strong> exige o escopo <code>full</code> <em>e</em> a verificação em duas etapas em dia (quem <em>tem</em> o fator precisa tê-lo provado na sessão). O escopo <code>support_readonly</code> abre o painel inteiro, mas <strong>toda gravação é recusada</strong> (“Seu acesso à administração da plataforma é somente leitura.”) — útil para demonstrar sem risco.</li>
   <li>Telas de configuração (Marca, Google, Meta, Cadastro, E-mail, Recursos opcionais, Destinos internos, Preços da Meta, Credenciais, Extensões, Módulos) respondem <strong>“página não encontrada”</strong> para quem não é administrador da plataforma: para os demais, elas simplesmente não existem.</li>
-  <li>Toda leitura também deixa rastro: abrir listas e telas do painel grava ações como <code>platform_admin.tenants_listed</code> na <a href="#auditoria">Auditoria</a>, marcadas como feitas “como administrador da plataforma”.</li>
+  <li>Toda leitura também deixa rastro: abrir listas e telas do painel grava ações como <code>platform_admin.tenants_listed</code> na tela <a href="#auditoria">Quem mexeu em quê</a> (“Auditoria”), marcadas como feitas “como administrador da plataforma”.</li>
 </ul>
 <figure class="print media">
   <img src="img/admin-acesso-negado.png" alt="Tela Acesso negado com os botões Início e Voltar para /app" loading="lazy">

@@ -1,8 +1,8 @@
-<!--meta {"id":"equipe","grupo":"organizacao","titulo":"Equipe","ordem":5,"resumo":"Quem trabalha na empresa: convidar pessoas, definir o papel e a interface de cada uma, retirar acesso, e organizar horários, capacidade e distribuição do atendimento.","palavras":["equipe","membros","convidar","convite","papel","role","administrador","gerente","atendente","somente leitura","revogar","interface","horário de atendimento","capacidade","disponível","roteamento","rodízio"],"onde":"Configurações › Sua empresa › Equipe","quem":"Todos abrem a página. Lista de membros e convites: Gerente ou acima. Convidar, mudar papel, revogar e mudar interface: só o Administrador. Aba Atendimento: Gerente ou acima.","rotas":["/app/team","/app/team/invite"]} -->
+<!--meta {"id":"equipe","grupo":"organizacao","titulo":"Equipe","ordem":5,"resumo":"Quem trabalha na empresa: convidar pessoas, definir o papel e a interface de cada uma, retirar acesso, e organizar horários, capacidade e distribuição do atendimento.","palavras":["equipe","membros","convidar","convite","papel","role","administrador","gerente","atendente","somente leitura","revogar","interface","horário de atendimento","capacidade","disponível","roteamento","rodízio","visualizador","revezamento da equipe","compromissos"],"onde":"Configurar › Empresa › Equipe › Equipe (clique em Empresa na faixa à esquerda)","quem":"Todos abrem a página. Lista de membros e convites: Gerente ou acima. Convidar, mudar papel, revogar e mudar interface: só o Administrador. Aba Atendimento: Gerente ou acima.","rotas":["/app/team","/app/team/invite"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>É onde você vê <strong>quem tem acesso</strong> à empresa, convida gente nova, decide o <strong>papel</strong> de cada um (o que a pessoa pode fazer), e organiza o atendimento: horários, capacidade e se cada atendente está disponível.</p>
-<aside class="nota info"><strong>Os quatro papéis — e onde ainda aparecem em inglês.</strong><p>Do menor para o maior: <code>viewer</code>, <code>agent</code>, <code>manager</code> e <code>admin</code>, que na tela de Equipe aparecem como <strong>Visualizador</strong>, <strong>Atendente</strong>, <strong>Gerente</strong> e <strong>Administrador</strong> (na lista de membros, na lista de convites e no seletor da página de convite). Ainda aparecem <strong>em inglês, “crus”</strong> (<code>viewer</code>, <code>agent</code>, <code>manager</code>, <code>admin</code>) o título da coluna <em>Role</em> da lista de convites, o <strong>e-mail do convite</strong> e a página de aceite do convite. A tela de <a href="#config-seguranca">Segurança</a> chama o papel mais baixo de “Somente leitura” — é o mesmo papel que a Equipe chama de Visualizador. Existe ainda um papel interno, <code>ai_operator</code>, que é do agente de IA e nunca de uma pessoa.</p></aside>
+<aside class="nota info"><strong>Os quatro papéis — e onde ainda aparecem em inglês.</strong><p>Do menor para o maior: <code>viewer</code>, <code>agent</code>, <code>manager</code> e <code>admin</code>, que na tela de Equipe aparecem como <strong>Somente leitura</strong> (antes, Visualizador), <strong>Atendente</strong>, <strong>Gerente</strong> e <strong>Administrador</strong> (na lista de membros, na lista de convites e no seletor da página de convite). Ainda aparecem <strong>em inglês, “crus”</strong> (<code>viewer</code>, <code>agent</code>, <code>manager</code>, <code>admin</code>) o título da coluna <em>Role</em> da lista de convites, o <strong>e-mail do convite</strong> e a página de aceite do convite. A tela de <a href="#config-seguranca">Segurança</a> usa o mesmo nome, “Somente leitura”, para o papel mais baixo. Existe ainda um papel interno, <code>ai_operator</code>, que é do agente de IA e nunca de uma pessoa.</p></aside>
 <p>A página tem duas abas, <strong>Membros</strong> e <strong>Atendimento</strong>, e o botão <span class="ui">Convidar membros</span> (só o Administrador o vê). As abas têm endereço próprio: <code>/app/team?aba=membros</code> e <code>/app/team?aba=atendimento</code>.</p>
 
 <h2 id="membros">Aba Membros</h2>
@@ -31,12 +31,12 @@
 <ol class="legenda">
   <li><strong>Título.</strong> “A alteração vale apenas nesta organização e aparece para o membro sem sair da conta.”</li>
   <li><strong>Perfil de interface.</strong> <em>Completa</em> ou <em>Simplificada</em>. Trocar o perfil restaura a seleção padrão dele.</li>
-  <li><strong>Personalizar áreas visíveis.</strong> Abre caixas de seleção por grupo do menu (Atendimento, CRM, Agente de IA, Canais, Análise, Organização) — só as telas que o papel da pessoa pode ver e que não são essenciais. Deve sobrar ao menos uma área.</li>
+  <li><strong>Personalizar áreas visíveis.</strong> Abre caixas de seleção com as telas do menu, organizadas como ele: por bloco (Todo dia, Configurar, Resultados, Você), dentro de Configurar por área (Vender, Agente, Conexões, Empresa) e por grupo de tarefa, com o nome novo e o termo técnico embaixo — só as telas que o papel da pessoa pode ver e que não são essenciais. Deve sobrar ao menos uma área.</li>
   <li><strong>Salvar interface.</strong> “Interface atualizada.”</li>
 </ol>
 <ul>
-  <li>A <strong>Simplificada</strong> mostra Inbox, Agenda, Funis (Kanban), Contatos, Tarefas e Conexões, além das áreas essenciais.</li>
-  <li>A interface <strong>só muda o que aparece no menu</strong>. As permissões continuam sendo as do papel; links de conversas e avisos ainda podem abrir áreas autorizadas que estejam ocultas. Perfil, Segurança e (para o administrador) Equipe e Organização nunca somem.</li>
+  <li>A <strong>Simplificada</strong> mostra Conversas, Compromissos, Funis, Contatos, Tarefas e Conexões, além das áreas essenciais.</li>
+  <li>A interface <strong>só muda o que aparece no menu</strong>. As permissões continuam sendo as do papel; links de conversas e avisos ainda podem abrir áreas autorizadas que estejam ocultas. Perfil, Segurança e (para o administrador) Equipe e Dados da empresa nunca somem.</li>
 </ul>
 
 <h3 id="revogar">Revogar e devolver acesso</h3>
@@ -64,7 +64,7 @@
 </figure>
 <ol class="legenda">
   <li><strong>Emails.</strong> Cole até <strong>20</strong> e-mails, um por linha (também vale vírgula ou ponto e vírgula; repetidos são removidos).</li>
-  <li><strong>Papel.</strong> O papel de <em>todos</em> os convidados deste envio: Atendente (padrão), Visualizador, Gerente ou Administrador.</li>
+  <li><strong>Papel.</strong> O papel de <em>todos</em> os convidados deste envio: Atendente (padrão), Somente leitura, Gerente ou Administrador.</li>
   <li><strong>Interface.</strong> O mesmo editor de interface; o convidado já nasce com o perfil escolhido.</li>
   <li><strong>Enviar convites.</strong> “N convite(s) enviado(s), M falha(s).” Se a instalação ainda não envia e-mail, o aviso muda: “N convite(s) não puderam ser enviados por email. Copie os links abaixo e envie você mesmo.” — o convite foi criado, mas quem o entrega é você.</li>
 </ol>
@@ -91,8 +91,8 @@
   <li><strong>Horário.</strong> Resumo (“Seg 08:00–18:00…”) ou “Não publicado”, e o relógio que abre a janela de horário.</li>
   <li><strong>Disponível.</strong> O interruptor.</li>
 </ol>
-<p>Só entram na lista membros ativos com papel <strong>Atendente ou superior</strong> (Gerente e Administrador entram; Somente leitura, não). Quem é menos que Gerente vê só um texto: “Só gerentes e administradores editam os horários de atendimento da equipe. Para publicar os seus, peça a um gerente que abra esta aba e use o botão “Editar horário” ao lado do seu nome.”. A configuração de modo, tentativas e espera é a <strong>mesma</strong> da tela <a href="#distribuicao">Distribuição de atendimento</a>.</p>
-<aside class="nota atencao"><strong>“Sem horário” quer dizer coisas opostas.</strong><p>Para o <em>roteamento</em>, uma pessoa sem janelas aceita conversa a <strong>qualquer hora</strong>. Para a <a href="#agenda">Agenda</a>, sem janelas há <strong>zero horários</strong> para marcar com ela. Por isso o texto “Não publicado”. “De plantão” só vale quando a pessoa está <em>Disponível</em> <strong>e</strong> dentro da jornada; “Com a tela aberta” é outra coisa (o navegador dela mandou sinal nos últimos 3 minutos).</p></aside>
+<p>Só entram na lista membros ativos com papel <strong>Atendente ou superior</strong> (Gerente e Administrador entram; Somente leitura, não). Quem é menos que Gerente vê só um texto: “Só gerentes e administradores editam os horários de atendimento da equipe. Para publicar os seus, peça a um gerente que abra esta aba e use o botão “Editar horário” ao lado do seu nome.”. A configuração de modo, tentativas e espera é a <strong>mesma</strong> da tela <a href="#distribuicao">Revezamento da equipe</a> (cujo título dentro da tela é “Distribuição de atendimento”).</p>
+<aside class="nota atencao"><strong>“Sem horário” quer dizer coisas opostas.</strong><p>Para o <em>roteamento</em>, uma pessoa sem janelas aceita conversa a <strong>qualquer hora</strong>. Para os <a href="#agenda">Compromissos</a> (a agenda), sem janelas há <strong>zero horários</strong> para marcar com ela. Por isso o texto “Não publicado”. “De plantão” só vale quando a pessoa está <em>Disponível</em> <strong>e</strong> dentro da jornada; “Com a tela aberta” é outra coisa (o navegador dela mandou sinal nos últimos 3 minutos).</p></aside>
 <figure class="print media">
   <img src="img/equipe-horario.png" alt="Janela Horário de Marina Souza com o fuso e as janelas por dia da semana, numerada de 1 a 5" loading="lazy">
   <figcaption>A janela de horário de uma pessoa.</figcaption>
@@ -104,4 +104,4 @@
   <li><strong>Remover janela.</strong> A lixeira.</li>
   <li><strong>Salvar.</strong> O fim precisa ser depois do início; até 50 janelas.</li>
 </ol>
-<p>A API também deixaria o próprio Atendente editar o próprio horário, mas <strong>não há tela para isso</strong>: precisa de um Gerente. Salvar altera os horários que a Agenda oferece e a distribuição automática (<code>attendant.availability_changed</code> na auditoria).</p>
+<p>A API também deixaria o próprio Atendente editar o próprio horário, mas <strong>não há tela para isso</strong>: precisa de um Gerente. Salvar altera os horários que a agenda (Compromissos) oferece e a distribuição automática (<code>attendant.availability_changed</code> na auditoria).</p>

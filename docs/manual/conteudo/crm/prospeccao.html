@@ -1,10 +1,10 @@
-<!--meta {"id":"prospeccao","grupo":"crm","titulo":"Prospecção","ordem":4,"resumo":"Busca empresas por segmento e cidade e deixa uma IA mandar, aos poucos, a primeira mensagem de WhatsApp a cada uma. Quem responde cai no funil e no Inbox.","palavras":["prospecção","prospectar","apify","google maps","abordagem","empresas","lead frio","legítimo interesse","campanha de busca","agente de prospecção","fila","ritmo"],"onde":"CRM › Prospecção (só pelo hub “Ver tudo em CRM” e pela busca ⌘K)","quem":"Somente Administrador. Quem não é administrador é levado ao Inbox.","rotas":["/app/prospecting"]} -->
+<!--meta {"id":"prospeccao","grupo":"crm","titulo":"Prospecção","ordem":4,"resumo":"Busca empresas por segmento e cidade e deixa uma IA mandar, aos poucos, a primeira mensagem de WhatsApp a cada uma. Quem responde cai no funil e em Conversas.","palavras":["prospecção","prospectar","apify","google maps","abordagem","empresas","lead frio","legítimo interesse","campanha de busca","agente de prospecção","fila","ritmo","inbox","conversas"],"onde":"Configurar › Vender › O seu funil › Prospecção (só Administrador; clique em Vender na faixa à esquerda; também pela busca ⌘K)","quem":"Somente Administrador. Quem não é administrador é levado a Conversas.","rotas":["/app/prospecting"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>A <strong>Prospecção</strong> procura empresas de um segmento numa cidade (por exemplo, <em>clínicas de estética em São Paulo</em>) e deixa um agente de IA <strong>abordar, aos poucos</strong>, cada uma delas pelo WhatsApp. Quem responde vira contato e negócio no <a href="#funis">funil</a> e a conversa segue no <a href="#inbox">Inbox</a>.</p>
+<p>A <strong>Prospecção</strong> procura empresas de um segmento numa cidade (por exemplo, <em>clínicas de estética em São Paulo</em>) e deixa um agente de IA <strong>abordar, aos poucos</strong>, cada uma delas pelo WhatsApp. Quem responde vira contato e negócio no <a href="#funis">funil</a> e a conversa segue em <a href="#inbox">Conversas</a>.</p>
 <p>É a tela de quem <strong>escreve primeiro</strong> a pessoas que nunca falaram com você. Por isso ela é a mais protegida do sistema: só o Administrador abre, tem ritmo diário limitado e as mensagens saem devagar.</p>
 <aside class="nota atencao"><strong>Tela de alto impacto: gasta dinheiro e manda mensagens a quem não pediu.</strong><p>A <em>busca</em> consome o saldo da sua conta Apify (serviço de terceiros). As <em>abordagens</em> mandam WhatsApp a empresas que nunca falaram com você e usam créditos de IA. Nada disso começa sozinho: só depois de você clicar em <span class="ui">Buscar empresas</span> e, mais adiante, em <span class="ui">Iniciar abordagens com IA</span>.</p></aside>
-<aside class="nota info"><strong>Onde fica a porta.</strong><p>Prospecção não tem item no menu lateral por falta de espaço. Abra por <span class="ui">Ver tudo em CRM</span> ou pela busca <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>.</p></aside>
+<aside class="nota info"><strong>Onde fica a porta.</strong><p>Prospecção fica na gaveta de <span class="ui">Vender</span> (clique em <span class="ui">Vender</span> na faixa à esquerda), no grupo <span class="ui">O seu funil</span>. Também abre pela busca <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>.</p></aside>
 
 <h2 id="antes">O que você precisa ter antes</h2>
 <ul>
@@ -12,7 +12,7 @@
   <li>Um <strong>agente de IA publicado</strong> em modo automático, com a ferramenta de mover o funil.</li>
   <li>Uma <strong>conexão de WhatsApp ativa</strong> do tipo QR code (WAHA), que aceita texto livre. A API Oficial da Meta não participa, porque exige modelo aprovado.</li>
   <li>Um <strong>funil com pelo menos duas etapas abertas</strong>.</li>
-  <li>Uma chave de IA cadastrada em <a href="#credenciais">Credenciais</a> (para o assistente de configuração).</li>
+  <li>Uma chave de IA cadastrada em <a href="#credenciais">Chave da IA</a> (<span class="ui">Configurar › Agente › Conectar a IA</span>) (para o assistente de configuração).</li>
 </ul>
 
 <h2 id="tela">A tela, de cima para baixo</h2>
@@ -81,7 +81,7 @@
 <h2 id="resultados">3. Acompanhar resultados</h2>
 <figure class="print">
   <img src="img/prospeccao-resultados.png" alt="Tabela de resultados da campanha com os botões de marcar e a coluna de progresso, numerada de 1 a 11" loading="lazy">
-  <figcaption>A tabela de resultados.</figcaption>
+  <figcaption>A tabela de resultados. (O link da conversa dizia <em>Abrir no Inbox</em> no print; hoje diz <span class="ui">Abrir em Conversas</span>.)</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Marcar todas.</strong> Só em rascunho ou em campanha pausada.</li>
@@ -92,7 +92,7 @@
   <li><strong>Empresa.</strong> Nome, categoria e telefone (ou “Sem telefone”).</li>
   <li><strong>Informações.</strong> Endereço, site, nota e avaliações e e-mails.</li>
   <li><strong>Progresso.</strong> O estado de cada empresa.</li>
-  <li><strong>Conversa.</strong> O link <em>Abrir no Inbox</em>, quando já existe conversa. Quando a empresa já recebeu mensagem, a coluna Progresso também mostra “Mensagem: [estado do envio]”.</li>
+  <li><strong>Conversa.</strong> O link <em>Abrir em Conversas</em>, quando já existe conversa. Quando a empresa já recebeu mensagem, a coluna Progresso também mostra “Mensagem: [estado do envio]”.</li>
   <li><strong>Revisar falha.</strong> Houve erro nessa empresa; a mensagem aparece embaixo.</li>
   <li><strong>Encontrado.</strong> Ainda não está na fila.</li>
 </ol>

@@ -1,12 +1,12 @@
-<!--meta {"id":"agente-treino-por-site","grupo":"ia","titulo":"Treinar o agente com o seu site","ordem":2.3,"resumo":"Cadastre as páginas do seu site (até 20) e o agente aprende o texto delas. A leitura é sempre manual: quando o site mudar, você pede para ler de novo.","palavras":["site","treino por site","páginas","url","endereço","ler de novo","conhecimento","material","embedding","chave de embedding","aguardando leitura","entrou pela metade","não foi lida","rastrear","crawler"],"onde":"Agente de IA › Conhecimento › Adicionar material › Site","quem":"Gerente ou acima. O agente só usa o material depois que ele for marcado na tela do agente.","rotas":[]} -->
+<!--meta {"id":"agente-treino-por-site","grupo":"ia","titulo":"Treinar o agente com o seu site","ordem":2.3,"resumo":"Cadastre as páginas do seu site (até 20) e o agente aprende o texto delas. A leitura é sempre manual: quando o site mudar, você pede para ler de novo.","palavras":["conhecimento rag","o que o agente sabe","chave da ia","credenciais","site","treino por site","páginas","url","endereço","ler de novo","conhecimento","material","embedding","chave de embedding","aguardando leitura","entrou pela metade","não foi lida","rastrear","crawler"],"onde":"Configurar › Agente › Ensinar o agente › Conhecimento › Adicionar material › Site (clique em Agente na faixa à esquerda)","quem":"Gerente ou acima. O agente só usa o material depois que ele for marcado na tela do agente.","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Seu site já responde às perguntas mais comuns: preços, horários, como funciona, política de troca. Em vez de copiar esse texto para o sistema, você informa os <strong>endereços das páginas</strong> e o ZapSales lê o texto principal de cada uma. Depois disso o agente consulta o que aprendeu quando um cliente pergunta. Cada trecho guarda o nome da página de onde veio, para que o agente possa citá-la.</p>
-<p>Este é mais um tipo de material da tela <a href="#conhecimento">Conhecimento</a> (ao lado de perguntas e respostas, documento, conversas anteriores e catálogo).</p>
+<p>Este é mais um tipo de material da tela <a href="#conhecimento">Conhecimento</a> (a tela se chama “O que o agente sabe”; ao lado de perguntas e respostas, documento, conversas anteriores e catálogo).</p>
 <aside class="nota atencao"><strong>O que este recurso NÃO faz.</strong><ul><li><strong>Não percorre o site inteiro.</strong> Ele lê <em>exatamente</em> as páginas que você listar. Não segue links, não procura um mapa do site, não entra em páginas que pedem login.</li><li><strong>Não atualiza sozinho.</strong> A leitura é sempre manual: se você mudou um preço no site, peça para ler de novo.</li><li><strong>Só lê texto.</strong> Não lê PDF nem imagem apontados pela página, e só enxerga o HTML que o site entrega (páginas que só montam o conteúdo depois, por programação no navegador, podem chegar como “sem texto”).</li></ul></aside>
 
 <h2 id="requisitos">Antes de começar</h2>
-<p>Para aprender, o sistema transforma o texto em números que permitem buscar por sentido (isso se chama <strong>embedding</strong>). Para isso ele precisa de uma <strong>chave de embedding</strong>: uma chave de IA da OpenAI ou OpenRouter (a tela de <a href="#credenciais">Credenciais</a> também aceita a do Google) cadastrada em <span class="ui">Agente de IA › Credenciais</span>. <strong>Sem a chave</strong>, você consegue cadastrar o site, mas nenhuma página é lida: o material fica <em>Esperando a chave</em> e entra sozinho depois que você cadastrar uma (o sistema tenta de novo a cada 60 minutos, e um aviso aparece na <a href="#alertas">Central de avisos</a>).</p>
+<p>Para aprender, o sistema transforma o texto em números que permitem buscar por sentido (isso se chama <strong>embedding</strong>). Para isso ele precisa de uma <strong>chave de embedding</strong>: uma chave de IA da OpenAI ou OpenRouter (a tela <a href="#credenciais">Chave da IA</a> também aceita a do Google) cadastrada em <span class="ui">Configurar › Agente › Conectar a IA › Chave da IA</span> (antes chamada Credenciais; a própria tela ainda pode citar “IA › Credenciais”). <strong>Sem a chave</strong>, você consegue cadastrar o site, mas nenhuma página é lida: o material fica <em>Esperando a chave</em> e entra sozinho depois que você cadastrar uma (o sistema tenta de novo a cada 60 minutos, e um aviso aparece em <a href="#alertas">Alertas</a>, a Central de avisos).</p>
 
 <h2 id="cadastrar">Cadastrar um site</h2>
 <figure class="print">
@@ -20,7 +20,7 @@
   <li><strong>Adicionar ao acervo.</strong> Grava o material e começa a ler. Se a organização ainda não tem uma chave de embedding utilizável, a janela avisa em amarelo (“Sem uma chave de embedding, o material fica guardado e esperando — o agente só passa a conhecê-lo depois que a chave for cadastrada”) e a leitura começa quando a chave existir.</li>
 </ol>
 <ol class="passos">
-  <li>Abra <span class="ui">Agente de IA › Conhecimento</span> (se não achar no menu lateral, use <span class="ui">Ver tudo em IA</span> ou a busca).</li>
+  <li>Clique em <span class="ui">Agente</span> na faixa à esquerda e escolha <span class="ui">Conhecimento</span> (grupo <em>Ensinar o agente</em>; ou use a busca <kbd>Ctrl</kbd> + <kbd>K</kbd>).</li>
   <li>Clique em <span class="ui">Adicionar material</span>.</li>
   <li>Na pergunta “Que tipo de material é”, escolha <span class="ui">Site</span>.</li>
   <li>Dê um nome e cole os endereços, <strong>um por linha</strong>.</li>
@@ -63,7 +63,7 @@
     <tr><td><strong>Preparando…</strong></td><td>A leitura está em andamento.</td></tr>
     <tr><td><strong>Entrou pela metade</strong></td><td>Algumas páginas falharam, as outras entraram. O agente já usa o que foi lido. A linha diz “N de M páginas do site não foram lidas — veja o motivo de cada uma em ‘Ver as páginas’.”</td></tr>
     <tr><td><strong>Não entrou</strong></td><td>Nenhuma página pôde ser lida (“Nenhuma página do site pôde ser lida.”).</td></tr>
-    <tr><td><strong>Esperando a chave</strong></td><td>Falta a chave de embedding. Cadastre-a em Credenciais.</td></tr>
+    <tr><td><strong>Esperando a chave</strong></td><td>Falta a chave de embedding. Cadastre-a em Chave da IA (antes “Credenciais”).</td></tr>
     <tr><td><strong>Arquivado</strong></td><td>Você arquivou; o agente não usa.</td></tr>
   </tbody>
 </table>

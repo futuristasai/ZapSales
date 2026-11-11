@@ -1,4 +1,4 @@
-<!--meta {"id":"config-seguranca","grupo":"organizacao","titulo":"Segurança","ordem":3,"resumo":"A verificação em duas etapas (código do celular), os códigos de recuperação, a regra que exige isso da equipe, a chamada de voz pelo WhatsApp e o botão de sair de todos os aparelhos.","palavras":["segurança","mfa","2fa","duas etapas","verificação","autenticador","totp","códigos de recuperação","sessões","sair de todos","chamada de voz","senha","carência"],"onde":"Configurações › Sua conta › Segurança","quem":"Todos abrem e veem as próprias opções. “Exigir da equipe”: só o Administrador. Chamada de voz: ver = Gerente; ligar = Administrador.","rotas":["/app/settings/security"]} -->
+<!--meta {"id":"config-seguranca","grupo":"organizacao","titulo":"Segurança (MFA)","ordem":3,"resumo":"A verificação em duas etapas (código do celular), os códigos de recuperação, a regra que exige isso da equipe, a chamada de voz pelo WhatsApp e o botão de sair de todos os aparelhos.","palavras":["segurança","mfa","2fa","duas etapas","verificação","autenticador","totp","códigos de recuperação","sessões","sair de todos","chamada de voz","senha","carência","segurança (mfa)","somente leitura"],"onde":"Você (rodapé da faixa à esquerda; no celular, o menu do avatar no topo) › Segurança","quem":"Todos abrem e veem as próprias opções. “Exigir da equipe”: só o Administrador. Chamada de voz: ver = Gerente; ligar = Administrador.","rotas":["/app/settings/security"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Proteger a sua conta. A <strong>verificação em duas etapas</strong> (também chamada de MFA ou 2FA) faz o sistema pedir, além da senha, um <em>código de 6 dígitos que só existe no seu celular</em>. É o que impede que uma senha vazada vire um vazamento.</p>
@@ -40,7 +40,7 @@
 <ul>
   <li>Os dois campos (nível e dias) <strong>não salvam sozinhos</strong>: só o botão <span class="ui">Salvar</span> grava (assim a carência não reinicia a cada tecla). Ele só habilita quando algo mudou: “A política de verificação foi salva.”. Nada mudou, nada é gravado.</li>
   <li>Mudar a regra pede ter provado o código nesta sessão, se você tem o fator (“Confirme a verificação em duas etapas nesta sessão.”).</li>
-  <li>Fica na <a href="#auditoria">Auditoria</a> (<code>security.mfa_exigida</code> / <code>security.mfa_dispensada</code>).</li>
+  <li>Fica na <a href="#auditoria">Quem mexeu em quê</a> (<code>security.mfa_exigida</code> / <code>security.mfa_dispensada</code>).</li>
 </ul>
 
 <h2 id="voz">Chamada de voz pelo WhatsApp</h2>

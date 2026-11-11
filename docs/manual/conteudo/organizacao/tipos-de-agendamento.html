@@ -1,15 +1,15 @@
-<!--meta {"id":"tipos-de-agendamento","grupo":"organizacao","titulo":"Tipos de agendamento","ordem":10,"resumo":"O que se pode marcar na Agenda (duração, local, quem atende, lembrete) e as regras gerais da agenda: confirmação de presença, dias de folga, agenda dos colegas e ligação com o Google.","palavras":["tipos de agendamento","agenda","duração","lembrete","responsável","jornada","feriado","folga","dias fora da rotina","confirmação de presença","clientes pela agenda","agenda dos colegas","preço padrão","google agenda"],"onde":"Configurações › Sua empresa › Tipos de agendamento","quem":"Todos abrem. Gerente ou acima cria e edita tipos e prazos; só Administrador liga “Clientes pela agenda”.","rotas":["/app/settings/tenant/agenda"]} -->
+<!--meta {"id":"tipos-de-agendamento","grupo":"organizacao","titulo":"Tipos de agendamento","ordem":10,"resumo":"O que se pode marcar em Compromissos (duração, local, quem atende, lembrete) e as regras gerais da agenda: confirmação de presença, dias de folga, agenda dos colegas e ligação com o Google.","palavras":["tipos de agendamento","agenda","duração","lembrete","responsável","jornada","feriado","folga","dias fora da rotina","confirmação de presença","clientes pela agenda","agenda dos colegas","preço padrão","google agenda","compromissos","tipos de compromisso"],"onde":"Configurar › Vender › O seu funil › Tipos de agendamento (clique em Vender na faixa à esquerda)","quem":"Todos abrem. Gerente ou acima cria e edita tipos e prazos; só Administrador liga “Clientes pela agenda”.","rotas":["/app/settings/tenant/agenda"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>Aqui você define <strong>o que se pode marcar</strong>: quanto dura, onde acontece e quem atende. É exatamente esta lista que a tela de marcar da <a href="#agenda">Agenda</a> e o <a href="#agentes">agente de IA</a> oferecem ao cliente. A tela também reúne as <strong>regras gerais da agenda</strong>: como cobrar a presença, quando um dia fica fechado e quem pode mexer no compromisso de quem.</p>
+<p>Aqui você define <strong>o que se pode marcar</strong>: quanto dura, onde acontece e quem atende. É exatamente esta lista que a tela de marcar dos <a href="#agenda">Compromissos</a> e o <a href="#agentes">agente de IA</a> oferecem ao cliente. A tela também reúne as <strong>regras gerais da agenda</strong>: como cobrar a presença, quando um dia fica fechado e quem pode mexer no compromisso de quem.</p>
 <p>Toda organização nova já nasce com três tipos: <strong>Consulta</strong>, <strong>Reunião</strong> e <strong>Atendimento</strong>, de 30 minutos cada. Eles vêm <em>sem responsável</em> — e um tipo sem responsável <strong>não aparece para marcar</strong>.</p>
-<aside class="nota atencao"><strong>Sem responsável, não há horário.</strong><p>Escolha, em cada tipo, <em>Quem atende</em>. Essa pessoa também precisa ter publicado a jornada de atendimento (os dias e as horas em que atende), em <em>Equipe › Atendimento</em>. Sem as duas coisas a Agenda avisa “A jornada de atendimento ainda não foi publicada”.</p></aside>
+<aside class="nota atencao"><strong>Sem responsável, não há horário.</strong><p>Escolha, em cada tipo, <em>Quem atende</em>. Essa pessoa também precisa ter publicado a jornada de atendimento (os dias e as horas em que atende), em <em>Equipe › Atendimento</em>. Sem as duas coisas a tela Compromissos avisa “A jornada de atendimento ainda não foi publicada”.</p></aside>
 
 <h2 id="resumo">O resumo no alto da tela</h2>
 <p>A tela abre com a faixa <strong>Seus tipos de agendamento</strong>, que responde quatro perguntas antes da lista:</p>
 <ul>
   <li><strong>Tipos ativos</strong> — quantos aparecem para marcar, e quantos estão desativados.</li>
-  <li><strong>Prontos para marcar</strong> — quantos dos ativos têm <em>responsável</em> e esse responsável tem <em>horários de atendimento publicados</em>. É a mesma pergunta que a Agenda faz antes de oferecer um horário. A conta não vê dias fechados nem intervalos entre horários: “pronto” não promete que haja vaga.</li>
+  <li><strong>Prontos para marcar</strong> — quantos dos ativos têm <em>responsável</em> e esse responsável tem <em>horários de atendimento publicados</em>. É a mesma pergunta que a tela Compromissos faz antes de oferecer um horário. A conta não vê dias fechados nem intervalos entre horários: “pronto” não promete que haja vaga.</li>
   <li><strong>Pedem ajuste</strong> — os que não têm responsável ou cujo responsável ainda não publicou horários. Se a leitura dos horários falhar, o tipo não conta como pronto nem como “sem horários”: aparece como “não consegui ler agora”.</li>
   <li><strong>Avisam o cliente</strong> — quantos tipos ativos têm o lembrete pelo WhatsApp ligado.</li>
 </ul>
@@ -57,7 +57,7 @@
 <ol class="legenda">
   <li><strong>Nome.</strong> Obrigatório, de 2 a 80 caracteres. É o nome que o cliente e o agente veem. Não pode repetir o de outro tipo.</li>
   <li><strong>Categoria.</strong> Consulta, Procedimento, Retorno, Visita, Vistoria, Reunião, Call, Orçamento, Demonstração ou Outro. Só se escolhe ao criar.</li>
-  <li><strong>Duração (minutos).</strong> De 5 a 1.440. O padrão é 30. Define o tamanho do bloco na Agenda.</li>
+  <li><strong>Duração (minutos).</strong> De 5 a 1.440. O padrão é 30. Define o tamanho do bloco em Compromissos.</li>
   <li><strong>Onde acontece.</strong> Presencial, Telefone, WhatsApp, Link de vídeo ou Google Meet. Só se escolhe ao criar.</li>
   <li><strong>Quem atende.</strong> A pessoa responsável (ou “Definir depois”). É ela quem dá a jornada de horários e a cor dos blocos.</li>
   <li><strong>Criar tipo.</strong> Grava. Aparece o aviso “Tipo de agendamento criado.”.</li>
@@ -79,7 +79,7 @@
   <thead><tr><th>Campo</th><th>Padrão</th><th>O que faz</th></tr></thead>
   <tbody>
     <tr><td><strong>Pedir confirmação após o fim</strong></td><td>10</td><td>Quanto tempo depois do fim do compromisso a pendência aparece (de 1 a 10.080).</td></tr>
-    <tr><td><strong>Proteger de cobranças por silêncio após o fim</strong></td><td>1.440 (24 h)</td><td>Durante esse prazo o cliente não é cobrado por silêncio (follow-up, Radar). Passado o prazo, a pendência continua visível; outro compromisso vivo ainda protege o contato.</td></tr>
+    <tr><td><strong>Proteger de cobranças por silêncio após o fim</strong></td><td>1.440 (24 h)</td><td>Durante esse prazo o cliente não é cobrado por silêncio (follow-up, Riscos de Perda). Passado o prazo, a pendência continua visível; outro compromisso vivo ainda protege o contato.</td></tr>
     <tr><td><strong>Soltar o horário de um pedido não confirmado após</strong></td><td>1.440</td><td>Vale só para tipos que pedem confirmação. O horário fica reservado enquanto o pedido espera; passado o prazo sem decisão, ele volta a ser oferecido. O cliente não é avisado, e o pedido continua na fila.</td></tr>
   </tbody>
 </table>
@@ -97,7 +97,7 @@
 <aside class="nota atencao"><strong>Ligar mexe em muitos contatos de uma vez.</strong><p>A etiqueta é aplicada em massa a quem já teve horário. Confira o texto da janela de confirmação antes de aceitar.</p></aside>
 
 <h2 id="colegas">Agenda dos colegas</h2>
-<p>Ligado (o padrão), qualquer atendente cancela e remarca o compromisso de qualquer colega. Desligado, cada atendente mexe só nos compromissos <strong>de que é o responsável</strong>; Gerente e Administrador continuam mexendo em tudo. Isso não muda o que cada pessoa <em>vê</em> na Agenda. Quando a regra está desligada e um atendente tenta mexer no compromisso de um colega, a recusa diz: “Esta empresa está com ‘Atendentes podem mexer na agenda dos colegas’ desligado… Peça a um gerente ou administrador.”. Quem muda a regra: Gerente ou Administrador.</p>
+<p>Ligado (o padrão), qualquer atendente cancela e remarca o compromisso de qualquer colega. Desligado, cada atendente mexe só nos compromissos <strong>de que é o responsável</strong>; Gerente e Administrador continuam mexendo em tudo. Isso não muda o que cada pessoa <em>vê</em> em Compromissos. Quando a regra está desligada e um atendente tenta mexer no compromisso de um colega, a recusa diz: “Esta empresa está com ‘Atendentes podem mexer na agenda dos colegas’ desligado… Peça a um gerente ou administrador.”. Quem muda a regra: Gerente ou Administrador.</p>
 
 <h2 id="dias">Dias fora da rotina</h2>
 <p>Feche um dia (feriado, férias, viagem) ou abra um dia que a sua jornada semanal não cobre. <strong>Em dia fechado o sistema deixa de oferecer horários</strong>, mas o que já estava marcado continua marcado — você decide o que fazer com cada um.</p>
@@ -111,7 +111,7 @@
 <p>A lista abaixo do formulário mostra os bloqueios daqui para a frente de toda a organização, com o botão <span class="ui">Reabrir</span>, que remove o bloqueio. Cada bloqueio é gravado <strong>para a pessoa que o criou</strong>: você só altera a sua própria agenda (“Você só pode alterar a sua própria agenda.”), e Gerente pode remover os dos outros. O formulário só aparece para Gerente ou acima.</p>
 
 <h2 id="google">Suas agendas Google</h2>
-<p>Depois de conectar o Google pela <a href="#agenda--google">Agenda</a>, esta seção lista as suas contas e as agendas de cada uma:</p>
+<p>Depois de conectar o Google pela tela <a href="#agenda--google">Compromissos</a>, esta seção lista as suas contas e as agendas de cada uma:</p>
 <ul>
   <li><strong>Atualizar lista e sincronização</strong> consulta o Google de novo.</li>
   <li><strong>Conta como ocupado</strong> — a agenda bloqueia horários aqui quando há evento nela.</li>

@@ -1,43 +1,45 @@
-<!--meta {"id":"crm-hub","grupo":"crm","titulo":"Ver tudo em CRM","ordem":1,"resumo":"O índice de tudo o que existe no CRM, em três seções: o dia a dia da venda, preparar a venda e fechar a venda. Mostra só o que o seu papel e a sua instalação permitem.","palavras":["crm","hub","índice","ver tudo","menu","portas","módulos"],"onde":"CRM › Ver tudo em CRM","quem":"Todos abrem. Cada cartão aparece só para quem tem o papel que a tela de destino exige.","rotas":["/app/crm"]} -->
+<!--meta {"id":"crm-hub","grupo":"crm","titulo":"Gestão de Clientes CRM (página de área)","ordem":1,"resumo":"A página de área do CRM (endereço /app/crm): uma lista de tudo o que existe no CRM, agrupada pelas mesmas tarefas do menu, com uma frase para cada tela. Não faz parte do caminho do menu; abre pelo endereço ou pela busca.","palavras":["crm","hub","índice","ver tudo","ver tudo em crm","menu","portas","módulos","página de área","gestão de clientes crm","/app/crm"],"onde":"Página de área «Gestão de Clientes CRM» (endereço /app/crm; fora do caminho do menu — abre pelo endereço ou pela busca ⌘K, na categoria «Páginas de área»)","quem":"Todos abrem. Cada tela da lista aparece só para quem tem o papel que ela exige.","rotas":["/app/crm"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>O menu lateral mostra só quatro itens do CRM — <span class="ui">Funis</span>, <span class="ui">Disparo em massa</span>, <span class="ui">Contatos</span> e <span class="ui">Tarefas</span> —, porque são os de uso diário. <span class="ui">Ver tudo em CRM</span> abre esta página: <strong>todas as telas do CRM</strong>, com uma frase explicando cada uma, em três seções. Clicar num cartão só leva à tela; não grava nem envia nada.</p>
+<p>O menu do ZapSales não tem mais um link “Ver tudo em CRM”: as telas do CRM estão em dois lugares do menu. As de uso diário — <span class="ui">Funis</span>, <span class="ui">Contatos</span>, <span class="ui">Tarefas</span> e <span class="ui">Disparo em massa</span> — ficam no painel <span class="ui">Todo dia</span>, no grupo <span class="ui">Gestão de Clientes CRM</span>. As que se preparam uma vez (etapas do funil, produtos, importações…) ficam na gaveta de <span class="ui">Vender</span>. A <strong>Gestão de Clientes CRM</strong> é uma página que reúne os dois lados numa lista só, com uma frase explicando cada tela. Ela continua existindo pelo endereço <code>/app/crm</code> (quem a salvou nos favoritos segue entrando) e aparece na busca <kbd>⌘K</kbd>, na categoria <span class="ui">Páginas de área</span>. Clicar numa linha só leva à tela; não grava nem envia nada.</p>
 <figure class="print">
-  <img src="img/crm-hub.png" alt="Página CRM com os cartões das telas organizados em O dia a dia da venda, Preparar a venda e Fechar a venda, numerada de 1 a 9" loading="lazy">
-  <figcaption>O hub do CRM visto por um Administrador, com todos os módulos opcionais ligados.</figcaption>
+  <img src="img/crm-hub.png" alt="Página de área Gestão de Clientes CRM, com os grupos Gestão de Clientes CRM e Se a sua empresa usa, numerada de 1 a 5" loading="lazy">
+  <figcaption>A página de área <span class="ui">Gestão de Clientes CRM</span>, vista por um Administrador (continua para baixo, com os grupos de preparar a venda).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>O título.</strong> “CRM — Onde a venda acontece — e o que você define uma vez para ela funcionar.”</li>
-  <li><strong>O dia a dia da venda.</strong> As telas de uso frequente.</li>
-  <li><strong>Prospecção.</strong> Só Administrador. Veja <a href="#prospeccao">Prospecção</a>.</li>
-  <li><strong>Empresas.</strong> Só aparece com o módulo “Empresas e pessoas” ligado na instalação.</li>
-  <li><strong>Chamadas.</strong> Gerente ou acima. Veja <a href="#chamadas">Chamadas</a>.</li>
-  <li><strong>Preparar a venda.</strong> O que se configura uma vez.</li>
-  <li><strong>Etapas do funil.</strong> Gerente ou acima. Veja <a href="#etapas-do-funil">Etapas do funil</a>.</li>
-  <li><strong>Fechar a venda.</strong></li>
-  <li><strong>Propostas.</strong> Só com o módulo ligado na instalação <em>e</em> a empresa tendo ligado as propostas.</li>
+  <li><strong>O título.</strong> “Gestão de Clientes CRM — Onde a venda acontece — e o que você define uma vez para ela funcionar.”</li>
+  <li><strong>Um grupo.</strong> Cada título de seção é um grupo do menu. Este, <em>Gestão de Clientes CRM</em>, reúne as telas de uso diário: Funis, Contatos, Tarefas e Disparo em massa — as mesmas do painel <span class="ui">Todo dia</span>.</li>
+  <li><strong>Uma tela.</strong> A linha mostra o nome, a frase do que a tela faz e a seta. Clique para abrir (aqui, <a href="#funis">Funis</a>).</li>
+  <li><strong>Se a sua empresa usa.</strong> O grupo de Comandas, Chamadas e, quando o módulo está ligado e a empresa usa, Propostas.</li>
+  <li><strong>Outra tela do grupo.</strong> Aqui, <a href="#comandas">Comandas</a>. Quem não tem o papel necessário não vê a linha.</li>
 </ol>
 
-<h2 id="cartoes">Os 13 cartões</h2>
+<h2 id="cartoes">As telas, por grupo</h2>
+<p>Os grupos têm os mesmos nomes do menu. Esta é a lista completa, para quem vê tudo:</p>
 <table class="tabela">
-  <thead><tr><th>Seção</th><th>Cartão</th><th>Quem vê</th></tr></thead>
+  <thead><tr><th>Grupo</th><th>Tela</th><th>Quem vê</th></tr></thead>
   <tbody>
-    <tr><td rowspan="9"><strong>O dia a dia da venda</strong></td><td><a href="#prospeccao">Prospecção</a></td><td>Administrador</td></tr>
-    <tr><td><a href="#funis">Funis</a></td><td>Todos (também no menu lateral)</td></tr>
-    <tr><td><a href="#disparo-em-massa">Disparo em massa</a></td><td>Gerente ou acima (também no menu lateral)</td></tr>
-    <tr><td><a href="#contatos">Contatos</a></td><td>Todos (também no menu lateral)</td></tr>
+    <tr><td rowspan="4"><strong>Gestão de Clientes CRM</strong><br>(Todo dia)</td><td><a href="#funis">Funis</a></td><td>Todos</td></tr>
+    <tr><td><a href="#contatos">Contatos</a></td><td>Todos</td></tr>
+    <tr><td><a href="#tarefas">Tarefas</a></td><td>Todos</td></tr>
+    <tr><td><a href="#disparo-em-massa">Disparo em massa</a></td><td>Gerente ou acima</td></tr>
+    <tr><td rowspan="3"><strong>Se a sua empresa usa</strong><br>(Todo dia)</td><td><a href="#propostas">Propostas</a></td><td>Todos, <em>se</em> o módulo e a capacidade da empresa estão ligados</td></tr>
+    <tr><td><a href="#comandas">Comandas</a></td><td>Todos</td></tr>
+    <tr><td><a href="#chamadas">Chamadas</a></td><td>Gerente ou acima</td></tr>
+    <tr><td rowspan="3"><strong>O seu funil</strong><br>(Vender)</td><td><a href="#etapas-do-funil">Etapas do funil</a></td><td>Gerente ou acima</td></tr>
+    <tr><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td><td>Todos</td></tr>
+    <tr><td><a href="#prospeccao">Prospecção</a></td><td>Administrador</td></tr>
+    <tr><td rowspan="3"><strong>O que você vende</strong><br>(Vender)</td><td><a href="#produtos">Produtos</a></td><td>Todos</td></tr>
+    <tr><td><a href="#propostas-config">Padrões de proposta</a></td><td>Gerente ou acima, <em>se</em> o módulo Propostas está ligado</td></tr>
+    <tr><td><a href="#modelos-de-proposta">Modelos de proposta</a></td><td>Gerente ou acima, <em>se</em> a empresa ligou as propostas</td></tr>
+    <tr><td rowspan="2"><strong>Como a equipe vende</strong><br>(Vender)</td><td><a href="#respostas-rapidas">Respostas rápidas</a></td><td>Todos</td></tr>
+    <tr><td><a href="#tags">Etiquetas (tags)</a></td><td>Gerente ou acima</td></tr>
+    <tr><td rowspan="3"><strong>Cadastro de empresas</strong><br>(Vender)</td><td><a href="#importacoes">Importações</a></td><td>Gerente ou acima, <em>se</em> o módulo “Empresas e pessoas” está ligado</td></tr>
     <tr><td><a href="#empresas">Empresas</a></td><td>Todos, <em>se</em> o módulo “Empresas e pessoas” está ligado</td></tr>
     <tr><td><a href="#pessoas">Pessoas</a></td><td>Todos, <em>se</em> o módulo “Empresas e pessoas” está ligado</td></tr>
-    <tr><td><a href="#tarefas">Tarefas</a></td><td>Todos (também no menu lateral)</td></tr>
-    <tr><td><a href="#chamadas">Chamadas</a></td><td>Gerente ou acima</td></tr>
-    <tr><td><a href="#comandas">Comandas</a></td><td>Todos</td></tr>
-    <tr><td rowspan="3"><strong>Preparar a venda</strong></td><td><a href="#produtos">Produtos</a></td><td>Todos</td></tr>
-    <tr><td><a href="#importacoes">Importações</a></td><td>Gerente ou acima, <em>se</em> o módulo “Empresas e pessoas” está ligado</td></tr>
-    <tr><td><a href="#etapas-do-funil">Etapas do funil</a></td><td>Gerente ou acima</td></tr>
-    <tr><td><strong>Fechar a venda</strong></td><td><a href="#propostas">Propostas</a></td><td>Todos, <em>se</em> o módulo e a capacidade da empresa estão ligados</td></tr>
   </tbody>
 </table>
-<aside class="nota atencao"><strong>A tela de um Gerente tem menos cartões que esta.</strong><p>O que cada pessoa vê depende do <strong>papel</strong> (Prospecção só para Administrador; Chamadas, Disparo em massa, Importações e Etapas do funil para Gerente ou acima), dos <strong>módulos opcionais</strong> da instalação (Empresas, Pessoas, Importações) e da <strong>capacidade</strong> da empresa (Propostas). Cartão que some não é defeito: é a regra. Um cartão que falta para você pode ser só um módulo desligado — peça a quem administra a instalação.</p></aside>
-<aside class="nota info"><strong>A empresa pode simplificar o menu.</strong><p>Com a interface “simplificada” (em <em>Configurações › Organização</em>), o hub do CRM mostra só Funis, Contatos e Tarefas. As “portas essenciais” (perfil, segurança, equipe e configurações) nunca são escondidas.</p></aside>
-<p>O hub é só <strong>apresentação</strong>: cada tela confere sozinha o seu papel. Por exemplo, Prospecção leva um não-administrador de volta ao Inbox. Se há extensões instaladas, abaixo dos cartões aparece a seção <strong>“Orientações instaladas”</strong> (guias adicionados depois da instalação, sem acesso aos dados do CRM) com o link <span class="ui">Gerenciar extensões</span>. Se a leitura delas falha, um cartão amarelo diz “Não foi possível conferir as orientações instaladas”.</p>
-<p>O mesmo hub existe para <a href="#ia-hub">IA</a> e Análise; todos funcionam do mesmo jeito.</p>
+<aside class="nota atencao"><strong>A tela de um Gerente tem menos linhas que esta.</strong><p>O que cada pessoa vê depende do <strong>papel</strong> (Prospecção só para Administrador; Chamadas, Disparo em massa, Importações e Etapas do funil para Gerente ou acima), dos <strong>módulos opcionais</strong> da instalação (Empresas, Pessoas, Importações) e da <strong>capacidade</strong> da empresa (Propostas). Linha que some não é defeito: é a regra. Uma que falta para você pode ser só um módulo desligado — peça a quem administra a instalação.</p></aside>
+<aside class="nota info"><strong>A empresa pode simplificar o menu.</strong><p>Com a interface “simplificada” (em <span class="ui">Configurar › Empresa › A empresa › Dados da empresa</span>, no cartão “Menu lateral”), esta página mostra só Funis, Contatos e Tarefas. As “portas essenciais” (perfil, segurança, equipe e dados da empresa) nunca são escondidas.</p></aside>
+<p>A página é só <strong>apresentação</strong>: cada tela confere sozinha o seu papel. Por exemplo, Prospecção leva um não-administrador de volta a <a href="#inbox">Conversas</a>. Se há extensões instaladas, abaixo da lista aparece a seção <strong>“Orientações instaladas”</strong> (guias adicionados depois da instalação, sem acesso aos dados do CRM) com o link <span class="ui">Gerenciar extensões</span>. Se a leitura delas falha, um cartão amarelo diz “Não foi possível conferir as orientações instaladas”.</p>
+<p>Existem mais três páginas de área, que funcionam do mesmo jeito: <a href="#ia-hub">Agente de IA</a>, Análise e Configurações. Todas seguem abrindo pelo endereço e pela busca, mas o caminho do dia a dia é o menu: <span class="ui">Todo dia</span>, as áreas de <span class="ui">Configurar</span> e <span class="ui">Resultados</span>.</p>

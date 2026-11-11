@@ -1,8 +1,8 @@
-<!--meta {"id":"alertas","grupo":"ia","titulo":"Alertas","ordem":15,"resumo":"A Central de avisos: tudo o que o assistente precisou escalar para a equipe (conexões caídas, tarefas que falharam, atendimentos passados a humanos), com um link para resolver cada coisa.","palavras":["central de avisos","sino","notificações","alerta","aviso","resolvido","marcar todos resolvidos","crítico","atenção"],"onde":"Agente de IA › Alertas (Ver tudo em IA › Acompanhar o agente) e o sino do cabeçalho","quem":"Para usar de verdade, Atendente ou acima. Quem é “Somente leitura” abre a tela mas recebe a mensagem de que o acesso aos avisos não está disponível.","rotas":["/app/ai/inbox"]} -->
+<!--meta {"id":"alertas","grupo":"ia","titulo":"Alertas","ordem":15,"resumo":"A tela se chama “Central de avisos” e no menu é «Alertas»: tudo o que o assistente precisou escalar para a equipe (conexões caídas, tarefas que falharam, atendimentos passados a humanos), com um link para resolver cada coisa.","palavras":["alertas","central de avisos","sino","notificações","alerta","aviso","resolvido","marcar todos resolvidos","crítico","atenção"],"onde":"Todo dia › Leads › Alertas (e o sino do cabeçalho; também pela busca Ctrl K)","quem":"Para usar de verdade, Atendente ou acima. Quem é “Somente leitura” abre a tela mas recebe a mensagem de que o acesso aos avisos não está disponível.","rotas":["/app/ai/inbox"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>A <strong>Central de avisos</strong> é a caixa de entrada dos problemas e das decisões que o sistema não resolve sozinho: uma conexão de WhatsApp que caiu, uma tarefa que falhou, um atendimento que o agente passou para uma pessoa, o gasto de IA que passou do limite. Cada aviso vem com um <strong>link direto</strong> para a tela onde se resolve.</p>
-<p>Você chega aqui pelo <strong>sino</strong> do cabeçalho, que mostra uma bolinha vermelha com o número de avisos em aberto (acima de 99, aparece “99+”). A tela se atualiza sozinha a cada 30 segundos.</p>
+<p>No menu, a tela fica em <strong>Todo dia › Leads › Alertas</strong>. Você também chega aqui pelo <strong>sino</strong> do cabeçalho, que mostra uma bolinha vermelha com o número de avisos em aberto (acima de 99, aparece “99+”). A tela se atualiza sozinha a cada 30 segundos.</p>
 <figure class="print">
   <img src="img/ia-alertas.png" alt="Central de avisos com seis avisos abertos, do mais grave ao menos grave, numerados de 1 a 8" loading="lazy">
   <figcaption>A Central de avisos com seis avisos em aberto.</figcaption>
@@ -22,9 +22,9 @@
 <table class="tabela">
   <thead><tr><th>Aviso</th><th>O que significa</th></tr></thead>
   <tbody>
-    <tr><td>Um atendimento espera decisão da equipe</td><td>Há um <a href="#casos">caso</a> esperando você. Abra e escolha: concluir, pedir informação ao cliente ou passar para uma pessoa.</td></tr>
-    <tr><td>O assistente passou um atendimento para um humano</td><td>A IA transferiu a conversa. Está no Inbox.</td></tr>
-    <tr><td>Conexão do WhatsApp caiu — precisa escanear o QR de novo</td><td>O número deixou de receber mensagens. Reconecte em Conexões.</td></tr>
+    <tr><td>Um atendimento espera decisão da equipe</td><td>Há um <a href="#casos">caso</a> esperando você (tela Aguardando Humano). Abra e escolha: concluir, pedir informação ao cliente ou passar para uma pessoa.</td></tr>
+    <tr><td>O assistente passou um atendimento para um humano</td><td>A IA transferiu a conversa. Está em <a href="#inbox">Conversas</a>.</td></tr>
+    <tr><td>Conexão do WhatsApp caiu — precisa escanear o QR de novo</td><td>O número deixou de receber mensagens. Reconecte em <a href="#conexoes">Conexões</a>.</td></tr>
     <tr><td>Uma tarefa do assistente falhou e parou de tentar</td><td>Algo que o sistema fazia em segundo plano não funcionou.</td></tr>
     <tr><td>Um material que você enviou não entrou na base de conhecimento</td><td>Veja o motivo em <a href="#conhecimento">Conhecimento</a>.</td></tr>
     <tr><td>O gasto de IA passou do aviso que você definiu / O orçamento de IA foi atingido</td><td>Veja <a href="#uso-ia">Uso e orçamento</a>. No segundo caso, a IA parou de responder.</td></tr>
@@ -42,4 +42,4 @@
 
 <h2 id="cuidados">Cuidados</h2>
 <aside class="nota atencao"><strong>Marcar como resolvido não resolve o problema.</strong><p>O botão só tira o aviso da lista. A conexão continua caída, o caso continua aberto, o material continua sem entrar. Resolva a causa pelo link e só então marque.</p></aside>
-<aside class="nota info"><strong>Quem pode o quê.</strong><p>Ver, resolver e reabrir exige o papel de Atendente ou acima. O <em>link</em> de cada aviso depende do papel que a tela de destino exige: conexões, credenciais e agentes pedem Administrador; base de conhecimento, uso de IA, provedores e evolução pedem Gerente; conversas, casos e contatos pedem Atendente. Já os botões <span class="ui">Aprovar e executar</span> e <span class="ui">Recusar</span> de um pedido de aprovação aparecem só para Gerente ou acima; o Atendente vê o pedido, mas não decide.</p></aside>
+<aside class="nota info"><strong>Quem pode o quê.</strong><p>Ver, resolver e reabrir exige o papel de Atendente ou acima. O <em>link</em> de cada aviso depende do papel que a tela de destino exige: conexões, chave da IA e agentes pedem Administrador; base de conhecimento, uso de IA, provedores e evolução pedem Gerente; conversas, Aguardando Humano e contatos pedem Atendente. Já os botões <span class="ui">Aprovar e executar</span> e <span class="ui">Recusar</span> de um pedido de aprovação aparecem só para Gerente ou acima; o Atendente vê o pedido, mas não decide.</p></aside>

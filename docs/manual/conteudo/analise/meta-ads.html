@@ -1,8 +1,8 @@
-<!--meta {"id":"meta-ads","grupo":"analise","titulo":"Meta Ads","ordem":6,"resumo":"Campanha por campanha, quanto os anúncios do Facebook e Instagram gastaram e quantos resultados trouxeram no período, lido direto da Meta quando você clica em Atualizar.","palavras":["meta ads","anúncios","facebook","instagram","campanhas","custo por resultado","valor gasto","cpm","ctr","connect rate","hook rate","thruplays","token","ads_read"],"onde":"Análise › Meta Ads (também no menu lateral)","quem":"Gerente ou acima. Conectar a conta: só Administrador.","rotas":["/app/ads/meta"]} -->
+<!--meta {"id":"meta-ads","grupo":"analise","titulo":"Meta Ads","ordem":6,"resumo":"Campanha por campanha, quanto os anúncios do Facebook e Instagram gastaram e quantos resultados trouxeram no período, lido direto da Meta quando você clica em Atualizar.","palavras":["meta ads","anúncios","facebook","instagram","campanhas","custo por resultado","valor gasto","cpm","ctr","connect rate","hook rate","thruplays","token","ads_read","resultados","números do negócio","conta de anúncios"],"onde":"Resultados › Números do negócio › Meta Ads (clique em Resultados na faixa à esquerda; também pela busca Ctrl K)","quem":"Gerente ou acima. Conectar a conta: só Administrador.","rotas":["/app/ads/meta"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>O <strong>Meta Ads</strong> mostra, campanha por campanha, <strong>quanto os anúncios do Facebook e do Instagram gastaram</strong> e quantos <strong>resultados</strong> trouxeram no período. Os números vêm <em>ao vivo</em> da Meta no momento em que você abre a tela ou clica em <span class="ui">Atualizar</span> — <strong>nada fica guardado no ZapSales</strong>. É uma conexão <em>só de leitura</em>: nada é criado, pausado ou alterado na sua conta de anúncios, e nenhuma verba é gasta.</p>
-<aside class="nota atencao"><strong>Só funciona depois de conectar a conta.</strong><p>Quem administra a organização precisa colar um token de acesso com a permissão <code>ads_read</code> em <a href="#meta-ads-config">Configurações › Meta Ads</a>. Sem isso, a tela mostra “Nenhuma conta de anúncios conectada.”. <strong>Esta página foi fotografada nesse estado</strong>: a conta de demonstração não tem token, e a tabela abaixo foi descrita a partir do código, sem dados reais.</p></aside>
+<aside class="nota atencao"><strong>Só funciona depois de conectar a conta.</strong><p>Quem administra a organização precisa colar um token de acesso com a permissão <code>ads_read</code> em <a href="#meta-ads-config">Conta de anúncios (Meta Ads)</a> (Configurar › Conexões › Anúncios). Sem isso, a tela mostra “Nenhuma conta de anúncios conectada.”. <strong>Esta página foi fotografada nesse estado</strong>: a conta de demonstração não tem token, e a tabela abaixo foi descrita a partir do código, sem dados reais.</p></aside>
 
 <figure class="print media">
   <img src="img/meta-ads-vazio.png" alt="Tela Meta Ads sem conta conectada, com a mensagem e o link Conectar conta de anúncios, numerada de 1 a 3" loading="lazy">
@@ -10,8 +10,8 @@
 </figure>
 <ol class="legenda">
   <li><strong>Como funciona.</strong></li>
-  <li><strong>“Nenhuma conta de anúncios conectada.”</strong> Para Administrador, completa: “Conecte um token de acesso com permissão de leitura de anúncios para ver as campanhas aqui.”. Para Gerente: “Peça a quem administra a organização para conectar a conta de anúncios em Configurações.”</li>
-  <li><strong>Conectar conta de anúncios.</strong> Só o Administrador vê o link, que leva a <a href="#meta-ads-config">Configurações › Meta Ads</a>.</li>
+  <li><strong>“Nenhuma conta de anúncios conectada.”</strong> Para Administrador, completa: “Conecte um token de acesso com permissão de leitura de anúncios para ver as campanhas aqui.”. Para Gerente: “Peça a quem administra a organização para conectar a conta de anúncios em Configurações.” (o texto da tela ainda diz “Configurações”; hoje o lugar é Configurar › Conexões › Anúncios › Conta de anúncios.)</li>
+  <li><strong>Conectar conta de anúncios.</strong> Só o Administrador vê o link, que leva a <a href="#meta-ads-config">Conta de anúncios (Meta Ads)</a>.</li>
 </ol>
 
 <h2 id="filtros">Com a conta conectada</h2>
@@ -44,7 +44,7 @@
 <table class="tabela">
   <thead><tr><th>Mensagem</th><th>O que fazer</th></tr></thead>
   <tbody>
-    <tr><td>“A plataforma recusou o token de acesso — ele expirou ou foi revogado.”</td><td>Gere um novo em Configurações › Meta Ads.</td></tr>
+    <tr><td>“A plataforma recusou o token de acesso — ele expirou ou foi revogado.”</td><td>Gere um novo em Configurar › Conexões › Anúncios › Conta de anúncios (a tela de conexão se chama “Meta Ads”).</td></tr>
     <tr><td>“O token não tem permissão de leitura de anúncios (ads_read), ou não alcança esta conta.”</td><td>Refaça o token no Meta for Developers marcando <code>ads_read</code>.</td></tr>
     <tr><td>“A plataforma limitou as chamadas por excesso de consultas.”</td><td>Espere alguns minutos antes de atualizar de novo.</td></tr>
     <tr><td>“A plataforma recusou um campo desta consulta.”</td><td>Problema do sistema, não da conta: avise quem mantém a instalação.</td></tr>
