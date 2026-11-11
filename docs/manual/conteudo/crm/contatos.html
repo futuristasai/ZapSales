@@ -1,4 +1,4 @@
-<!--meta {"id":"contatos","grupo":"crm","titulo":"Contatos","ordem":2,"resumo":"As pessoas do outro lado da conversa e o histórico de cada uma. Aqui você cadastra, busca, importa, junta duplicados e cuida dos dados pessoais conforme a LGPD.","palavras":["cliente","pessoa","cadastro","telefone","e-mail","email","importar csv","duplicado","juntar","mesclar","excluir","apagar","anonimizar","lgpd","tags","origem","bloqueado","desbloquear","ficha"],"onde":"CRM › Contatos","quem":"Ver: todos os papéis. Criar, editar, excluir e importar: Atendente ou acima. Juntar duplicados: Gerente ou acima. Desbloquear e anonimizar (LGPD): Administrador.","rotas":["/app/contacts","/app/contacts/[id]"]} -->
+<!--meta {"id":"contatos","grupo":"crm","titulo":"Contatos","ordem":2,"resumo":"As pessoas do outro lado da conversa e o histórico de cada uma. Aqui você cadastra, busca, importa, junta duplicados e cuida dos dados pessoais conforme a LGPD.","palavras":["cliente","pessoa","cadastro","telefone","e-mail","email","importar csv","duplicado","juntar","mesclar","excluir","apagar","anonimizar","lgpd","tags","origem","bloqueado","desbloquear","ficha","inbox","conversas"],"onde":"Todo dia › Gestão de Clientes CRM › Contatos","quem":"Ver: todos os papéis. Criar, editar, excluir e importar: Atendente ou acima. Juntar duplicados: Gerente ou acima. Desbloquear e anonimizar (LGPD): Administrador.","rotas":["/app/contacts","/app/contacts/[id]"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>O <span class="ui">Contatos</span> é o cadastro de todas as pessoas que já falaram com você. Cada pessoa aparece <strong>uma só vez</strong>, e o que você sabe sobre ela fica junto: telefone, e-mail, etiquetas, de onde ela veio, a conversa no WhatsApp e os negócios dela no funil.</p>
@@ -8,7 +8,7 @@
 <h2 id="lista">A lista de contatos</h2>
 <figure class="print">
   <img src="img/contatos-lista.png" alt="Lista de contatos com os botões do topo, os filtros e a tabela numerados de 1 a 14" loading="lazy">
-  <figcaption>A lista de contatos. Os 12 contatos da organização de demonstração.</figcaption>
+  <figcaption>A lista de contatos. Os 12 contatos da organização de demonstração. (A dica do balão de conversa dizia “Inbox” no print; hoje diz “Abrir conversa em Conversas”.)</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Como funciona.</strong> Abre o painel de ajuda da tela.</li>
@@ -23,7 +23,7 @@
   <li><strong>Linha do contato.</strong> Clique no nome para abrir a <a href="#contatos--ficha">ficha</a>.</li>
   <li><strong>Tags</strong> do contato.</li>
   <li><strong>Status.</strong> <span class="selo ok">Ativo</span> é o normal. Veja os outros na tabela abaixo.</li>
-  <li><strong>Balão de conversa.</strong> Abre a conversa dessa pessoa no <a href="#inbox">Inbox</a>. Se ela ainda não tem conversa, o botão <em>inicia</em> uma. Um número aparece quando há mensagens não lidas.</li>
+  <li><strong>Balão de conversa.</strong> Abre a conversa dessa pessoa em <a href="#inbox">Conversas</a>. Se ela ainda não tem conversa, o botão <em>inicia</em> uma. Um número aparece quando há mensagens não lidas.</li>
   <li><strong>Lixeira.</strong> Exclui o contato (veja <a href="#contatos--excluir">Excluir um contato</a>).</li>
 </ol>
 
@@ -45,7 +45,7 @@
   <thead><tr><th>Selo</th><th>Significado</th></tr></thead>
   <tbody>
     <tr><td><span class="selo ok">Ativo</span></td><td>Contato normal, que pode receber mensagens.</td></tr>
-    <tr><td><span class="selo">Cliente</span></td><td>Quem já foi atendido como cliente. Só aparece quando a organização usa a regra “Clientes pela agenda”, em <span class="ui">Configurações › Tipos de agendamento</span>.</td></tr>
+    <tr><td><span class="selo">Cliente</span></td><td>Quem já foi atendido como cliente. Só aparece quando a organização usa a regra “Clientes pela agenda”, em <span class="ui">Configurar › Vender › O seu funil › Tipos de agendamento</span>.</td></tr>
     <tr><td><span class="selo">Bloqueado</span></td><td>A pessoa pediu para não receber mais mensagens. O sistema não manda campanha, follow-up nem resposta de IA para ela. Só um Administrador pode desbloquear.</td></tr>
     <tr><td><span class="selo">Anonimizado</span></td><td>Os dados pessoais foram apagados a pedido do titular (LGPD). Não tem volta.</td></tr>
   </tbody>
@@ -63,7 +63,7 @@
   <li><strong>Nome.</strong> Como você chama a pessoa.</li>
   <li><strong>Email.</strong></li>
   <li><strong>Telefone (E.164).</strong> O telefone <strong>com o código do país</strong>, começando com <code>+</code> e só com números depois. Exemplo: <code>+5511999998888</code> (55 é o Brasil, 11 é o DDD). Sem o <code>+</code> e o código do país o sistema recusa.</li>
-  <li><strong>CPF (opcional).</strong> Se quiser guardar.</li>
+  <li><strong>CPF (opcional).</strong> Se quiser guardar. O nome do campo acompanha o país da empresa (em Portugal, por exemplo, aparece NIF).</li>
   <li><strong>Tags.</strong> Etiquetas separadas por vírgula, como <em>vip, recompra</em>.</li>
   <li><strong>Criar contato.</strong> Salva. <span class="ui">Cancelar</span> fecha sem salvar.</li>
 </ol>
@@ -97,7 +97,7 @@
 <ol class="legenda">
   <li><strong>Editar.</strong> Abre a janela para mudar os dados (nome, e-mail, telefone, data de nascimento e tags). Se o seu funil padrão tem <em>campos personalizados</em>, eles aparecem ali também. Fica bloqueado para contatos anonimizados.</li>
   <li><strong>Nome, e-mail, telefone e tags.</strong> O resumo no alto da ficha.</li>
-  <li><strong>Abrir conversa no Inbox.</strong> Mostra a última mensagem e leva à conversa. O número roxo é quantas mensagens ainda não foram lidas.</li>
+  <li><strong>Abrir conversa em Conversas.</strong> Mostra a última mensagem e leva à conversa. O número roxo é quantas mensagens ainda não foram lidas.</li>
   <li><strong>Aba Visão geral.</strong> Os dados completos do contato.</li>
   <li><strong>Aba Timeline.</strong> O histórico de tudo o que aconteceu com essa pessoa.</li>
   <li><strong>Aba LGPD.</strong> Só aparece para Administrador. É onde se anonimiza o contato.</li>
@@ -105,6 +105,7 @@
   <li><strong>Origem.</strong> De onde o contato veio. Quando veio de um anúncio, a ficha mostra também a campanha, o conjunto e o anúncio.</li>
   <li><strong>Tags.</strong> As etiquetas do contato.</li>
 </ol>
+<p>A aba <em>Visão geral</em> traz ainda a <strong>Data de nascimento</strong>, a <strong>Última atividade</strong> (dia e hora do último movimento com a pessoa) e <strong>Criado em</strong> (o dia do cadastro). Quando a organização usa a regra “Clientes pela agenda”, aparece também <strong>Cliente desde</strong>, e, nos contatos que vieram de anúncio, os campos <strong>Campanha</strong>, <strong>Conjunto</strong>, <strong>Anúncio</strong> e <strong>Posicionamento</strong> (quando a plataforma não informa o posicionamento, a ficha avisa).</p>
 <p>Abaixo desses dados, a aba <em>Visão geral</em> pode mostrar a seção <strong>“Respostas dos roteiros de atendimento”</strong>, com o que a pessoa respondeu em cada pergunta de um roteiro (ou <em>“não respondido”</em>).</p>
 <p>Duas coisas só aparecem em certas situações. Quando a IA ouviu na conversa um dado novo da pessoa (e-mail, nome, telefone ou data de nascimento) e quer que alguém confirme, a ficha mostra, acima das abas, o cartão <strong>“O assistente ouviu isto na conversa”</strong>: ele traz o valor sugerido, o que está gravado hoje e o trecho em que a pessoa escreveu. <strong>Nada é salvo antes de você decidir</strong>: <span class="ui">Está certo, salvar</span> grava o dado, <span class="ui">Descartar</span> o ignora (Atendente ou acima decide; o cartão some quando não há nada pendente). E, quando a organização pareou a chamada de voz pelo WhatsApp e o contato tem telefone, o botão <span class="ui">Chamar</span> aparece ao lado de <span class="ui">Editar</span>.</p>
 <aside class="nota info"><strong>Contato bloqueado ou anonimizado</strong><p>Um contato <strong>bloqueado</strong> mostra um selo amarelo e o botão <span class="ui">Desbloquear</span> (só para Administrador): ao desbloquear, o sistema volta a permitir campanhas, follow-ups e respostas da IA para essa pessoa, e a ação fica registrada na auditoria em nome de quem desbloqueou. Um contato <strong>anonimizado</strong> mostra um aviso no alto e não pode ser editado.</p></aside>

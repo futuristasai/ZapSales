@@ -78,7 +78,7 @@ function montarStub(item, id) {
   <p class="migalha"><a href="#inicio">Manual</a> › ${esc(grupo)} › ${esc(item.label)}</p>
   <h1>${esc(item.label)}</h1>
   <p class="lede">${esc(item.descricao)}</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>${esc(grupo)}${item.secao ? ' › ' + esc(item.secao) : ''} › ${esc(item.label)}</dd><dt>Quem pode usar</dt><dd>${quem}${extra ? '<br>' + extra : ''}</dd><dt>Endereço</dt><dd><code>${esc(item.href)}</code></dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>${esc(item.onde)}</dd><dt>Quem pode usar</dt><dd>${quem}${extra ? '<br>' + extra : ''}</dd><dt>Endereço</dt><dd><code>${esc(item.href)}</code></dd></dl>
   <div class="conteudo-pagina"><div class="pendente-aviso"><strong>Esta seção ainda está sendo escrita.</strong><br>O texto acima é a descrição que o próprio sistema dá para esta tela. A explicação completa — cada botão, cada campo e o passo a passo, com prints — entra nas próximas etapas do manual.</div></div>
 </article>`;
 }

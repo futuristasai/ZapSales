@@ -1,7 +1,7 @@
-<!--meta {"id":"webhooks","grupo":"canais","titulo":"Webhooks","ordem":3,"resumo":"Receba contatos de fora (landing pages, formulários, Zapier, n8n) como leads no funil e crie automações do tipo “quando acontecer isto, faça aquilo” — inclusive avisar outro sistema por webhook.","palavras":["webhooks","captação de leads","landing page","formulário","fonte","endereço","assinatura hmac","segredo","automações","gatilho","ação","avisar outro sistema","atividade","reenviar","zapier","n8n","elementor"],"onde":"Canais › Webhooks (também no menu lateral)","quem":"Gerente ou acima. Quem não é Gerente é levado de volta ao Inbox, sem mensagem.","rotas":["/app/webhooks"]} -->
+<!--meta {"id":"webhooks","grupo":"canais","titulo":"Avisar outros sistemas (webhooks)","ordem":3,"resumo":"Receba contatos de fora (landing pages, formulários, Zapier, n8n) como leads no funil e crie automações do tipo “quando acontecer isto, faça aquilo” — inclusive avisar outro sistema por webhook.","palavras":["webhooks","captação de leads","landing page","formulário","fonte","endereço","assinatura hmac","segredo","automações","gatilho","ação","avisar outro sistema","atividade","reenviar","zapier","n8n","elementor","webhook","avisar outros sistemas","outros sistemas"],"onde":"Configurar › Conexões › Outros sistemas › Avisar outros sistemas (clique em Conexões na faixa à esquerda)","quem":"Gerente ou acima. Quem não é Gerente é levado de volta a Conversas, sem mensagem.","rotas":["/app/webhooks"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>A tela <strong>Webhooks</strong> faz duas coisas diferentes, em quatro abas:</p>
+<p>No menu, esta tela se chama <strong>Avisar outros sistemas</strong>; dentro dela, o título é <strong>Webhooks</strong>. Ela faz duas coisas diferentes, em quatro abas:</p>
 <ul>
   <li><strong>Receber dados</strong> (webhook de <em>entrada</em>): você cria uma “fonte”, copia o endereço dela e cola no seu site, no formulário ou no Zapier. <strong>Cada envio vira um lead no funil.</strong></li>
   <li><strong>Automações</strong>: regras “<em>quando</em> algo acontece, <em>se</em> uma condição vale, <em>então</em> faça estas ações”. Uma das ações possíveis é <em>“Avisar outro sistema (webhook)”</em> — o webhook de <em>saída</em>.</li>
@@ -36,6 +36,7 @@
   <li><strong>Criar fonte.</strong> A fonte nasce <strong>ativa</strong> e o painel dela abre sozinho: “Fonte criada. Agora é só conectar seu site.”.</li>
 </ol>
 <p>O diálogo não pede segredo nem mapeamento de campos. O endereço é gerado pelo servidor, com um código aleatório e impossível de adivinhar.</p>
+<aside class="nota info"><strong>Licença bloqueada ou vencida.</strong><p>Se a licença da instalação estiver bloqueada ou vencida e a trava estiver em modo <em>valendo</em> (o padrão das instalações novas), o endereço da fonte responde <strong>503</strong>, com o pedido para tentar de novo em 5 minutos, e <strong>nenhum lead entra</strong> enquanto isso. Quem envia (Zapier, n8n, o site) costuma repetir sozinho depois; confira em <a href="#licenca">Licença</a> (<span class="ui">Configurar › Empresa › Plano e regras › Licença</span>).</p></aside>
 
 <h3>O painel da fonte</h3>
 <figure class="print">
@@ -113,7 +114,7 @@
     <tr><td>Quando uma mensagem não for entregue</td><td>Falha de entrega.</td></tr>
     <tr><td>Quando um lead / contato ganhar uma tag</td><td>Uma etiqueta é acrescentada.</td></tr>
     <tr><td>No aniversário de um contato</td><td>Todo ano, na data (varredura diária).</td></tr>
-    <tr><td>Quando um horário for marcado, confirmado, remarcado ou cancelado; quando alguém comparecer ou faltar</td><td>Os seis eventos da <a href="#agenda">Agenda</a>.</td></tr>
+    <tr><td>Quando um horário for marcado, confirmado, remarcado ou cancelado; quando alguém comparecer ou faltar</td><td>Os seis eventos de <a href="#agenda">Compromissos</a>.</td></tr>
     <tr><td>Quando faltarem N dias para uma data do funil</td><td>Um campo de data do funil se aproxima (use N negativo para avisar <em>depois</em> da data). Uma vez por negócio.</td></tr>
     <tr><td>Quando ficar N dias sem mensagem</td><td>Silêncio da equipe, do cliente ou de qualquer um; zera quando chega mensagem; opção de não avisar quando há compromisso marcado.</td></tr>
     <tr><td>Quando um lead ficar N dias na mesma etapa</td><td>Mudar de etapa zera o relógio.</td></tr>

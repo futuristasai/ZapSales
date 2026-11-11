@@ -1,15 +1,15 @@
-<!--meta {"id":"execucoes","grupo":"ia","titulo":"Execuções","ordem":17,"resumo":"Tudo o que a inteligência artificial fez por aqui e, quando algo falhou, o que aconteceu e o que fazer. Responde: “o agente parou de responder, por quê?”","palavras":["execução","execuções","runs","falha","erro","chamada","modelo","provedor","tokens","custo","latência","credencial recusada","jev"],"onde":"Agente de IA › Execuções (Ver tudo em IA › Acompanhar o agente)","quem":"Gerente ou acima.","rotas":["/app/ai/runs"]} -->
+<!--meta {"id":"execucoes","grupo":"ia","titulo":"Histórico do agente (logs)","ordem":17,"resumo":"Tudo o que a inteligência artificial fez por aqui e, quando algo falhou, o que aconteceu e o que fazer. Responde: “o agente parou de responder, por quê?”","palavras":["execução","execuções","runs","falha","erro","chamada","modelo","provedor","tokens","custo","latência","credencial recusada","jev","histórico do agente","logs","execuções de ia"],"onde":"Resultados › Quando algo dá errado › Histórico do agente (clique em Resultados na faixa à esquerda; também pela busca Ctrl K)","quem":"Gerente ou acima.","rotas":["/app/ai/runs"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Cada vez que o sistema pede algo a um modelo de IA — responder um cliente, medir o clima da conversa, escolher qual agente atende — isso é uma <strong>execução</strong>. Esta tela as lista, da mais recente para a mais antiga, e, quando uma falha, explica em linguagem simples <strong>o que o cliente percebeu</strong> e <strong>o que você deve fazer</strong>. É a primeira tela a abrir quando “o agente parou de responder”.</p>
-<p>O título da tela é <em>“Execuções de IA”</em>. É só leitura: não há botão que altere nada, não chama a IA e não envia mensagem.</p>
+<p>No menu a tela se chama <span class="ui">Histórico do agente</span> (antes, <em>Execuções</em>; o termo técnico, <em>logs</em>, aparece embaixo do nome); o título dentro dela é <em>“Execuções de IA”</em>. É só leitura: não há botão que altere nada, não chama a IA e não envia mensagem.</p>
 <figure class="print">
   <img src="img/ia-execucoes.png" alt="Lista de execuções de IA com o resumo de falhas no topo, numerada de 1 a 9" loading="lazy">
   <figcaption>As execuções de IA, com três falhas no resumo.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Resumo de falhas.</strong> Sem falhas, diz <em>“Nenhuma falha nas últimas N execuções”</em>. Com falhas, diz quantas das execuções carregadas falharam e lista cada tipo de erro com a sua orientação.</li>
-  <li><strong>Ver só as falhas.</strong> Filtra a lista. Aparece também o botão <em>Só o Jev</em> quando há execuções do Jev (o classificador que mede as mensagens).</li>
+  <li><strong>Ver só as falhas.</strong> Filtra a lista (o botão passa a dizer <em>Mostrando só as falhas</em>). Aparece também o botão <em>Só o Jev</em> quando há execuções do Jev (o classificador que mede as mensagens); o cartão do Jev em <a href="#provedores">Qual IA usar</a> leva para esta tela já filtrada.</li>
   <li><strong>Nome do ponto.</strong> Para que serviu a chamada, por exemplo <em>“Responder o cliente”</em> ou <em>“Medir o clima da conversa”</em>.</li>
   <li><strong>Provedor e modelo</strong> usados (por exemplo, Anthropic · claude-sonnet-4-6).</li>
   <li><strong>Selo “falhou”.</strong> A execução deu erro.</li>
@@ -18,25 +18,27 @@
   <li><strong>Mensagem técnica do provedor.</strong> O erro cru, para quem precisa investigar (com o código HTTP).</li>
   <li><strong>Em uma execução bem-sucedida:</strong> quantidade de <em>tokens</em> (pedaços de texto) usados, tempo de resposta em milissegundos e custo em dólar. No rodapé, a data, a hora e <em>por que este modelo foi escolhido</em> (por exemplo, “Definido na versão publicada do agente”).</li>
 </ol>
-<p>Desde o fim de outubro, as execuções aparecem como <strong>linhas dentro de um painel</strong> (e o resumo de falhas também fica num painel), e não como cartões separados. A execução que falhou ganha um fundo avermelhado suave na linha, e o contador de cada tipo de erro (como “2×”) é um selo cinza. As informações são as mesmas da legenda; só a aparência mudou.</p>
+<p>As execuções aparecem como <strong>linhas dentro de um painel</strong>, e o resumo de falhas também fica num painel. A execução que falhou ganha um fundo avermelhado suave na linha, e o contador de cada tipo de erro (como “2×”) é um selo cinza.</p>
 
 <h2 id="erros">Os erros mais comuns</h2>
 <table class="tabela">
   <thead><tr><th>Erro</th><th>O que fazer</th></tr></thead>
   <tbody>
-    <tr><td>Chave recusada</td><td>O provedor não aceitou a chave. Confira se ela ainda é válida em <span class="ui">IA › Credenciais</span>; chaves são revogadas ou expiram.</td></tr>
-    <tr><td>Modelo inexistente</td><td>O modelo escolhido não existe mais nesse provedor. Escolha outro em <span class="ui">IA › Provedores</span>.</td></tr>
+    <tr><td>Chave recusada</td><td>O provedor não aceitou a chave. Confira se ela ainda é válida em <span class="ui">Configurar › Agente › Chave da IA</span>; chaves são revogadas ou expiram.</td></tr>
+    <tr><td>Modelo inexistente</td><td>O modelo escolhido não existe mais nesse provedor. Escolha outro em <span class="ui">Configurar › Agente › Qual IA usar</span>.</td></tr>
     <tr><td>Limite ou saldo</td><td>O provedor recusou por limite de uso ou saldo. Verifique o faturamento na conta do provedor.</td></tr>
     <tr><td>Provedor indisponível</td><td>O provedor está fora do ar ou demorou demais. Costuma se resolver sozinho; se persistir, troque de provedor nesse ponto.</td></tr>
     <tr><td>Modelo sem ferramentas</td><td>O modelo não sabe usar as ferramentas do CRM. Troque por um que saiba.</td></tr>
-    <tr><td>Orçamento esgotado</td><td>A IA parou porque o gasto do mês atingiu o limite. Ajuste em <a href="#uso-ia">Uso de IA › Orçamento</a>.</td></tr>
+    <tr><td>Orçamento esgotado</td><td>A IA parou porque o gasto do mês atingiu o limite que você definiu. Ajuste ou desligue a parada em <a href="#uso-ia">Uso e orçamento</a> (em Resultados › Equipe e IA).</td></tr>
+    <tr><td>Endereço próprio sem chave da empresa</td><td>A chamada foi recusada de propósito: aquele ponto usa um endereço escolhido pela empresa e não há chave cadastrada para ele (a chave da instalação não vai para endereço escolhido pela empresa). Cadastre a chave em <span class="ui">Configurar › Agente › Chave da IA</span> ou tire o endereço próprio do ponto.</td></tr>
   </tbody>
 </table>
+<p>Algumas frases de “O que fazer” na tela ainda usam os nomes antigos das telas: <em>Credenciais</em> é a <span class="ui">Chave da IA</span>, e <em>Provedores</em> é <span class="ui">Qual IA usar</span>. A tabela acima já diz o caminho pelo menu de hoje.</p>
 
 <h2 id="entender">Como ler a tela</h2>
 <ul>
   <li><strong>Uma “execução” é uma chamada a um modelo</strong>, não uma conversa. Um único atendimento gera várias execuções (a resposta, o classificador, o resumo…).</li>
-  <li>A tela carrega as <strong>100 mais recentes</strong> e o resumo conta só essas.</li>
+  <li>A tela carrega as <strong>100 mais recentes</strong> e o resumo conta só essas. Com o filtro de falhas ou do Jev, as 100 são contadas já dentro do filtro.</li>
   <li>O <strong>custo é sempre em dólar</strong>. Se o modelo não tem preço conhecido, o custo fica em branco.</li>
   <li><strong>Preparar materiais de conhecimento não aparece aqui:</strong> esses gastos (embeddings) não são registrados nesta lista.</li>
   <li>Esta tela <strong>não tem</strong> o botão “Como funciona”.</li>

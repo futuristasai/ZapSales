@@ -1,4 +1,4 @@
-<!--meta {"id":"recursos-opcionais","grupo":"organizacao","titulo":"Recursos opcionais","ordem":8,"resumo":"Um mapa único de tudo o que a empresa pode ligar e desligar, com o estado atual de cada recurso e o botão Ajustar que leva à tela onde ele se liga.","palavras":["recursos opcionais","módulos","ligar","desligar","padrão","estado","ajustar","banco externo","propostas","fluxos de atendimento","honorários","empresas e pessoas"],"onde":"Configurações › Sua empresa › Recursos opcionais","quem":"Gerente ou acima. A tela só lê: nenhum interruptor aqui.","rotas":["/app/settings/recursos"]} -->
+<!--meta {"id":"recursos-opcionais","grupo":"organizacao","titulo":"Recursos opcionais","ordem":8,"resumo":"Um mapa único de tudo o que a empresa pode ligar e desligar, com o estado atual de cada recurso e o botão Ajustar que leva à tela onde ele se liga.","palavras":["recursos opcionais","módulos","ligar","desligar","padrão","estado","ajustar","banco externo","propostas","fluxos de atendimento","honorários","empresas e pessoas","resposta em áudio","servidores mcp","verificação em duas etapas"],"onde":"Configurar › Empresa › Plano e regras › Recursos opcionais (clique em Empresa na faixa à esquerda)","quem":"Gerente ou acima. A tela só lê: nenhum interruptor aqui.","rotas":["/app/settings/recursos"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Muitas coisas no ZapSales se ligam e desligam — cada uma na sua tela. Esta página junta todas num <strong>índice só de leitura</strong>: diz se está ligada, quem decide e <strong>onde</strong> se ajusta. Nada se liga aqui: o botão <span class="ui">Ajustar</span> leva até a tela de cada recurso.</p>
@@ -33,45 +33,53 @@
 <h2 id="modulos">Módulos desta instalação</h2>
 <p>Cinco módulos opcionais do servidor. Quem os liga é o <strong>dono da instalação</strong> (painel de administração, “Recursos opcionais”). Desligados, somem de todas as empresas. Esta seção fica no <strong>fim da página</strong>, depois do que a empresa decide, porque a empresa não liga módulo nenhum daqui: só pede.</p>
 <ul>
-  <li><strong>Banco de dados externo</strong> — o agente consulta o banco de outro sistema. Veja <a href="#dados-externos">Dados externos</a>.</li>
+  <li><strong>Banco de dados externo</strong> — o agente consulta o banco de outro sistema. Veja <a href="#dados-externos">Dados de outro sistema</a>.</li>
   <li><strong>Fluxos de atendimento</strong> — a IA conduz um roteiro de perguntas e grava as respostas na ficha do cliente. Veja <a href="#fluxos-de-atendimento">Fluxos de atendimento</a>.</li>
-  <li><strong>Propostas comerciais</strong> — a IA monta a proposta pelos modelos da empresa e o PDF sai pelo WhatsApp. Veja <a href="#propostas-config">Propostas</a>.</li>
+  <li><strong>Propostas comerciais</strong> — a IA monta a proposta pelos modelos da empresa e o PDF sai pelo WhatsApp. Veja <a href="#propostas-config">Padrões de proposta</a>.</li>
   <li><strong>Empresas e pessoas (venda para empresas)</strong> — cadastro por CNPJ, das pessoas que decidem e importação de planilha. Veja <a href="#empresas">Empresas</a>.</li>
   <li><strong>Honorários</strong> — contratos com parcelas e controle do que foi pago. Veja <a href="#honorarios">Honorários</a>.</li>
 </ul>
 
 <h2 id="da-empresa">Da sua empresa</h2>
-<p>Os recursos que a empresa decide, em seis blocos com título: <strong>Atendimento e equipe</strong>, <strong>Funil e agenda</strong>, <strong>Vendas e anúncios</strong>, <strong>IA e conhecimento</strong>, <strong>Voz e telefonia</strong> e <strong>Segurança e menus</strong>. A tabela abaixo é o resumo, com onde se ajusta:</p>
+<p>Os recursos que a empresa decide, em seis blocos com título: <strong>Atendimento e equipe</strong>, <strong>Funil e agenda</strong>, <strong>Vendas e anúncios</strong>, <strong>IA e conhecimento</strong>, <strong>Voz e telefonia</strong> e <strong>Segurança e menus</strong>. A tabela abaixo é o resumo, na ordem dos blocos da tela, com onde se ajusta:</p>
 <table class="tabela">
   <thead><tr><th>Recurso</th><th>O que faz</th><th>Quem decide · padrão</th><th>Onde ajustar</th></tr></thead>
   <tbody>
-    <tr><td>A conversa fica com quem atendeu</td><td>Quem responde vira dono da conversa; a IA se cala até alguém devolver.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Distribuição</a></td></tr>
-    <tr><td>A IA volta sozinha sem resposta da equipe</td><td>Devolve ao agente depois de um tempo sem resposta de uma pessoa.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Distribuição</a></td></tr>
-    <tr><td>Atendente só vê os seus</td><td>Restringe o que cada atendente enxerga (conta como ligado “Os seus + sem dono” e “Só os seus”).</td><td>Gerente · desligado</td><td><a href="#distribuicao">Distribuição</a></td></tr>
-    <tr><td>Quem fala aparece na mensagem</td><td>Põe o nome do atendente ou da IA em negrito na linha de cima.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Distribuição</a></td></tr>
+    <tr><td colspan="4"><strong>Atendimento e equipe</strong></td></tr>
+    <tr><td>A conversa fica com quem atendeu</td><td>Quem responde vira dono da conversa; a IA se cala até alguém devolver.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Revezamento da equipe</a></td></tr>
+    <tr><td>A IA volta sozinha sem resposta da equipe</td><td>Devolve ao agente depois de um tempo sem resposta de uma pessoa.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Revezamento da equipe</a></td></tr>
+    <tr><td>Atendente só vê os seus</td><td>Restringe o que cada atendente enxerga nas conversas e no funil (conta como ligado “Os seus + sem dono” e “Só os seus”).</td><td>Gerente · desligado</td><td><a href="#distribuicao">Revezamento da equipe</a></td></tr>
+    <tr><td>Quem fala aparece na mensagem</td><td>Põe o nome do atendente ou da IA em negrito na linha de cima.</td><td>Gerente · desligado</td><td><a href="#distribuicao">Revezamento da equipe</a></td></tr>
+    <tr><td>Acesso da IA por número</td><td>Em cada número, a IA atende todos, só números de teste, ninguém ou só quem veio de uma origem.</td><td>Administrador · varia</td><td><a href="#conexoes">Conexões</a></td></tr>
+    <tr><td>Proteção de envio por número</td><td>Janelas de resposta e de disparo, ritmo, teto diário, domingos e aquecimento de cada número.</td><td>Administrador · varia</td><td><a href="#conexoes">Conexões</a></td></tr>
+    <tr><td>Grupos na caixa de entrada</td><td>Escolhe quais grupos do WhatsApp aparecem nas conversas.</td><td>Administrador</td><td><a href="#conexoes">Conexões</a></td></tr>
+    <tr><td>Receber avisos no WhatsApp</td><td>Os avisos da Central chegam num número de WhatsApp da equipe.</td><td>Administrador</td><td><a href="#aviso-whatsapp">Aviso no WhatsApp</a></td></tr>
+    <tr><td colspan="4"><strong>Funil e agenda</strong></td></tr>
     <tr><td>Para onde o card vai em cada passo</td><td>Diz ao agente a etapa do funil para qual levar o negócio ao qualificar ou agendar.</td><td>Gerente · varia</td><td><a href="#etapas-do-funil">Etapas do funil</a></td></tr>
     <tr><td>Avisar a equipe quando o negócio entra na etapa</td><td>Abre um aviso na Central.</td><td>Gerente · varia</td><td><a href="#etapas-do-funil">Etapas do funil</a></td></tr>
+    <tr><td>Quem tem horário marcado vira cliente</td><td>O contato com agendamento ganha a marca de cliente sozinho.</td><td>Administrador · desligado</td><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td></tr>
+    <tr><td>Atendentes podem mexer na agenda dos colegas</td><td>Qualquer atendente marca e remarca na agenda de outro.</td><td>Gerente · <strong>ligado</strong></td><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td></tr>
+    <tr><td>Proposta comercial da empresa</td><td>Com o módulo do servidor ligado, a empresa liga as propostas para si.</td><td>Gerente</td><td><a href="#propostas-config">Padrões de proposta</a></td></tr>
+    <tr><td colspan="4"><strong>Vendas e anúncios</strong></td></tr>
     <tr><td>Reportar vendas à Meta</td><td>Devolve ao anúncio da Meta as vendas que ele trouxe.</td><td>Administrador</td><td><a href="#conversoes">Conversões</a></td></tr>
     <tr><td>Reportar vendas ao Google Ads</td><td>Devolve a venda ao Google Ads, com o telefone protegido e só nas etapas escolhidas.</td><td>Administrador</td><td><a href="#conversoes">Conversões</a></td></tr>
     <tr><td>Endereço de captura de origem</td><td>Registra de qual campanha veio quem chama no WhatsApp.</td><td>Administrador</td><td><a href="#conversoes">Conversões</a></td></tr>
-    <tr><td>Quem tem horário marcado vira cliente</td><td>O contato com agendamento ganha a marca de cliente sozinho.</td><td>Administrador · desligado</td><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td></tr>
-    <tr><td>Atendentes podem mexer na agenda dos colegas</td><td>Qualquer atendente marca e remarca na agenda de outro.</td><td>Gerente · <strong>ligado</strong></td><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td></tr>
-    <tr><td>Receber avisos no WhatsApp</td><td>Os avisos da Central chegam num número de WhatsApp da equipe.</td><td>Administrador</td><td><a href="#aviso-whatsapp">Aviso no WhatsApp</a></td></tr>
-    <tr><td>Acesso da IA por número</td><td>Em cada número, a IA atende todos, só números de teste, ninguém ou só quem veio de uma origem.</td><td>Administrador · varia</td><td><a href="#conexoes">Conexões</a></td></tr>
-    <tr><td>Proteção de envio por número</td><td>Janelas, ritmo, teto diário, domingos e aquecimento de cada número.</td><td>Administrador · varia</td><td><a href="#conexoes">Conexões</a></td></tr>
-    <tr><td>Grupos na caixa de entrada</td><td>Escolhe quais grupos do WhatsApp aparecem nas conversas.</td><td>Administrador</td><td><a href="#conexoes">Conexões</a></td></tr>
-    <tr><td>Verificação em duas etapas obrigatória</td><td>Exige a verificação de quem administra a empresa.</td><td>Administrador</td><td><a href="#config-seguranca">Segurança</a></td></tr>
+    <tr><td colspan="4"><strong>IA e conhecimento</strong></td></tr>
+    <tr><td>Decisões rápidas por outro provedor</td><td>Uma segunda inteligência decide as partes rápidas do atendimento.</td><td>Gerente</td><td><a href="#provedores">Qual IA usar</a></td></tr>
+    <tr><td>Resposta em áudio</td><td>Quando o cliente manda áudio, o agente pode responder em nota de voz, com a chave de voz da própria empresa.</td><td>Administrador</td><td><a href="#agente-resposta-em-audio">Resposta em áudio</a></td></tr>
+    <tr><td>Servidores MCP externos</td><td>O agente usa ferramentas de servidores MCP de terceiros que um administrador cadastra; cada uma que altera algo espera aprovação.</td><td>Administrador</td><td><a href="#agente-servidores-mcp">Servidores MCP externos</a></td></tr>
+    <tr><td>Base de conhecimento com o Google</td><td>Prepara a base com a chave do Google em vez da OpenAI (trocar refaz a base).</td><td>Gerente</td><td><a href="#conhecimento">Conhecimento</a></td></tr>
+    <tr><td>Endereço aproximado do pino</td><td>Com uma chave do Google, o pino de localização chega com rua e cidade aproximadas.</td><td>Administrador</td><td><a href="#provedores">Qual IA usar</a></td></tr>
+    <tr><td>Teto de gasto de IA</td><td>Teto mensal, aviso, e se a IA para ao chegar nele.</td><td>Gerente · varia</td><td><a href="#uso-ia">Uso e orçamento</a></td></tr>
+    <tr><td colspan="4"><strong>Voz e telefonia</strong></td></tr>
     <tr><td>Chamada de voz da empresa</td><td>Aceita o risco e liga a chamada de voz pelo WhatsApp, se o servidor oferecer.</td><td>Administrador</td><td><a href="#config-seguranca">Segurança</a></td></tr>
     <tr><td>Tronco SIP</td><td>Credenciais do provedor de telefonia da empresa.</td><td>Administrador</td><td><a href="#linha-sip">Linha telefônica</a></td></tr>
-    <tr><td>Decisões rápidas por outro provedor</td><td>Uma segunda inteligência decide as partes rápidas do atendimento.</td><td>Gerente</td><td><a href="#provedores">Provedores</a></td></tr>
-    <tr><td>Base de conhecimento com o Google</td><td>Prepara a base com a chave do Google em vez da OpenAI (trocar refaz a base).</td><td>Gerente</td><td><a href="#conhecimento">Conhecimento</a></td></tr>
-    <tr><td>Endereço aproximado do pino</td><td>Com uma chave do Google, o pino de localização chega com rua e cidade aproximadas.</td><td>Administrador</td><td><a href="#provedores">Provedores</a></td></tr>
-    <tr><td>Teto de gasto de IA</td><td>Teto mensal, aviso, e se a IA para ao chegar nele.</td><td>Gerente · varia</td><td><a href="#uso-ia">Uso</a></td></tr>
-    <tr><td>Quais menus aparecem</td><td>Interface completa, simplificada ou só as portas escolhidas.</td><td>Administrador · varia</td><td><a href="#dados-da-empresa">Organização</a></td></tr>
+    <tr><td colspan="4"><strong>Segurança e menus</strong></td></tr>
+    <tr><td>Verificação em duas etapas obrigatória</td><td>Exige a verificação da equipe a partir do nível que a empresa escolher (o padrão é não exigir).</td><td>Administrador</td><td><a href="#config-seguranca">Segurança</a></td></tr>
+    <tr><td>Quais menus aparecem</td><td>Interface completa, simplificada ou só as portas escolhidas.</td><td>Administrador · varia</td><td><a href="#dados-da-empresa">Dados da empresa</a></td></tr>
     <tr><td>Extensões</td><td>Pacotes de fora do núcleo, instalados e ativados por empresa.</td><td>Administrador</td><td><a href="#extensoes">Extensões</a></td></tr>
-    <tr><td>Proposta comercial da empresa</td><td>Com o módulo do servidor ligado, a empresa liga as propostas para si.</td><td>Gerente</td><td><a href="#propostas-config">Propostas</a></td></tr>
   </tbody>
 </table>
 <h3 id="por-agente">Em cada agente</h3>
-<p>Dois itens se ligam <em>dentro</em> de cada agente, em Agente de IA: os <strong>ajustes de cada agente</strong> (ligar e desligar, <code>#on</code>/<code>#off</code> pelo celular, mensagens curtas, chamar uma pessoa, filtros de gatilho, ferramentas e voz — veja <a href="#agentes">Agentes</a>) e o <strong>roteiro que não recomeça</strong> (em cada roteiro, quem já respondeu não é perguntado de novo — depende do módulo Fluxos de atendimento).</p>
+<p>Dois itens se ligam <em>dentro</em> de cada agente (Configurar › Agente › Agentes): os <strong>ajustes de cada agente</strong> (ligar e desligar, <code>#on</code>/<code>#off</code> pelo celular, mensagens curtas, chamar uma pessoa, filtros de gatilho, ferramentas e voz — veja <a href="#agentes">Agentes</a>) e o <strong>roteiro que não recomeça</strong> (em cada roteiro, quem já respondeu não é perguntado de novo — depende do módulo Fluxos de atendimento).</p>
 <aside class="nota info"><strong>O que não aparece aqui.</strong><p>Os recursos do <em>servidor</em> (e-mail, Google Agenda, API Oficial da Meta, voz, Web Push, transcrição, Google Ads…) existem no catálogo, mas só são desenhados no painel de administração da instalação.</p></aside>

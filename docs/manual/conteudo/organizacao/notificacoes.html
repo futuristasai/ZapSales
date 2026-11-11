@@ -1,10 +1,10 @@
-<!--meta {"id":"config-notificacoes","grupo":"organizacao","titulo":"Notificações","ordem":4,"resumo":"Escolha, para você, quais acontecimentos avisam na tela e na bandeja do computador; o Gerente também escolhe os sons dos avisos da Central.","palavras":["notificações","avisos","push","in-app","e-mail","som","bandeja","navegador","vapid","central de avisos"],"onde":"Configurações › Sua conta › Notificações","quem":"Todos ligam e desligam os próprios avisos. Trocar o som: Gerente ou acima.","rotas":["/app/settings/notifications"]} -->
+<!--meta {"id":"config-notificacoes","grupo":"organizacao","titulo":"Notificações","ordem":4,"resumo":"Escolha, para você, quais acontecimentos avisam na tela e na bandeja do computador; o Gerente também escolhe os sons dos avisos da Central.","palavras":["notificações","avisos","push","in-app","e-mail","som","bandeja","navegador","vapid","central de avisos"],"onde":"Você (rodapé da faixa à esquerda; no celular, o menu do avatar no topo) › Notificações","quem":"Todos ligam e desligam os próprios avisos. Trocar o som: Gerente ou acima.","rotas":["/app/settings/notifications"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Define <strong>como e sobre o quê</strong> o sistema avisa você, e (para o Gerente) quais sons tocam quando um aviso chega na Central.</p>
 <figure class="print">
   <img src="img/notificacoes.png" alt="Tela de Notificações com o aviso sobre a instalação, a tabela de categorias por Email, In-app e Push e o cartão de sons, numerada de 1 a 8" loading="lazy">
-  <figcaption>A tela de Notificações de uma instalação sem as chaves de aviso com a aba fechada.</figcaption>
+  <figcaption>A tela de Notificações numa instalação que ainda não tem as chaves de aviso para a aba fechada.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Faixa de status.</strong> Nesta instalação: “os avisos só aparecem com o site aberto”. Veja abaixo por quê.</li>
@@ -35,4 +35,4 @@
   <li><span class="ui">Trocar som</span> — só o Gerente ou acima (para os demais o botão nem aparece). Envia um arquivo MP3, OGG ou WAV de até 1 MB (o tipo é conferido pelo conteúdo, não só pela extensão). aviso “Som salvo”</li>
   <li><span class="ui">Usar o do sistema</span> — volta ao bipe do produto (aparece só quando há som personalizado). aviso “Voltou ao som do sistema”</li>
 </ul>
-<p>O som vale para a <strong>empresa inteira</strong> e fica na <a href="#auditoria">Auditoria</a> (<code>settings.notification_sound_updated</code> e <code>…_removed</code>).</p>
+<p>O som vale para a <strong>empresa inteira</strong> e fica na <a href="#auditoria">Quem mexeu em quê</a> (<code>settings.notification_sound_updated</code> e <code>…_removed</code>).</p>

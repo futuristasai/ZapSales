@@ -1,4 +1,4 @@
-<!--meta {"id":"agente-servidores-mcp","grupo":"ia","titulo":"Servidores MCP: ferramentas de outros sistemas para o agente","ordem":2.7,"resumo":"Conecte um servidor MCP — um sistema de terceiros que oferece ferramentas prontas — e escolha quais o agente pode usar. O que altera algo espera a sua aprovação.","palavras":["mcp","servidor mcp","servidores mcp","model context protocol","ferramentas externas","descoberta","erp","credencial","bearer","x-api-key","aprovação","streamable http"],"onde":"Agente de IA › Ver tudo em IA › Ferramentas externas › aba Servidores MCP","quem":"Ligar, cadastrar, testar e escolher ferramentas: Administrador. Aprovar pedidos na Central: Gerente. Marcar a ferramenta no agente: Administrador.","rotas":[]} -->
+<!--meta {"id":"agente-servidores-mcp","grupo":"ia","titulo":"Servidores MCP: ferramentas de outros sistemas para o agente","ordem":2.7,"resumo":"Conecte um servidor MCP — um sistema de terceiros que oferece ferramentas prontas — e escolha quais o agente pode usar. O que altera algo espera a sua aprovação.","palavras":["conectar outros sistemas","mcp","servidor mcp","servidores mcp","model context protocol","ferramentas externas","descoberta","erp","credencial","bearer","x-api-key","aprovação","streamable http"],"onde":"Configurar › Agente › Conectar a IA › Conectar outros sistemas (MCP) › aba Servidores MCP (clique em Agente na faixa à esquerda; também pela busca Ctrl K)","quem":"Ligar, cadastrar, testar e escolher ferramentas: Administrador. Aprovar pedidos na Central: Gerente. Marcar a ferramenta no agente: Administrador.","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Em vez de você cadastrar cada consulta uma a uma (como em <a href="#agente-ferramenta-webhook">webhooks</a>), alguns sistemas — ERPs, planilhas, agendas — oferecem um “cardápio” de ferramentas pronto para ser usado por uma IA. Esse cardápio é um <strong>servidor MCP</strong>. Você informa o endereço do servidor, o ZapSales <strong>descobre sozinho</strong> as ferramentas que ele oferece, e você escolhe quais o agente pode usar.</p>
@@ -6,7 +6,7 @@
 <aside class="nota atencao"><strong>Não confunda com o MCP do próprio ZapSales.</strong><p>O ZapSales também tem um MCP <em>seu</em>, que permite a programas de fora lerem e usarem o CRM. Aqui é o contrário: o <strong>agente</strong> chama o servidor de <strong>outra empresa</strong>. O ZapSales funciona só como “cliente” do servidor MCP.</p></aside>
 
 <h2 id="ligar">Ligar o recurso (uma vez)</h2>
-<p>Servidores MCP vêm <strong>desligados</strong> em toda organização. Abra <span class="ui">Agente de IA › Ver tudo em IA › Ferramentas externas</span> e clique na aba <strong>Servidores MCP</strong>.</p>
+<p>Servidores MCP vêm <strong>desligados</strong> em toda organização. Clique em <span class="ui">Agente</span> na faixa à esquerda, escolha <span class="ui">Conectar outros sistemas</span> (grupo <em>Conectar a IA</em>; a tela se chama “Ferramentas externas”) e clique na aba <strong>Servidores MCP</strong>.</p>
 <figure class="print">
   <img src="img/ia-mcp-desligado.png" alt="Aba Servidores MCP com o cartão Servidores MCP externos desligado, a caixa de aceite e o botão Ligar servidores MCP" loading="lazy">
   <figcaption>O recurso desligado, com a caixa de aceite.</figcaption>
@@ -84,7 +84,7 @@
   <li>O agente chama a ferramenta com os dados que preencher, como nas outras <a href="#agente-ferramenta-webhook">ferramentas externas</a>. O prazo é de <strong>15 segundos</strong>.</li>
   <li>A resposta do servidor é tratada como <strong>informação, nunca como ordem</strong>. Só texto volta ao agente (imagem e áudio são omitidos), e no máximo 4.000 caracteres.</li>
   <li><strong>Consulta</strong> que falha é tentada duas vezes. <strong>Ação que altera dados</strong> é tentada uma vez só e nunca repetida, para não ser feita em dobro.</li>
-  <li>Se falhar, abre-se um aviso na <a href="#alertas">Central de avisos</a> (“A consulta «X» falhou” ou “A ação «X» falhou”), e o agente é orientado a não afirmar ao cliente o que dependia da chamada.</li>
+  <li>Se falhar, abre-se um aviso em <a href="#alertas">Alertas</a> (a Central de avisos) (“A consulta «X» falhou” ou “A ação «X» falhou”), e o agente é orientado a não afirmar ao cliente o que dependia da chamada.</li>
   <li>O teto de <strong>27 capacidades</strong> por agente é compartilhado entre as do sistema, os webhooks e as ferramentas MCP.</li>
 </ul>
 
@@ -101,5 +101,5 @@
 <ul>
   <li>Conecte só servidores de empresas em que você confia: o agente envia a eles os dados que preencher, e o que eles responderem pode ser repetido ao cliente.</li>
   <li>Comece com <strong>poucas ferramentas</strong> e com a aprovação ligada nas que alteram algo.</li>
-  <li>Este recurso é novo. O ZapSales avisa quando a conexão falha, mas confira o primeiro uso real na <a href="#auditoria">Auditoria</a> e na Central. Servidor, ferramenta escolhida e uso ficam registrados, sem credencial, dados enviados nem resposta.</li>
+  <li>Este recurso é novo. O ZapSales avisa quando a conexão falha, mas confira o primeiro uso real em <a href="#auditoria">Quem mexeu em quê</a> (tela “Auditoria”) e nos Alertas. Servidor, ferramenta escolhida e uso ficam registrados, sem credencial, dados enviados nem resposta.</li>
 </ul>

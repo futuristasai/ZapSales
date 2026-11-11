@@ -1,11 +1,11 @@
-<!--meta {"id":"agente-aprovacao-de-acoes","grupo":"ia","titulo":"Ações que alteram dados, com a sua aprovação","ordem":2.6,"resumo":"O agente pode pedir para criar um pedido ou cadastrar um cliente em outro sistema, mas nada é feito sem uma pessoa aprovar na Central de avisos. Aprovar executa uma única vez.","palavras":["aprovação","aprovar","recusar","altera dados","pedir aprovação","ação externa","central de avisos","expira","expirada","modo assistido","executar","falha incerta","criar pedido","cadastrar cliente"],"onde":"Cadastro: Agente de IA › Ferramentas externas. Decisão: Central de avisos (Agente de IA › Alertas)","quem":"Cadastrar a ferramenta e aprovar ou recusar: Gerente ou acima. Atendente vê o pedido, sem os botões.","rotas":[]} -->
+<!--meta {"id":"agente-aprovacao-de-acoes","grupo":"ia","titulo":"Ações que alteram dados, com a sua aprovação","ordem":2.6,"resumo":"O agente pode pedir para criar um pedido ou cadastrar um cliente em outro sistema, mas nada é feito sem uma pessoa aprovar na Central de avisos. Aprovar executa uma única vez.","palavras":["conectar outros sistemas","ferramentas externas","alertas","aprovação","aprovar","recusar","altera dados","pedir aprovação","ação externa","central de avisos","expira","expirada","modo assistido","executar","falha incerta","criar pedido","cadastrar cliente"],"onde":"Cadastro: Configurar › Agente › Conectar a IA › Conectar outros sistemas (clique em Agente na faixa à esquerda). Decisão: Todo dia › Leads › Alertas (a Central de avisos)","quem":"Cadastrar a ferramenta e aprovar ou recusar: Gerente ou acima. Atendente vê o pedido, sem os botões.","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Uma <a href="#agente-ferramenta-webhook">consulta</a> só lê uma informação em outro sistema. Uma <strong>ação que altera dados</strong> faz algo: cria um pedido, cadastra um cliente, muda ou apaga um registro. Se o agente errar, o estrago é real. Por isso o ZapSales tem uma regra de segurança: <strong>por padrão, nada que altera o outro sistema acontece sem que uma pessoa aprove</strong>.</p>
-<aside class="nota info"><strong>Resumo do caminho.</strong><ol><li>O cliente pede algo (“quero 2 camisetas azuis”).</li><li>O agente decide usar a ação “Criar pedido” e preenche os dados.</li><li><strong>Nada é enviado.</strong> Surge um pedido de aprovação na <a href="#alertas">Central de avisos</a>.</li><li>Um gerente <strong>aprova</strong> (a ação é executada uma vez) ou <strong>recusa</strong> (nada acontece).</li><li>O agente fica sabendo do resultado e responde ao cliente de acordo.</li></ol></aside>
+<aside class="nota info"><strong>Resumo do caminho.</strong><ol><li>O cliente pede algo (“quero 2 camisetas azuis”).</li><li>O agente decide usar a ação “Criar pedido” e preenche os dados.</li><li><strong>Nada é enviado.</strong> Surge um pedido de aprovação em <a href="#alertas">Alertas</a> (a Central de avisos).</li><li>Um gerente <strong>aprova</strong> (a ação é executada uma vez) ou <strong>recusa</strong> (nada acontece).</li><li>O agente fica sabendo do resultado e responde ao cliente de acordo.</li></ol></aside>
 
 <h2 id="cadastrar">Cadastrar uma ação que altera dados</h2>
-<p>É o mesmo cadastro de <span class="ui">Ferramentas externas</span> descrito em <a href="#agente-ferramenta-webhook">Ferramentas externas: o agente consulta outro sistema</a>. A diferença está em dois pontos do formulário:</p>
+<p>É o mesmo cadastro de <span class="ui">Conectar outros sistemas</span> (a tela se chama “Ferramentas externas”) descrito em <a href="#agente-ferramenta-webhook">Conectar outros sistemas: o agente consulta outro sistema</a>. A diferença está em dois pontos do formulário:</p>
 <figure class="print">
   <img src="img/ia-ferramentas-externas-altera-dados.png" alt="Janela Nova ferramenta externa com Altera dados escolhido e o grupo Aprovação antes de executar com a caixa Pedir aprovação marcada e a validade em horas" loading="lazy">
   <figcaption>O formulário com “Altera dados” e “Pedir aprovação” marcado.</figcaption>
@@ -22,7 +22,7 @@
 <p>No cartão da lista, os selos mostram a escolha: <em>Altera dados</em> e <em>Pede aprovação</em> ou <em>Executa direto</em>.</p>
 
 <h2 id="pedido">O pedido na Central de avisos</h2>
-<p>Quando o agente decide usar uma ação que pede aprovação, abre-se um aviso na <span class="ui">Central de avisos</span> (menu <span class="ui">Agente de IA › Ver tudo em IA › Alertas</span>). O <strong>sino</strong> no alto da tela mostra o número de avisos abertos. Não há aviso por e-mail ou WhatsApp: quem aprova precisa olhar a Central ou o sino.</p>
+<p>Quando o agente decide usar uma ação que pede aprovação, abre-se um aviso em <span class="ui">Alertas</span>, a Central de avisos (menu <span class="ui">Todo dia › Leads › Alertas</span>). O <strong>sino</strong> no alto da tela mostra o número de avisos abertos. Não há aviso por e-mail ou WhatsApp: quem aprova precisa olhar os Alertas ou o sino.</p>
 <figure class="print">
   <img src="img/ia-aprovacao-central.png" alt="Central de avisos com um pedido de aprovação de Criar pedido, mostrando os dados preenchidos pelo agente e os botões Aprovar e executar e Recusar" loading="lazy">
   <figcaption>Um pedido de aprovação na Central de avisos.</figcaption>
@@ -84,7 +84,7 @@
   <li><strong>Recusada ou expirada:</strong> o agente oferece outro caminho ou chama um atendente.</li>
   <li><strong>Executada:</strong> só então ele pode confirmar ao cliente que foi feito. Antes disso ele é instruído a <strong>nunca afirmar</strong> que algo foi feito.</li>
 </ul>
-<p>Se o assunto for urgente, avise o cliente você mesmo pela <a href="#inbox">Inbox</a>.</p>
+<p>Se o assunto for urgente, avise o cliente você mesmo em <a href="#inbox">Conversas</a>.</p>
 
 <h2 id="testar">Testar sem fazer</h2>
 <ul>
@@ -104,7 +104,7 @@
 <p>O acesso temporário de suporte da plataforma não pode aprovar.</p>
 
 <h2 id="rastro">Rastro</h2>
-<p>Cada pedido criado, aprovado, recusado, expirado e executado fica na <a href="#auditoria">Auditoria</a>, com quem decidiu, qual ferramenta e um resumo dos dados sem segredos. Chave de assinatura, corpo enviado e resposta nunca são gravados. Hoje esses registros aparecem na tela de Auditoria com o nome técnico da ação (<code>ai.external_tool_request_…</code>). Os dados de pedidos concluídos são apagados após 90 dias.</p>
+<p>Cada pedido criado, aprovado, recusado, expirado e executado fica em <a href="#auditoria">Quem mexeu em quê</a>, com quem decidiu, qual ferramenta e um resumo dos dados sem segredos. Chave de assinatura, corpo enviado e resposta nunca são gravados. Hoje esses registros aparecem nessa tela (que se chama “Auditoria”) com o nome técnico da ação (<code>ai.external_tool_request_…</code>). Os dados de pedidos concluídos são apagados após 90 dias.</p>
 
 <h2 id="cuidados">Cuidados</h2>
 <ul>

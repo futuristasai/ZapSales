@@ -1,58 +1,66 @@
-<!--meta {"id":"config-hub","grupo":"organizacao","titulo":"Configurações (visão geral)","ordem":1,"resumo":"A porta de entrada de tudo o que se configura: a sua conta, as regras da empresa e quem tem acesso ao quê. Mostra quais cartões cada papel enxerga.","palavras":["configurações","hub","ajustes","engrenagem","sua empresa","sua conta","dados e acesso","cartões","papel","administrador","gerente"],"onde":"Menu lateral › Configurações (ícone de engrenagem, no rodapé do menu)","quem":"Todos abrem. O que muda é quais cartões aparecem, conforme o papel.","rotas":["/app/settings"]} -->
+<!--meta {"id":"config-hub","grupo":"organizacao","titulo":"Configurações (página de área)","ordem":1,"resumo":"A página de área que lista, por tarefa, as telas de ajuste da conta, da empresa e das conexões. Fica fora do caminho principal do menu (que é Configurar e Você); abre pelo endereço ou pela busca. Mostra quais telas cada papel enxerga.","palavras":["configurações","hub","ajustes","engrenagem","sua empresa","sua conta","dados e acesso","cartões","papel","administrador","gerente","página de área","configurar","gaveta","faixa","/app/settings","páginas de área","ctrl k","você","vender","conexões","empresa"],"onde":"Fora do caminho do menu: abre pelo endereço /app/settings ou pela busca Ctrl K (categoria “Páginas de área”). O caminho do menu é Configurar › Vender / Agente / Conexões / Empresa (clique na área na faixa à esquerda) e Você","quem":"Todos abrem. O que muda é quais cartões aparecem, conforme o papel.","rotas":["/app/settings"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p><strong>Configurações</strong> é o painel que reúne todas as telas de ajuste do sistema. Fica sempre no <em>rodapé do menu lateral</em>, com ícone de engrenagem, logo acima de “versão X.Y.Z”. Cada tela é um cartão com nome, uma frase explicando o que ela faz e uma seta.</p>
+<p><strong>Configurações</strong> é uma das quatro <strong>páginas de área</strong> do ZapSales (as outras são Gestão de Clientes CRM, Agente de IA e Análise). Ela reúne, numa página só, as telas de ajuste da sua conta, da empresa e das conexões, <strong>nos mesmos grupos do menu</strong>. Antes chamada de “hub” e aberta pela engrenagem no rodapé do menu lateral, <strong>ela já não é o caminho do menu</strong>: hoje o caminho é a faixa à esquerda — clique em <span class="ui">Vender</span>, <span class="ui">Agente</span>, <span class="ui">Conexões</span> ou <span class="ui">Empresa</span> (sob o rótulo <em>Configurar</em>) para abrir a gaveta daquela área, e em <span class="ui">Você</span> para Perfil, Segurança e Notificações.</p>
+<p>A página continua existindo para quem a salvou nos favoritos: abre pelo endereço <code>/app/settings</code> e aparece na busca <kbd>Ctrl</kbd> <kbd>K</kbd>, na categoria <em>Páginas de área</em>. Cada tela é uma linha com ícone, o nome, o termo técnico ao lado (quando há), uma frase do que ela faz e uma seta.</p>
 <figure class="print">
-  <img src="img/config-hub.png" alt="Tela Configurações com as seções Sua empresa, Sua conta e Dados e acesso e os cartões de cada tela, numerada de 1 a 5" loading="lazy">
-  <figcaption>A tela Configurações, vista por um Administrador.</figcaption>
+  <img src="img/config-hub.png" alt="Página Configurações com os grupos Você, Equipe e A empresa e as telas de cada grupo, numerada de 1 a 5" loading="lazy">
+  <figcaption>A página de área <span class="ui">Configurações</span>, vista por um Administrador.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Sua empresa.</strong> A primeira seção: regras do negócio (agenda, propostas, financeiro, equipe, atendimento, tags, marca…).</li>
-  <li><strong>Sua conta.</strong> Perfil, Segurança e Notificações — só o que é seu.</li>
-  <li><strong>Dados e acesso.</strong> LGPD, chaves de API, linha telefônica e dados externos.</li>
-  <li><strong>Um cartão.</strong> Clique para abrir a tela (aqui, Equipe).</li>
-  <li><strong>Outro cartão</strong> (aqui, Organização, que só o Administrador vê).</li>
+  <li><strong>O título da página.</strong> “Configurações”, com a frase “Sua conta, os dados da empresa e quem tem acesso ao quê.”.</li>
+  <li><strong>Um grupo.</strong> Cada título de seção é um grupo do menu, por tarefa (aqui, <em>Equipe</em>).</li>
+  <li><strong>Uma tela.</strong> A linha mostra o nome, a frase do que ela faz e a seta. Clique para abrir (aqui, Equipe).</li>
+  <li><strong>O termo técnico.</strong> Ao lado do nome, nas telas que têm um (aqui, <em>round-robin</em>, de Revezamento da equipe).</li>
+  <li><strong>Outra tela</strong> (aqui, Dados da empresa, que só o Administrador vê).</li>
 </ol>
-<aside class="nota info"><strong>A ordem das seções.</strong><p>Apesar do nome, “Sua empresa” vem <em>antes</em> de “Sua conta” e de “Dados e acesso”.</p></aside>
+<aside class="nota info"><strong>A ordem dos grupos.</strong><p>Os grupos vêm do menu, nesta ordem: <em>Você</em>, <em>Equipe</em>, <em>A empresa</em>, <em>Plano e regras</em>, <em>WhatsApp e telefone</em>, <em>Outros sistemas</em>, <em>Anúncios</em>, <em>O seu funil</em>, <em>O que você vende</em> e <em>Como a equipe vende</em>. Grupo em que você não vê nenhuma tela não aparece.</p></aside>
 
-<h2 id="cartoes">Todos os cartões, o que fazem e quem vê</h2>
+<h2 id="cartoes">Todas as telas, o que fazem e quem vê</h2>
 <table class="tabela">
-  <thead><tr><th>Seção</th><th>Cartão</th><th>Para que serve</th><th>Papel mínimo</th></tr></thead>
+  <thead><tr><th>Grupo</th><th>Tela</th><th>Para que serve</th><th>Papel mínimo</th></tr></thead>
   <tbody>
-    <tr><td rowspan="14"><strong>Sua empresa</strong></td><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td><td>O que se pode marcar, quanto dura, onde acontece e quem atende.</td><td>Todos veem; edita o Gerente</td></tr>
-    <tr><td><a href="#propostas-config">Propostas</a></td><td>Validade padrão e condições das propostas comerciais.</td><td>Gerente · módulo Propostas ligado</td></tr>
-    <tr><td><a href="#modelos-de-proposta">Modelos de proposta</a></td><td>Os modelos da plataforma e os da sua empresa.</td><td>Gerente</td></tr>
-    <tr><td><a href="#financeiro">Financeiro</a></td><td>Contas, formas de pagamento e plano de contas.</td><td>Todos veem; edita o Gerente</td></tr>
-    <tr><td><a href="#equipe">Equipe</a></td><td>Quem trabalha aqui, com qual papel e quanta conversa cada um aguenta.</td><td>Todos abrem (lista: Gerente)</td></tr>
-    <tr><td><a href="#distribuicao">Distribuição de atendimento</a></td><td>Quem recebe cada cliente novo e o que cada atendente enxerga.</td><td>Gerente</td></tr>
-    <tr><td><a href="#tags">Tags</a></td><td>O vocabulário de etiquetas da empresa.</td><td>Gerente</td></tr>
-    <tr><td><a href="#recursos-opcionais">Recursos opcionais</a></td><td>Tudo o que se liga e desliga, com o estado e o caminho até a tela.</td><td>Gerente</td></tr>
-    <tr><td><a href="#dados-da-empresa">Organização</a></td><td>Dados da empresa, retenção de mídia e encarregado de LGPD.</td><td>Administrador</td></tr>
-    <tr><td><a href="#conversoes">Conversões</a></td><td>Devolver ao anúncio as vendas que ele trouxe.</td><td>Administrador</td></tr>
-    <tr><td><a href="#meta-ads-config">Meta Ads</a></td><td>Conectar a conta de anúncios para ler o desempenho.</td><td>Administrador</td></tr>
-    <tr><td><a href="#marca">Marca</a></td><td>O nome e a cor que a empresa mostra no sistema.</td><td>Administrador</td></tr>
-    <tr><td><a href="#plano-e-cobranca">Plano e cobrança</a></td><td>O plano e as cobranças (ainda “Em breve”).</td><td>Administrador</td></tr>
-    <tr><td><a href="#extensoes">Extensões</a></td><td>Guias instalados para orientar o trabalho no CRM.</td><td>Todos</td></tr>
-    <tr><td rowspan="3"><strong>Sua conta</strong></td><td><a href="#config-perfil">Perfil</a></td><td>Seu nome, idioma, fuso e foto.</td><td>Todos</td></tr>
-    <tr><td><a href="#config-seguranca">Segurança</a></td><td>Verificação em duas etapas, códigos de recuperação e sessões.</td><td>Todos</td></tr>
+    <tr><td rowspan="3"><strong>Você</strong></td><td><a href="#config-perfil">Perfil</a></td><td>Seu nome, idioma, fuso e foto.</td><td>Todos</td></tr>
+    <tr><td><a href="#config-seguranca">Segurança</a> (MFA)</td><td>Verificação em duas etapas, códigos de recuperação e sessões.</td><td>Todos</td></tr>
     <tr><td><a href="#config-notificacoes">Notificações</a></td><td>Por onde e sobre o quê você quer ser avisado.</td><td>Todos</td></tr>
-    <tr><td rowspan="4"><strong>Dados e acesso</strong></td><td><a href="#lgpd">LGPD</a></td><td>Pedidos de exportação e exclusão de dados feitos por clientes.</td><td>Administrador</td></tr>
-    <tr><td><a href="#api-tokens">API Tokens</a></td><td>Chaves para outro sistema conversar com o seu CRM.</td><td>Administrador</td></tr>
-    <tr><td><a href="#linha-sip">Linha telefônica (SIP)</a></td><td>Os dados da operadora de telefonia para a IA fazer e receber chamadas.</td><td>Administrador</td></tr>
-    <tr><td><a href="#dados-externos">Dados externos</a></td><td>Banco de dados de outro sistema para o agente consultar.</td><td>Todos veem; criar = Administrador · módulo ligado</td></tr>
+    <tr><td rowspan="2"><strong>Equipe</strong></td><td><a href="#equipe">Equipe</a></td><td>Quem trabalha aqui, com qual papel e quanta conversa cada um aguenta.</td><td>Todos abrem (lista: Gerente)</td></tr>
+    <tr><td><a href="#distribuicao">Revezamento da equipe</a> (round-robin)</td><td>Quem recebe cada cliente novo e o que cada atendente enxerga.</td><td>Gerente</td></tr>
+    <tr><td rowspan="3"><strong>A empresa</strong></td><td><a href="#dados-da-empresa">Dados da empresa</a> (organização)</td><td>Dados da empresa, retenção de mídia e encarregado de LGPD.</td><td>Administrador</td></tr>
+    <tr><td><a href="#marca">Marca</a></td><td>O nome e a cor que a empresa mostra no sistema.</td><td>Administrador</td></tr>
+    <tr><td><a href="#financeiro">Financeiro</a></td><td>Contas, formas de pagamento e como cada lançamento é classificado.</td><td>Todos veem; edita o Gerente</td></tr>
+    <tr><td rowspan="5"><strong>Plano e regras</strong></td><td><a href="#plano-e-cobranca">Plano e cobrança</a></td><td>O plano e as cobranças (ainda “Em breve”).</td><td>Administrador</td></tr>
+    <tr><td><a href="#lgpd">LGPD</a></td><td>Pedidos de exportação e exclusão de dados feitos por clientes.</td><td>Administrador</td></tr>
+    <tr><td><a href="#recursos-opcionais">Recursos opcionais</a></td><td>Tudo o que se liga e desliga, com o estado e o caminho até a tela.</td><td>Gerente</td></tr>
+    <tr><td><a href="#extensoes">Extensões</a></td><td>Guias instalados para orientar o trabalho no CRM.</td><td>Todos</td></tr>
+    <tr><td><a href="#licenca">Licença</a></td><td>Se a licença está em dia, quando vence e como renovar.</td><td>Administrador</td></tr>
+    <tr><td rowspan="2"><strong>WhatsApp e telefone</strong></td><td><a href="#conexoes">Conexões</a></td><td>Seus números de WhatsApp, por QR ou pelo canal oficial da Meta.</td><td>Administrador</td></tr>
+    <tr><td><a href="#linha-sip">Linha telefônica</a> (SIP)</td><td>Os dados da operadora de telefonia para a IA fazer e receber chamadas.</td><td>Administrador</td></tr>
+    <tr><td rowspan="3"><strong>Outros sistemas</strong></td><td><a href="#webhooks">Avisar outros sistemas</a> (webhooks)</td><td>Avisar outros sistemas quando algo acontecer aqui dentro.</td><td>Gerente</td></tr>
+    <tr><td><a href="#api-tokens">Chaves de acesso</a> (API tokens)</td><td>Chaves para outro sistema conversar com o seu CRM.</td><td>Administrador</td></tr>
+    <tr><td><a href="#dados-externos">Dados de outro sistema</a> (banco externo)</td><td>Banco de dados de outro sistema para o agente consultar.</td><td>Todos veem; criar = Administrador · módulo ligado</td></tr>
+    <tr><td rowspan="2"><strong>Anúncios</strong></td><td><a href="#meta-ads-config">Conta de anúncios</a> (Meta Ads)</td><td>Conectar a conta de anúncios para ler o desempenho das campanhas.</td><td>Administrador</td></tr>
+    <tr><td><a href="#conversoes">Conversões</a> (CAPI)</td><td>Devolver ao anúncio as vendas que ele trouxe e marcar a origem de quem chega pelo site.</td><td>Administrador</td></tr>
+    <tr><td rowspan="3"><strong>O seu funil</strong></td><td><a href="#etapas-do-funil">Etapas do funil</a></td><td>As colunas de cada funil, o vocabulário do negócio e os motivos de perda.</td><td>Gerente</td></tr>
+    <tr><td><a href="#tipos-de-agendamento">Tipos de agendamento</a></td><td>O que se pode marcar, quanto dura, onde acontece e quem atende.</td><td>Todos veem; edita o Gerente</td></tr>
+    <tr><td><a href="#prospeccao">Prospecção</a></td><td>Buscar empresas e conduzir abordagens graduais com IA.</td><td>Administrador</td></tr>
+    <tr><td rowspan="3"><strong>O que você vende</strong></td><td><a href="#produtos">Produtos</a></td><td>O catálogo da loja, com o preço que o atendente de IA responde.</td><td>Todos</td></tr>
+    <tr><td><a href="#propostas-config">Padrões de proposta</a></td><td>Validade padrão e condições das propostas comerciais.</td><td>Gerente · módulo Propostas ligado</td></tr>
+    <tr><td><a href="#modelos-de-proposta">Modelos de proposta</a></td><td>Os modelos da plataforma e os da sua empresa.</td><td>Gerente</td></tr>
+    <tr><td rowspan="2"><strong>Como a equipe vende</strong></td><td><a href="#respostas-rapidas">Respostas rápidas</a></td><td>Scripts salvos para responder mais rápido, seus ou da equipe.</td><td>Todos</td></tr>
+    <tr><td><a href="#tags">Etiquetas</a> (tags)</td><td>O vocabulário de etiquetas da empresa.</td><td>Gerente</td></tr>
   </tbody>
 </table>
 <ul>
-  <li><strong>Atendente e “Somente leitura”</strong> enxergam os mesmos cartões aqui: Tipos de agendamento, Financeiro, Equipe, Extensões, Perfil, Segurança, Notificações (e Dados externos, se o módulo estiver ligado). Ver o cartão <em>não</em> significa poder usar a tela: muitas travam a gravação no servidor.</li>
-  <li><strong>Gerente</strong> soma: Propostas (se o módulo existir), Modelos de proposta, Distribuição de atendimento, Tags e Recursos opcionais.</li>
+  <li><strong>Atendente e “Somente leitura”</strong> enxergam as mesmas telas aqui: Perfil, Segurança, Notificações, Equipe, Financeiro, Extensões, Tipos de agendamento, Produtos, Respostas rápidas (e Dados de outro sistema, se o módulo estiver ligado). Ver a tela <em>não</em> significa poder usar: muitas travam a gravação no servidor.</li>
+  <li><strong>Gerente</strong> soma: Revezamento da equipe, Recursos opcionais, Avisar outros sistemas, Etapas do funil, Padrões de proposta (se o módulo existir), Modelos de proposta e Etiquetas.</li>
   <li><strong>Administrador</strong> vê tudo.</li>
 </ul>
-<aside class="nota atencao"><strong>Cartão que pode levar a “não encontrado”.</strong><p>“Modelos de proposta” aparece para o Gerente mesmo quando o módulo Propostas está desligado na instalação; nesse caso o clique cai numa página “não encontrada”. É um detalhe conhecido do hub (deduzido do código).</p></aside>
+<aside class="nota atencao"><strong>Item que pode levar a “não encontrado”.</strong><p>Nesta página, “Modelos de proposta” aparece para o Gerente mesmo quando o módulo Propostas está desligado na instalação; nesse caso o clique cai numa página “não encontrada”. É um detalhe conhecido desta página (deduzido do código: ela filtra os itens pelos módulos ligados, mas não pelos recursos que a empresa liga para si). No menu da faixa e na gaveta, o item some.</p></aside>
 
-<h2 id="fora-do-hub">Telas que existem mas não têm cartão</h2>
+<h2 id="fora-do-hub">O que não está nesta página</h2>
 <ul>
-  <li><a href="#atualizacao">Atualização do sistema</a> — só o dono do servidor; chega-se pelo rodapé do menu lateral (“Nova versão · X.Y.Z”).</li>
+  <li><a href="#atualizacao">Atualização do sistema</a> — só o dono do servidor; chega-se pelo rodapé do painel Todo dia (“Nova versão · X.Y.Z”).</li>
   <li><strong>Antigos endereços de WhatsApp</strong> (<code>/app/settings/canal-oficial</code>, <code>/templates</code> e <code>/tenant/whatsapp</code>) apenas redirecionam para <a href="#conexoes">Conexões</a>.</li>
-  <li><a href="#etapas-do-funil">Etapas do funil</a> pertence ao grupo CRM, não a este.</li>
+  <li>As telas do dia a dia (Conversas, Funis, Contatos…), as do agente de IA e as de Resultados moram em <span class="ui">Todo dia</span>, <span class="ui">Agente</span> e <span class="ui">Resultados</span>, não aqui.</li>
 </ul>
-<p>O Administrador pode <em>esconder</em> cartões e itens de menu da empresa (e de cada pessoa) pela escolha de “Interface”. Os cartões essenciais nunca somem: Perfil e Segurança para todos; Equipe e Organização para o Administrador.</p>
+<p>O Administrador pode <em>esconder</em> telas do menu da empresa (e de cada pessoa) pela escolha de “Interface”. As telas essenciais nunca somem: Perfil e Segurança para todos; Equipe e Dados da empresa para o Administrador.</p>

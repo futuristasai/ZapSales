@@ -1,12 +1,12 @@
-<!--meta {"id":"inbox","grupo":"atendimento","titulo":"Inbox","ordem":1,"resumo":"A caixa de entrada do WhatsApp: todas as conversas da equipe num lugar só. Aqui você assume, responde, transfere e encerra o atendimento.","palavras":["conversa","conversas","mensagem","mensagens","whatsapp","atender","atendimento","responder","fila","assumir","liberar","transferir","fechar","arquivar","nota interna","anexo","áudio","emoji","atalho","automático","ia","lembrar","chat","caixa de entrada"],"onde":"Atendimento › Inbox","quem":"Ver conversas: todos os papéis. Assumir, responder, transferir, fechar e arquivar: Atendente ou acima.","rotas":["/app/inbox","/app/inbox/[id]"]} -->
+<!--meta {"id":"inbox","grupo":"atendimento","titulo":"Conversas","ordem":1,"resumo":"A caixa de entrada do WhatsApp (antes chamada Inbox): todas as conversas da equipe num lugar só. Aqui você assume, responde, transfere e encerra o atendimento.","palavras":["conversa","conversas","mensagem","mensagens","whatsapp","atender","atendimento","responder","fila","assumir","liberar","transferir","fechar","arquivar","nota interna","anexo","áudio","emoji","atalho","automático","ia","lembrar","chat","caixa de entrada","inbox","caixa de entrada (inbox)"],"onde":"Todo dia › Leads › Conversas (clique em Todo dia na faixa à esquerda; no celular, a aba Conversas da barra de baixo)","quem":"Ver conversas: todos os papéis. Assumir, responder, transferir, fechar e arquivar: Atendente ou acima.","rotas":["/app/inbox","/app/inbox/[id]"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>O <span class="ui">Inbox</span> é onde a equipe conversa com os clientes pelo WhatsApp. Todas as conversas de todos os números conectados chegam aqui. O número vermelho ao lado do item do menu mostra quantas conversas estão <strong>esperando alguém atender</strong>.</p>
+<p><span class="ui">Conversas</span> (antes chamada <em>Inbox</em>) é onde a equipe conversa com os clientes pelo WhatsApp. Todas as conversas de todos os números conectados chegam aqui. O número vermelho ao lado de Conversas no painel <span class="ui">Todo dia</span> mostra quantas conversas estão <strong>esperando alguém atender</strong>. O mesmo número aparece sobre o ícone de Todo dia na faixa à esquerda e, no celular, sobre a aba Conversas da barra de baixo.</p>
 <p>A lista e a conversa se atualizam sozinhas: mensagem nova, mudança de dono e contadores aparecem sem você recarregar a página.</p>
 <p>A tela tem <strong>duas metades</strong>: à esquerda, a <a href="#inbox--lista">lista de conversas</a>; à direita, a <a href="#inbox--conversa">conversa aberta</a>, com o cabeçalho, as mensagens e a caixa para responder.</p>
 <figure class="print">
-  <img src="img/inbox-conversa.png" alt="Inbox com a lista de conversas à esquerda e a conversa aberta à direita, com 17 marcações numeradas" loading="lazy">
-  <figcaption>O Inbox com uma conversa aberta. Os números 1 a 5 são a lista; 6 a 17, o cabeçalho da conversa.</figcaption>
+  <img src="img/inbox-conversa.png" alt="Conversas (antes Inbox) com a lista de conversas à esquerda e a conversa aberta à direita, com 17 marcações numeradas" loading="lazy">
+  <figcaption>A tela Conversas com uma conversa aberta. Os números 1 a 5 são a lista; 6 a 17, o cabeçalho da conversa.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Abas.</strong> Separam as conversas por situação. Veja <a href="#inbox--abas">As abas da lista</a>.</li>
@@ -34,7 +34,7 @@
 <table class="tabela">
   <thead><tr><th>Aba</th><th>O que mostra</th></tr></thead>
   <tbody>
-    <tr><td><strong>Fila</strong></td><td>As conversas que <strong>esperam um atendente</strong>, ordenadas por quem espera há mais tempo. É a aba de quem está de plantão: pegue a primeira da lista.</td></tr>
+    <tr><td><strong>Fila</strong></td><td>As conversas que <strong>esperam um atendente</strong>, ordenadas por quem espera há mais tempo. É a aba de quem está de plantão: pegue a primeira da lista. Não confunda com <a href="#casos">Aguardando Humano</a> (logo abaixo de Conversas em <span class="ui">Todo dia</span>), que lista os <em>casos</em> em que a IA pediu ajuda de uma pessoa, e não as conversas.</td></tr>
     <tr><td><strong>Minhas</strong></td><td>As conversas que estão com <strong>você</strong>.</td></tr>
     <tr><td><strong>Todas</strong></td><td>Todas as conversas abertas da organização. Dependendo da regra de visibilidade da organização, o Atendente não vê esta aba: aí ele só trabalha com a Fila e as Minhas.</td></tr>
     <tr><td><strong>Fechadas</strong></td><td>Atendimentos encerrados. Dá para reabrir se o cliente escrever de novo.</td></tr>
@@ -127,7 +127,7 @@
 
 <h3 id="responder">Responder ao cliente</h3>
 <figure class="print">
-  <img src="img/inbox-compositor.png" alt="Mensagens e a caixa de resposta do Inbox, com nove marcações numeradas" loading="lazy">
+  <img src="img/inbox-compositor.png" alt="Mensagens e a caixa de resposta de Conversas, com nove marcações numeradas" loading="lazy">
   <figcaption>As mensagens e a caixa de resposta (compositor).</figcaption>
 </figure>
 <ol class="legenda">
@@ -152,19 +152,19 @@
 </ul>
 
 <h3 id="janela">Quando o WhatsApp não deixa responder</h3>
-<aside class="nota atencao"><strong>Passadas 24 horas do último contato do cliente, o WhatsApp só permite mensagens por “modelo”.</strong><p>Quando isso acontece numa conversa pela API Oficial da Meta, o Inbox deixa de aceitar texto livre e mostra um aviso. No lugar da caixa de texto aparece um seletor com os <strong>modelos já aprovados</strong> pela Meta: escolha um, preencha os campos pedidos e clique em <span class="ui">Enviar modelo</span>. Se o modelo tem imagem, vídeo ou documento, ele pede o link do arquivo (a Meta baixa o arquivo na hora do envio), e dá para marcar <em>Salvar este link no modelo</em>. Quando o cliente responde, a janela de conversa reabre. Se ainda não há modelo aprovado, o aviso manda criar um em <span class="ui">Conexões › Templates</span>.</p></aside>
-<aside class="nota atencao"><strong>O número desta conversa não está conectado.</strong><p>Se o número de WhatsApp pelo qual o cliente falou está desconectado, o Inbox avisa e oferece <span class="ui">Responder por outro número</span>, mas só quando há outro número conectado para onde ir.</p></aside>
+<aside class="nota atencao"><strong>Passadas 24 horas do último contato do cliente, o WhatsApp só permite mensagens por “modelo”.</strong><p>Quando isso acontece numa conversa pela API Oficial da Meta, a tela deixa de aceitar texto livre e mostra um aviso. No lugar da caixa de texto aparece um seletor com os <strong>modelos já aprovados</strong> pela Meta: escolha um, preencha os campos pedidos e clique em <span class="ui">Enviar modelo</span>. Se o modelo tem imagem, vídeo ou documento, ele pede o link do arquivo (a Meta baixa o arquivo na hora do envio), e dá para marcar <em>Salvar este link no modelo</em>. Quando o cliente responde, a janela de conversa reabre. Se ainda não há modelo aprovado, o aviso manda criar um em <span class="ui">Conexões › API Oficial › Templates da Meta</span>.</p></aside>
+<aside class="nota atencao"><strong>O número desta conversa não está conectado.</strong><p>Se o número de WhatsApp pelo qual o cliente falou está desconectado, a tela avisa e oferece <span class="ui">Responder por outro número</span>, mas só quando há outro número conectado para onde ir.</p></aside>
 
 <h2 id="ficha">A ficha completa (gaveta lateral)</h2>
 <p>O botão com ícone de cartão no cabeçalho (ou <span class="ui">Ficha</span>, no celular) abre uma gaveta pela direita com tudo sobre o cliente, sem sair da conversa.</p>
 <figure class="print estreita">
-  <img src="img/inbox-ficha.png" alt="Gaveta Contato aberta no Inbox, com as seções numeradas de 1 a 9" loading="lazy">
+  <img src="img/inbox-ficha.png" alt="Gaveta Contato aberta em Conversas, com as seções numeradas de 1 a 9" loading="lazy">
   <figcaption>A gaveta “Contato”.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Marcar compromisso.</strong> Abre a <em>Agenda</em> já com este contato e esta conversa escolhidos.</li>
+  <li><strong>Marcar compromisso.</strong> Abre <em>Compromissos</em> (antes chamada Agenda) já com este contato e esta conversa escolhidos.</li>
   <li><strong>Tags do contato.</strong> Edita as etiquetas da <em>pessoa</em>.</li>
-  <li><strong>Novo Lead.</strong> Cria um cartão no funil para este cliente, sem sair do Inbox. Veja <a href="#funis--novo-lead">Criar um cartão</a>.</li>
+  <li><strong>Novo Lead.</strong> Cria um cartão no funil para este cliente, sem sair de Conversas. Veja <a href="#funis--novo-lead">Criar um cartão</a>.</li>
   <li><strong>Ver contato.</strong> Abre a ficha da pessoa em <a href="#contatos">Contatos</a>.</li>
   <li><strong>Sobre a empresa.</strong> Dados de enriquecimento (da empresa do cliente), quando existem. Sem eles, a seção avisa.</li>
   <li><strong>Tags da conversa.</strong> Etiquetas só desta <em>conversa</em> (diferentes das do contato). Escreva em <em>Nova tag…</em> e clique em <span class="ui">+</span>.</li>
@@ -175,7 +175,7 @@
 <p>Descendo a gaveta, há ainda <strong>Pedidos recentes</strong>, a <strong>Atividade</strong> do cliente e o <strong>Acervo</strong>: uma busca na base de conhecimento, feita <em>como a IA faz</em>, que mostra a origem de cada trecho encontrado. Serve para conferir o que o agente sabe.</p>
 
 <h2 id="atalhos">Atalhos de teclado</h2>
-<p>O Inbox foi feito para quem atende o dia todo. Estas teclas funcionam quando você <strong>não</strong> está digitando:</p>
+<p>Conversas foi feita para quem atende o dia todo. Estas teclas funcionam quando você <strong>não</strong> está digitando:</p>
 <table class="tabela">
   <thead><tr><th>Tecla</th><th>O que faz</th></tr></thead>
   <tbody>
@@ -192,7 +192,7 @@
 
 <h2 id="passo-a-passo">Passo a passo: atender a primeira conversa da fila</h2>
 <ol class="passos">
-  <li>Abra o <span class="ui">Inbox</span> e clique na aba <strong>Fila</strong>. A conversa que espera há mais tempo está no topo.</li>
+  <li>Abra <span class="ui">Conversas</span> (em <span class="ui">Todo dia</span> › <span class="ui">Leads</span>) e clique na aba <strong>Fila</strong>. A conversa que espera há mais tempo está no topo.</li>
   <li>Clique nela. A conversa abre à direita. Leia as mensagens e, se houver, o cartão de passagem da IA.</li>
   <li>Clique em <span class="ui">Assumir</span>. A faixa muda para <em>Em atendimento</em>, com o seu nome, e o automático para.</li>
   <li>Clique na caixa de texto, escreva a resposta e tecle <kbd>Enter</kbd>. Acompanhe os tracinhos para saber se foi entregue e lida.</li>

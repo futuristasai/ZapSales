@@ -1,13 +1,13 @@
 <!--meta {"id":"instalar-na-vps","grupo":"servidor","titulo":"Instalar o ZapSales numa VPS","ordem":1,"resumo":"Do servidor vazio ao sistema no ar: o que preparar, o comando, as cinco perguntas, o primeiro acesso, como atualizar e como desfazer. Dá para fazer sem saber programar.","palavras":["instalar","instalação","vps","servidor","hostinger","ubuntu","domínio","dns","certificado","https","obter.sh","instalar.sh","docker","caddy","nginx","porta 80","porta 443","primeiro acesso","atualizar","desfazer"],"onde":"Fora do sistema: no terminal do servidor (VPS)","quem":"Quem administra o servidor (dono da VPS)","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>O ZapSales é instalado num <strong>servidor seu</strong> — uma <strong>VPS</strong>, que é um computador alugado que fica ligado o tempo todo (por exemplo, os da Hostinger). Esta página leva você do servidor vazio até o sistema abrindo no navegador. Não é preciso saber programar: são <strong>um comando</strong> e <strong>cinco perguntas</strong>. Conte com <strong>30 a 60 minutos</strong>, a maior parte esperando.</p>
+<p>O ZapSales é instalado num <strong>servidor seu</strong> — uma <strong>VPS</strong>, que é um computador alugado que fica ligado o tempo todo (por exemplo, os da Hostinger). Esta página leva você do servidor vazio até o sistema abrindo no navegador. Não é preciso saber programar: são <strong>um comando</strong> e <strong>cinco perguntas</strong> (mais, no fim, os dados da sua compra para ativar a licença). Conte com <strong>30 a 60 minutos</strong>, a maior parte esperando.</p>
 <aside class="nota info"><strong>Dois jeitos de instalar, escolhidos sozinhos.</strong><p>Se o servidor <em>não tem nada</em> rodando nas portas de internet (80 e 443), o ZapSales traz o próprio “porteiro” (um proxy chamado Caddy) e cuida do certificado HTTPS: é o modo <strong>VPS limpa</strong>, o assunto principal desta página. Se a VPS <em>já serve outros sites</em> (tem Caddy ou Nginx instalado), o mesmo comando funciona e o ZapSales entra <strong>sem mexer neles</strong>, só acrescentando um bloco no porteiro que já existe: é o modo <strong>convivendo com outros apps</strong>, descrito <a href="#instalar-na-vps--convivendo">mais abaixo</a>. Quem decide é o kit, olhando quem usa as portas 80 e 443. Ele nunca troca de modo sozinho.</p></aside>
 
 <h2 id="antes">Antes de começar (uns 15 minutos)</h2>
 <p>Faça nesta ordem, porque a terceira coisa demora a “pegar”.</p>
 <h3 id="vps">1. Uma VPS com Ubuntu</h3>
-<p>Na Hostinger: <strong>VPS › KVM 2</strong> (ou maior), sistema <strong>Ubuntu 24.04</strong>. O ZapSales precisa de pelo menos <strong>4 GB de memória</strong> e <strong>20 GB livres de disco</strong>; com menos, o kit avisa. Guarde o <strong>endereço IP</strong> da VPS (algo como <code>203.0.113.10</code>) e a senha do usuário <code>root</code>, que o painel mostra.</p>
+<p>Na Hostinger: <strong>VPS › KVM 2</strong> (ou maior), sistema <strong>Ubuntu 24.04</strong> ou <strong>26.04</strong> (os dois foram testados: instalação, atualização e cópia de segurança). Outro Ubuntu ou Debian costuma funcionar, mas o kit avisa que ninguém testou; um sistema que não é Ubuntu nem Debian é recusado na primeira instalação. O ZapSales precisa de pelo menos <strong>4 GB de memória</strong> e <strong>20 GB livres de disco</strong>; com menos, o kit avisa. Guarde o <strong>endereço IP</strong> da VPS (algo como <code>203.0.113.10</code>) e a senha do usuário <code>root</code>, que o painel mostra.</p>
 <h3 id="portas">2. As portas 80 e 443 liberadas</h3>
 <p>São as portas por onde o navegador chega ao site (a 80 é o HTTP, a 443 o HTTPS). Na Hostinger, em <strong>VPS › Firewall</strong>: se houver alguma regra ativa, acrescente “aceitar TCP 80” e “aceitar TCP 443”. Sem firewall configurado no painel, elas já estão livres.</p>
 <h3 id="dominio">3. Um endereço (domínio) apontando para a VPS</h3>
@@ -17,7 +17,7 @@
 <h2 id="comando">O comando</h2>
 <p>Entre na VPS pelo terminal (<code>ssh root@IP-DA-VPS</code>; no Windows, o PowerShell já tem o <code>ssh</code>) ou pelo <strong>Terminal do navegador</strong> do painel da Hostinger, e cole:</p>
 <p><code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code></p>
-<p>Ele baixa a última versão publicada do ZapSales para <code>/opt/zapsales</code> (enquanto não houver nenhuma, o código mais recente — e avisa), instala o Docker se faltar e começa a instalação. A partir daí, faz as perguntas abaixo.</p>
+<p>Ele baixa a última versão publicada do ZapSales (do repositório do projeto, na organização <code>futuristasai</code> do GitHub) para <code>/opt/zapsales</code> (enquanto não houver nenhuma, o código mais recente — e avisa), instala o Docker se faltar e começa a instalação. A partir daí, faz as perguntas abaixo.</p>
 
 <h2 id="perguntas">As cinco perguntas</h2>
 <table class="tabela">
@@ -25,13 +25,13 @@
 <tbody>
 <tr><td><em>Domínio do ZapSales (ex.: zapsales.suaempresa.com)</em></td><td>O endereço do passo 3, <strong>sem</strong> <code>https://</code> e sem barra no fim. O kit confere se ele já aponta para esta VPS; se não apontar, para e explica — corrija o DNS e rode o comando de novo. É esse endereço que vai no certificado HTTPS (o cadeado do navegador).</td></tr>
 <tr><td><em>E-mail do primeiro administrador</em></td><td>O seu e-mail. Ele vira o login da primeira conta, a dona do sistema, e é para ele que o Let’s Encrypt (quem emite o certificado HTTPS, de graça) manda avisos se algo der errado com o certificado. Use um e-mail que você lê.</td></tr>
-<tr><td><em>Nome da sua empresa [Minha Empresa]</em></td><td>Como a empresa aparece dentro do sistema. Enter deixa “Minha Empresa”; dá para trocar depois em <a href="#dados-da-empresa">Configurações › Organização</a>.</td></tr>
+<tr><td><em>Nome da sua empresa [Minha Empresa]</em></td><td>Como a empresa aparece dentro do sistema. Enter deixa “Minha Empresa”; dá para trocar depois em <a href="#dados-da-empresa">Dados da empresa</a> (Configurar › Empresa › A empresa).</td></tr>
 <tr><td><em>Idioma do sistema — 1) Português 2) Español 3) English [1]</em></td><td>O idioma em que o sistema nasce: telas, e-mails de convite e as mensagens automáticas que os seus clientes recebem no WhatsApp. Responda <code>1</code>, <code>2</code> ou <code>3</code> (Enter é Português). Quem você convidar depois entra nesse idioma, e cada pessoa pode trocar o próprio no seletor do topo.</td></tr>
 <tr><td><em>Senha do administrador (mínimo 8 caracteres; Enter = gerar uma forte)</em></td><td>A senha da sua conta. Ela não aparece enquanto você digita (é de propósito), e o kit pede duas vezes para conferir. Enter sem digitar nada gera uma senha forte. Esta pergunta só aparece na <strong>primeira</strong> instalação.</td></tr>
 </tbody>
 </table>
 <aside class="nota atencao"><strong>Escolha a senha com cuidado.</strong><p>Segundo o guia de instalação do projeto, o sistema ainda não tem uma tela para trocar a senha, e o “esqueci a senha” só funciona depois que o envio de e-mail estiver configurado (veja <a href="#admin-cadastro">Cadastro e e-mail da instalação</a>). Guarde a senha num cofre de senhas.</p></aside>
-<p>Pronto: daqui em diante o kit trabalha sozinho e mostra cada etapa com um ▶ verde.</p>
+<p>Pronto: daqui em diante o kit trabalha sozinho e mostra cada etapa com um ▶ verde. A única outra coisa que ele pede é, na etapa <em>Licença</em>, o e-mail e o código da sua compra (veja <a href="#instalar-na-vps--licenca">A licença</a>); Enter deixa para ativar depois.</p>
 
 <h2 id="espera">O que acontece enquanto você espera</h2>
 <ol>
@@ -40,17 +40,27 @@
 <li><strong>Prepara os programas</strong> (as “imagens” Docker). Com uma versão publicada, baixa em poucos minutos. Se o ZapSales ainda não tiver versão publicada, o kit avisa e monta na própria VPS — de 10 a 40 minutos, conforme a máquina.</li>
 <li><strong>Sobe o sistema</strong>: banco de dados, login, o ZapSales, o WhatsApp e os serviços de apoio.</li>
 <li><strong>Cria a sua conta</strong> de administrador, com a senha que você escolheu (ou a gerada).</li>
+<li><strong>Ativa a licença</strong> (veja <a href="#instalar-na-vps--licenca">A licença</a>, logo abaixo).</li>
 <li><strong>Pede o certificado HTTPS</strong> ao Let’s Encrypt — por isso o DNS e as portas precisam estar prontos antes.</li>
 <li><strong>Agenda o backup</strong> diário do banco (veja <a href="#backup-e-restauracao">Cópias de segurança e restauração</a>).</li>
 <li><strong>Prova que deu certo</strong>: abre o endereço por HTTPS com o certificado conferido e confirma que só as portas 80 e 443 aceitam conexão de fora.</li>
 </ol>
 <p>No fim aparece <strong>▶ Pronto</strong>, com o endereço.</p>
 
+<h2 id="licenca">A licença</h2>
+<p>Na etapa <strong>Licença</strong>, com o sistema já de pé, o kit pede o <strong>e-mail da compra</strong> e o <strong>código da transação</strong> (o de quem comprou, que começa com <code>HP</code>; ele não aparece na tela enquanto você digita) e ativa a licença do seu ZapSales. É a mesma que depois aparece em <a href="#licenca">Licença</a> (<span class="ui">Configurar › Empresa › Plano e regras › Licença</span>), com a situação, o vencimento e o botão para renovar.</p>
+<ul>
+<li><strong>A instalação nunca falha por causa da licença.</strong> Se você apertar Enter para ativar depois, se a compra não for encontrada ou ainda não estiver aprovada, ou se o servidor de licenças estiver fora do ar, a instalação termina do mesmo jeito, com o aviso “ativação pendente”, e o sistema já funciona. Quando tiver os dados: <code>cd /opt/zapsales &amp;&amp; sudo kit/ativar-licenca.sh</code>.</li>
+<li>Rodar o kit de novo (atualizar) <strong>não pede a compra outra vez</strong>: licença já ativada fica como está.</li>
+<li>Os dados da compra <strong>não são gravados</strong> no arquivo <code>.env</code> nem no registro do kit. Se for instalar sem terminal, não escreva o e-mail e o código na linha do comando (eles ficariam no histórico do servidor): grave-os num arquivo de duas linhas (e-mail e código) em <code>/etc/zapsales/licenca-compra</code>, com <code>chmod 600</code>, e o kit o lê e o apaga depois da tentativa.</li>
+</ul>
+<aside class="nota atencao"><strong>Licença vencida ou bloqueada trava o sistema.</strong><p>Nas instalações novas a trava da licença nasce em modo <em>valendo</em>: se a licença estiver vencida ou bloqueada, qualquer tela leva à tela de Licença, as rotinas automáticas do agendador e as entradas por webhook são recusadas (quem envia tenta de novo depois), e as chamadas por chave de acesso recebem um erro de licença. Os dados e a exportação ficam preservados. Enquanto a ativação está só <em>pendente</em>, o sistema funciona normalmente. Quem tem acesso de administrador ao servidor pode ver ou trocar o modo com <code>sudo kit/licenca-modo.sh</code> (<code>valendo</code> ou <code>sombra</code>; em <code>sombra</code> a trava só observa e nunca recusa). Para regularizar uma licença bloqueada, fale com quem forneceu o sistema.</p></aside>
+
 <h2 id="primeiro-acesso">O primeiro acesso</h2>
 <p>O endereço, o e-mail e a senha ficam num arquivo que só o <code>root</code> lê. Para ver:</p>
 <p><code>sudo cat /etc/zapsales/primeiro-acesso</code></p>
 <p>Abra o endereço no navegador e entre com o e-mail e a senha. Guarde a senha num cofre (Bitwarden, 1Password, o do navegador) e apague o arquivo: <code>sudo rm /etc/zapsales/primeiro-acesso</code>.</p>
-<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a>, convidar a <a href="#equipe">equipe</a> e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro">Admin › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
+<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a> (Configurar › Conexões), convidar a <a href="#equipe">equipe</a> (Configurar › Empresa › Equipe) e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro">Admin › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
 
 <h2 id="conferir">Conferir que está no ar</h2>
 <p>Depois de qualquer instalação ou atualização, o domínio tem de <strong>redirecionar para o login</strong> (o código HTTP 307), e não dar “não encontrado” (404). Para conferir, no terminal:</p>
@@ -58,7 +68,7 @@
 <p>O resultado esperado é <code>307</code>.</p>
 
 <h2 id="atualizar">Atualizar</h2>
-<p>Rode <strong>o mesmo comando do começo</strong>. Ele traz a versão nova e reinstala por cima, sem perguntar de novo (o arquivo <code>.env</code> lembra as respostas) e sem perder nada: antes de mexer no banco ele faz um backup. Veja também <a href="#atualizacao">Atualização do sistema</a>, a tela do sistema para isso.</p>
+<p>Rode <strong>o mesmo comando do começo</strong>. Ele traz a versão nova e reinstala por cima, sem perguntar de novo (o arquivo <code>.env</code> lembra as respostas) e sem perder nada: antes de mexer no banco ele faz um backup. Veja também <a href="#atualizacao">Atualização do sistema</a>, a tela do sistema que mostra o comando.</p>
 
 <h2 id="problemas">Se algo der errado</h2>
 <p>O kit para com um <strong>✖ vermelho</strong> e uma frase dizendo o que fazer. Rodar o comando de novo é sempre seguro. Para pedir ajuda, guarde a saída do terminal — ela diz em que etapa parou. Os casos mais comuns:</p>
@@ -76,14 +86,14 @@
 <p>Este é o modo “convivendo com outros apps”. A VPS já tem um proxy — <strong>Caddy ou Nginx instalado no sistema</strong> — servindo outros sites. O ZapSales entra <strong>sem tocar neles</strong>: toda a stack escuta só em <code>127.0.0.1</code> (acessível só de dentro da máquina), e o proxy ganha <strong>um bloco</strong> que repassa o domínio do ZapSales para lá.</p>
 <p>O código fica em <code>/opt/zapsales</code>, e o kit roda de dentro dele, com as respostas dadas por variáveis:</p>
 <p><code>cd /opt/zapsales &amp;&amp; sudo ZAPSALES_DOMINIO=zapsales.suaempresa.com ZAPSALES_EMAIL=voce@suaempresa.com kit/instalar.sh</code></p>
-<p>Sem as variáveis, ele pergunta. As opcionais são <code>ZAPSALES_EMPRESA</code> (nome da empresa), <code>ZAPSALES_IDIOMA</code> (<code>pt-BR</code>, <code>es</code> ou <code>en</code>) e <code>ZAPSALES_SENHA</code> (senha do primeiro administrador; sem ela, é gerada).</p>
+<p>Sem as variáveis, ele pergunta (só se houver terminal; sem terminal, usa o padrão e nunca fica esperando resposta). As opcionais são <code>ZAPSALES_EMPRESA</code> (nome da empresa), <code>ZAPSALES_IDIOMA</code> (<code>pt-BR</code>, <code>es</code> ou <code>en</code>) e <code>ZAPSALES_SENHA</code> (senha do primeiro administrador; sem ela, é gerada). A licença se ativa pelo e-mail e pelo código da compra, como em <a href="#instalar-na-vps--licenca">A licença</a>.</p>
 <p>O que ele faz de diferente do modo limpo:</p>
 <ul>
 <li><strong>Fotografa os sites vizinhos</strong> e os sonda a cada 5 segundos durante toda a instalação. No fim sai um relatório “antes · depois · falhas”, e o registro fica em <code>/var/log/zapsales/vizinhos-*.log</code>.</li>
 <li><strong>Acrescenta um bloco ao proxy do sistema.</strong> No Caddy, o bloco fica entre as marcas <code># &gt;&gt;&gt; zapsales:&lt;domínio&gt;</code> e <code># &lt;&lt;&lt; zapsales:&lt;domínio&gt;</code> do Caddyfile, validado <em>antes</em> de entrar, com cópia da versão anterior em <code>/etc/zapsales/proxy/</code>; se o recarregamento falhar, volta sozinho à versão anterior. No Nginx, cria o arquivo <code>zapsales-&lt;domínio&gt;.conf</code>, testa com <code>nginx -t</code> e pede o HTTPS pelo <code>certbot</code>.</li>
 <li>Um bloco do mesmo domínio escrito à mão faz o kit <strong>parar</strong>: ele não sobrescreve configuração alheia. Se o proxy do sistema estiver parado numa instalação desse tipo, o kit também para e explica, em vez de tomar as portas dos outros sites.</li>
 </ul>
-<aside class="nota dica"><strong>Imagens: do registro ou construídas na VPS.</strong><p>O normal é <em>baixar</em> as imagens publicadas pelo projeto. Construir as imagens na própria VPS (<code>ZAPSALES_IMAGENS=construir</code>) é uma exceção e uma dívida: a imagem passa a existir só naquele disco, e uma atualização feita sem cuidado pode substituí-la sem aviso. Use só se a VPS não conseguir baixar as imagens.</p></aside>
+<aside class="nota dica"><strong>Imagens: do registro ou construídas na VPS.</strong><p>O normal é <em>baixar</em> as imagens publicadas pelo projeto. Construir as imagens na própria VPS (<code>ZAPSALES_IMAGENS=construir</code>) é uma exceção e uma dívida: a imagem passa a existir só naquele disco, e uma atualização feita sem cuidado pode substituí-la sem aviso. Use só se a VPS não conseguir baixar as imagens. As imagens publicadas ficam em <code>ghcr.io/futuristasai</code>.</p></aside>
 
 <h2 id="desfazer">Desfazer</h2>
 <p>Para parar o sistema <em>mantendo os dados</em>: <code>cd /opt/zapsales &amp;&amp; sudo docker compose down</code>. Para tirar o backup agendado: <code>sudo rm /etc/cron.d/zapsales</code>. No modo “convivendo”, apague também o bloco do ZapSales no Caddyfile (entre as marcas) ou o arquivo <code>zapsales-&lt;domínio&gt;.conf</code> do Nginx, e recarregue o proxy.</p>

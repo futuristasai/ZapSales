@@ -1,9 +1,9 @@
-<!--meta {"id":"dados-da-empresa","grupo":"organizacao","titulo":"Organização","ordem":9,"resumo":"O cadastro da empresa (nome, razão social, CNPJ, encarregado de LGPD, fuso, idioma, moeda, país, retenção de mídia), o menu lateral da empresa e a Zona de perigo que apaga os dados de atendimento.","palavras":["organização","empresa","cnpj","razão social","dpo","encarregado","lgpd","fuso horário","idioma","moeda","país","retenção de mídia","menu lateral","interface","zona de perigo","apagar dados","recomeçar testes"],"onde":"Configurações › Sua empresa › Organização","quem":"Administrador","rotas":["/app/settings/tenant"]} -->
+<!--meta {"id":"dados-da-empresa","grupo":"organizacao","titulo":"Dados da empresa (organização)","ordem":9,"resumo":"O cadastro da empresa (nome, razão social, CNPJ, encarregado de LGPD, fuso, idioma, moeda, país, retenção de mídia), o card que escolhe quais telas do menu a empresa mostra e a Zona de perigo que apaga os dados de atendimento. No menu a tela se chama Dados da empresa; o título dentro dela é “Organização”.","palavras":["organização","empresa","cnpj","razão social","dpo","encarregado","lgpd","fuso horário","idioma","moeda","país","retenção de mídia","menu lateral","interface","zona de perigo","apagar dados","recomeçar testes","dados da empresa","menu","telas do menu","faixa","painel","gaveta","quem mexeu em quê"],"onde":"Configurar › Empresa › A empresa › Dados da empresa (clique em Empresa na faixa à esquerda)","quem":"Administrador","rotas":["/app/settings/tenant"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>É o <strong>cadastro da empresa</strong> dentro do sistema, mais duas coisas poderosas: escolher quais áreas do menu a empresa mostra e <strong>apagar de uma vez os dados de atendimento</strong> (para recomeçar os testes). Só o Administrador abre (o administrador da plataforma também, fora do modo de suporte temporário).</p>
+<p>É o <strong>cadastro da empresa</strong> dentro do sistema, mais duas coisas poderosas: escolher quais telas do menu a empresa mostra e <strong>apagar de uma vez os dados de atendimento</strong> (para recomeçar os testes). Só o Administrador abre (o administrador da plataforma também, fora do modo de suporte temporário). No menu ela se chama <strong>Dados da empresa</strong> (antes, Organização); o título dentro da tela continua “Organização”.</p>
 <figure class="print">
-  <img src="img/organizacao.png" alt="Tela Organização com o formulário da empresa, o cartão Menu lateral e a Zona de perigo2" loading="lazy">
+  <img src="img/organizacao.png" alt="Tela Organização com o formulário da empresa, o cartão Menu lateral e a Zona de perigo" loading="lazy">
   <figcaption>A tela Organização inteira.</figcaption>
 </figure>
 <ol class="legenda">
@@ -21,14 +21,21 @@
   <li><strong>Zona de perigo.</strong> O cartão vermelho.</li>
 </ol>
 <ul>
-  <li>O botão <span class="ui">Salvar</span> (do formulário, depois da URL da política) avisa “Organização atualizada.”. Se algum campo estiver fora do formato, o aviso é “Dados inválidos.”; se o servidor recusar, “Erro: …” com o motivo. Vale para a empresa toda e fica na <a href="#auditoria">Auditoria</a> (<code>org.updated</code>, com a lista de campos).</li>
+  <li>O botão <span class="ui">Salvar</span> (do formulário, depois da URL da política) avisa “Organização atualizada.”. Se algum campo estiver fora do formato, o aviso é “Dados inválidos.”; se o servidor recusar, “Erro: …” com o motivo. Vale para a empresa toda e fica em <a href="#auditoria">Quem mexeu em quê</a> (<code>org.updated</code>, com a lista de campos).</li>
   <li>O texto de ajuda da tela diz “Dados da empresa, retenção de mídia, DPO. Só administradores.”</li>
   <li><strong>Esta tela não tem “janela de envio” nem fuso de disparo.</strong> Isso é por número, em <a href="#conexoes">Conexões</a>.</li>
 </ul>
 <aside class="nota atencao"><strong>Retenção de mídia apaga arquivos de verdade.</strong><p>Uma rotina diária enfileira para remoção os arquivos (áudios, imagens, documentos) de mensagens <em>mais antigas que N dias</em>, mais os arquivos órfãos. Depois disso, as mídias antigas <strong>somem da conversa</strong>. Use um prazo que combine com a sua necessidade de histórico.</p></aside>
 
 <h2 id="menu-lateral">Menu lateral</h2>
-<p>“Escolha as áreas que esta empresa mostra. Cada pessoa escolhe menos do que isto em Equipe — nunca mais — e as áreas essenciais continuam sempre visíveis. As permissões não mudam: o que o papel autoriza segue acessível por link, aviso e busca.” É o mesmo editor da <a href="#equipe">Equipe</a>: <strong>Perfil de interface</strong> (<em>Completa</em> ou <em>Simplificada</em>), <strong>Personalizar áreas visíveis</strong> e o botão <span class="ui">Aplicar interface</span> (“Menu lateral da empresa salvo.”). Deve sobrar ao menos uma área. As áreas essenciais (Perfil e Segurança; Equipe e Organização para o Administrador) nunca somem. Fica na auditoria como <code>org.interface_changed</code>. <strong>Atenção:</strong> esconde itens para todos.</p>
+<p>É o card que decide <strong>quais telas do menu a empresa mostra</strong>. Ele ainda se chama “Menu lateral” na tela, embora o menu agora seja a faixa à esquerda, o painel <span class="ui">Todo dia</span> e a gaveta de cada área. O texto do card diz: “Escolha as áreas que esta empresa mostra. Cada pessoa escolhe menos do que isto em Equipe — nunca mais — e as áreas essenciais continuam sempre visíveis. As permissões não mudam: o que o papel autoriza segue acessível por link, aviso e busca.”</p>
+<ul>
+  <li>É o mesmo editor da <a href="#equipe">Equipe</a>: <strong>Perfil de interface</strong> (<em>Completa</em> ou <em>Simplificada</em>), <strong>Personalizar áreas visíveis</strong> e o botão <span class="ui">Aplicar interface</span> (“Menu lateral da empresa salvo.”).</li>
+  <li><strong>As telas aparecem do mesmo jeito que no menu:</strong> por bloco (<em>Todo dia</em>, <em>Configurar</em>, <em>Resultados</em> e <em>Você</em>), dentro de Configurar por área (<em>Vender</em>, <em>Agente</em>, <em>Conexões</em>, <em>Empresa</em>) e por grupo de tarefa, com os <strong>nomes novos</strong> e o <strong>termo técnico embaixo</strong> (por exemplo, “Chave da IA”, com “API key” embaixo). Quem já tinha escolhas gravadas não perde nada: elas continuam valendo, e a faixa, o painel e a gaveta mostram só as telas mantidas.</li>
+  <li>Deve sobrar ao menos uma tela. <strong>Perfil, Segurança, Equipe e Dados da empresa</strong> não aparecem na lista, porque nunca somem (Equipe e Dados da empresa para o Administrador): é por esta tela que a escolha se desfaz, e o dono não pode se trancar para fora.</li>
+  <li>Fica na auditoria como <code>org.interface_changed</code>.</li>
+</ul>
+<aside class="nota atencao"><strong>Esconde telas para todos.</strong><p>O que a empresa tira do menu some para toda a equipe, na faixa, no painel, na gaveta e no celular. Não muda as permissões: quem o papel autoriza continua abrindo a tela por link, por aviso e pela busca <kbd>Ctrl</kbd> <kbd>K</kbd>.</p></aside>
 
 <h2 id="zona-de-perigo">Zona de perigo</h2>
 <p><strong>Apaga de vez</strong> as mensagens, conversas, negócios, contatos, agendamentos e pedidos da organização — “serve para recomeçar os testes do zero antes de atender de verdade”. <em>Não foi acionada nas capturas.</em></p>

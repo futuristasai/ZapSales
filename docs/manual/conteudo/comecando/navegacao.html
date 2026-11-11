@@ -1,50 +1,128 @@
-<!--meta {"id":"navegacao","grupo":"comecando","titulo":"Navegando pelo sistema","ordem":3,"resumo":"O menu lateral, a barra do topo, a busca ⌘K, a Central de avisos, o tema e o idioma: tudo o que fica em volta das telas e que aparece em todas elas.","palavras":["menu","barra lateral","sidebar","busca","paleta","atalho","ctrl k","sino","avisos","tema","escuro","idioma","sair","logout","recolher","configurações","como funciona","ajuda"],"onde":"Em todas as telas","quem":"Todos os papéis","rotas":[]} -->
+<!--meta {"id":"navegacao","grupo":"comecando","titulo":"Navegando pelo sistema","ordem":3,"resumo":"A faixa, o painel Todo dia e a gaveta do menu, a barra do topo, a busca ⌘K, a Central de avisos, o tema e o idioma: tudo o que fica em volta das telas e que aparece em todas elas.","palavras":["menu","menu lateral","barra lateral","sidebar","faixa","painel","gaveta","todo dia","configurar","resultados","vender","agente","conexões","empresa","você","busca","paleta","atalho","ctrl k","sino","avisos","tema","escuro","idioma","sair","logout","recolher","fixar painel","configurações","como funciona","ajuda","celular","barra de baixo","nomes antigos","ver tudo em","licença","faixa de aviso","manual","você"],"onde":"Em todas as telas","quem":"Todos os papéis","rotas":[]} -->
 
-<h2 id="visao-geral">A tela do sistema</h2>
-<p>Toda tela do ZapSales tem a mesma moldura: o <strong>menu lateral</strong> à esquerda, a <strong>barra do topo</strong> em cima e, no meio, o conteúdo da tela em que você está.</p>
-<figure class="print">
-  <img src="img/navegacao-visao.png" alt="Tela de Funis com o menu lateral e a barra do topo numerados de 1 a 11" loading="lazy">
-  <figcaption>O menu lateral (1 a 6) e a barra do topo (7 a 11), vistos na tela de Funis. O rodapé do menu mudou depois deste print: logo abaixo de Configurações há agora o link <span class="ui">Manual</span>, e o botão <span class="ui">Recolher</span> virou só a setinha, na mesma linha dele.</figcaption>
+<h2 id="visao-geral">A moldura do sistema</h2>
+<p>Toda tela do ZapSales tem a mesma moldura: o <strong>menu</strong> à esquerda, a <strong>barra do topo</strong> em cima e, no meio, o conteúdo da tela em que você está.</p>
+<p>O menu é organizado <strong>pela frequência de uso</strong>, e não pelas áreas do sistema. São três blocos:</p>
+<table class="tabela">
+  <thead><tr><th>Bloco</th><th>Para quê</th><th>Onde fica</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Todo dia</strong></td><td>O que se abre toda hora: conversas, casos que esperam uma pessoa, alertas, funis, contatos, tarefas e disparo em massa. É a “mesa de trabalho”.</td><td>No <strong>painel</strong> ao lado da faixa, que já abre assim.</td></tr>
+    <tr><td><strong>Configurar</strong></td><td>O que se ajusta de vez em quando. Tem quatro áreas: <strong>Vender</strong>, <strong>Agente</strong>, <strong>Conexões</strong> e <strong>Empresa</strong>.</td><td>Cada área abre numa <strong>gaveta</strong> por cima da tela.</td></tr>
+    <tr><td><strong>Resultados</strong></td><td>Os números do negócio, o trabalho da equipe e da IA e o histórico para investigar quando algo dá errado.</td><td>Também numa gaveta.</td></tr>
+  </tbody>
+</table>
+<p>As telas pessoais (Perfil, Segurança e Notificações) ficam no botão <strong>Você</strong>, no pé da faixa.</p>
+<aside class="nota info"><strong>Mudou em novembro de 2026.</strong><p>Antes, o menu era uma barra lateral com os grupos <em>Atendimento, CRM, Agente de IA, Canais e Análise</em>, links <em>“Ver tudo em…”</em> e <em>Configurações</em> no rodapé. Nada saiu do sistema e nenhum endereço mudou: o que mudou foi onde cada tela mora e alguns nomes. Veja a tabela em <a href="#conceitos--nomes-antigos">Nomes que mudaram no menu</a>; a busca ⌘K continua achando a tela pelo nome antigo.</p></aside>
+
+<h2 id="faixa">A faixa</h2>
+<p>No computador, a faixa escura fica sempre à esquerda. Ela tem uma entrada para cada bloco do menu.</p>
+<figure class="print estreita">
+  <img src="img/menu-faixa.png" alt="Faixa do menu com as entradas Todo dia, Vender, Agente, Conexões, Empresa, Resultados, Buscar e Você, numeradas de 1 a 8" loading="lazy">
+  <figcaption>A faixa do menu, com o painel recolhido.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Nome do grupo do menu.</strong> O menu é dividido em grupos (Atendimento, CRM, Agente de IA, Canais e Análise; o grupo Organização fica no rodapé, como <em>Configurações</em>). Clique no nome do grupo para recolher ou abrir a lista dele.</li>
-  <li><strong>Item do menu.</strong> Cada item leva a uma tela. O item da tela em que você está fica destacado (na cor de destaque da marca; roxo no padrão). O número vermelho ao lado do <span class="ui">Inbox</span> é a quantidade de conversas esperando alguém atender.</li>
-  <li><strong>“Ver tudo em…”.</strong> O menu mostra só o que se usa todo dia. Esse item abre uma página com <em>todas</em> as telas do grupo, organizadas por tarefa.</li>
-  <li><strong>Bolinha vermelha.</strong> Aviso de saúde. Em <span class="ui">Conexões</span> ela acende quando há um problema com o número de WhatsApp — por exemplo, quando ainda não há nenhum conectado.</li>
-  <li><strong>Configurações.</strong> Sempre fixo no rodapé do menu. Reúne a sua conta, a equipe e as regras da empresa. Logo abaixo dele fica o link <span class="ui">Manual</span>, que abre este manual numa aba nova; ele aparece para todos os papéis e só abre para quem está com a sessão aberta.</li>
-  <li><strong>Recolher.</strong> O botão só com a setinha, na mesma linha do <span class="ui">Manual</span>. Encolhe o menu para mostrar só os ícones e dar mais espaço ao conteúdo. Clique de novo para abrir; com o menu recolhido, o <span class="ui">Manual</span> também vira só o ícone de um livro.</li>
-  <li><strong>Busca ⌘K.</strong> Abre a busca de telas (veja abaixo).</li>
-  <li><strong>Sino: Central de avisos.</strong> Leva à tela <span class="ui">Alertas</span>: o que a IA encontrou e precisa de uma decisão sua. Um número aparece no sino quando há avisos em aberto (99+ quando passam de 99). Se a empresa escondeu a tela Alertas do menu, o sino também some.</li>
-  <li><strong>Idioma.</strong> Troca o idioma do sistema para você: português, espanhol ou inglês (o chinês ainda está em construção e não aparece na lista). Veja <a href="#navegacao--topo">os detalhes do topo</a>.</li>
-  <li><strong>Tema.</strong> Alterna entre claro, escuro e o que o seu computador estiver usando. Atalho: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (no Mac, <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>).</li>
-  <li><strong>Menu do usuário.</strong> Seu nome e e-mail, e a opção <span class="ui">Sair</span>. Quem é dono do servidor vê também <span class="ui">Modo administrador</span>, que leva ao painel de configuração da instalação.</li>
+  <li><strong>Todo dia.</strong> Abre o painel da mesa de trabalho (veja abaixo). Quando há conversas esperando uma pessoa, o ícone mostra o número delas, mesmo com o painel recolhido.</li>
+  <li><strong>Vender.</strong> Primeira das quatro áreas de <em>Configurar</em> (o rótulo fica logo acima): o funil, o que você vende, como a equipe vende e o cadastro de empresas.</li>
+  <li><strong>Agente.</strong> Montar o agente de IA, ensinar o que ele sabe e conectar a IA.</li>
+  <li><strong>Conexões.</strong> Os números de WhatsApp e telefone, os outros sistemas e os anúncios. O triângulo vermelho é o aviso de saúde: acende <strong>só</strong> quando um número de WhatsApp caiu (ficar sem nenhum número conectado não o acende).</li>
+  <li><strong>Empresa.</strong> A equipe, os dados da empresa, o plano e as regras.</li>
+  <li><strong>Resultados.</strong> Desempenho, anúncios, faturamento, atividades da equipe e da IA e o histórico.</li>
+  <li><strong>Buscar.</strong> Abre a busca de telas (veja abaixo). É o mesmo que teclar <kbd>Ctrl</kbd> + <kbd>K</kbd>.</li>
+  <li><strong>Você.</strong> Abre um pequeno menu com <span class="ui">Perfil</span>, <span class="ui">Segurança</span>, <span class="ui">Notificações</span> e o link <span class="ui">Manual</span>.</li>
 </ol>
+<figure class="print estreita">
+  <img src="img/menu-voce.png" alt="Menu Você aberto, com Perfil, Segurança, Notificações e Manual" loading="lazy">
+  <figcaption>O botão <span class="ui">Você</span> aberto.</figcaption>
+</figure>
+<p>O link <span class="ui">Manual</span> abre este manual numa aba nova. Ele aparece para todos os papéis e só abre para quem está com a sessão aberta. Para quem administra o servidor, quando há atualização do sistema, aparece também o aviso <span class="ui">Nova versão</span> no pé do menu, que leva à tela de <a href="#atualizacao">atualização</a>.</p>
+
+<h2 id="painel">O painel Todo dia</h2>
+<p>Ao lado da faixa fica o painel. Ele <strong>começa sempre em Todo dia</strong>: é o que a pessoa que atende abre o dia inteiro, sem procurar.</p>
+<figure class="print estreita">
+  <img src="img/menu-painel.png" alt="Painel Todo dia com os grupos Leads, Gestão de Clientes CRM e Se a sua empresa usa, numerado de 1 a 7" loading="lazy">
+  <figcaption>O painel <span class="ui">Todo dia</span>, visto na tela de Funis.</figcaption>
+</figure>
+<ol class="legenda">
+  <li><strong>Recolher.</strong> A setinha encolhe o painel e deixa só a faixa, para dar mais espaço ao conteúdo. O sistema lembra a sua escolha. Recolhido, o painel se abre <em>por cima</em> da tela quando você clica em <span class="ui">Todo dia</span> e se fecha com <kbd>Esc</kbd>, com um clique fora ou ao escolher uma tela; o botão <span class="ui">Fixar o painel ao lado</span> o devolve ao lugar.</li>
+  <li><strong>Leads.</strong> O atendimento: <span class="ui">Conversas</span>, <span class="ui">Aguardando Humano</span>, <span class="ui">Alertas</span>, <span class="ui">Riscos de Perda</span> e <span class="ui">Compromissos</span>.</li>
+  <li><strong>Termo técnico.</strong> Os nomes são simples, e quando existe o termo técnico ele aparece <em>embaixo</em> do nome (aqui, <em>inbox</em> sob <span class="ui">Conversas</span>). Passar o mouse sobre um item mostra também a frase do que a tela faz.</li>
+  <li><strong>Contador.</strong> O número vermelho é a quantidade de casos esperando uma pessoa. Quando chega a zero, o número some. Ao lado de <span class="ui">Conversas</span>, o número é o das conversas na fila.</li>
+  <li><strong>Gestão de Clientes CRM.</strong> <span class="ui">Funis</span>, <span class="ui">Contatos</span>, <span class="ui">Tarefas</span> e <span class="ui">Disparo em massa</span>. O item da tela em que você está fica destacado, na cor de destaque da marca (roxo no padrão).</li>
+  <li><strong>Se a sua empresa usa.</strong> <span class="ui">Propostas</span>, <span class="ui">Comandas</span> e <span class="ui">Chamadas</span>. Cada uma aparece conforme o seu papel (Chamadas pede Gerente ou acima) e, no caso de Propostas, só quando o recurso está ligado. Sem nenhuma delas, o grupo não aparece.</li>
+  <li><strong>Manual.</strong> O link para este manual, no rodapé do painel.</li>
+</ol>
+
+<h2 id="gaveta">A gaveta de Configurar e Resultados</h2>
+<p>Clicar em <span class="ui">Vender</span>, <span class="ui">Agente</span>, <span class="ui">Conexões</span>, <span class="ui">Empresa</span> ou <span class="ui">Resultados</span> abre uma <strong>gaveta larga</strong>, de duas colunas, por cima da tela. As telas vêm agrupadas pelo que você quer fazer, e cada uma traz o nome, o termo técnico e <strong>uma frase dizendo o que ela faz</strong> — dá para ler antes de abrir.</p>
+<figure class="print">
+  <img src="img/menu-gaveta.png" alt="Gaveta da área Agente aberta, com os grupos Montar o agente, Ensinar o agente e Conectar a IA e quatro pontos numerados" loading="lazy">
+  <figcaption>A gaveta da área <span class="ui">Agente</span>.</figcaption>
+</figure>
+<ol class="legenda">
+  <li><strong>Fechar.</strong> O <span class="ui">×</span> fecha a gaveta. <kbd>Esc</kbd>, um clique fora dela e escolher uma tela fazem o mesmo.</li>
+  <li><strong>Grupo por tarefa.</strong> Dentro de cada área, as telas se agrupam pelo que você quer fazer (aqui, <em>Montar o agente</em>, <em>Ensinar o agente</em> e <em>Conectar a IA</em>).</li>
+  <li><strong>Uma tela.</strong> O nome (<span class="ui">Quem atende cada conversa</span>), o termo técnico embaixo (<em>roteadores</em>) e a frase do que ela faz. Foi a tela antes chamada <span class="ui">Roteadores</span>.</li>
+  <li><strong>Outra tela.</strong> <span class="ui">Chave da IA</span>, com <em>API key</em> embaixo: antes, <span class="ui">Credenciais</span>.</li>
+</ol>
+<aside class="nota info"><strong>Nem toda gaveta tem tudo.</strong><p>Quem não tem acesso a uma tela — pelo papel, pelos módulos opcionais ou pela interface da empresa — não a vê na gaveta. Grupo ou área sem nenhuma tela visível simplesmente não aparece. O teclado funciona: a gaveta segura o foco enquanto está aberta e o devolve ao botão que a abriu.</p></aside>
 
 <h2 id="o-menu-muda">Por que o meu menu é diferente do dos outros</h2>
 <p>O menu <strong>não é igual para todo mundo</strong>. Ele muda conforme quatro coisas:</p>
 <ul>
-  <li><strong>O seu papel.</strong> Quem é “Somente leitura” não vê itens de configuração; quem é Administrador vê todos. Veja <a href="#conceitos--papeis">Papéis</a>.</li>
-  <li><strong>Os recursos opcionais ligados.</strong> Algumas telas (Empresas, Pessoas, Propostas, Honorários, entre outras) só aparecem quando o recurso correspondente está ligado na instalação ou pela organização, em <span class="ui">Configurações › Recursos opcionais</span>.</li>
-  <li><strong>A interface escolhida.</strong> A empresa pode esconder áreas que não usa (<span class="ui">Configurações › Organização</span>, cartão <span class="ui">Menu lateral</span>), e o Administrador pode simplificar o menu de cada pessoa em <span class="ui">Equipe</span>. As áreas essenciais (Perfil, Segurança e, para quem administra, Equipe e Organização) nunca somem. Veja <a href="#dados-da-empresa">Organização</a> e <a href="#equipe--interface">a interface de cada pessoa</a>. Esconder uma tela do menu não tira a permissão de quem a conhece pelo endereço: só muda o que aparece.</li>
+  <li><strong>O seu papel.</strong> Quem é “Somente leitura” não vê telas de configuração; quem é Administrador vê todas. Veja <a href="#conceitos--papeis">Papéis</a>.</li>
+  <li><strong>Os recursos opcionais ligados.</strong> Algumas telas (Empresas, Pessoas, Propostas, Honorários, entre outras) só aparecem quando o recurso correspondente está ligado na instalação ou pela organização, em <span class="ui">Configurar › Empresa › Plano e regras › Recursos opcionais</span>.</li>
+  <li><strong>A interface escolhida.</strong> A empresa pode esconder telas que não usa (<span class="ui">Configurar › Empresa › A empresa › Dados da empresa</span>, cartão <span class="ui">Menu lateral</span>, que lista as telas por bloco, área e grupo), e o Administrador pode simplificar o menu de cada pessoa em <span class="ui">Equipe</span>. As telas essenciais (Perfil, Segurança e, para quem administra, Equipe e Dados da empresa) nunca somem. Veja <a href="#dados-da-empresa">Dados da empresa</a> e <a href="#equipe--interface">a interface de cada pessoa</a>. Esconder uma tela do menu não tira a permissão de quem a conhece pelo endereço: só muda o que aparece.</li>
   <li><strong>A organização em que você está.</strong> Se você participa de mais de uma, um seletor com o nome da empresa aparece no topo para trocar de uma para outra. Com uma só organização, ele fica escondido.</li>
 </ul>
-<aside class="nota dica"><strong>Não achou uma tela?</strong><p>Use a busca ⌘K, ou abra o <span class="ui">Ver tudo em…</span> do grupo. As telas de uso menos frequente não ficam no menu lateral, mas estão sempre lá.</p></aside>
+<aside class="nota dica"><strong>Não achou uma tela?</strong><p>Use a busca ⌘K, que acha pelo nome novo, pelo nome antigo e pelo termo técnico. Para ver as telas de uma área de uma vez, abra a gaveta dela. Os links <em>“Ver tudo em…”</em> deixaram de existir no menu.</p></aside>
 
 <h2 id="busca">A busca de telas (⌘K)</h2>
-<p>É o caminho mais rápido para ir a qualquer tela. Clique em <span class="ui">Buscar…</span> no topo, ou tecle <kbd>Ctrl</kbd> + <kbd>K</kbd> (no Mac, <kbd>⌘</kbd> + <kbd>K</kbd>).</p>
+<p>É o caminho mais rápido para ir a qualquer tela. Clique em <span class="ui">Buscar</span> (na faixa ou no topo), ou tecle <kbd>Ctrl</kbd> + <kbd>K</kbd> (no Mac, <kbd>⌘</kbd> + <kbd>K</kbd>).</p>
 <figure class="print media">
-  <img src="img/navegacao-busca.png" alt="Janela de busca com a palavra disparo digitada e o resultado Disparo em massa" loading="lazy">
-  <figcaption>Buscando “disparo”: o resultado destacado abre a tela de Disparo em massa.</figcaption>
+  <img src="img/menu-busca.png" alt="Janela de busca com a palavra webhook digitada e os resultados Conectar outros sistemas e Avisar outros sistemas" loading="lazy">
+  <figcaption>Buscando “webhook”, o nome antigo: o sistema acha <span class="ui">Avisar outros sistemas</span>, que tem <em>webhooks</em> como termo técnico.</figcaption>
+</figure>
+<ul>
+  <li><strong>O que ela procura.</strong> O nome atual da tela, o <em>nome antigo</em> (digite “Inbox”, “Radar”, “Casos”, “Webhooks”), o termo técnico (“MCP”, “API key”) e a frase que descreve a tela. Ignora acentos e maiúsculas.</li>
+  <li><strong>As abas.</strong> A primeira é <em>Todas</em>; as demais filtram pelo lugar da tela no menu — <em>Todo dia, Vender, Agente, Conexões, Empresa, Resultados, Você</em> — e por <em>Páginas de área</em>. O número entre parênteses é quantas telas você tem acesso em cada uma (depende do seu papel e do que está ligado).</li>
+  <li><strong>Cada resultado.</strong> Mostra o nome, o termo técnico, o lugar no menu e a frase do que a tela faz. O primeiro já vem selecionado.</li>
+  <li><strong>Teclado.</strong> <kbd>↑</kbd> <kbd>↓</kbd> escolhem, <kbd>Enter</kbd> abre, <kbd>Esc</kbd> fecha. O botão <span class="ui">Limpar</span> apaga o que foi digitado.</li>
+</ul>
+<p>Se nada combinar, a janela diz “Nada encontrado para …” e sugere outro termo ou “Todas”.</p>
+<aside class="nota atencao"><strong>A busca ⌘K procura telas, não pessoas.</strong><p>Ela não acha contatos, conversas nem cartões. Para achar uma pessoa, use a busca da tela <a href="#contatos">Contatos</a> ou a de <a href="#inbox">Conversas</a>. E ela procura no nome e na descrição da tela: digite <em>disparo</em> ou <em>mensagem em massa</em> para chegar ao disparo em massa.</p></aside>
+<p>As quatro <strong>páginas de área</strong> (<em>Gestão de Clientes CRM</em>, <em>Agente de IA</em>, <em>Análise</em> e <em>Configurações</em>) continuam abrindo pelo endereço de sempre e aparecem na busca, na aba <em>Páginas de área</em>. Elas listam as telas pelos mesmos grupos do menu, com a frase de cada uma, mas não são mais o caminho principal.</p>
+
+<h2 id="topo">A barra do topo</h2>
+<figure class="print media">
+  <img src="img/navegacao-topo.png" alt="Barra do topo com o logo, a busca, o sino, o idioma, o tema e o menu do usuário, numerados de 1 a 6" loading="lazy">
+  <figcaption>A barra do topo (o espaço do meio, sem nada, foi omitido do print).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Campo de busca.</strong> Digite parte do nome da tela ou do que ela faz (o campo sugere “nome, objetivo ou função”, por exemplo leads, agenda, prompt, whatsapp). A busca ignora acentos e maiúsculas. Com o campo vazio e “Todas” marcado, a janela mostra o catálogo inteiro, em blocos por grupo, cada um com a contagem de “ferramentas”; ao digitar ou escolher um grupo, vira uma lista.</li>
-  <li><strong>Limpar.</strong> Apaga o que foi digitado.</li>
-  <li><strong>Grupos.</strong> A primeira opção é “Todas”; as demais filtram por grupo do menu. O número entre parênteses é quantas telas você tem acesso em cada um (depende do seu papel e do que está ligado).</li>
-  <li><strong>Resultado.</strong> Mostra o nome da tela, o grupo e uma frase explicando para que ela serve. O primeiro já vem selecionado.</li>
-  <li><strong>Dica de teclado.</strong> <kbd>↑</kbd> <kbd>↓</kbd> escolhem, <kbd>Enter</kbd> abre, <kbd>Esc</kbd> fecha.</li>
+  <li><strong>Logo e nome da marca.</strong> O logo e o nome da empresa (ou da marca do revendedor) ficam aqui, no canto superior esquerdo. No celular, o topo mostra só o símbolo da marca. Na faixa à esquerda, no computador, também fica só o símbolo.</li>
+  <li><strong>Busca ⌘K.</strong> Abre a busca de telas (veja acima).</li>
+  <li><strong>Sino: Central de avisos.</strong> Leva à tela <span class="ui">Alertas</span>: o que a IA encontrou e precisa de uma decisão sua. Um número aparece no sino quando há avisos em aberto (99+ quando passam de 99). Se a empresa escondeu a tela Alertas do menu, o sino também some.</li>
+  <li><strong>Idioma.</strong> Troca o idioma do sistema para você: português, espanhol ou inglês (o chinês ainda está em construção e não aparece na lista).</li>
+  <li><strong>Tema.</strong> Alterna entre claro, escuro e o que o seu computador estiver usando. Atalho: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (no Mac, <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>).</li>
+  <li><strong>Menu do usuário.</strong> Seu nome e e-mail, e a opção <span class="ui">Sair</span>. Quem é dono do servidor vê também <span class="ui">Modo administrador</span>, que leva ao painel de configuração da instalação.</li>
 </ol>
-<p>Se nada combinar, a janela diz “Nada encontrado para …” e sugere outro termo ou “Todas”.</p>
-<aside class="nota atencao"><strong>A busca ⌘K procura telas, não pessoas.</strong><p>Ela não acha contatos, conversas nem cartões. Para achar uma pessoa, use a busca da tela <a href="#contatos">Contatos</a> ou a do <a href="#inbox">Inbox</a>. E ela procura no nome e na descrição da tela: digite <em>disparo</em> ou <em>mensagem em massa</em> para chegar ao disparo em massa.</p></aside>
+<figure class="print estreita">
+  <img src="img/topo-menu-usuario.png" alt="Menu do usuário aberto mostrando o nome, o e-mail e a opção Sair" loading="lazy">
+  <figcaption>O menu do usuário: nome, e-mail e <span class="ui">Sair</span>.</figcaption>
+</figure>
+<ul>
+  <li><strong>Seletor de organização.</strong> Um botão com o nome da empresa aparece ao lado da busca <em>somente</em> para quem tem acesso a duas ou mais organizações (e para o dono do servidor, com o item <span class="ui">Gerenciar organizações</span>). Escolher outra recarrega o sistema em <a href="#inbox">Conversas</a> daquela empresa. Só funciona para organizações onde o seu convite foi aceito e não foi revogado, e pede a verificação em duas etapas se você a tem. Fica registrado em <a href="#auditoria">Quem mexeu em quê</a>.</li>
+  <li><strong>Idioma (PT / ES / EN).</strong> Grava a <em>sua</em> preferência pessoal — a mesma do campo “Idioma” do <a href="#config-perfil">Perfil</a> — e recarrega a página inteira. Não muda o idioma da empresa nem o que os colegas veem.</li>
+  <li><strong>Tema.</strong> Claro → escuro → igual ao computador. A escolha fica salva só neste navegador.</li>
+  <li><strong>Sair.</strong> Encerra só este navegador (para sair de todos, use a <a href="#config-seguranca">Segurança</a>). Perfil, Segurança e Notificações ficam em <span class="ui">Você</span>, na faixa.</li>
+</ul>
+
+<h2 id="faixas-de-aviso">As faixas de aviso no alto da tela</h2>
+<p>Quando há algo que você precisa saber, uma <strong>faixa</strong> aparece no alto do conteúdo, em todas as telas, logo abaixo da barra do topo:</p>
+<ul>
+  <li><strong>WhatsApp desconectado.</strong> Faixa vermelha com o botão <em>Escanear o QR</em> ou <em>Ver conexões</em> (veja <a href="#conexoes--qr">Conexões</a>).</li>
+  <li><strong>Licença.</strong> Uma linha com o botão <span class="ui">Ver licença</span>, que leva à tela <a href="#licenca">Licença</a> (<span class="ui">Configurar › Empresa › Plano e regras › Licença</span>, só para o Administrador no menu). Ela aparece para quem administra quando a licença ainda precisa de atenção (uso não comercial, ativação pendente ou temporária) e para <strong>todas as pessoas</strong> quando a licença venceu ou foi bloqueada. Licença permanente não mostra faixa.</li>
+</ul>
+<p>Se a licença venceu ou foi bloqueada e a instalação está em modo <em>valendo</em>, qualquer tela leva à tela <span class="ui">Licença</span>, a única que continua aberta.</p>
 
 <h2 id="como-funciona">O botão “Como funciona”</h2>
 <p>Muitas telas têm, no canto de cima, um botão <span class="ui">Como funciona</span>. Ele abre um painel lateral curto com três coisas: uma explicação do que a tela é, um <strong>passo a passo</strong> das tarefas mais comuns e as <strong>“palavras desta tela”</strong>, com o significado dos termos que aparecem nela.</p>
@@ -54,18 +132,16 @@
 </figure>
 <p>É a ajuda embutida no sistema. Este manual vai além dela: explica cada botão e cada campo, com prints.</p>
 
-<h2 id="topo">Detalhes do topo da tela</h2>
-<figure class="print estreita">
-  <img src="img/topo-menu-usuario.png" alt="Menu do usuário aberto mostrando o nome, o e-mail e a opção Sair" loading="lazy">
-  <figcaption>O menu do usuário: nome, e-mail e <span class="ui">Sair</span>.</figcaption>
-</figure>
-<ul>
-  <li><strong>Seletor de organização.</strong> Um botão com o nome da empresa aparece ao lado da busca <em>somente</em> para quem tem acesso a duas ou mais organizações (e para o dono do servidor, com o item <span class="ui">Gerenciar organizações</span>). Escolher outra recarrega o sistema no Inbox daquela empresa. Só funciona para organizações onde o seu convite foi aceito e não foi revogado, e pede a verificação em duas etapas se você a tem. Fica registrado na <a href="#auditoria">Auditoria</a>.</li>
-  <li><strong>Idioma (PT / ES / EN).</strong> Grava a <em>sua</em> preferência pessoal — a mesma do campo “Idioma” do <a href="#config-perfil">Perfil</a> — e recarrega a página inteira. Não muda o idioma da empresa nem o que os colegas veem.</li>
-  <li><strong>Tema.</strong> Claro → escuro → igual ao computador. A escolha fica salva só neste navegador.</li>
-  <li><strong>Versão do sistema.</strong> No pé do menu lateral aparece a “versão” instalada. Para o dono do servidor, quando há atualização, vira o aviso “Nova versão” com um ponto pulsante, que leva à tela de <a href="#atualizacao">atualização do sistema</a>.</li>
-  <li><strong>Menu do usuário.</strong> Não tem “Perfil” nem “Configurações”: o Perfil está em Configurações › Sua conta, e Configurações fica no rodapé do menu lateral. <span class="ui">Sair</span> encerra só este navegador (para sair de todos, use a <a href="#config-seguranca">Segurança</a>).</li>
-</ul>
-
 <h2 id="no-celular">No celular</h2>
-<p>No celular, o menu lateral vira um botão de menu (as três barrinhas) no canto superior esquerdo. Toque nele para abrir a lista de telas; o link <span class="ui">Manual</span> está lá, abaixo de Configurações.</p>
+<p>No celular, a faixa e o painel dão lugar a uma <strong>barra de baixo</strong> com quatro botões:</p>
+<table class="tabela">
+  <thead><tr><th>Botão</th><th>O que faz</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Conversas</strong></td><td>Vai direto à tela de conversas. Mostra o número de conversas esperando uma pessoa.</td></tr>
+    <tr><td><strong>Todo dia</strong></td><td>Abre uma folha, que sobe de baixo, com a mesma mesa de trabalho do painel: Leads, Gestão de Clientes CRM e, para quem usa, Propostas, Comandas e Chamadas.</td></tr>
+    <tr><td><strong>Configurar</strong></td><td>Abre uma folha com as quatro áreas — Vender, Agente, Conexões e Empresa — e as telas de cada uma, agrupadas pelo que você quer fazer.</td></tr>
+    <tr><td><strong>Resultados</strong></td><td>Abre a folha com os números do negócio, o trabalho da equipe e da IA e o histórico.</td></tr>
+  </tbody>
+</table>
+<p>A folha se fecha ao escolher uma tela, com o botão de fechar ou com <kbd>Esc</kbd>. A busca e o menu da conta ficam no topo: o menu do avatar traz <span class="ui">Perfil</span>, <span class="ui">Segurança</span> e <span class="ui">Notificações</span>, além de <span class="ui">Sair</span>. O link <span class="ui">Manual</span> e o aviso de nova versão (para quem administra) ficam no rodapé de cada folha.</p>
+<aside class="nota info"><strong>Sem print do celular.</strong><p>Esta seção ainda não tem print: ela descreve o que está no código e nas notas de versão do sistema.</p></aside>

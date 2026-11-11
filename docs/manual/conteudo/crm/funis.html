@@ -1,7 +1,7 @@
-<!--meta {"id":"funis","grupo":"crm","titulo":"Funis","ordem":1,"resumo":"Os funis pelos quais seus clientes passam, da primeira conversa até fechar negócio. Aqui você cria os funis e trabalha cada venda no quadro de cartões.","palavras":["kanban","pipeline","quadro","lead","negócio","cartão","etapa","venda","vendas","oportunidade","arrastar","ganho","perdido","importar planilha","csv","arquivar","funil padrão","pedido"],"onde":"CRM › Funis","quem":"Ver e trabalhar nos cartões: Atendente ou acima (Somente leitura só vê). Criar, renomear e arquivar funis: Gerente ou acima.","rotas":["/app/kanban","/app/pipelines/[id]"]} -->
+<!--meta {"id":"funis","grupo":"crm","titulo":"Funis","ordem":1,"resumo":"Os funis pelos quais seus clientes passam, da primeira conversa até fechar negócio. Aqui você cria os funis e trabalha cada venda no quadro de cartões.","palavras":["kanban","pipeline","quadro","lead","negócio","cartão","etapa","venda","vendas","oportunidade","arrastar","ganho","perdido","importar planilha","csv","arquivar","funil padrão","pedido","inbox"],"onde":"Todo dia › Gestão de Clientes CRM › Funis","quem":"Ver e trabalhar nos cartões: Atendente ou acima (Somente leitura só vê). Criar, renomear e arquivar funis: Gerente ou acima.","rotas":["/app/kanban","/app/pipelines/[id]"]} -->
 
 <h2 id="visao-geral">O que são as duas telas de Funis</h2>
-<p>O item <span class="ui">Funis</span> do menu abre duas telas, uma dentro da outra:</p>
+<p>O item <span class="ui">Funis</span> do painel <span class="ui">Todo dia</span> (grupo <span class="ui">Gestão de Clientes CRM</span>) abre duas telas, uma dentro da outra:</p>
 <ol>
   <li><strong>A lista de funis</strong> (<a href="#funis--lista">veja abaixo</a>): onde você cria, renomeia, ordena e arquiva os funis.</li>
   <li><strong>O quadro de um funil</strong> (<a href="#funis--quadro">veja abaixo</a>): onde você trabalha as vendas. Cada coluna é uma etapa e cada cartão é um cliente (um <em>lead</em>).</li>
@@ -24,14 +24,14 @@
   <li><strong>Apelido do funil</strong> (aqui, <code>/pedidos</code>). É um nome curto criado a partir do nome do funil. Você não precisa mexer nele.</li>
   <li><strong>Renomear.</strong> Troca o nome do funil, ali mesmo na linha.</li>
   <li><strong>Arquivar.</strong> Tira o funil da lista de trabalho, sem apagar nada.</li>
-  <li><strong>O caminho de etapas.</strong> O desenho horizontal mostra, em ordem, as etapas do funil. É só uma pré-visualização: as etapas se renomeiam no quadro (veja abaixo) e se organizam em <span class="ui">Ver tudo em CRM › Etapas do funil</span> (veja <a href="#etapas-do-funil">Etapas do funil</a>).</li>
+  <li><strong>O caminho de etapas.</strong> O desenho horizontal mostra, em ordem, as etapas do funil. É só uma pré-visualização: as etapas se renomeiam no quadro (veja abaixo) e se organizam em <span class="ui">Configurar › Vender › O seu funil › Etapas do funil</span> (veja <a href="#etapas-do-funil">Etapas do funil</a>).</li>
 </ol>
 <p>Alguns botões só aparecem em situações específicas:</p>
 <table class="tabela">
   <thead><tr><th>Botão</th><th>Quando aparece</th><th>O que faz</th></tr></thead>
   <tbody>
     <tr><td><span class="ui">Tornar padrão</span></td><td>Em todo funil que <strong>não</strong> é o padrão.</td><td>Faz deste funil o padrão. O selo “Padrão” passa para ele.</td></tr>
-    <tr><td><span class="ui">Funil de clientes</span></td><td>Só depois de ligar <em>Clientes pela agenda</em> em <span class="ui">Configurações › Tipos de agendamento</span>.</td><td>Marca o funil que guarda quem <strong>já é cliente</strong>, separado de quem ainda está sendo atendido para comprar. O botão vira <span class="ui">Deixar de ser funil de clientes</span> para desfazer.</td></tr>
+    <tr><td><span class="ui">Funil de clientes</span></td><td>Só depois de ligar <em>Clientes pela agenda</em> em <span class="ui">Configurar › Vender › O seu funil › Tipos de agendamento</span>.</td><td>Marca o funil que guarda quem <strong>já é cliente</strong>, separado de quem ainda está sendo atendido para comprar. O botão vira <span class="ui">Deixar de ser funil de clientes</span> para desfazer.</td></tr>
     <tr><td><span class="ui">Funis arquivados (n)</span></td><td>Só quando existe pelo menos um funil arquivado, para Gerente ou acima.</td><td>Abre a “gaveta” dos arquivados, de onde você pode trazer um funil de volta ou excluí-lo de vez.</td></tr>
   </tbody>
 </table>
@@ -122,7 +122,7 @@
   <li><strong>Título.</strong> Clique nele para abrir o <a href="#funis--dossie">dossiê</a> do cartão. Passe o mouse sobre o cartão para ver as tags dele.</li>
   <li><strong>Menu “…”.</strong> As ações do cartão (veja <a href="#funis--menu">o menu do cartão</a>).</li>
   <li><strong>Valor.</strong> Quanto vale o negócio. Mostra “—” quando não há valor.</li>
-  <li><strong>Última mensagem.</strong> O trecho da conversa mais recente com esse cliente, com um <strong>número roxo</strong> quando há mensagens que ninguém leu. Clique nela para abrir a conversa no <a href="#inbox">Inbox</a>.</li>
+  <li><strong>Última mensagem.</strong> O trecho da conversa mais recente com esse cliente, com um <strong>número roxo</strong> quando há mensagens que ninguém leu. Clique nela para abrir a conversa em <a href="#inbox">Conversas</a>.</li>
   <li><strong>Telefone e e-mail</strong> do contato. Somem se o contato não tem nenhum dos dois.</li>
   <li><strong>Responsável.</strong> A pessoa ou o agente de IA que cuida do cartão. Mostra “Sem responsável” quando ninguém foi escolhido.</li>
   <li><strong>Tempo na etapa.</strong> Há quanto tempo o cartão está parado naquela etapa (“agora em…”, ou o tempo decorrido).</li>
@@ -150,7 +150,7 @@
   <li><strong>Editar.</strong> Abre um formulário para mudar título, valor, descrição e demais dados do negócio.</li>
   <li><strong>Responsável.</strong> Abre uma lista com as pessoas da equipe para você escolher quem cuida do cartão.</li>
   <li><strong>Marcar como ganho.</strong> Registra a venda como fechada.</li>
-  <li><strong>Marcar como perdido.</strong> Pede o <strong>motivo</strong> da perda (e um detalhe opcional) antes de confirmar. Essa informação ajuda a melhorar o funil. Se o motivo que você quer não está na lista, ele se cadastra em <span class="ui">Ver tudo em CRM › Etapas do funil</span> (campo <em>Motivos de perda</em>, só para Administrador — veja <a href="#etapas-do-funil">Etapas do funil</a>).</li>
+  <li><strong>Marcar como perdido.</strong> Pede o <strong>motivo</strong> da perda (e um detalhe opcional) antes de confirmar. Essa informação ajuda a melhorar o funil. Se o motivo que você quer não está na lista, ele se cadastra em <span class="ui">Configurar › Vender › O seu funil › Etapas do funil</span> (campo <em>Motivos de perda</em>, só para Administrador — veja <a href="#etapas-do-funil">Etapas do funil</a>).</li>
   <li><strong>Levar para outro funil.</strong> Passa o cartão para outro funil. Se existe um funil só, o sistema avisa que é preciso criar outro antes.</li>
   <li><strong>Excluir</strong> (em vermelho). Apaga o cartão, depois de uma confirmação.</li>
 </ol>
@@ -184,7 +184,7 @@
 <ol class="legenda">
   <li><strong>Título</strong> do negócio, com o valor, a etapa em que ele está e o responsável logo abaixo. Se o negócio nasceu de um disparo em massa, o nome da campanha também aparece aí.</li>
   <li><strong>Editar campos.</strong> Rola o painel até o formulário <em>Dados do negócio</em>, mais abaixo.</li>
-  <li><strong>Abrir conversa no Inbox.</strong> Mostra a última mensagem e leva à conversa completa, com o número de mensagens não lidas.</li>
+  <li><strong>Abrir conversa em Conversas.</strong> Mostra a última mensagem e leva à conversa completa, com o número de mensagens não lidas.</li>
   <li><strong>Abas Dados e Links</strong> do contato. <em>Dados</em> mostra nome, telefone e e-mail; <em>Links</em> é um formulário para guardar os endereços do contato na internet (Instagram, site, Google Meu Negócio…). Só vale endereço que começa com <code>http</code>. Os links salvos aparecem também no cartão.</li>
   <li><strong>Abrir no WhatsApp.</strong> Abre o WhatsApp com esse número, fora do ZapSales.</li>
   <li><strong>Ver ficha completa do contato.</strong> Vai para a ficha do contato em <a href="#contatos">Contatos</a>.</li>

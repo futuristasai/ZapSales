@@ -1,10 +1,10 @@
-<!--meta {"id":"conhecimento","grupo":"ia","titulo":"Conhecimento","ordem":10,"resumo":"A biblioteca de materiais do seu negócio (perguntas e respostas, documentos) que os agentes de IA consultam antes de responder. Aqui você adiciona, confere e atualiza o que o agente sabe.","palavras":["rag","base de conhecimento","acervo","faq","perguntas frequentes","documento","pdf","material","embedding","chave","openai","google","o que o agente sabe","treinar","ensinar"],"onde":"Agente de IA › Conhecimento (menu: Ver tudo em IA › Ensinar o agente)","quem":"Gerente ou acima. Salvar a chave e trocar o provedor de busca: Administrador.","rotas":["/app/ai/knowledge/sources"]} -->
+<!--meta {"id":"conhecimento","grupo":"ia","titulo":"Conhecimento (RAG)","ordem":10,"resumo":"A biblioteca de materiais do seu negócio (perguntas e respostas, documentos) que os agentes de IA consultam antes de responder. Aqui você adiciona, confere e atualiza o que o agente sabe.","palavras":["rag","base de conhecimento","acervo","faq","perguntas frequentes","documento","pdf","material","embedding","chave","openai","google","o que o agente sabe","treinar","ensinar","conhecimento (rag)","credenciais","chave da ia"],"onde":"Configurar › Agente › Ensinar o agente › Conhecimento (clique em Agente na faixa à esquerda; também pela busca Ctrl K)","quem":"Gerente ou acima. Salvar a chave e trocar o provedor de busca: Administrador.","rotas":["/app/ai/knowledge/sources"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>O agente de IA não conhece o seu negócio: ele só sabe o que você ensinou. Esta tela é a <strong>biblioteca</strong> onde você guarda as respostas que se repetem (prazo de entrega, política de troca, formas de pagamento). Antes de responder um cliente, o agente <strong>procura nesses materiais</strong> e usa o que encontrou, em vez de improvisar.</p>
-<p>O título da tela é <em>“O que o agente sabe”</em>. Cada agente escolhe, na tela dele, quais materiais pode ler; a biblioteca em si é <strong>da organização</strong>.</p>
+<p>No menu a tela se chama <span class="ui">Conhecimento</span> (com o termo técnico <em>RAG</em> embaixo); o título dentro dela é <em>“O que o agente sabe”</em>. Cada agente escolhe, na tela dele, quais materiais pode ler; a biblioteca em si é <strong>da organização</strong>.</p>
 <figure class="print">
-  <img src="img/ia-conhecimento.png" alt="Tela O que o agente sabe, com o aviso de chave, o estado da base e três cartões de material, numerados de 1 a 14" loading="lazy">
+  <img src="img/ia-conhecimento.png" alt="Tela O que o agente sabe, com o aviso de chave, o estado da base e três materiais em linhas dentro de um painel, numerados de 1 a 14" loading="lazy">
   <figcaption>A biblioteca de conhecimento, com três materiais: um que não entrou (a tabela de preços), um de perguntas e respostas e um documento, os dois últimos já sabidos pelo agente. A faixa do alto mostra o caso em que a chave de preparação deixou de servir.</figcaption>
 </figure>
 <ol class="legenda">
@@ -23,7 +23,6 @@
   <li><strong>Arquivar.</strong> Tira o material de circulação.</li>
   <li><strong>Arquivados.</strong> A seção recolhível no pé da lista (“1 arquivado”) com o que foi arquivado.</li>
 </ol>
-<p><strong>O que mudou no desenho.</strong> Os materiais agora aparecem em <strong>linhas dentro de um painel</strong>, uma embaixo da outra, e não em cartões lado a lado como no print acima. Em cada linha ficam o nome, o tipo e o selo de situação, depois <em>Preparado</em>, <em>Trechos que o agente encontra</em> e <em>Consultado por</em>, e os botões (<span class="ui">Ver o que ele aprendeu</span>, <span class="ui">Preparar de novo</span>, <span class="ui">Editar conteúdo</span>, <span class="ui">Arquivar</span>) na ponta direita. Os nomes e a função são os mesmos descritos na legenda.</p>
 
 <h2 id="chave">A chave de preparação</h2>
 <p>Para o agente conseguir <em>procurar</em> num material, o sistema precisa antes “prepará-lo”: dividir o texto em pedaços e transformá-los em números que permitem a busca por significado (isso se chama <em>embedding</em>). Esse trabalho é feito por um provedor de IA externo — <strong>OpenAI</strong> (ou OpenRouter) ou <strong>Google</strong> — e exige uma <strong>chave de acesso</strong> à conta dele. A faixa no alto da tela tem quatro estados:</p>
@@ -32,7 +31,7 @@
   <tbody>
     <tr><td><em>“Conferindo a chave de embedding — leva alguns segundos.”</em></td><td>Você acabou de cadastrar a chave e o sistema está testando-a.</td></tr>
     <tr><td><em>“Pronto para preparar material.”</em> (verde)</td><td>Tudo certo. A faixa diz qual chave está em uso (a da organização, a do gateway de IA da instalação ou a que veio na instalação) e <strong>quem prepara a base</strong>: OpenAI ou Google. Se você tem chave dos dois, aparece o botão de <em>Trocar para o Google</em> ou <em>Trocar para a OpenAI</em>.</td></tr>
-    <tr><td><em>“Falta uma chave de embedding para o agente aprender o seu material”</em> (amarelo)</td><td>Você ainda pode cadastrar documentos, mas eles ficam esperando para serem preparados. Use <span class="ui">Cadastrar a chave aqui</span>, ou cadastre em <span class="ui">IA › Credenciais</span>.</td></tr>
+    <tr><td><em>“Falta uma chave de embedding para o agente aprender o seu material”</em> (amarelo)</td><td>Você ainda pode cadastrar documentos, mas eles ficam esperando para serem preparados. Use <span class="ui">Cadastrar a chave aqui</span>, ou cadastre em <span class="ui">Configurar › Agente › Chave da IA</span>.</td></tr>
     <tr><td><em>“A base é preparada pelo Google (ou OpenAI), e a chave não está mais utilizável”</em></td><td>A base já foi preparada por um provedor e a chave dele deixou de valer. O agente não consegue consultar o material até isso ser resolvido. Cadastre a chave de novo ou troque o provedor, o que refaz tudo.</td></tr>
   </tbody>
 </table>

@@ -58,7 +58,7 @@ const soltas = fs.existsSync(dirImg) ? fs.readdirSync(dirImg).filter((f) => !usa
 const catalogo = lerCatalogo();
 const hrefs = new Set(catalogo.map((i) => i.href));
 const dinamica = /\[[^\]]+\]/;
-// Hubs de grupo ("Ver tudo em ...") e telas de criação (/new) não são itens do catálogo, mas são telas reais.
+// Páginas de área (que saíram do caminho do menu, mas seguem abrindo pelo endereço) e telas de criação (/new) não são itens do catálogo, mas são telas reais.
 const hubs = new Set(['/app/crm', '/app/ai', '/app/analise', '/app/campaigns/settings', '/app/settings']);
 const criacao = /\/(new|novo|invite)$/;
 for (const p of lerPaginas()) {

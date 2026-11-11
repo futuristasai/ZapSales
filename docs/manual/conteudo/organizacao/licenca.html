@@ -1,0 +1,83 @@
+<!--meta {"id":"licenca","grupo":"organizacao","titulo":"Licença","ordem":19,"resumo":"Mostra se a licença desta instalação está em dia, quando precisa ser confirmada de novo e como renovar. Só o administrador vê os detalhes e o botão de renovar.","palavras":["licença","licenca","licença comercial","uso não comercial","ativação","ativar","renovar","renovação","vencida","vencimento","bloqueada","bloqueio","autorização","temporária","permanente","servidor de licenças","código da compra","identificador da instalação","uso em empresa"],"onde":"Configurar › Empresa › Plano e regras › Licença (clique em Empresa na faixa à esquerda)","quem":"O item do menu aparece só para Administrador. A tela abre para qualquer pessoa logada, mas quem não é administrador vê apenas a situação, sem detalhes e sem o botão de renovar.","rotas":["/app/licenca"]} -->
+
+<h2 id="visao-geral">Para que serve</h2>
+<p>O ZapSales é um produto com <strong>licença</strong>: usá-lo dentro de uma empresa exige a licença comercial, que é ativada com o <strong>e-mail e o código da compra</strong>. A tela <span class="ui">Licença</span> responde, em uma olhada, a três perguntas: <em>a minha instalação está funcionando? a licença está em dia? o que faço se não estiver?</em></p>
+<p>É a única tela do sistema que continua aberta mesmo quando a instalação está barrada por falta de licença válida. Por isso é para cá que o sistema leva quem tenta entrar numa instalação sem licença em vigor.</p>
+<aside class="nota info"><strong>Não confunda com “Plano e cobrança”.</strong><p>A tela <a href="#plano-e-cobranca">Plano e cobrança</a> é reservada para um plano e faturas que ainda não existem. A <span class="ui">Licença</span> é sobre a autorização para esta instalação funcionar.</p></aside>
+
+<h2 id="situacao">O cartão de situação</h2>
+<p>Todas as pessoas logadas veem o cartão do alto. Ele traz o <strong>título do estado</strong>, um selo <span class="ui">Funcionando</span> ou <span class="ui">Não opera</span>, um parágrafo explicando o que isso significa e uma linha dizendo em que modo a trava está:</p>
+<ul>
+  <li><strong>Em vigor:</strong> “uma instalação sem licença válida deixa de funcionar”.</li>
+  <li><strong>Em observação:</strong> “a licença é calculada e mostrada, mas nada é restringido”. É como ficam as instalações antigas enquanto se regularizam.</li>
+</ul>
+<figure class="print">
+  <img src="img/licenca.png" alt="Tela Licença para o administrador: cartão de situação com selo Funcionando e cartão Detalhes com o botão Tentar renovar agora" loading="lazy">
+  <figcaption>A tela Licença vista por um administrador, com o cartão de situação e o cartão de detalhes.</figcaption>
+</figure>
+<ol class="legenda">
+  <li><strong>Título do estado e selo.</strong> Diz em que pé a licença está e se a instalação está funcionando.</li>
+  <li><strong>Explicação.</strong> O que o estado significa e o que fazer.</li>
+  <li><strong>Modo da trava.</strong> Em vigor ou em observação.</li>
+  <li><strong>Detalhes.</strong> Datas, motivo, identificador da instalação (só administrador).</li>
+  <li><strong>Tentar renovar agora.</strong> Pede ao servidor de licenças que confirme a licença na hora (só administrador).</li>
+</ol>
+
+<h3 id="estados">Os seis estados</h3>
+<table class="tabela">
+  <thead><tr><th>Estado</th><th>O que significa</th><th>Funciona?</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Uso não comercial</strong></td><td>A instalação ainda não tem licença. Funciona por inteiro, mas usá-la dentro de uma empresa exige a licença comercial. A licença é ativada com o e-mail e o código da compra, na instalação.</td><td>Sim</td></tr>
+    <tr><td><strong>Ativação pendente</strong></td><td>A instalação terminou, mas a licença ainda não foi ativada. Ative com o e-mail e o código da compra.</td><td>Sim</td></tr>
+    <tr><td><strong>Licença temporária</strong></td><td>Período de validação. Aparece a linha “Licença temporária, faltam N dias” (ou “termina hoje”, “falta 1 dia”). Ela se renova sozinha enquanto a instalação conseguir falar com o servidor de licenças, e ao fim do período uma licença elegível recebe a autorização permanente automaticamente.</td><td>Sim</td></tr>
+    <tr><td><strong>Licença permanente</strong></td><td>Autorização permanente. Funciona sem consultar o servidor de licenças.</td><td>Sim</td></tr>
+    <tr><td><strong>Autorização vencida</strong></td><td>A instalação ficou tempo demais sem falar com o servidor de licenças e a autorização temporária venceu. <strong>Não é um bloqueio:</strong> ela volta a funcionar assim que conseguir renovar. Confira a internet da VPS e use <span class="ui">Tentar renovar agora</span>.</td><td>Só com a trava em observação</td></tr>
+    <tr><td><strong>Licença bloqueada</strong></td><td>O servidor de licenças registrou um bloqueio para esta instalação. Os dados ficam preservados e a exportação continua disponível. Fale com quem forneceu o sistema para regularizar.</td><td>Só com a trava em observação</td></tr>
+  </tbody>
+</table>
+<p>Nos dois últimos estados aparece o aviso <strong>“Os seus dados estão preservados.”</strong> com o link <span class="ui">Exportar os dados</span> (leva à tela de <a href="#lgpd">LGPD</a>) e, se a instalação tiver um e-mail de suporte configurado, a linha <strong>“Contato para regularizar:”</strong>.</p>
+
+<h2 id="detalhes">O cartão Detalhes (só administrador)</h2>
+<p>Quem é Administrador da empresa (ou o dono do servidor, fora do modo de suporte) vê um segundo cartão:</p>
+<table class="tabela">
+  <thead><tr><th>Campo</th><th>O que mostra</th></tr></thead>
+  <tbody>
+    <tr><td><span class="ui">Última conversa com o servidor de licenças</span></td><td>Quando foi a última vez que a instalação conseguiu confirmar a licença.</td></tr>
+    <tr><td><span class="ui">Próxima consulta</span></td><td>Quando a instalação vai consultar de novo. Na licença permanente aparece “Não precisa”.</td></tr>
+    <tr><td><span class="ui">Fim do período de validação</span></td><td>Até quando vale a autorização temporária atual.</td></tr>
+    <tr><td><span class="ui">Motivo registrado</span></td><td>Só aparece quando há bloqueio: o código do motivo gravado pelo servidor.</td></tr>
+    <tr><td><span class="ui">Identificador desta instalação</span></td><td>O código que o suporte pede para localizar a sua licença.</td></tr>
+  </tbody>
+</table>
+<aside class="nota atencao"><strong>Relógio da VPS atrasado.</strong><p>Se o relógio da VPS ficou para trás do último horário registrado, o cartão avisa: “O relógio desta VPS está atrasado em relação ao último horário registrado. Acerte o relógio: um relógio atrasado impede a renovação.”</p></aside>
+<p>Quem não é administrador vê, no lugar, só a frase <em>“Os detalhes e a renovação são do administrador da empresa.”</em></p>
+
+<h2 id="renovar">Tentar renovar agora</h2>
+<p>O botão <span class="ui">Tentar renovar agora</span> (Administrador; não aparece na licença permanente) pede ao servidor de licenças que confirme a licença imediatamente, sem esperar a consulta automática. Enquanto trabalha, o botão vira <span class="ui">Renovando…</span>. Dá para tentar no máximo <strong>uma vez a cada 15 segundos</strong>.</p>
+<table class="tabela">
+  <thead><tr><th>A tela responde</th><th>O que aconteceu</th></tr></thead>
+  <tbody>
+    <tr><td>Licença renovada.</td><td>Deu certo; a situação se atualiza.</td></tr>
+    <tr><td>O servidor de licenças respondeu que esta licença está bloqueada.</td><td>O bloqueio é do lado do servidor: fale com quem forneceu o sistema.</td></tr>
+    <tr><td>Esta licença é permanente: não precisa de renovação.</td><td>Nada a fazer.</td></tr>
+    <tr><td>Esta instalação ainda não foi ativada, então não há o que renovar.</td><td>A ativação é feita na instalação, com o e-mail e o código da compra.</td></tr>
+    <tr><td>Você acabou de tentar. Espere alguns segundos e tente de novo.</td><td>Respeite o intervalo de 15 segundos.</td></tr>
+    <tr><td>Não foi possível renovar agora. Nada foi alterado.</td><td>Confira a internet da VPS e tente de novo daqui a pouco.</td></tr>
+  </tbody>
+</table>
+<p>Quem não é administrador e tenta renovar recebe “Só o administrador da empresa pode renovar a licença.” A renovação e o bloqueio pelo servidor ficam registrados em <a href="#auditoria">Quem mexeu em quê</a> (<code>license.renewed</code> e <code>license.blocked_by_server</code>).</p>
+
+<h2 id="faixa">A faixa de licença no topo</h2>
+<p>Quando há algo a avisar, uma faixa aparece no alto da área de conteúdo, com o link <span class="ui">Ver licença</span>:</p>
+<ul>
+  <li><strong>Uso não comercial, ativação pendente e licença temporária:</strong> só o administrador vê, numa linha discreta.</li>
+  <li><strong>Autorização vencida e licença bloqueada:</strong> <strong>todas as pessoas</strong> veem, em vermelho. Com a trava em observação, a faixa acrescenta “O sistema segue funcionando por enquanto.”</li>
+  <li><strong>Licença permanente:</strong> nenhuma faixa. Por isso o item de menu existe: para quem quer saber a situação sem esperar um aviso.</li>
+</ul>
+
+<h2 id="barrada">Quando a instalação está barrada</h2>
+<p>Com a trava <strong>em vigor</strong> e a licença vencida ou bloqueada, a instalação deixa de operar: quem tenta navegar é levado para esta tela (a única que continua aberta); ações feitas pela tela recebem a página “Licença bloqueada ou vencida”; e a API e as tarefas automáticas respondem com erro <code>license_blocked</code>. Os dados <strong>não são apagados</strong> e a exportação continua disponível. Para voltar a funcionar: se a autorização apenas venceu, use <span class="ui">Tentar renovar agora</span> depois de conferir a internet da VPS; se foi bloqueio, fale com quem forneceu o sistema.</p>
+
+<h2 id="cuidados">Cuidados</h2>
+<aside class="nota dica"><strong>Falha ao ler a licença não bloqueia nada.</strong><p>Se a tela disser “Não foi possível ler a situação da licença agora. Isso não bloqueia nada: tente de novo daqui a pouco.”, é só uma falha de leitura; nada foi restringido.</p></aside>
+<aside class="nota atencao"><strong>Guarde o identificador da instalação.</strong><p>É ele que o suporte pede para achar a sua licença. Fica no cartão Detalhes, visível só para o administrador.</p></aside>

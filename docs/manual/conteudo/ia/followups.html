@@ -1,4 +1,4 @@
-<!--meta {"id":"followups","grupo":"ia","titulo":"Follow-ups","ordem":3,"resumo":"Fluxos automáticos para retomar quem esfriou: silêncio, mudança de etapa ou resposta do contato, sem alguém lembrar de mandar cada mensagem.","palavras":["follow-up","followup","retomar","reengajamento","fluxo","fila","gatilho","silêncio","espera","carrinho abandonado","modelo","dossiê","pausar","adiar","pular","handoff"],"onde":"Agente de IA › Follow-ups (também no menu lateral)","quem":"A tela abre para quem tem acesso à área; criar, editar, publicar, excluir e intervir na fila: Gerente ou acima.","rotas":["/app/ai/followups","/app/ai/followups/[id]","/app/ai/followups/enrollments/[id]"]} -->
+<!--meta {"id":"followups","grupo":"ia","titulo":"Follow-ups","ordem":3,"resumo":"Fluxos automáticos para retomar quem esfriou: silêncio, mudança de etapa ou resposta do contato, sem alguém lembrar de mandar cada mensagem.","palavras":["follow-up","followup","retomar","reengajamento","fluxo","fila","gatilho","silêncio","espera","carrinho abandonado","modelo","dossiê","pausar","adiar","pular","handoff"],"onde":"Configurar › Agente › Montar o agente › Follow-ups (clique em Agente na faixa à esquerda; também pela busca Ctrl K)","quem":"O item do menu aparece para Gerente ou acima (a Fila e o dossiê, por dentro, são de leitura para qualquer papel); criar, editar, publicar, excluir e intervir na fila: Gerente ou acima.","rotas":["/app/ai/followups","/app/ai/followups/[id]","/app/ai/followups/enrollments/[id]"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Um <strong>follow-up</strong> é uma sequência automática de retomadas: o cliente sumiu, e o sistema, depois de um tempo, manda uma mensagem para saber se ainda dá para ajudar. Você desenha a sequência uma vez (esperar, mandar, entender a resposta, encerrar) e ela roda sozinha para cada cliente que se encaixar no <strong>gatilho</strong>.</p>
@@ -14,7 +14,7 @@
   <li><strong>As abas Fluxos e Fila.</strong></li>
   <li><strong>Começar de um modelo.</strong> Instala um dos modelos prontos (veja abaixo). Gerente ou acima.</li>
   <li><strong>Novo fluxo.</strong> Cria um fluxo em branco.</li>
-  <li><strong>O cartão do fluxo.</strong> Clique para abrir o editor. Mostra a <em>Versão</em> (“publicada”, ou “—” se nunca foi publicado), a <em>política de handoff</em> e a data de atualização.</li>
+  <li><strong>O fluxo.</strong> Clique para abrir o editor. Mostra se há versão publicada, o que acontece quando uma pessoa assume a conversa (<em>handoff</em>) e a data de atualização.</li>
   <li><strong>Ativo.</strong> Tem uma versão publicada e ligada.</li>
   <li><strong>Rascunho.</strong> Ainda não foi publicado.</li>
   <li><strong>Desativado.</strong> Foi desligado.</li>
@@ -22,7 +22,7 @@
   <li><strong>Duplicar.</strong> Cria uma cópia “<em>nome</em> (cópia)”, sempre como <strong>rascunho</strong>, sem vínculo com nenhum agente (é preciso armar de novo).</li>
   <li><strong>Excluir.</strong> Apaga o fluxo <strong>e as inscrições e versões dele</strong>. Não dá para desfazer; os clientes em andamento deixam de ser acompanhados.</li>
 </ol>
-<p><strong>O que mudou na lista.</strong> Os fluxos agora aparecem em <strong>linhas dentro de um painel</strong>, e não mais em cartões: cada linha tem o nome (clique para abrir), a situação, e, abaixo, três informações em frases — <em>Versão publicada</em> (ou <em>Sem versão publicada</em>), o que acontece quando uma pessoa assume a conversa (<em>Pausa quando uma pessoa assume</em>, <em>Cancela quando uma pessoa assume</em> ou <em>Segue mesmo quando uma pessoa assume</em>) e <em>Atualizado em</em> a data. <span class="ui">Renomear</span>, <span class="ui">Duplicar</span> e <span class="ui">Excluir</span> ficam na ponta direita da linha.</p>
+<p>Os fluxos aparecem em <strong>linhas dentro de um painel</strong>: cada linha tem o nome (clique para abrir), a situação, e, abaixo, três informações em frases — <em>Versão publicada</em> (ou <em>Sem versão publicada</em>), o que acontece quando uma pessoa assume a conversa (<em>Pausa quando uma pessoa assume</em>, <em>Cancela quando uma pessoa assume</em> ou <em>Segue mesmo quando uma pessoa assume</em>) e <em>Atualizado em</em> a data. <span class="ui">Renomear</span>, <span class="ui">Duplicar</span> e <span class="ui">Excluir</span> ficam na ponta direita da linha.</p>
 <h3>Criar um fluxo</h3>
 <ol class="passos">
   <li>Clique em <span class="ui">Novo fluxo</span> e dê um nome (até 80 caracteres), como <em>“Recuperação de carrinho abandonado”</em>.</li>
@@ -44,7 +44,7 @@
     <tr><td><strong>Falta · remarcar quem não veio</strong></td><td>A falta foi confirmada na agenda e o horário ficou vago: oferece outra data.</td><td>Alguém confirmar na agenda que o paciente não compareceu.</td></tr>
   </tbody>
 </table>
-<p>Nos modelos que dependem de uma etapa, escolha a <strong>etapa do funil que dispara</strong> antes de clicar em <span class="ui">Instalar</span>. Depois de instalar, o sistema leva direto ao editor. Os textos dos modelos evitam citar doença, exame, preço ou horário, por causa da LGPD.</p>
+<p>Nos modelos que dependem de uma etapa, escolha a <strong>etapa do funil que dispara</strong> antes de clicar em <span class="ui">Instalar</span>. Um modelo já instalado ganha o selo <em>Já instalado</em>. Depois de instalar, o sistema leva direto ao editor. Os textos dos modelos evitam citar doença, exame, preço ou horário, por causa da LGPD.</p>
 
 <h2 id="fila">A aba Fila</h2>
 <figure class="print">
@@ -80,7 +80,7 @@
   <li><strong>Organizar.</strong> Arruma as caixas automaticamente.</li>
   <li><strong>Excluir.</strong> Apaga o fluxo, as inscrições e as versões dele. Não dá para desfazer.</li>
   <li><strong>A faixa que resume o fluxo.</strong> <em>Quando começa</em>, <em>O que envia</em>, <em>Acompanha por</em> e <em>Para quando</em>, em frases lidas do desenho, e o botão <em>Vai disparar?</em> (aqui, <em>Tudo certo</em>). Veja a explicação logo abaixo.</li>
-  <li><strong>Adicionar nó.</strong> A paleta (<em>Gatilho, Aguardar, Condição, Classificar (IA), Resposta (texto), Repetir, Ação, Lembrete interno, Mover lead no funil, Editar tag do lead</em> e outras). Clique, ou arraste a caixa para a área de desenho.</li>
+  <li><strong>Adicionar nó.</strong> A paleta (<em>Gatilho, Aguardar, Condição, Classificar (IA), Resposta (texto), Repetir, Ação, Lembrete interno, Mover lead no funil, Editar tag do lead</em> e <em>Fim</em>). Clique, ou arraste a caixa para a área de desenho. No celular a paleta vira o botão <em>Adicionar nó</em>.</li>
   <li><strong>Uma caixa.</strong> Tem ícone, título e uma linha de resumo. Clique para abrir o painel de configuração dela, à direita.</li>
 </ol>
 <h3 id="faixa">A faixa “O que este fluxo faz” e “Vai disparar?”</h3>
@@ -93,8 +93,8 @@
 </ul>
 <p>Ao lado fica o botão <strong>Vai disparar?</strong>, que mostra <em>Tudo certo</em> (verde) ou <em>1 pede atenção</em> / <em>N pedem atenção</em> (âmbar). Clique nele para abrir, <strong>por cima do desenho</strong>, a lista de conferências:</p>
 <ul>
-  <li><strong>O desenho passa na conferência do Publicar</strong> — ou diz quantos problemas há para corrigir antes de publicar, com os três primeiros.</li>
-  <li><strong>Existe agente para armar o fluxo?</strong> — só aparece para gatilhos automáticos (silêncio, etapa do funil, falta confirmada, agente pediu ajuda, cliente voltou, lead criado). Diz “Não precisa de agente: as mensagens são texto fixo”, cita o agente publicado que usa o fluxo, ou avisa que nenhum agente publicado o usa e que o fluxo pede IA, com o link <span class="ui">Escolher o agente</span>.</li>
+  <li><strong>Passa na conferência do Publicar</strong> — ou diz quantos “problemas a corrigir antes de publicar” há, com os três primeiros.</li>
+  <li><strong>O agente que arma o fluxo</strong> — só aparece para gatilhos automáticos (silêncio, etapa do funil, falta confirmada, agente pediu ajuda, cliente voltou, lead criado). Diz “Não precisa de agente: as mensagens são texto fixo”, cita o agente publicado que usa o fluxo, ou avisa que nenhum agente publicado o usa e que o fluxo pede IA, com o link <span class="ui">Escolher o agente</span>.</li>
   <li><strong>Situação</strong> — “Está no ar”, “Está desativado: nada dispara” ou “Ainda é rascunho: nada dispara até publicar”.</li>
 </ul>
 <p>A faixa só aparece nos fluxos de follow-up (não nos roteiros de <a href="#fluxos-de-atendimento">Fluxos de atendimento</a>).</p>
@@ -118,19 +118,20 @@
   </tbody>
 </table>
 <h3>Os gatilhos</h3>
-<p>O botão do gatilho abre o painel “Tipo de gatilho”. As opções são: <strong>Manual</strong>, <strong>Silêncio</strong> (minutos sem o cliente falar), <strong>Etapa do funil</strong> (quando o negócio entra numa etapa), <strong>Falta confirmada pela equipe</strong>, <strong>Agente pediu ajuda</strong>, <strong>Cliente voltou</strong> (depois de um tempo sem falar), <strong>Lead criado</strong> e <strong>Automação (Webhooks)</strong>. Em quase todas há o interruptor <em>“Cancelar se o lead responder”</em>. A entrada na fila de um gatilho de silêncio ou etapa leva alguns minutos; não é instantânea.</p>
+<p>O botão do gatilho abre o painel “Tipo de gatilho”. As opções são: <strong>Manual</strong>, <strong>Silêncio</strong> (minutos sem o cliente falar), <strong>Etapa do funil</strong> (quando o negócio entra numa etapa), <strong>Falta confirmada pela equipe</strong>, <strong>Agente pediu ajuda</strong>, <strong>Cliente voltou</strong> (depois de um tempo sem falar), <strong>Lead criado</strong> e <strong>Automação (Webhooks)</strong>. Todas têm o interruptor <em>“Cancelar se o lead responder”</em> (na falta confirmada ele fica ligado e travado) e o botão <span class="ui">Salvar gatilho</span>. A entrada na fila de um gatilho de silêncio, de etapa ou de lead criado leva alguns minutos; não é instantânea.</p>
+<p>Algumas opções por tipo de gatilho: no <strong>Silêncio</strong>, o tempo mínimo é de 5 minutos, e há o <em>Silêncio máximo</em> (opcional, até 7 dias: só começa enquanto o silêncio ainda é recente), <em>Segmentos (tags)</em> e a <em>Pausa antes de recomeçar</em> (de 0 a 2160 horas), que impede que quem já passou pelo fluxo o receba de novo logo em seguida. No <strong>Cliente voltou</strong>, o tempo sem falar vai de 1 hora a 90 dias. Nos gatilhos <strong>Agente pediu ajuda</strong> e <strong>Lead criado</strong>, comece o fluxo por uma <em>Aguardar</em>: sem espera, o cliente recebe duas mensagens ao mesmo tempo (a do agente e a do fluxo).</p>
 <h3>Ao publicar, o sistema valida o desenho</h3>
-<p>Se algo estiver errado, a publicação é recusada com a mensagem <em>“Fluxo reprovado na validação — corrija os nós destacados”</em>, e as caixas com problema ficam com a <strong>borda vermelha</strong>. As regras principais: exatamente um gatilho; toda caixa precisa ser alcançável a partir do início e ter caminho até um Fim; as saídas de Condição, Resposta e Classificar precisam estar todas ligadas; esperas de 24 horas ou mais antes de uma mensagem exigem um modelo aprovado de reserva quando a empresa usa a API Oficial; e o desenho tem de 2 a 60 caixas.</p>
+<p>Se algo estiver errado, a publicação é recusada com a mensagem <em>“Fluxo reprovado na validação — corrija os nós destacados”</em>, e as caixas com problema ficam com a <strong>borda vermelha</strong>. As regras principais: exatamente um gatilho; toda caixa precisa ser alcançável a partir do início e ter caminho até um Fim; as saídas de Condição, Resposta e Classificar precisam estar todas ligadas; esperas de 24 horas ou mais antes de uma mensagem exigem um modelo aprovado de reserva quando a empresa usa a API Oficial; o caminho mais longo a partir do início não passa de 30 passos; e o desenho tem de 2 a 60 caixas.</p>
 <aside class="nota atencao"><strong>Publicar pode mandar mensagens a clientes reais.</strong><p>Publicado e armado num agente, o fluxo passa a enviar mensagens automáticas a quem se encaixar no gatilho. Revise cada texto das caixas de <em>Ação</em> antes de publicar. Fluxos com <em>Classificar (IA)</em>, <em>Mensagem escrita pela IA</em> ou espera <em>“A IA escolhe a hora”</em> gastam IA.</p></aside>
 
 <h2 id="dossie">O dossiê de uma inscrição</h2>
-<p>Na fila, clique no nome do contato para ver, de uma pessoa específica, <strong>onde o follow-up está</strong>, o que já aconteceu e intervir.</p>
+<p>Na fila, clique no nome do contato para ver, de uma pessoa específica, <strong>onde o follow-up está</strong>, o que já aconteceu e intervir. Quando o fluxo tem uma espera em que <em>a IA escolhe a hora</em>, o dossiê mostra também o bloco <em>O tempo que o agente escolheu</em>: quanto a IA decidiu esperar em cada passo e, se ela pediu mais do que o limite que você deixou no passo, o selo <em>bateu no seu limite</em>.</p>
 <figure class="print">
   <img src="img/ia-followups-dossie.png" alt="Dossiê de uma inscrição de follow-up, numerado de 1 a 9" loading="lazy">
   <figcaption>O dossiê de Ana Paula Ferreira no fluxo “Recuperação de carrinho abandonado”.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Voltar para a fila.</strong></li>
+  <li><strong>Voltar para a fila.</strong> O link <em>Fila de follow-ups</em>, no alto.</li>
   <li><strong>Situação</strong> da inscrição.</li>
   <li><strong>Dados:</strong> o fluxo, o agente, quando começou e quantas etapas já executou.</li>
   <li><strong>Onde está agora.</strong> O passo atual e “Volta a andar em 3 dias (data)”, ou “Parado até alguém retomar”, ou o desfecho se já terminou. Mostra também falhas de processamento e tentativas.</li>
@@ -140,4 +141,4 @@
   <li><strong>Cancelar follow-up.</strong> Encerra de vez; o cliente não recebe mais mensagens do fluxo. Diferente de pausar, não pode ser desfeito.</li>
   <li><strong>O que já aconteceu.</strong> A linha do tempo: cada evento com título, detalhe, onde, quem e quando. Os pontos mostram quem agiu (cheio = uma pessoa, vazado = o sistema, tracejado = o cliente).</li>
 </ol>
-<aside class="nota atencao"><strong>Estes botões agem sobre uma pessoa real.</strong><p><em>Pular</em> pode fazer o fluxo enviar a próxima mensagem ao cliente na hora, e <em>Retomar</em> volta a mandar mensagens. Só Gerente ou acima vê esses botões.</p></aside>
+<aside class="nota atencao"><strong>Estes botões agem sobre uma pessoa real.</strong><p><em>Pular</em> pode fazer o fluxo enviar a próxima mensagem ao cliente na hora, e <em>Retomar</em> volta a mandar mensagens. Só Gerente ou acima vê esses botões. Se o automático estiver executando o follow-up naquele instante, a tela avisa que as ações podem ser recusadas por alguns instantes.</p></aside>
