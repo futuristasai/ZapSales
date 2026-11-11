@@ -150,3 +150,51 @@ describe("o catálogo do menu tem espanhol", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * O CHINÊS E OS NOMES NOVOS (revisão do #187).
+ *
+ * A cobertura do `zh-CN` não é cobrada (frase sem tradução cai no português). O
+ * que se cobra aqui é mais estreito e foi o defeito real: o nome NOVO tinha
+ * recebido a tradução do nome ANTIGO — «Chave da IA» saía como "凭证"
+ * (credenciais) —, então em chinês a troca de nome simplesmente não acontecia.
+ * «Etiquetas» fica de fora: "tags" e "etiquetas" são a mesma palavra em chinês.
+ */
+const CHINES = JSON.parse(
+  readFileSync(join(__dirname, "..", "..", "lib", "i18n", "traducoes", "zh-CN.json"), "utf8"),
+) as Record<string, string>;
+
+const NOME_NOVO_E_ANTIGO: readonly { nome: string; antes: string }[] = [
+  { nome: "Conversas", antes: "Inbox" },
+  { nome: "Riscos de Perda", antes: "Radar" },
+  { nome: "Compromissos", antes: "Agenda" },
+  { nome: "Aguardando Humano", antes: "Casos" },
+  { nome: "Avisar outros sistemas", antes: "Webhooks" },
+  { nome: "Quem atende cada conversa", antes: "Roteadores" },
+  { nome: "O que o agente sabe fazer", antes: "Skills" },
+  { nome: "Chave da IA", antes: "Credenciais" },
+  { nome: "Qual IA usar", antes: "Provedores" },
+  { nome: "Chaves de acesso", antes: "API Tokens" },
+  { nome: "Conectar outros sistemas", antes: "Ferramentas externas" },
+  { nome: "Histórico do agente", antes: "Execuções" },
+  { nome: "Quem mexeu em quê", antes: "Auditoria" },
+  { nome: "Revezamento da equipe", antes: "Distribuição de atendimento" },
+  { nome: "Dados da empresa", antes: "Organização" },
+  { nome: "Dados de outro sistema", antes: "Dados externos" },
+  { nome: "Conta de anúncios", antes: "Meta Ads" },
+  { nome: "Padrões de proposta", antes: "Propostas" },
+];
+
+describe("em chinês, o menu usa os nomes novos", () => {
+  it.each(NOME_NOVO_E_ANTIGO)("«$nome» tem tradução, e não é a de «$antes»", ({ nome, antes }) => {
+    expect(CHINES[nome], `falta "${nome}" em zh-CN.json`).toBeTruthy();
+    expect(CHINES[nome]).not.toBe(CHINES[antes]);
+  });
+
+  it.each(["Linha telefônica", "roteadores", "provedores", "organização", "banco externo"])(
+    "«%s» (nome ou termo que o menu mostra) tem tradução",
+    (texto) => {
+      expect(CHINES[texto], `falta "${texto}" em zh-CN.json`).toBeTruthy();
+    },
+  );
+});

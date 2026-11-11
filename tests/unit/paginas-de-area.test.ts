@@ -185,7 +185,7 @@ describe("as páginas de área na busca", () => {
 
   it("a tela continua sendo achada pelo nome antigo e pelo termo técnico", () => {
     const webhooks = busca("admin").find((r) => r.href === "/app/webhooks");
-    expect(webhooks?.sinonimos).toContain("webhooks");
+    expect(webhooks?.sinonimos).toContain("Webhooks");
     expect(webhooks?.termo).toBe("webhooks");
   });
 });

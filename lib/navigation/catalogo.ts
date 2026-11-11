@@ -122,6 +122,11 @@ export interface NavMetadata {
    * nunca mostrados. Existe porque o rótulo muda por decisão de produto e o
    * hábito não acompanha: "Campanhas" virou "Disparo em massa" e quem digitava
    * "campanha" deixou de achar a tela.
+   *
+   * O NOME ANTIGO entra escrito como era no menu ("Credenciais", não
+   * "credenciais"): é a chave pela qual o dicionário guarda a tradução dele, e é
+   * assim que quem usa em inglês acha a tela digitando "Credentials". A busca
+   * ignora caixa e acento, então em português nada muda.
    */
   sinonimos?: readonly string[];
   icon: string;
@@ -256,7 +261,7 @@ export const NAV_CATALOG = [
     label: "Conversas",
     description: "As conversas de WhatsApp, com você e a IA atendendo lado a lado.",
     // O nome mudou de "Inbox" para "Conversas"; quem procura pelo antigo ainda acha.
-    sinonimos: ["inbox", "caixa de entrada"],
+    sinonimos: ["Inbox", "caixa de entrada"],
     icon: "Inbox",
     menu: { grupo: "leads", ordem: 1, termo: "inbox" },
     // Quantas conversas a IA passou para a equipe e esperam uma pessoa (aba Fila).
@@ -266,7 +271,7 @@ export const NAV_CATALOG = [
     href: "/app/radar",
     label: "Riscos de Perda",
     // O nome mudou de "Radar" para "Riscos de Perda"; quem procura pelo antigo ainda acha.
-    sinonimos: ["radar", "risco", "esfriou"],
+    sinonimos: ["Radar", "risco", "esfriou"],
     description: "Quem esfriou e ainda está aberto — o que corre risco de morrer sem resposta.",
     icon: "ClockCountdown",
     menu: { grupo: "leads", ordem: 4 },
@@ -287,7 +292,7 @@ export const NAV_CATALOG = [
     href: "/app/agenda",
     label: "Compromissos",
     // O nome mudou de "Agenda" para "Compromissos"; quem procura pelo antigo ainda acha.
-    sinonimos: ["agenda", "calendário", "agendamentos"],
+    sinonimos: ["Agenda", "calendário", "agendamentos"],
     description: "O que está marcado, com quem, e quem atende — seu e da equipe.",
     icon: "CalendarBlank",
     menu: { grupo: "leads", ordem: 5 },
@@ -338,7 +343,7 @@ export const NAV_CATALOG = [
     label: "Disparo em massa",
     description:
       "Mande uma mensagem para muita gente de uma vez — suba uma planilha CSV ou escolha contatos que já estão aqui.",
-    sinonimos: ["campanha", "campanhas", "envio em massa", "broadcast"],
+    sinonimos: ["campanha", "Campanhas", "envio em massa", "broadcast"],
     icon: "Megaphone",
     menu: { grupo: "gestao-de-clientes", ordem: 4 },
     minRole: "manager",
@@ -442,7 +447,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/settings/tenant/proposals",
     label: "Padrões de proposta",
-    sinonimos: ["propostas"],
+    sinonimos: ["Propostas"],
     description: "Configure a validade padrão e condições para propostas comerciais.",
     icon: "Files",
     menu: { grupo: "vender-oferta", ordem: 2 },
@@ -542,7 +547,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/ai/routers",
     label: "Quem atende cada conversa",
-    sinonimos: ["roteadores"],
+    sinonimos: ["Roteadores"],
     description: "Qual agente pega qual conversa, e quando o humano assume.",
     icon: "PassagemParaHumano",
     menu: { grupo: "agente-montar", ordem: 4, termo: "roteadores" },
@@ -551,7 +556,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/ai/credentials",
     label: "Chave da IA",
-    sinonimos: ["credenciais"],
+    sinonimos: ["Credenciais"],
     description: "A chave do provedor de IA que os agentes usam para pensar.",
     icon: "Key",
     menu: { grupo: "agente-conectar", ordem: 2, termo: "API key" },
@@ -563,7 +568,7 @@ export const NAV_CATALOG = [
     // havia onde responder "quem usa IA aqui, e com qual chave?".
     href: "/app/ai/providers",
     label: "Qual IA usar",
-    sinonimos: ["provedores"],
+    sinonimos: ["Provedores"],
     // O "Jev" vem cedo: o ⌘K mostra só o começo da descrição, e a versão
     // longa cortava antes do nome — quem procurava "jev" achava, mas não via por quê.
     description: "Ligue o Jev para decisões rápidas e escolha qual inteligência atende cada parte do sistema.",
@@ -583,7 +588,7 @@ export const NAV_CATALOG = [
     href: "/app/ai/external-tools",
     label: "Conectar outros sistemas",
     description: "Consultas e ações em outro sistema (estoque, planilha, ERP) que o agente faz durante a conversa; as que alteram algo esperam a sua aprovação.",
-    sinonimos: ["webhook", "integração", "make", "n8n", "erp", "consulta externa", "mcp", "servidor mcp", "ferramentas externas"],
+    sinonimos: ["webhook", "integração", "make", "n8n", "erp", "consulta externa", "mcp", "servidor mcp", "Ferramentas externas"],
     icon: "Signpost",
     menu: { grupo: "agente-conectar", ordem: 1, termo: "MCP" },
     minRole: "manager",
@@ -599,7 +604,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/ai/skills",
     label: "O que o agente sabe fazer",
-    sinonimos: ["skills"],
+    sinonimos: ["Skills"],
     description: "As ações que o agente pode executar sozinho durante o atendimento.",
     icon: "MagicWand",
     menu: { grupo: "agente-ensinar", ordem: 3, termo: "skills" },
@@ -611,7 +616,7 @@ export const NAV_CATALOG = [
     description:
       "Os casos em que a IA pediu ajuda e esperam uma pessoa — e o histórico dos que ela conduziu até o fim.",
     // O nome mudou de "Casos" para "Aguardando Humano"; quem procura pelo antigo ainda acha.
-    sinonimos: ["casos", "caso", "esperando uma pessoa"],
+    sinonimos: ["Casos", "caso", "esperando uma pessoa"],
     icon: "ClipboardText",
     menu: { grupo: "leads", ordem: 2 },
     minRole: "agent",
@@ -656,7 +661,7 @@ export const NAV_CATALOG = [
     // — llm_calls só registrava sucesso.
     href: "/app/ai/runs",
     label: "Histórico do agente",
-    sinonimos: ["execuções"],
+    sinonimos: ["Execuções"],
     description: "O que a IA fez — e, quando falhou, o que aconteceu e o que fazer.",
     icon: "Pulse",
     menu: { grupo: "resultados-erro", ordem: 1, termo: "logs" },
@@ -689,7 +694,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/webhooks",
     label: "Avisar outros sistemas",
-    sinonimos: ["webhooks"],
+    sinonimos: ["Webhooks"],
     description: "Avise outros sistemas quando algo acontecer aqui dentro.",
     icon: "WebhooksLogo",
     menu: { grupo: "conexoes-sistemas", ordem: 1, termo: "webhooks" },
@@ -768,7 +773,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/audit",
     label: "Quem mexeu em quê",
-    sinonimos: ["auditoria"],
+    sinonimos: ["Auditoria"],
     description: "Quem mudou o quê, e quando — o histórico que não se apaga.",
     icon: "ListMagnifyingGlass",
     menu: { grupo: "resultados-erro", ordem: 2, termo: "audit log" },
@@ -810,7 +815,7 @@ export const NAV_CATALOG = [
     // dava para ligar com UPDATE à mão no banco.
     href: "/app/settings/atendimento",
     label: "Revezamento da equipe",
-    sinonimos: ["distribuição de atendimento"],
+    sinonimos: ["Distribuição de atendimento"],
     description: "Quem recebe cada cliente novo, e o que cada atendente enxerga.",
     icon: "Shuffle",
     menu: { grupo: "empresa-equipe", ordem: 2, termo: "round-robin" },
@@ -827,10 +832,10 @@ export const NAV_CATALOG = [
     // `manager` e não `admin`, pelo mesmo critério da vizinha acima: quem
     // escreve a etiqueta é quem monta a regra do agente, e a tela existe para
     // quem monta a regra. Nada aqui apaga conversa ou muda dinheiro — o
-    // alcance da operação é ao lado do de "Distribuição de atendimento".
+    // alcance da operação é ao lado do de "Revezamento da equipe".
     href: "/app/settings/tags",
     label: "Etiquetas",
-    sinonimos: ["tags"],
+    sinonimos: ["Tags"],
     description:
       "O vocabulário de etiquetas da empresa: onde cada uma é usada e como renomear, juntar ou excluir.",
     icon: "Tag",
@@ -853,7 +858,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/settings/tenant",
     label: "Dados da empresa",
-    sinonimos: ["organização"],
+    sinonimos: ["Organização"],
     description: "Dados da empresa, retenção de dados e encarregado de LGPD.",
     icon: "Briefcase",
     menu: { grupo: "empresa-dados", ordem: 1, termo: "organização" },
@@ -886,7 +891,7 @@ export const NAV_CATALOG = [
     // errado no campo errado e se perde uma semana achando que quebrou.
     href: "/app/settings/meta-ads",
     label: "Conta de anúncios",
-    sinonimos: ["meta ads"],
+    sinonimos: ["Meta Ads"],
     description: "Conectar a conta de anúncios para ler o desempenho das campanhas.",
     // Ícone próprio: com o nome novo ("Conta de anúncios") a tela deixou de ser a "mesma
     // coisa" do Meta Ads de Análise, e a regra é um ícone por destino.
@@ -927,7 +932,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/settings/api-tokens",
     label: "Chaves de acesso",
-    sinonimos: ["api tokens"],
+    sinonimos: ["API Tokens"],
     description: "Chaves para outro sistema conversar com o seu CRM.",
     icon: "Lock",
     menu: { grupo: "conexoes-sistemas", ordem: 2, termo: "API tokens" },
@@ -936,7 +941,7 @@ export const NAV_CATALOG = [
   {
     href: "/app/settings/voip-trunk",
     label: "Linha telefônica",
-    sinonimos: ["linha telefônica (sip)"],
+    sinonimos: ["Linha telefônica (SIP)"],
     description: "Os dados da operadora de telefonia para a IA fazer e receber chamadas.",
     icon: "PhoneTransfer",
     menu: { grupo: "conexoes-whatsapp", ordem: 2, termo: "SIP" },
@@ -964,14 +969,14 @@ export const NAV_CATALOG = [
   },
   {
     // A porta da fonte de dados externa (migration 0372). Fica em "Dados e
-    // acesso" porque é o MESMO eixo de API Tokens: por onde dado entra e sai do
+    // acesso" porque é o MESMO eixo de "Chaves de acesso": por onde dado entra e sai do
     // CRM. NÃO é `admin` como as vizinhas de propósito — a decisão do dono (D2)
     // é que QUALQUER autenticado vê a lista e consulta os dados; só CRIAR e
     // editar conexão é `admin`. Gatear a leitura em `manager` esconderia do
     // atendente exatamente a fonte que responde o que o cliente pergunta.
     href: "/app/integracao-dados",
     label: "Dados de outro sistema",
-    sinonimos: ["dados externos"],
+    sinonimos: ["Dados externos"],
     description:
       "Conecte um banco de dados de outro sistema para o agente consultar em tempo real.",
     icon: "Database",
