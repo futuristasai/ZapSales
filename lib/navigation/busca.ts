@@ -23,7 +23,9 @@ export function normalizarBusca(texto: string): string {
  *
  * `traduzir`, quando dado, soma ao texto buscável o que a pessoa VÊ na língua
  * dela: quem escolheu espanhol e digita "clave" precisa achar a "Clave de la IA".
- * O português continua valendo, porque o nome antigo e os sinônimos moram nele.
+ * Vale também para o NOME ANTIGO: quem via "Credentials" no menu
+ * continua digitando "Credentials". O português continua valendo sempre — um
+ * sinônimo sem tradução é devolvido como está.
  */
 export function casaComABusca(
   destino: Pick<ResultadoDaBusca, "label" | "description" | "termo" | "sinonimos">,
@@ -33,6 +35,7 @@ export function casaComABusca(
 ): boolean {
   if (!termo) return true;
   const tecnico = destino.termo ?? "";
+  const sinonimos = destino.sinonimos ?? [];
   return normalizarBusca(
     [
       destino.label,
@@ -42,7 +45,8 @@ export function casaComABusca(
       destino.description,
       traduzir(destino.description),
       rotuloDoLugar,
-      ...(destino.sinonimos ?? []),
+      ...sinonimos,
+      ...sinonimos.map(traduzir),
     ].join(" "),
   ).includes(termo);
 }

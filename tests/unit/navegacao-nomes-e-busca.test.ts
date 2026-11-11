@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
+import { traduzir } from "@/lib/i18n/dicionario";
+import type { Idioma } from "@/lib/i18n/idiomas";
 import { casaComABusca, normalizarBusca } from "@/lib/navigation/busca";
 import { dicaDoDestino } from "@/lib/navigation/dica";
 import { buscaveis } from "@/lib/navigation/menu";
@@ -194,6 +196,38 @@ describe("a busca (Ctrl K) acha a tela", () => {
     const d = porHref.get("/app/ai/credentials")!;
     expect(casaComABusca(d, normalizarBusca("clave de la ia"), "", traduz)).toBe(true);
     expect(casaComABusca(d, normalizarBusca("clave de la ia"), "")).toBe(false);
+  });
+});
+
+describe("a busca (Ctrl K) em outro idioma", () => {
+  // O tradutor de verdade, como a tela o entrega à busca: quem usa o sistema em
+  // inglês via "Credentials" no menu, e é isso que o hábito digita.
+  function achaEm(idioma: Idioma, digitado: string): string[] {
+    const termo = normalizarBusca(digitado);
+    return dono()
+      .filter((d) => casaComABusca(d, termo, "", (texto) => traduzir(texto, idioma)))
+      .map((d) => d.href);
+  }
+
+  it("em inglês, o nome antigo que a pessoa via leva à tela nova", () => {
+    expect(achaEm("en", "Credentials")).toContain("/app/ai/credentials");
+    expect(achaEm("en", "Providers")).toContain("/app/ai/providers");
+    expect(achaEm("en", "Runs")).toContain("/app/ai/runs");
+    expect(achaEm("en", "Routers")).toContain("/app/ai/routers");
+    expect(achaEm("en", "Organization")).toContain("/app/settings/tenant");
+    expect(achaEm("en", "Cases")).toContain("/app/ai/cases");
+  });
+
+  it("em espanhol, também", () => {
+    expect(achaEm("es", "Credenciales")).toContain("/app/ai/credentials");
+    expect(achaEm("es", "Auditoría")).toContain("/app/audit");
+    expect(achaEm("es", "Herramientas externas")).toContain("/app/ai/external-tools");
+  });
+
+  it.each(RENOMEADAS)("$href: pelo nome antigo «$antes» como aparecia em cada idioma", ({ href, antes }) => {
+    for (const idioma of ["es", "en"] as const) {
+      expect(achaEm(idioma, traduzir(antes, idioma)), idioma).toContain(href);
+    }
   });
 });
 
