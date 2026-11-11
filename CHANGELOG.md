@@ -8,6 +8,14 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.0.1] — 2026-11-10
+
+### Corrigido
+
+- **A instalação não mostra mais um erro de "arquivo não encontrado" na tela** Quem instalava sem a implantação contínua via, no meio da instalação, a linha `.zapsales-revisao: No such file or directory`. Era só ruído (a instalação seguia certa), mas parecia falha logo na primeira impressão. A mensagem deixou de aparecer.
+
+- **Depois de «Tentar renovar agora», a licença renovada vale na hora em todas as telas** Quem estava barrado pela licença clicava em **Tentar renovar agora**, via «Licença renovada.» e continuava barrado por até 30 segundos, com o título da tela ainda dizendo «Licença bloqueada». A renovação esquecia a decisão antiga só numa parte do sistema; as outras seguiam com a decisão velha até ela vencer sozinha. Agora a decisão é lembrada num lugar só, e a renovação vale para as telas e para a API no mesmo instante.
+
 ## [1.0.0] — 2026-11-10
 
 ### Adicionado
@@ -27,5 +35,6 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.0.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/futuristasai/ZapSales/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/futuristasai/ZapSales/releases/tag/v1.0.0
