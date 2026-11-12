@@ -47,7 +47,11 @@
 
     { "id": "handoff", "lane": "volta", "col": 2, "type": "service", "label": "performHumanHandoff / triggerHandoff", "sublabel": "conversa → fila humana, razão orcamento_de_ia, zero token" },
     { "id": "conversas", "lane": "volta", "col": 3, "type": "database", "label": "conversations / contacts", "sublabel": "status='pending' · bot_silenced_until='infinity' · force_human=true" },
-    { "id": "retrata", "lane": "volta", "col": 1, "type": "service", "label": "retratarAvisos + CTE retrata", "sublabel": "gasto abaixo do limiar, teto apagado ou afrouxamento pela tela" }
+    { "id": "retrata", "lane": "volta", "col": 1, "type": "service", "label": "retratarAvisos + CTE retrata", "sublabel": "gasto abaixo do limiar, teto apagado ou afrouxamento pela tela" },
+    { "id": "cartaocontato", "lane": "humano", "col": 6, "type": "frontend", "label": "TetoPorContatoCard (/app/ai/usage)", "sublabel": "limite de respostas automáticas por contato: por hora e por dia; 0 desliga a janela" },
+    { "id": "rotacontato", "lane": "borda", "col": 6, "type": "api", "label": "GET/PATCH /api/v1/ai/contact-limit", "sublabel": "manager lê, admin escreve; organização da sessão, nunca do corpo" },
+    { "id": "tetocontato", "lane": "regra", "col": 4, "type": "service", "label": "decidirTetoPorContato + SQL_TETO_POR_CONTATO", "sublabel": "lib/agent-engine/agent/teto-por-contato.ts — o atendimento N responde, o N+1 passa para uma pessoa" },
+    { "id": "midia", "lane": "gasta", "col": 6, "type": "service", "label": "media-derive-worker", "sublabel": "transcrição de áudio e leitura de imagem — gasto registrado por lib/messaging/media/gasto-da-midia.ts" }
   ],
   "edges": [
     { "id": "e1", "from": "card", "to": "hook", "label": "escolher o degrau · digitar o teto · marcar \"começar agora\"" },
@@ -92,7 +96,15 @@
     { "id": "e40", "from": "inbox", "to": "itens", "label": "os três itens, renderizados por AgentInboxList" },
     { "id": "e41", "from": "saude", "to": "regua", "label": "gasto do mês pelo caminho canônico" },
     { "id": "e42", "from": "kpis", "to": "budgets", "label": "current_month_consumed_cents — ACUMULADO, e o alerta diz isso" },
-    { "id": "e43", "from": "kpis", "to": "saude", "label": "o alerta leva para a tela que tem o número real" }
+    { "id": "e43", "from": "kpis", "to": "saude", "label": "o alerta leva para a tela que tem o número real" },
+    { "id": "e44", "from": "cartaocontato", "to": "rotacontato", "label": "PATCH { por_hora?, por_dia? } — inteiro de 0 a 10.000" },
+    { "id": "e45", "from": "rotacontato", "to": "budgets", "label": "update/insert de teto_por_contato_hora e teto_por_contato_dia" },
+    { "id": "e46", "from": "rotacontato", "to": "audit", "label": "ai.contact_reply_limit_changed, com antes e depois" },
+    { "id": "e47", "from": "turno", "to": "tetocontato", "label": "turno de resposta: antes da primeira chamada de modelo" },
+    { "id": "e48", "from": "tetocontato", "to": "llmcalls", "label": "conta turnos agent_turn ok do contato em 1h e 24h, depois da última passagem" },
+    { "id": "e49", "from": "tetocontato", "to": "budgets", "label": "lê o teto da organização; sem linha, o padrão 50 / 150" },
+    { "id": "e50", "from": "tetocontato", "to": "handoff", "label": "estourou: avisa o cliente e passa a conversa (motivo limite_por_contato)" },
+    { "id": "e51", "from": "midia", "to": "llmcalls", "label": "uma linha por transcrição e por descrição de imagem; custo nulo quando o preço é desconhecido" }
   ],
   "cards": [
     {
