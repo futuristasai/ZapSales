@@ -324,15 +324,28 @@ export async function DELETE(
   if (await mfaEmDivida()) return fail("mfa_required", "Confirme a verificação em duas etapas.", 403, { requestId });
 
   const supabase = await createClient();
-  const { data: session } = await supabase
+  // A SESSÃO lê o canal sem a credencial: é a RLS dela que prova que esta
+  // pessoa o enxerga. A credencial cifrada da Meta é lida À PARTE, pelo
+  // servidor (#274) — nenhuma coluna de segredo do canal é legível pela sessão
+  // do usuário, nem a de quem administra.
+  const { data: visivel } = await supabase
     .from("channel_sessions")
-    .select(
-      "id, provider, waha_session_name, display_name, phone_number, meta_phone_number_id, meta_token_encrypted",
-    )
+    .select("id, provider, waha_session_name, display_name, phone_number, meta_phone_number_id")
     .eq("organization_id", activeOrg.orgId)
     .eq("id", id)
     .maybeSingle();
-  if (!session) return fail("not_found", t("Canal não encontrado."), 404, { requestId });
+  if (!visivel) return fail("not_found", t("Canal não encontrado."), 404, { requestId });
+  const { data: credencial } = await createAdminClient()
+    .from("channel_sessions")
+    .select("meta_token_encrypted")
+    .eq("organization_id", activeOrg.orgId)
+    .eq("id", id)
+    .maybeSingle();
+  const session = {
+    ...visivel,
+    meta_token_encrypted:
+      (credencial as { meta_token_encrypted: string | null } | null)?.meta_token_encrypted ?? null,
+  };
 
   const impact = await loadDeletionImpact(activeOrg.orgId, id);
   const arquivar = impact.outcome === "archive";

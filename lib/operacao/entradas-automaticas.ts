@@ -18,6 +18,7 @@
  * rota sempre fez: o plaintext aparece uma vez, na resposta de quem o definiu.
  */
 import { randomBytes } from "node:crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { ApiError } from "@/lib/api/types";
@@ -313,9 +314,13 @@ export async function recebimentosDaEntrada(
 ): Promise<RecebimentoDaEntrada[]> {
   const fonte = await fonteDaOrg(deps, input.id);
 
-  const { data, error } = await deps.supabase
+  // `fonteDaOrg` leu a fonte pelo cliente de quem chama (a RLS dele vale). O
+  // arquivo é filtrado pelo código do endereço, coluna que a sessão do usuário
+  // não lê (#274): o filtro sai pelo servidor, preso à organização do chamador.
+  const { data, error } = await createAdminClient()
     .from("webhook_events_log")
     .select("id, received_at, valid_signature, payload_parsed, status")
+    .eq("organization_id", deps.organizationId)
     .eq("webhook_path_token", fonte.path_token)
     .order("received_at", { ascending: false })
     .limit(input.limite);

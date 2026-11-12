@@ -7,6 +7,7 @@ import { randomUUID } from "node:crypto";
 
 import { ok, fail } from "@/lib/api/wrappers";
 import { requireRole } from "@/lib/auth/require-role";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { traduzir } from "@/lib/i18n/dicionario";
 
@@ -34,9 +35,14 @@ export async function GET(_req: Request, ctx: RouteCtx): Promise<Response> {
   if (sourceErr) return fail("internal_error", sourceErr.message, 500, { requestId });
   if (!source) return fail("not_found", t("Fonte não encontrada."), 404, { requestId });
 
-  const { data, error } = await supabase
+  // A fonte foi lida pela SESSÃO (é a RLS dela que prova que a pessoa a
+  // enxerga). O arquivo de recebimentos é filtrado pelo código do endereço, e
+  // essa coluna não é legível pela sessão do usuário (#274): o filtro sai pelo
+  // servidor, preso à organização da sessão.
+  const { data, error } = await createAdminClient()
     .from("webhook_events_log")
     .select("id, created_at:received_at, valid_signature, payload_parsed, status")
+    .eq("organization_id", activeOrg.orgId)
     .eq("webhook_path_token", source.path_token)
     .order("received_at", { ascending: false })
     .limit(20);
