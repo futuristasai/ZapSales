@@ -229,10 +229,6 @@ Não avaliado por falta de execução/instância:
 - Se as políticas RLS **realmente** isolam (os invariantes existem para provar; não foram rodados).
 - Postura do container WAHA — `docker-compose.prod.yml` comenta "Core por default, dashboard
   off", mas exposição de porta e rede não foram verificadas contra instância viva.
-- Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
-- Se `next.config.ts` define CSP / security headers.
-- Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
-  URLs é adequada.
 - Storage, fila de exclusão de arquivos (`storage_redaction_queue`), MEDIDO (#267, migration 0559):
   cada linha é uma ordem cumprida com a credencial de serviço. Nenhum papel de sessão tem
   privilégio sobre a tabela — quem escreve são as funções `security definer` do banco e o
@@ -242,6 +238,10 @@ Não avaliado por falta de execução/instância:
   `tests/invariants/fila-de-exclusao-so-do-servidor.test.ts`. O que NÃO está coberto: dentro da
   pasta da própria organização, a linha alcança qualquer arquivo — a conferência de citação por
   modelo e por mensagem continua sendo a única guarda ali.
+- Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
+- Se `next.config.ts` define CSP / security headers.
+- Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
+  URLs é adequada.
 - Storage, e este é MEDIDO e DECLARADO em vez de "não avaliado": `brand-logos` (migration
   0158) é o **único bucket público** do repositório — todos os outros nascem
   `public = false` (inclusive `catalog-photos`, das fotos do catálogo, migration 0390), e
