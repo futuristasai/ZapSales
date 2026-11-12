@@ -42,6 +42,12 @@ import { ApiError } from "@/lib/api/types";
 import { autorizarContatoParaIA } from "@/lib/ai/elegibilidade/autorizacao";
 import { kickLocalPipeline } from "@/lib/dev/kick-local-pipeline";
 import { guardaDeLicenca } from "@/lib/licenca/recusa";
+import { recusouMarketing } from "@/lib/campanhas/elegibilidade";
+import {
+  podeAutorizarIA,
+  podeGravarConsentimento,
+  type EstadoDoContato,
+} from "@/lib/webhooks/entrada-sem-assinatura";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -169,6 +175,10 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
     });
     return fail("unauthenticated", "invalid_signature", 401, { requestId });
   }
+
+  // Daqui em diante: fonte sem segredo, ou assinatura que conferiu. Só a segunda
+  // PROVA quem enviou — a primeira é um endereço público (#270).
+  const fonteAssinada = sourceSecret !== null;
 
   const headersJson: Record<string, string> = {};
   req.headers.forEach((value, key) => {
@@ -482,20 +492,97 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
    * ainda vai entrar. Perder o carimbo é ruim; perder a captação é pior. Fica
    * no log, como as demais bordas desta rota.
    */
-  if (consentDoEnvio && contactId && !contatoNasceuAqui) {
-    const { error: eConsent } = await admin
+  // O que o contato que JÁ existia tinha dito antes deste envio. Lido uma vez,
+  // serve às duas decisões abaixo (gravar consentimento e autorizar a IA).
+  // `null` = contato novo, sem contato, ou leitura que falhou — e a régua
+  // trata "não sei" como "não posso conceder" (ver entrada-sem-assinatura.ts).
+  let estadoAnterior: EstadoDoContato | null = null;
+  if (contactId && !contatoNasceuAqui) {
+    const { data: atual, error: eAtual } = await admin
       .from("contacts")
-      .update({ consent: consentDoEnvio })
+      .select("consent, is_blocked")
       .eq("id", contactId)
-      .eq("organization_id", source.organization_id);
-    if (eConsent) {
-      logger.error("[webhooks.inbound] consent write failed", {
+      .eq("organization_id", source.organization_id)
+      .maybeSingle();
+    if (eAtual) {
+      logger.error("[webhooks.inbound] leitura do consentimento atual falhou", {
         webhookSourceId: source.id,
         organizationId: source.organization_id,
         contactId,
-        error: eConsent.message,
+        error: eAtual.message,
       });
+    } else if (atual) {
+      estadoAnterior = {
+        recusouMarketing: recusouMarketing((atual as { consent?: unknown }).consent),
+        bloqueado: (atual as { is_blocked?: boolean | null }).is_blocked === true,
+      };
     }
+  }
+
+  const concedeNesteEnvio = respondiMapped?.consent.granted === true;
+  if (consentDoEnvio && contactId && !contatoNasceuAqui) {
+    if (!podeGravarConsentimento({ concede: concedeNesteEnvio, fonteAssinada, contato: estadoAnterior })) {
+      // A recusa (ou o pedido de saída) que o contato já tinha dado PERMANECE:
+      // este envio veio de um endereço público e não prova quem o preencheu.
+      // O lead entra do mesmo jeito; quem atende vê que a pessoa voltou.
+      logger.info("[webhooks.inbound] concessão sem assinatura não desfaz a recusa do contato", {
+        webhookSourceId: source.id,
+        organizationId: source.organization_id,
+        contactId,
+      });
+    } else {
+      const { error: eConsent } = await admin
+        .from("contacts")
+        .update({ consent: consentDoEnvio })
+        .eq("id", contactId)
+        .eq("organization_id", source.organization_id);
+      if (eConsent) {
+        logger.error("[webhooks.inbound] consent write failed", {
+          webhookSourceId: source.id,
+          organizationId: source.organization_id,
+          contactId,
+          error: eConsent.message,
+        });
+      } else {
+        // Mudar consentimento é ato de LGPD e deixa rastro, venha de onde vier.
+        await audit({
+          action: "lgpd.consent_changed",
+          organizationId: source.organization_id,
+          resourceType: "contact",
+          resourceId: contactId,
+          requestId,
+          bypassedRls: true,
+          metadata: {
+            contact_id: contactId,
+            consent_type: "marketing",
+            granted: concedeNesteEnvio,
+            source: "webhook_source",
+            webhook_source_id: source.id,
+            fonte_assinada: fonteAssinada,
+          },
+        });
+      }
+    }
+  }
+  // Contato que NASCEU neste envio já com a resposta gravada no INSERT: é a
+  // primeira afirmação de consentimento dele, e também entra na trilha.
+  if (consentDoEnvio && contactId && contatoNasceuAqui) {
+    await audit({
+      action: "lgpd.consent_changed",
+      organizationId: source.organization_id,
+      resourceType: "contact",
+      resourceId: contactId,
+      requestId,
+      bypassedRls: true,
+      metadata: {
+        contact_id: contactId,
+        consent_type: "marketing",
+        granted: concedeNesteEnvio,
+        source: "webhook_source",
+        webhook_source_id: source.id,
+        fonte_assinada: fonteAssinada,
+      },
+    });
   }
 
   // Classificação inicial (só Respondi por ora — os motivos de
@@ -688,7 +775,14 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
     respondiMapped != null &&
     respondiMapped.consent.detectedVia !== "not_found" &&
     !respondiMapped.consent.granted;
-  if (respondiMapped && contactId && !consentNegado) {
+  // …e, por endereço público, não autoriza quem já tinha dito "não" (#270): o
+  // envio não prova quem preencheu, e a IA passaria a procurar quem pediu para
+  // não ser procurado.
+  const iaPodeSerAutorizada = podeAutorizarIA({
+    fonteAssinada,
+    contato: contatoNasceuAqui ? "novo" : estadoAnterior,
+  });
+  if (respondiMapped && contactId && !consentNegado && iaPodeSerAutorizada) {
     const formId = respondiMapped.custom_fields.respondi_form_id ?? "form";
     const submissionId = respondiMapped.custom_fields.respondi_respondent_id ?? "s";
     await autorizarContatoParaIA(admin, {
