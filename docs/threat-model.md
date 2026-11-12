@@ -246,6 +246,15 @@ Não avaliado por falta de execução/instância:
   pasta da própria organização, a linha alcança qualquer arquivo — a conferência de citação por
   modelo e por mensagem continua sendo a única guarda ali.
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
+- Segredos do canal fora do alcance da sessão, MEDIDO (#274, migration 0565): o código do endereço dos
+  avisos (`webhook_path_token`), o segredo da assinatura e as três credenciais da conexão oficial em
+  `channel_sessions`, mais o `webhook_path_token` gravado em `webhook_events_log`, não são legíveis por
+  `authenticated` nem `anon` — SELECT por coluna, com a lista liberada tirada do catálogo. As rotas que
+  precisam deles leem pelo cliente de serviço. Prova:
+  `tests/invariants/segredos-do-canal-fora-da-sessao.test.ts` (banco) e
+  `tests/unit/segredos-do-canal-so-pelo-servidor.test.ts` (nenhuma leitura com a sessão pede segredo).
+  O que NÃO está coberto: o corpo cru dos avisos em `webhook_events_log` segue legível por qualquer
+  membro da organização; e os códigos que já existiam antes desta mudança não foram trocados.
 - Escrita por papel direto no banco, MEDIDO (#268, migration 0560): `messages` e as dez tabelas do
   financeiro exigem na policy o papel que as rotas já exigem — inclusive para apagar. Em `contacts`,
   CRIAR, ALTERAR e APAGAR exigem atendente (três policies restritivas; criar entrou na migration
