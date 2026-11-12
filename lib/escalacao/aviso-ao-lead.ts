@@ -83,6 +83,9 @@ export function motivoDoAviso(reason: string): MotivoDoAviso {
   if (reason === "requested_human") return "pediu_humano";
   if (reason === "suspected_optout") return "suspeita_de_opt_out";
   if (reason === "orcamento_de_ia") return "orcamento_de_ia";
+  // O teto por contato (#271) sai de campo pela mesma razão vista de fora: a IA
+  // parou e o cliente não pediu ninguém. A frase não cita motivo, então serve.
+  if (reason === "limite_por_contato") return "orcamento_de_ia";
   return "outro";
 }
 

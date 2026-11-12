@@ -8,6 +8,18 @@ export interface TranscriptionProvider {
   transcribe(audio: Buffer, mime: string): Promise<string>;
 }
 
+/**
+ * O que uma transcrição custou, entregue a quem registra o gasto (#271). É um
+ * aviso lateral, e não um retorno, para a interface `transcribe` continuar
+ * devolvendo só o texto — os três backends e os dublês de teste não mudam.
+ */
+export type AoMedirTranscricao = (medida: {
+  model: string;
+  /** O `usage` cru da resposta do serviço; ausente quando ele não informa. */
+  usage: unknown;
+  latencyMs: number;
+}) => void;
+
 export interface TranscriptionCreds {
   apiKey: string;
   model?: string;
@@ -25,6 +37,8 @@ export interface TranscriptionCreds {
    * acertou os três e devolveu vazio para o áudio sem fala.
    */
   languages?: readonly string[];
+  /** Chamado uma vez por transcrição que deu certo. */
+  aoMedir?: AoMedirTranscricao;
 }
 
 const DEFAULT_BASE = "https://api.openai.com";
@@ -104,13 +118,15 @@ export function apiTranscriptionProvider(
         `audio.${extFor(mime)}`,
       );
       for (const [campo, valor] of camposDeIdioma(model, creds.languages ?? [])) form.append(campo, valor);
+      const inicio = Date.now();
       const res = await fetchImpl(`${base}/v1/audio/transcriptions`, {
         method: "POST",
         headers: { Authorization: `Bearer ${creds.apiKey}` },
         body: form,
       });
       if (!res.ok) throw new Error(`transcription_${res.status}`);
-      const json = (await res.json()) as { text?: string };
+      const json = (await res.json()) as { text?: string; usage?: unknown };
+      creds.aoMedir?.({ model, usage: json.usage, latencyMs: Date.now() - inicio });
       return json.text ?? "";
     },
   };

@@ -1185,6 +1185,7 @@ jobs:
         aguardando-administrador.spec.ts
         anexo-abre-ou-baixa.spec.ts
         servidores-mcp-pela-tela.spec.ts
+        teto-de-ia-por-contato.spec.ts
         regra-do-agente-vira-proposta.spec.ts
         filtro-por-marcador-pela-tela.spec.ts
         fonte-de-captacao-assina-os-envios.spec.ts

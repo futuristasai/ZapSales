@@ -15,6 +15,11 @@ import { createPool } from "@/lib/agent-engine/db/pool";
 import { env } from "@/lib/env";
 import type { EventRow, HandlerResult } from "@/lib/event-log/dispatcher";
 import { deriveMediaText, type DeriveDeps } from "@/lib/messaging/media/derive";
+import {
+  medidaDoModeloDeConversa,
+  registrarGastoDaMidia,
+  type MedidaDeMidia,
+} from "@/lib/messaging/media/gasto-da-midia";
 import { MARCADOR_NAO_LIDA, TIPOS_DERIVAVEIS } from "@/lib/messaging/media/derivable";
 import { deriveVideoText } from "@/lib/messaging/media/video-derive";
 import {
@@ -49,6 +54,8 @@ function derivePool(): pg.Pool {
 interface MessageRow {
   id: string;
   organization_id: string;
+  /** De quem é a mídia — é o que põe o gasto de lê-la na conta do contato (#271). */
+  contact_id?: string | null;
   type: string;
   media_mime: string | null;
   media_storage_path: string | null;
@@ -65,7 +72,7 @@ export async function deriveMessageMedia(row: EventRow): Promise<HandlerResult> 
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("messages")
-    .select("id, organization_id, type, media_mime, media_storage_path, media_derived_status, metadata")
+    .select("id, organization_id, contact_id, type, media_mime, media_storage_path, media_derived_status, metadata")
     .eq("id", messageId)
     .eq("organization_id", row.organization_id)
     .maybeSingle();
@@ -141,6 +148,18 @@ export async function deriveMessageMedia(row: EventRow): Promise<HandlerResult> 
       // foto lida no começo, e a anonimização que acontecer no meio a zera —
       // regravá-la devolveria à linha redigida o que a cascata apagou.
       .filter("body", "isdistinct", MENSAGEM_REDIGIDA);
+  };
+
+  // ─── O GASTO DE LER A MÍDIA (#271) ───────────────────────────────────────
+  //
+  // Cada chamada paga desta leitura — a transcrição, a descrição da imagem, as
+  // N descrições de quadros de um vídeo — deixa uma medida aqui, e o `finally`
+  // grava todas em `llm_calls`. No `finally`, e não depois do sucesso: a
+  // chamada que respondeu foi paga mesmo quando o passo seguinte falha (a
+  // gravação do texto, uma mensagem redigida no meio do caminho).
+  const medidas: MedidaDeMidia[] = [];
+  const aoGastar = (medida: MedidaDeMidia): void => {
+    medidas.push(medida);
   };
 
   try {
@@ -276,6 +295,7 @@ export async function deriveMessageMedia(row: EventRow): Promise<HandlerResult> 
           ? { provider: conversa.provider, apiKey: conversa.apiKey, modelId: conversa.defaultModel }
           : null,
       chaveOpenai,
+      aoGastar,
     });
     logger.info("[media-derive] transcrição resolvida", {
       organization_id: row.organization_id,
@@ -326,7 +346,15 @@ export async function deriveMessageMedia(row: EventRow): Promise<HandlerResult> 
 
     // O 5º argumento é a `base_url` do binding: o factory precisa dela para não
     // cair no endpoint padrão do provedor (ver o comentário lá em cima).
-    const deps = buildDeriveDeps(llm, decisao, row.organization_id, admin, baseUrlDaVisao, chaveEhDaInstalacao);
+    const deps = buildDeriveDeps(
+      llm,
+      decisao,
+      row.organization_id,
+      admin,
+      baseUrlDaVisao,
+      chaveEhDaInstalacao,
+      aoGastar,
+    );
 
     const text = await deriveMediaText(msg.type, buffer, msg.media_mime ?? "application/octet-stream", deps);
 
@@ -425,6 +453,12 @@ export async function deriveMessageMedia(row: EventRow): Promise<HandlerResult> 
       );
     }
     return { consumer_key, status: "error", detail };
+  } finally {
+    await registrarGastoDaMidia(
+      admin,
+      { organizationId: msg.organization_id, contactId: msg.contact_id ?? null },
+      medidas,
+    );
   }
 }
 
@@ -478,6 +512,8 @@ function buildDeriveDeps(
   // do provedor, que é o comportamento do turno do agente sem `baseUrl`.
   baseUrlDaVisao: string | null = null,
   chaveEhDaInstalacao = false,
+  /** Recebe o gasto de cada descrição de imagem (#271). */
+  aoGastar?: (medida: MedidaDeMidia) => void,
 ): DeriveDeps {
   const registry = createDefaultRegistry();
   // Thunk, não consulta: nada vai ao banco até a visão ser de fato perguntada,
@@ -585,6 +621,7 @@ function buildDeriveDeps(
       });
       return MARCADOR_NAO_LIDA;
     }
+    const inicioDaVisao = Date.now();
     const res = await generateText({
       model: factory(llm.apiKey, llm.defaultModel ?? "", baseUrlDaVisao ?? undefined),
       messages: [
@@ -598,6 +635,15 @@ function buildDeriveDeps(
         },
       ],
     });
+    aoGastar?.(
+      medidaDoModeloDeConversa({
+        ponto: "visao_de_imagem",
+        provider: llm.provider,
+        model: llm.defaultModel ?? "",
+        usage: res.usage,
+        latencyMs: Date.now() - inicioDaVisao,
+      }),
+    );
     return res.text;
   };
   // Sem chave OpenAI não há como transcrever: devolver string vazia é honesto
