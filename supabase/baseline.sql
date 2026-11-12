@@ -46380,6 +46380,26 @@ comment on column public.platform_licenca.proxima_consulta_em is
 
 notify pgrst, 'reload schema';
 
+-- ---- fila de exclusão de arquivos só do servidor (migration 0559) ----
+-- A fila de exclusão de arquivos é do servidor.
+--
+-- Cada linha de `storage_redaction_queue` é uma ordem: "apague este caminho deste
+-- bucket". Quem a cumpre é o worker, com a credencial de serviço. Quem a escreve
+-- são as funções `security definer` do banco (cascata de LGPD, poda de mídia
+-- vencida, os gatilhos que tiram da fila o que passou a ser citado) e o servidor
+-- do app. Nenhuma tela lê ou grava nesta tabela com a sessão do usuário.
+--
+-- O dump concede `ALL` a `authenticated`, e a policy da tabela só confere a
+-- organização. Uma ordem de exclusão não é dado de tela: retiramos de `anon` e
+-- `authenticated` todo privilégio sobre ela. `service_role` e o dono continuam
+-- como estão. A policy fica — sem privilégio ela não concede nada, e a RLS
+-- continua ligada.
+revoke all on table public.storage_redaction_queue from anon, authenticated;
+
+-- As travas do modo somente leitura do suporte (`support_write_*`) saem desta
+-- tabela na chamada de `fn_aplicar_travas_de_suporte()` do fim do arquivo, que
+-- vem DEPOIS desta retirada: tabela só do servidor fica com zero travas.
+
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
 -- ⚠️ DE PROPÓSITO, NENHUMA FUNÇÃO É CRIADA DEPOIS DESTE BLOCO. Apêndice que cria
