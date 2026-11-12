@@ -227,6 +227,13 @@ de revisão de PII antes do commit — e `gitleaks` não pega isso, porque não 
 Não avaliado por falta de execução/instância:
 
 - Se as políticas RLS **realmente** isolam (os invariantes existem para provar; não foram rodados).
+- Entrada grande em código que roda no processo principal, MEDIDO (#269): a detecção de pedido de
+  saída (`lib/opt-out/deteccao.ts`, toda mensagem recebida), o leitor de XLSX
+  (`lib/crm-b2b/spreadsheet.ts`) e o extrator de texto de sites (`lib/ai/rag/ingest/site-extrair.ts`)
+  custavam tempo quadrático com entrada montada de propósito, e o processo ficava parado para todos.
+  Hoje os três são lineares e têm teto; a régua de tempo é
+  `tests/unit/entradas-grandes-nao-param-o-servidor.test.ts`. O que NÃO está coberto: os demais
+  leitores de arquivo (CSV, PDF, pacote de habilidades) não foram medidos nesta rodada.
 - Postura do container WAHA — `docker-compose.prod.yml` comenta "Core por default, dashboard
   off", mas exposição de porta e rede não foram verificadas contra instância viva.
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
