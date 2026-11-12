@@ -27,11 +27,24 @@ interface UpdateState {
   eqCalls: Array<[string, unknown]>;
 }
 
-function makeAdminStub(updateResult: { id: string; status: string } | null, state: UpdateState) {
+function makeAdminStub(
+  updateResult: { id: string; status: string } | null,
+  state: UpdateState,
+  // O estado ATUAL da entrada, lido antes de gravar (#272): a rota precisa saber
+  // se é uma proposta do agente (que se decide) ou um aprendizado que já valia
+  // (que se arquiva ou reativa). O padrão é o caso de sempre: já valia.
+  statusAtual: string | null = "active",
+) {
   return {
     from(table: string) {
       if (table !== "org_memory_entries") throw new Error(`unexpected table ${table}`);
       const b = {
+        maybeSingle() {
+          return Promise.resolve({
+            data: statusAtual === null ? null : { id: updateResult?.id ?? "x", status: statusAtual },
+            error: null,
+          });
+        },
         update(payload: Record<string, unknown>) {
           state.payload = payload;
           return b;
@@ -117,6 +130,19 @@ describe("PATCH /api/v1/ai/memory/entries/[id]", () => {
     expect(vi.mocked(audit)).toHaveBeenCalledWith(
       expect.objectContaining({ action: "ai.org_memory_entry_updated", organizationId: ORG_ID }),
     );
+  });
+
+  it("entrada que não existe nesta organização → 404, sem gravar nem auditar", async () => {
+    mockAuthzOk();
+    const state: UpdateState = { payload: null, eqCalls: [] };
+    vi.mocked(createAdminClient).mockReturnValue(makeAdminStub(null, state, null) as never);
+
+    const { PATCH } = await import("./route");
+    const res = await PATCH(patchReq({ status: "archived" }), ctx());
+
+    expect(res.status).toBe(404);
+    expect(state.payload).toBeNull();
+    expect(vi.mocked(audit)).not.toHaveBeenCalled();
   });
 
   it("status fora do enum → 422 validation_failed", async () => {
