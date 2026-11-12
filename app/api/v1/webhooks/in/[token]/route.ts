@@ -267,6 +267,23 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
   // `contact_id` — uma captação `duplicado` gravada sem ele guarda nome,
   // telefone e o formulário inteiro de alguém que pediu anonimização, por 365
   // dias, enquanto o produto afirma que a pessoa foi anonimizada.
+  //
+  // ═══ O REPETIDO É DA FONTE, NÃO DA ORGANIZAÇÃO (#270) ═══
+  //
+  // A pergunta era "já existe lead com este identificador nesta organização?".
+  // Só que uma organização tem várias fontes — o formulário público do site, a
+  // integração assinada da loja —, e o identificador é escolhido por quem
+  // envia. Com a pergunta larga, quem preenchesse o formulário público com o
+  // identificador que a integração ia usar "ocupava" esse identificador: o
+  // pedido de verdade chegava depois, era tomado por repetido e nenhum lead
+  // nascia. A pergunta certa é "ESTA fonte já mandou este identificador?".
+  //
+  // O LEGADO: lead criado antes de a fonte virar coluna (ou cuja fonte foi
+  // apagada) não tem `webhook_source_id`. Para uma fonte SEM assinatura ele
+  // continua valendo como repetido — é a idempotência de sempre, e o pior caso
+  // é um formulário público deduplicado. Para uma fonte ASSINADA ele não vale:
+  // quem prova a própria identidade nunca é barrado por uma linha que não é
+  // comprovadamente sua.
   const findLeadByExternalId = async (): Promise<{ id: string; contactId: string | null } | null> => {
     if (!externalId) return null;
     const { data } = await admin
@@ -274,10 +291,21 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
       .select("id, contact_id")
       .eq("organization_id", source.organization_id)
       .eq("source", "webhook")
+      .eq("webhook_source_id", source.id)
       .eq("external_id", externalId)
       .maybeSingle();
-    if (!data) return null;
-    return { id: data.id as string, contactId: (data.contact_id as string | null) ?? null };
+    if (data) return { id: data.id as string, contactId: (data.contact_id as string | null) ?? null };
+    if (fonteAssinada) return null;
+    const { data: legado } = await admin
+      .from("crm_leads")
+      .select("id, contact_id")
+      .eq("organization_id", source.organization_id)
+      .eq("source", "webhook")
+      .is("webhook_source_id", null)
+      .eq("external_id", externalId)
+      .maybeSingle();
+    if (!legado) return null;
+    return { id: legado.id as string, contactId: (legado.contact_id as string | null) ?? null };
   };
 
   const fieldMap = (source.field_map ?? {}) as FieldMap;
@@ -623,6 +651,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
     custom_fields?: Record<string, unknown>;
     source_metadata?: Record<string, unknown>;
     external_id?: string;
+    webhook_source_id?: string;
   } = {
     pipeline_id: source.default_pipeline_id,
     stage_id: source.default_stage_id,
@@ -634,6 +663,9 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
     source: "webhook",
     custom_fields: mapped.custom_fields,
     source_metadata: { webhook_source_id: source.id, ...mapped.source_metadata },
+    // A fonte como COLUNA (#270): é ela que escopa o repetido, e o
+    // `source_metadata` acima é apagado na anonimização.
+    webhook_source_id: source.id,
     ...(externalId ? { external_id: externalId } : {}),
   };
 
@@ -653,7 +685,11 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<NextRespons
       // Corrida do retry: dois POSTs simultâneos com o mesmo external_id
       // passam ambos pelo fast-path; o índice único derruba o segundo INSERT
       // (23505) — re-seleciona o vencedor e responde idempotente.
-      if (externalId && err.message?.includes("uniq_crm_leads_org_source_external")) {
+      if (
+        externalId &&
+        (err.message?.includes("uniq_crm_leads_org_fonte_external") ||
+          err.message?.includes("uniq_crm_leads_org_source_external"))
+      ) {
         const vencedor = await findLeadByExternalId();
         if (vencedor) {
           await registrarCaptacao(admin, {
