@@ -38,6 +38,7 @@ import type { createAdminClient } from "@/lib/supabase/admin";
 import { ackToStatus } from "@/lib/types/messaging";
 import type { WahaEnvelope, WahaPayload } from "@/lib/waha/envelope";
 import { bareWaMessageId, chatIdFromWaMessageId } from "@/lib/waha/message-id";
+import { alvoDoAviso } from "@/lib/waha/alvo-de-edicao";
 import { logger } from "@/lib/logger";
 import {
   ehNumeroInternoDeAviso,
@@ -1361,15 +1362,19 @@ async function handleMessageEdited(
   session: Session,
   p: WahaPayload,
 ): Promise<void> {
-  const alvo = bareWaMessageId(p.editedMessageId ?? "");
+  const alvo = alvoDoAviso(p.editedMessageId, p.fromMe);
   const corpo = typeof p.body === "string" ? p.body : null;
   if (!alvo || corpo === null) return;
 
-  await admin
+  // Só a mensagem DESTE número e DESTE autor — ver `alvo-de-edicao.ts`.
+  let alteracao = admin
     .from("messages")
     .update({ body: corpo, edited_at: new Date().toISOString() })
     .eq("organization_id", session.organization_id)
-    .eq("external_id", alvo);
+    .eq("channel_session_id", session.id)
+    .eq("external_id", alvo.externalId);
+  if (alvo.direction) alteracao = alteracao.eq("direction", alvo.direction);
+  await alteracao;
 }
 
 /**
@@ -1386,14 +1391,18 @@ async function handleMessageRevoked(
   session: Session,
   p: WahaPayload,
 ): Promise<void> {
-  const alvo = bareWaMessageId(p.revokedMessageId ?? "");
+  const alvo = alvoDoAviso(p.revokedMessageId, p.fromMe);
   if (!alvo) return;
 
-  await admin
+  // Só a mensagem DESTE número e DESTE autor — ver `alvo-de-edicao.ts`.
+  let alteracao = admin
     .from("messages")
     .update({ revoked_at: new Date().toISOString() })
     .eq("organization_id", session.organization_id)
-    .eq("external_id", alvo);
+    .eq("channel_session_id", session.id)
+    .eq("external_id", alvo.externalId);
+  if (alvo.direction) alteracao = alteracao.eq("direction", alvo.direction);
+  await alteracao;
 }
 
 /**
