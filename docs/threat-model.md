@@ -233,6 +233,15 @@ Não avaliado por falta de execução/instância:
 - Se `next.config.ts` define CSP / security headers.
 - Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
   URLs é adequada.
+- Storage, anexos de conversa e de nota interna (`whatsapp-media`, `internal-media`), MEDIDO (#266):
+  o tipo de um anexo é escrito por quem o enviou, e o Storage responde no mesmo endereço do app.
+  Quem decide como o arquivo chega ao navegador é `lib/messaging/media/entrega-segura.ts`, com
+  lista fechada do que abre na tela (foto rasterizada, áudio, vídeo, PDF); o resto é download. A
+  regra vale em três pontos: o tipo gravado no upload, o redirecionamento para a URL assinada
+  (que pede download ao Storage quando o objeto não abre na tela) e a resposta com os bytes na
+  janela anterior à persistência. O que NÃO está coberto: objeto gravado antes desta regra com
+  tipo ativo continua assim no Storage — só não é mais alcançado inline pelas rotas do app; e os
+  demais buckets têm validação própria no upload, não esta.
 - Storage, e este é MEDIDO e DECLARADO em vez de "não avaliado": `brand-logos` (migration
   0158) é o **único bucket público** do repositório — todos os outros nascem
   `public = false` (inclusive `catalog-photos`, das fotos do catálogo, migration 0390), e

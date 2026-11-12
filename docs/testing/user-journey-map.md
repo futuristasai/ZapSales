@@ -3871,3 +3871,17 @@ Origem: o padrão da Hostinger é Ubuntu 26.04 LTS e o kit só tinha prova na 24
 | Ensaio de restauração (`restaurar.sh ensaio`): banco novo + baseline + dados, 8 contagens conferidas, app 307, Auth de pé, sem tocar na instalação no ar | `[P1]` | ✓ 10/11 (ver «Registro dos ensaios» em `docs/runbooks/backup-e-restauracao.md`) |
 
 **Não coberto:** o repositório **R2 real** (Cloudflare) — o código é o mesmo (a API S3 do restic), mas as credenciais são do dono e não foram exercitadas nesta máquina; e a restauração de **desastre** (`restaurar.sh desastre`, VPS nova). A matriz do kit passa a dizer **Ubuntu 26.04 = testado** (`kit/lib/comum.sh`, runbooks PT/EN e `tests/shell/kit-funcoes.test.sh`).
+
+
+## Anexo recebido: abre na tela ou é baixado `[P1]` (2026-11-11, issue #266)
+
+Origem: o tipo de um anexo é escrito por quem o enviou, e o arquivo é servido no endereço do app. A regra de entrega passou a ser uma só (`lib/messaging/media/entrega-segura.ts`).
+
+| caso | prioridade | estado |
+|---|---|---|
+| Foto recebida aparece na conversa (largura natural medida no navegador) | `[P1]` | spec `tests/e2e/anexo-abre-ou-baixa.spec.ts` |
+| PDF recebido abre no navegador, sem virar download | `[P1]` | mesma spec (cabeçalhos lidos pela sessão do atendente) |
+| Arquivo com tipo ativo, já guardado com esse tipo: o clique baixa, nenhuma aba executa o conteúdo | `[P1]` | mesma spec (escuta todos os pedidos do navegador) |
+| Word, Excel e afins: download com o tipo do documento | `[P1]` | `tests/unit/entrega-segura-de-anexos.test.ts` |
+
+**Não coberto:** a prova com um arquivo enviado de um WhatsApp real para um número conectado — a spec semeia a mensagem e o objeto direto no banco e no Storage.

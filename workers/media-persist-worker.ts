@@ -20,6 +20,7 @@ import {
   type ChannelSessionRef,
 } from "@/lib/channels";
 import { storagePathFor } from "@/lib/messaging/media/types";
+import { tipoSeguro } from "@/lib/messaging/media/entrega-segura";
 import { MENSAGEM_REDIGIDA } from "@/lib/lgpd/cascata";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -174,7 +175,7 @@ export async function persistMessageMedia(row: EventRow): Promise<HandlerResult>
   const path = storagePathFor(msg.organization_id, msg.conversation_id, msg.id, media.mime);
   const { error: uploadErr } = await admin.storage
     .from("whatsapp-media")
-    .upload(path, media.buffer, { contentType: media.mime, upsert: true });
+    .upload(path, media.buffer, { contentType: tipoSeguro(media.mime), upsert: true });
   if (uploadErr) {
     if (isLastAttempt) {
       logger.error("[media-persist] upload failed permanently", {

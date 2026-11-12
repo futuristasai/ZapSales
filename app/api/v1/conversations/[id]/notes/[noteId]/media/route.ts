@@ -28,6 +28,7 @@ import { fail } from "@/lib/api/wrappers";
 import { requireRole } from "@/lib/auth/require-role";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { caminhoAbreNaTela, nomeParaBaixar } from "@/lib/messaging/media/entrega-segura";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,15 @@ export async function GET(_req: NextRequest, ctx: RouteCtx): Promise<Response> {
   const admin = createAdminClient();
   const { data: signed, error: signErr } = await admin.storage
     .from("internal-media")
-    .createSignedUrl(nota.media_storage_path, SIGNED_URL_TTL_S);
+    .createSignedUrl(
+      nota.media_storage_path,
+      SIGNED_URL_TTL_S,
+      // A nota guarda o caminho, não o tipo: decide a extensão, que nasce do
+      // tipo com que o arquivo foi gravado. O que não abre na tela é download.
+      caminhoAbreNaTela(nota.media_storage_path)
+        ? undefined
+        : { download: nomeParaBaixar(nota.media_storage_path) },
+    );
   if (signErr || !signed?.signedUrl) {
     console.error("[conversations.notes.media] createSignedUrl failed", signErr?.message);
     return fail("internal_error", t("Erro ao abrir o arquivo."), 500, { requestId });
