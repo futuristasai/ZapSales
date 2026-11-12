@@ -12,7 +12,10 @@
 --     de movimento, `manager` nas de cadastro), e as rotas exigem esse papel ou
 --     um maior. Faltava o papel no USING — e DELETE só avalia o USING.
 --
--- Os NOMES das policies ficam: há invariante que as lê pelo nome.
+-- Os NOMES das policies ficam: há invariante que as lê pelo nome. No
+-- `baseline.sql` estas policies mudam no ponto em que são definidas, e não num
+-- apêndice no fim — lá, redefinir deixaria a versão antiga valendo a cada
+-- atualização até o apêndice chegar.
 
 -- ─── (1) contacts ────────────────────────────────────────────────────────────
 -- `for all`: o USING também valeria para SELECT, mas a leitura tem policy
@@ -59,39 +62,38 @@ create policy "messages_delete" on public.messages
         and public.fn_role_at_least(organization_id, 'agent'))
   );
 
--- ─── (3) financeiro: o papel do WITH CHECK passa a valer também no USING ─────
--- Lido do CATÁLOGO, e não reescrito à mão: cada tabela guarda o próprio papel
--- (`agent` ou `manager`) e a própria expressão de leitura. O laço:
---   * cria `tenant_isolation_<tabela>_read` com o USING que a `_all` tinha —
---     sem ela, quem só lê deixaria de ler;
---   * recria a `_all` com a expressão do WITH CHECK nos dois lados.
--- Só entra no laço a policy que ainda tem o papel SÓ no WITH CHECK: na segunda
--- aplicação não há o que fazer, e numa reaplicação do baseline (que recria a
--- forma antiga lá em cima) o laço conserta de novo.
+-- ─── (3) financeiro: leitura à parte, escrita com o papel nos dois lados ─────
 do $$
-declare
-  r record;
+declare t text; papel text;
 begin
-  for r in
-    select tablename, policyname, qual, with_check
-      from pg_policies
-     where schemaname = 'public'
-       and cmd = 'ALL'
-       and tablename = any (array[
-             'account_plans', 'commission_rules', 'commissions', 'financial_accounts',
-             'financial_entries', 'loyalty_ledger', 'payment_methods', 'recurring_entries',
-             'sale_items', 'sales'])
-       and policyname = 'tenant_isolation_' || tablename || '_all'
-       and coalesce(with_check, '') like '%fn_role_at_least%'
-       and coalesce(qual, '') not like '%fn_role_at_least%'
-  loop
-    execute format('drop policy if exists %I on public.%I',
-                   'tenant_isolation_' || r.tablename || '_read', r.tablename);
-    execute format('create policy %I on public.%I for select using (%s)',
-                   'tenant_isolation_' || r.tablename || '_read', r.tablename, r.qual);
-    execute format('drop policy %I on public.%I', r.policyname, r.tablename);
-    execute format('create policy %I on public.%I for all using (%s) with check (%s)',
-                   r.policyname, r.tablename, r.with_check, r.with_check);
+  foreach t in array array[
+    'financial_accounts', 'payment_methods', 'account_plans', 'recurring_entries',
+    'sales', 'sale_items', 'commission_rules', 'commissions', 'financial_entries', 'loyalty_ledger'
+  ] loop
+    -- Cadastro é `manager`; movimento é `agent` — o papel que cada policy já tinha.
+    papel := case when t in ('financial_accounts', 'payment_methods', 'account_plans', 'recurring_entries')
+                  then 'manager' else 'agent' end;
+    execute format('drop policy if exists tenant_isolation_%I_read on public.%I', t, t);
+    execute format($f$
+      create policy tenant_isolation_%I_read on public.%I
+        for select
+        using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+    $f$, t, t);
+    execute format('drop policy if exists tenant_isolation_%I_all on public.%I', t, t);
+    execute format($f$
+      create policy tenant_isolation_%I_all on public.%I
+        for all
+        using (
+          public.fn_is_platform_admin()
+          or (organization_id in (select public.fn_user_org_ids())
+              and public.fn_role_at_least(organization_id, %L))
+        )
+        with check (
+          public.fn_is_platform_admin()
+          or (organization_id in (select public.fn_user_org_ids())
+              and public.fn_role_at_least(organization_id, %L))
+        )
+    $f$, t, t, papel, papel);
   end loop;
 end $$;
 
@@ -99,8 +101,8 @@ end $$;
 -- Desbloquear quem pediu para sair é ato do admin, pela rota própria
 -- (`POST /contacts/{id}/unblock`), que grava com o cliente de serviço e audita.
 -- Anonimização não se desfaz por caminho nenhum. Nenhuma das duas reversões é
--- edição de ficha — e, com a policy acima, um `agent` ainda conseguiria fazê-las
--- falando direto com o banco.
+-- edição de ficha — e um `agent` ainda conseguiria fazê-las falando direto com o
+-- banco.
 --
 -- `auth.uid() is null` PASSA de propósito, como em
 -- `fn_colunas_de_cliente_sao_do_sistema`: é o cliente de serviço e as migrations.
