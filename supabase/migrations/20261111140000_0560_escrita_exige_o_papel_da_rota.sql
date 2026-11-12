@@ -1,4 +1,4 @@
--- manifest: contacts, messages e as 10 tabelas do financeiro passam a exigir no banco o papel que as rotas já exigem (inclusive para apagar), e a sessão deixa de poder desfazer bloqueio ou anonimização de contato
+-- manifest: messages e as 10 tabelas do financeiro passam a exigir no banco o papel que as rotas já exigem (inclusive para apagar); em contacts, alterar e apagar exigem atendente e a sessão deixa de poder desfazer bloqueio ou anonimização
 -- O BANCO EXIGE O PAPEL QUE AS ROTAS JÁ EXIGEM — contatos, mensagens e financeiro.
 --
 -- O PostgREST fala com o JWT da sessão direto, sem passar por rota nenhuma. Onde
@@ -7,28 +7,49 @@
 --
 -- Levantamento que sustenta os papéis abaixo (feito no código, rota por rota):
 --   * toda rota que grava `contacts` ou `messages` com a sessão do usuário exige
---     `agent` ou acima; nenhuma rota de escrita aberta a `viewer` toca nelas;
+--     `agent` ou acima; nenhuma rota de escrita aberta a `viewer` toca nelas.
+--     CRIAR contato segue sem papel no banco — ver o bloco (1);
 --   * no financeiro, cada tabela já declara o papel no WITH CHECK (`agent` nas
 --     de movimento, `manager` nas de cadastro), e as rotas exigem esse papel ou
 --     um maior. Faltava o papel no USING — e DELETE só avalia o USING.
 --
--- Os NOMES das policies ficam: há invariante que as lê pelo nome. No
--- `baseline.sql` estas policies mudam no ponto em que são definidas, e não num
--- apêndice no fim — lá, redefinir deixaria a versão antiga valendo a cada
--- atualização até o apêndice chegar.
+-- Os NOMES das policies de `messages` e do financeiro ficam: há invariante que as
+-- lê pelo nome. No `baseline.sql` elas mudam no ponto em que são definidas, e não
+-- num apêndice no fim — lá, redefinir deixaria a versão antiga valendo a cada
+-- atualização até o apêndice chegar. Em `contacts` a permissiva antiga não muda;
+-- entram duas restritivas novas (ver o porquê no bloco (1)).
 
--- ─── (1) contacts ────────────────────────────────────────────────────────────
--- `for all`: o USING também valeria para SELECT, mas a leitura tem policy
--- própria (`tenant_isolation_contacts_read`), e policies permissivas somam.
-drop policy if exists "tenant_isolation_contacts_write" on public.contacts;
-create policy "tenant_isolation_contacts_write" on public.contacts
-  for all
-  using (
+-- ─── (1) contacts: alterar e apagar exigem atendente ─────────────────────────
+-- Por policy RESTRITIVA (soma por E com a permissiva de sempre), e não mudando a
+-- permissiva `tenant_isolation_contacts_write`, por duas razões medidas no CI:
+--
+--   * `tests/invariants/travas-de-suporte-cobrem-toda-tabela-na-instalacao` usa
+--     `contacts` como a tabela em que a TRAVA do suporte é a única coisa que pode
+--     recusar um INSERT — e para isso a permissiva de insert não pode exigir
+--     papel. Por isso CRIAR contato segue sem papel no banco (pendência
+--     registrada em docs/threat-model.md);
+--   * `tests/invariants/cliente-nasce-do-agendamento` (I36) exige que a guarda
+--     das colunas de cliente responda 42501 a QUALQUER sessão, inclusive a de um
+--     `viewer`. O BEFORE UPDATE só dispara para linha que o USING alcança — então
+--     o papel fica no WITH CHECK, e o USING da restritiva é `true`: a linha é
+--     alcançada, a guarda fala primeiro, e o que não é de `agent` para cima é
+--     recusado na conferência da linha nova.
+drop policy if exists "contacts_alterar_exige_atendente" on public.contacts;
+create policy "contacts_alterar_exige_atendente" on public.contacts
+  as restrictive
+  for update
+  using (true)
+  with check (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
-  )
-  with check (
+  );
+
+drop policy if exists "contacts_apagar_exige_atendente" on public.contacts;
+create policy "contacts_apagar_exige_atendente" on public.contacts
+  as restrictive
+  for delete
+  using (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))

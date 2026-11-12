@@ -20,7 +20,8 @@ import {
  * O BANCO EXIGE O PAPEL QUE AS ROTAS JÁ EXIGEM (issue #268, migration 0560).
  *
  * O PostgREST fala com o JWT da sessão direto, sem rota. Em `contacts` e
- * `messages` a policy de escrita só perguntava "é da organização?"; nas dez
+ * `messages` a policy de escrita só perguntava "é da organização?" (em
+ * `contacts`, criar ainda é assim — ver o caso que declara a pendência); nas dez
  * tabelas do financeiro o papel estava no WITH CHECK e não no USING — e DELETE
  * só avalia o USING. Em todos os casos o papel conferido pela rota não valia
  * para quem falasse com o banco por fora dela.
@@ -114,11 +115,22 @@ describe("contacts — gravar exige atendente", () => {
     expect(writeCountAs(GOV_AGENT_A, dml("alterado pelo atendente"))).toBe(1);
   });
 
-  it("viewer não cria; atendente cria", () => {
+  it("atendente cria (e criar, por ora, não exige papel no banco — pendência declarada)", () => {
+    // `tenant_isolation_contacts_write` segue cega a papel no INSERT: o invariante
+    // das travas do suporte usa `contacts` como a tabela em que só a trava pode
+    // recusar um insert. O que este caso fixa é o lado que não pode quebrar.
     const dml = (id: string) =>
       `insert into public.contacts (id, organization_id, display_name) values ('${id}', '${GOV_ORG}', 'Contato sonda 268')`;
-    expect(writeCountAs(GOV_VIEWER, dml(CONTATO_NOVO_VIEWER))).toBe(0);
     expect(writeCountAs(GOV_AGENT_A, dml(CONTATO_NOVO_AGENT))).toBe(1);
+  });
+
+  it("a guarda das colunas de cliente continua respondendo ao viewer (a linha é alcançada)", () => {
+    // O papel está no WITH CHECK, não no USING: se estivesse no USING, o UPDATE
+    // do viewer alcançaria zero linhas, o BEFORE UPDATE não dispararia e a
+    // tentativa de forjar a data sairia em silêncio em vez de 42501.
+    expect(
+      erroAo(GOV_VIEWER, `update public.contacts set first_service_at = '2019-01-01' where id = '${CONTATO}'`),
+    ).toMatch(/colunas_de_cliente_sao_do_sistema/);
   });
 
   it("viewer não apaga; atendente apaga", () => {

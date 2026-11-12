@@ -1073,10 +1073,14 @@ describe("as três colunas são do sistema", () => {
     // CONTROLE POSITIVO, na mesma sessão e na mesma linha: o que é da equipe
     // continua da equipe. Sem ele, um `revoke` largo demais em `contacts`
     // deixaria este caso verde quebrando a tela de Contatos inteira.
+    //
+    // O controle é o ATENDENTE desde a migration 0560 (#268): alterar contato
+    // passou a exigir `agent` no banco, como a rota já exigia. Era o viewer —
+    // que renomear contato "passasse" para ele era a brecha, não o controle.
     expect(
-      await tentarComoUsuario(VIEWER_A, "update contacts set display_name = $2 where id = $1", [
+      await tentarComoUsuario(AGENT_A, "update contacts set display_name = $2 where id = $1", [
         contato,
-        "renomeado pelo viewer",
+        "renomeado pelo atendente",
       ]),
     ).toBe("passou");
     expect((await lerContato(contato)).tags, "e a etiqueta segue lá").toContain(TAG_DE_CLIENTE);

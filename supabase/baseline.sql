@@ -46423,11 +46423,47 @@ comment on column public.platform_licenca.proxima_consulta_em is
 notify pgrst, 'reload schema';
 
 -- ---- escrita exige o papel da rota (migration 0560) ----
--- As policies de `contacts`, `messages` e do financeiro mudaram NO PONTO em que são
+-- As policies de `messages` e do financeiro mudaram NO PONTO em que são
 -- definidas, acima neste arquivo (procure por "migration 0560"): redefini-las aqui
 -- deixaria a versão antiga valendo, a cada atualização, até esta linha chegar.
--- Aqui fica só o que é novo: a guarda que impede a sessão de desfazer a recusa
--- de um contato.
+-- Aqui fica só o que é NOVO: as duas policies restritivas de `contacts` e a
+-- guarda que impede a sessão de desfazer a recusa de um contato.
+-- ─── contacts: alterar e apagar exigem atendente ─────────────────────────────
+-- Por policy RESTRITIVA (soma por E com a permissiva de sempre), e não mudando a
+-- permissiva `tenant_isolation_contacts_write`, por duas razões medidas no CI:
+--
+--   * `tests/invariants/travas-de-suporte-cobrem-toda-tabela-na-instalacao` usa
+--     `contacts` como a tabela em que a TRAVA do suporte é a única coisa que pode
+--     recusar um INSERT — e para isso a permissiva de insert não pode exigir
+--     papel. Por isso CRIAR contato segue sem papel no banco (pendência
+--     registrada em docs/threat-model.md);
+--   * `tests/invariants/cliente-nasce-do-agendamento` (I36) exige que a guarda
+--     das colunas de cliente responda 42501 a QUALQUER sessão, inclusive a de um
+--     `viewer`. O BEFORE UPDATE só dispara para linha que o USING alcança — então
+--     o papel fica no WITH CHECK, e o USING da restritiva é `true`: a linha é
+--     alcançada, a guarda fala primeiro, e o que não é de `agent` para cima é
+--     recusado na conferência da linha nova.
+drop policy if exists "contacts_alterar_exige_atendente" on public.contacts;
+create policy "contacts_alterar_exige_atendente" on public.contacts
+  as restrictive
+  for update
+  using (true)
+  with check (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
+
+drop policy if exists "contacts_apagar_exige_atendente" on public.contacts;
+create policy "contacts_apagar_exige_atendente" on public.contacts
+  as restrictive
+  for delete
+  using (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
+
 -- Desbloquear quem pediu para sair é ato do admin, pela rota própria
 -- (`POST /contacts/{id}/unblock`), que grava com o cliente de serviço e audita.
 -- Anonimização não se desfaz por caminho nenhum. Nenhuma das duas reversões é
@@ -47291,10 +47327,7 @@ drop policy if exists "tenant_isolation_contacts_all" on "public"."contacts";
 drop policy if exists "tenant_isolation_contacts_read" on "public"."contacts";
 create policy "tenant_isolation_contacts_read" on "public"."contacts" for select using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
 drop policy if exists "tenant_isolation_contacts_write" on "public"."contacts";
--- Gravar exige `agent` ou acima (migration 0560, #268), como as rotas. O USING de uma
--- policy `for all` também vale para SELECT, mas a leitura tem a policy própria acima,
--- e policies permissivas somam.
-create policy "tenant_isolation_contacts_write" on "public"."contacts" for all using (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id", 'agent'))) with check (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id", 'agent')));
+create policy "tenant_isolation_contacts_write" on "public"."contacts" for all using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full()) with check ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full());
 
 drop policy if exists "warmup_tenant_isolation_all" on "public"."channel_session_warmup";
 drop policy if exists "warmup_tenant_isolation_read" on "public"."channel_session_warmup";
