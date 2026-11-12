@@ -233,6 +233,15 @@ Não avaliado por falta de execução/instância:
 - Se `next.config.ts` define CSP / security headers.
 - Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
   URLs é adequada.
+- Storage, fila de exclusão de arquivos (`storage_redaction_queue`), MEDIDO (#267, migration 0559):
+  cada linha é uma ordem cumprida com a credencial de serviço. Nenhum papel de sessão tem
+  privilégio sobre a tabela — quem escreve são as funções `security definer` do banco e o
+  servidor do app. E o worker (`lib/lgpd/storage-redaction-queue.ts`, `foraDoAlcance`) só executa
+  linha que aponta para um bucket da lista e para dentro da pasta da organização da própria
+  linha; o resto vira `skipped` com o motivo, sem nova tentativa. Prova:
+  `tests/invariants/fila-de-exclusao-so-do-servidor.test.ts`. O que NÃO está coberto: dentro da
+  pasta da própria organização, a linha alcança qualquer arquivo — a conferência de citação por
+  modelo e por mensagem continua sendo a única guarda ali.
 - Storage, e este é MEDIDO e DECLARADO em vez de "não avaliado": `brand-logos` (migration
   0158) é o **único bucket público** do repositório — todos os outros nascem
   `public = false` (inclusive `catalog-photos`, das fotos do catálogo, migration 0390), e

@@ -48909,4 +48909,20 @@ alter table if exists public.platform_licenca
 comment on column public.platform_licenca.modo is
   'sombra = calcula e registra a decisão, nunca restringe; valendo = aplica (padrão das instalações novas, desde a 0558).';
 
+-- ---- fila de exclusão de arquivos só do servidor (migration 0559) ----
+-- A fila de exclusão de arquivos é do servidor.
+--
+-- Cada linha de `storage_redaction_queue` é uma ordem: "apague este caminho deste
+-- bucket". Quem a cumpre é o worker, com a credencial de serviço. Quem a escreve
+-- são as funções `security definer` do banco (cascata de LGPD, poda de mídia
+-- vencida, os gatilhos que tiram da fila o que passou a ser citado) e o servidor
+-- do app. Nenhuma tela lê ou grava nesta tabela com a sessão do usuário.
+--
+-- O dump concede `ALL` a `authenticated`, e a policy da tabela só confere a
+-- organização. Uma ordem de exclusão não é dado de tela: retiramos de `anon` e
+-- `authenticated` todo privilégio sobre ela. `service_role` e o dono continuam
+-- como estão. A policy fica — sem privilégio ela não concede nada, e a RLS
+-- continua ligada.
+revoke all on table public.storage_redaction_queue from anon, authenticated;
+
 notify pgrst, 'reload schema';
