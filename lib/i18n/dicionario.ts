@@ -13281,6 +13281,28 @@ export const DICIONARIO: Traducoes = {
 
   // ─── Campanhas (migration 0264) ───
   "Agendar": { es: "Programar" },
+  // Agendar pela tela (issue #292)
+  "O horário de envio desta campanha e o do número não se cruzam: nada sairia. Ajuste o ritmo da campanha antes de agendar.": { es: "El horario de envío de esta campaña y el del número no se cruzan: no saldría nada. Ajusta el ritmo de la campaña antes de programar." },
+  "Este número não envia aos domingos.": { es: "Este número no envía los domingos." },
+  "Esse horário fica fora do horário de envio": { es: "Ese horario queda fuera del horario de envío" },
+  "A campanha fica agendada, mas só começa a enviar": { es: "La campaña queda programada, pero solo empieza a enviar el" },
+  "Mudar o horário do envio": { es: "Cambiar el horario del envío" },
+  "Agendar o envio": { es: "Programar el envío" },
+  "No dia e na hora marcados, a campanha começa sozinha a enviar para": { es: "En el día y la hora marcados, la campaña empieza sola a enviar a" },
+  "no ritmo do número.": { es: "al ritmo del número." },
+  "Dia e hora do início": { es: "Día y hora de inicio" },
+  "Vale o horário do número": { es: "Vale el horario del número" },
+  "Agora são": { es: "Ahora son las" },
+  "Esse horário já passou. Escolha um horário no futuro — para enviar agora, use Iniciar envio.": { es: "Ese horario ya pasó. Elige un horario en el futuro; para enviar ahora, usa Iniciar envío." },
+  "Escolha uma data dentro de um ano.": { es: "Elige una fecha dentro de un año." },
+  "A campanha começa a enviar": { es: "La campaña empieza a enviar el" },
+  "Salvar novo horário": { es: "Guardar nuevo horario" },
+  "Agendar envio": { es: "Programar envío" },
+  "Envio agendado": { es: "Envío programado" },
+  "Começa sozinha": { es: "Empieza sola el" },
+  "Dá para mudar o horário, enviar agora ou cancelar até a hora marcada.": { es: "Puedes cambiar el horario, enviar ahora o cancelar hasta la hora marcada." },
+  "Enviar agora": { es: "Enviar ahora" },
+  "Mudar horário": { es: "Cambiar horario" },
   "ainda não enviadas": { es: "aún no enviadas" },
   "Ainda não enviadas": { es: "Aún no enviadas" },
   "A lista ainda não foi montada. Use Preparar para ver quem entra.": {

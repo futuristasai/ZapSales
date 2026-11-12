@@ -845,3 +845,133 @@ describe("6 · o que chega por outro caminho", () => {
     expect(c.pausa_detalhe).toMatch(/utilidade para marketing/);
   });
 });
+
+/**
+ * Agendar pela tela (issue #292). O motor de agendamento já existia; a tela
+ * passou a oferecer agendar, MUDAR o horário e enviar agora — e as três têm de
+ * valer no servidor, que é quem recusa de verdade.
+ */
+describe("7 · agendar, mudar o horário e enviar agora", () => {
+  let campanha = "";
+  // Modelo próprio: a sincronização do bloco 6 marcou como desativado todo
+  // modelo desta conta que a Meta "deixou de listar" — o `modelos.a` inclusive.
+  let modeloDaAgenda = "";
+
+  type Lida = {
+    status: string;
+    scheduled_at: string | null;
+    started_at: string | null;
+    janela_de_envio: { fuso: string; inicio_hora: number; fim_hora: number; permite_domingo: boolean };
+  };
+  const ler = async (id: string) => (await lerCampanha(id)) as unknown as Lida;
+  const mesmoInstante = (a: string | null, b: Date) => new Date(a ?? 0).getTime() === b.getTime();
+
+  it("a campanha pronta é agendada para a hora escolhida", async () => {
+    como(ORG_A, USER_A);
+    await semear(ORG_A, "agenda", 2, "+55319888");
+    modeloDaAgenda = await modelo(ORG_A, WABA_A, "modelo_da_agenda", [{ type: "BODY", text: TEXTO_DO_MODELO }]);
+    const criada = await criarCampanha(campanhaOficial(numeroA, modeloDaAgenda, "agenda"));
+    expect(criada.status, JSON.stringify(await criada.clone().json())).toBe(201);
+    campanha = (await json<{ id: string }>(criada)).data.id;
+    expect((await acao(campanha, "preparar")).status).toBe(200);
+
+    const quando = daqui(48);
+    const agendada = await acao(campanha, "agendar", { scheduled_at: quando.toISOString() });
+    expect(agendada.status, JSON.stringify(await agendada.clone().json())).toBe(200);
+    expect((await json<{ remarcada: boolean }>(agendada)).data.remarcada).toBe(false);
+
+    const c = await ler(campanha);
+    expect(c.status).toBe("scheduled");
+    expect(mesmoInstante(c.scheduled_at, quando)).toBe(true);
+  });
+
+  it("a agendada muda de horário sem sair de agendada, e a trilha guarda a hora anterior", async () => {
+    const antes = (await ler(campanha)).scheduled_at;
+    const nova = daqui(72);
+    const remarcada = await acao(campanha, "agendar", { scheduled_at: nova.toISOString() });
+    expect(remarcada.status, JSON.stringify(await remarcada.clone().json())).toBe(200);
+    expect((await json<{ remarcada: boolean }>(remarcada)).data.remarcada).toBe(true);
+
+    const c = await ler(campanha);
+    expect(c.status).toBe("scheduled");
+    expect(mesmoInstante(c.scheduled_at, nova)).toBe(true);
+
+    await vi.waitFor(
+      async () => {
+        const { rows } = await pool.query<{ anterior: string | null }>(
+          `select metadata->>'scheduled_at_anterior' as anterior
+             from api_audit_log
+            where action = 'campaign.scheduled' and resource_id = $1
+            order by created_at`,
+          [campanha],
+        );
+        expect(rows).toHaveLength(2);
+        expect(rows[0]!.anterior).toBeNull();
+        expect(new Date(rows[1]!.anterior ?? 0).getTime()).toBe(new Date(antes ?? 1).getTime());
+      },
+      { timeout: 5_000 },
+    );
+  });
+
+  it("hora que já passou ou a mais de um ano é recusada, e a agenda fica como estava", async () => {
+    const antes = (await ler(campanha)).scheduled_at;
+    for (const quando of [daqui(-1), daqui(24 * 366)]) {
+      const recusada = await acao(campanha, "agendar", { scheduled_at: quando.toISOString() });
+      expect(recusada.status).toBe(422);
+      expect((await json(recusada)).error?.code).toBe("campanha_agenda_invalida");
+    }
+    const c = await ler(campanha);
+    expect(c.status).toBe("scheduled");
+    expect(c.scheduled_at).toBe(antes);
+  });
+
+  it("a campanha lida diz o horário de envio em vigor — a da campanha oficial, a do número no QR code", async () => {
+    // A oficial deste arquivo declara janela 0–24, que substitui a do número.
+    expect((await ler(campanha)).janela_de_envio).toMatchObject({ inicio_hora: 0, fim_hora: 24, permite_domingo: true });
+
+    const { rows } = await pool.query<{ id: string }>(
+      `select id from campaigns where organization_id = $1 and meta_template_id is null limit 1`,
+      [ORG_A],
+    );
+    const doQr = (await ler(rows[0]!.id)).janela_de_envio;
+    // Número sem ajuste em Conexões: o padrão do produto, 7h–22h.
+    expect(doQr).toMatchObject({ inicio_hora: 7, fim_hora: 22 });
+    expect(doQr.fuso).toMatch(/\//);
+  });
+
+  it("pausar a agendada e agendar de novo devolve a hora marcada", async () => {
+    expect((await acao(campanha, "pausar")).status).toBe(200);
+    expect((await ler(campanha)).status).toBe("paused");
+    const volta = daqui(96);
+    const agendada = await acao(campanha, "agendar", { scheduled_at: volta.toISOString() });
+    expect(agendada.status, JSON.stringify(await agendada.clone().json())).toBe(200);
+    const c = await ler(campanha);
+    expect(c.status).toBe("scheduled");
+    expect(mesmoInstante(c.scheduled_at, volta)).toBe(true);
+  });
+
+  it("enviar agora: a agendada começa na hora, e a hora marcada deixa de valer", async () => {
+    const iniciada = await acao(campanha, "iniciar");
+    expect(iniciada.status, JSON.stringify(await iniciada.clone().json())).toBe(200);
+    const c = await ler(campanha);
+    expect(c.status).toBe("running");
+    expect(c.scheduled_at).toBeNull();
+    expect(c.started_at).not.toBeNull();
+  });
+
+  it("chegada a hora, a rodada começa a campanha sozinha", async () => {
+    await semear(ORG_A, "agenda-vencida", 1, "+55319899");
+    const criada = await criarCampanha(campanhaOficial(numeroA, modeloDaAgenda, "agenda-vencida"));
+    const id = (await json<{ id: string }>(criada)).data.id;
+    expect((await acao(id, "preparar")).status).toBe(200);
+    expect((await acao(id, "agendar", { scheduled_at: daqui(1).toISOString() })).status).toBe(200);
+    // O relógio anda: a hora marcada ficou para trás.
+    await pool.query(`update campaigns set scheduled_at = now() - interval '1 minute' where id = $1`, [id]);
+
+    await rodada(T());
+    const c = await ler(id);
+    expect(c.status).not.toBe("scheduled");
+    expect(["running", "completed"]).toContain(c.status);
+    expect(c.started_at).not.toBeNull();
+  });
+});

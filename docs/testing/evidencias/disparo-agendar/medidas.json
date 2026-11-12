@@ -1,0 +1,1511 @@
+{
+  "computador-claro-1-pronta-com-agendar": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "computador-claro-2-aviso-de-risco": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "computador-claro-3-cartao-em-branco": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 242
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-claro-4-dentro-do-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "A campanha começa a enviar sexta-feira, 13/11, 09:30.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-claro-5-horario-que-ja-passou": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário já passou. Escolha um horário no futuro — para enviar agora, use Iniciar envio.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-claro-6-fora-do-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-claro-7-agendada": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 126
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "computador-claro-8-mudar-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-claro-9-enviar-agora-confirma": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 232,
+      "y": 278,
+      "largura": 976,
+      "altura": 126
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "computador-claro-erros-de-pagina": [],
+  "celular-claro-1-pronta-com-agendar": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "celular-claro-2-aviso-de-risco": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "celular-claro-3-cartao-em-branco": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 306
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 41,
+      "y": 439,
+      "largura": 308,
+      "altura": 40
+    },
+    "resultado": "",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "celular-claro-4-dentro-do-horario": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 358
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 41,
+      "y": 439,
+      "largura": 308,
+      "altura": 40
+    },
+    "resultado": "A campanha começa a enviar sexta-feira, 13/11, 09:30.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "celular-claro-5-horario-que-ja-passou": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 358
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 41,
+      "y": 439,
+      "largura": 308,
+      "altura": 40
+    },
+    "resultado": "Esse horário já passou. Escolha um horário no futuro — para enviar agora, use Iniciar envio.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "celular-claro-6-fora-do-horario": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 24,
+        "y": 174,
+        "largura": 104,
+        "altura": 44
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 136,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Agendar",
+        "x": 254,
+        "y": 174,
+        "largura": 86,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 378
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 41,
+      "y": 439,
+      "largura": 308,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "celular-claro-7-agendada": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 24,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 141,
+        "y": 174,
+        "largura": 120,
+        "altura": 44
+      },
+      {
+        "texto": "Pausar",
+        "x": 269,
+        "y": 174,
+        "largura": 74,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 202
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "celular-claro-8-mudar-horario": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 24,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 141,
+        "y": 174,
+        "largura": 120,
+        "altura": 44
+      },
+      {
+        "texto": "Pausar",
+        "x": 269,
+        "y": 174,
+        "largura": 74,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 24,
+      "y": 286,
+      "largura": 342,
+      "altura": 378
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 41,
+      "y": 439,
+      "largura": 308,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "celular-claro-9-enviar-agora-confirma": {
+    "largura_da_janela": 390,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 24,
+        "y": 174,
+        "largura": 109,
+        "altura": 44
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 141,
+        "y": 174,
+        "largura": 120,
+        "altura": 44
+      },
+      {
+        "texto": "Pausar",
+        "x": 269,
+        "y": 174,
+        "largura": 74,
+        "altura": 44
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 24,
+        "y": 226,
+        "largura": 156,
+        "altura": 44
+      },
+      {
+        "texto": "Duplicar",
+        "x": 188,
+        "y": 226,
+        "largura": 83,
+        "altura": 44
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 24,
+      "y": 432,
+      "largura": 342,
+      "altura": 202
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "celular-claro-erros-de-pagina": [],
+  "computador-escuro-1-pronta-com-agendar": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "computador-escuro-2-aviso-de-risco": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": null,
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": null
+  },
+  "computador-escuro-3-cartao-em-branco": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 242
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-escuro-4-dentro-do-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "A campanha começa a enviar sexta-feira, 13/11, 09:30.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-escuro-5-horario-que-ja-passou": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário já passou. Escolha um horário no futuro — para enviar agora, use Iniciar envio.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-escuro-6-fora-do-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-escuro-7-agendada": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 126
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "computador-escuro-8-mudar-horario": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:51.",
+    "agendada": null
+  },
+  "computador-escuro-9-enviar-agora-confirma": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar agora",
+        "x": 689,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Mudar horário",
+        "x": 805,
+        "y": 64,
+        "largura": 120,
+        "altura": 36
+      },
+      {
+        "texto": "Pausar",
+        "x": 934,
+        "y": 64,
+        "largura": 74,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1015,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 689,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": null,
+    "cartao_agendada": {
+      "x": 232,
+      "y": 278,
+      "largura": 976,
+      "altura": 126
+    },
+    "campo": null,
+    "resultado": null,
+    "fuso": null,
+    "agendada": "Envio agendadoComeça sozinha sexta-feira, 13/11, 23:00 (Horário Padrão de Brasília).Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.Dá para mudar o horário, enviar agora ou cancelar até a hora marcada."
+  },
+  "computador-escuro-erros-de-pagina": [],
+  "computador-claro-10-domingo-vetado-navegador-em-lisboa": {
+    "largura_da_janela": 1440,
+    "rolagem_horizontal_px": 0,
+    "botoes_do_cabecalho": [
+      {
+        "texto": "Enviar teste",
+        "x": 711,
+        "y": 64,
+        "largura": 104,
+        "altura": 36
+      },
+      {
+        "texto": "Iniciar envio",
+        "x": 823,
+        "y": 64,
+        "largura": 109,
+        "altura": 36
+      },
+      {
+        "texto": "Agendar",
+        "x": 941,
+        "y": 64,
+        "largura": 86,
+        "altura": 36
+      },
+      {
+        "texto": "Cancelar campanha",
+        "x": 1034,
+        "y": 64,
+        "largura": 156,
+        "altura": 36
+      },
+      {
+        "texto": "Duplicar",
+        "x": 711,
+        "y": 108,
+        "largura": 83,
+        "altura": 36
+      }
+    ],
+    "cartao_de_agendar": {
+      "x": 232,
+      "y": 160,
+      "largura": 976,
+      "altura": 274
+    },
+    "cartao_agendada": null,
+    "campo": {
+      "x": 249,
+      "y": 273,
+      "largura": 320,
+      "altura": 40
+    },
+    "resultado": "Este número não envia aos domingos. A campanha fica agendada, mas só começa a enviar segunda-feira, 16/11, 07:00.",
+    "fuso": "Vale o horário do número: Horário Padrão de Brasília. Agora são 17:52.",
+    "agendada": null
+  }
+}

@@ -17,6 +17,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { AgendamentoDaCampanha, CampanhaAgendada } from "@/components/campanhas/AgendamentoDaCampanha";
 import { CampoDoTetoDeGasto, CustoDaCampanha } from "@/components/campanhas/CustoDaCampanha";
 import { EstadoDaCampanha } from "@/components/campanhas/EstadoDaCampanha";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export function DetalheDaCampanha({ id }: { id: string }) {
   const acao = useAcaoDeCampanha(id);
   const [confirmando, setConfirmando] = useState<AcaoDeCampanha | null>(null);
   const [testando, setTestando] = useState(false);
+  const [agendando, setAgendando] = useState(false);
   const [entendeuORisco, setEntendeuORisco] = useState(false);
   const idioma = useIdioma();
 
@@ -90,10 +92,14 @@ export function DetalheDaCampanha({ id }: { id: string }) {
   // antes do fim, e é mais segura quanto mais cedo. Ver a tabela em
   // `lib/campanhas/maquina-de-estados.ts`, que diverge da Spec 12 §7.3 aqui.
   if (c.status === "draft") disponiveis.push("preparar", "cancelar");
-  if (c.status === "ready") disponiveis.push("testar", "iniciar", "cancelar");
+  //
+  // Agendar cabe em três estados (issue #292): pronta (marcar), agendada (mudar
+  // o horário — e "iniciar" ali é "enviar agora") e pausada (marcar a volta: sem
+  // isso, quem pausa uma agendada só tem "Retomar", que envia na hora).
+  if (c.status === "ready") disponiveis.push("testar", "iniciar", "agendar", "cancelar");
   if (c.status === "running") disponiveis.push("pausar", "cancelar");
-  if (c.status === "scheduled") disponiveis.push("pausar", "cancelar");
-  if (c.status === "paused") disponiveis.push("retomar", "cancelar");
+  if (c.status === "scheduled") disponiveis.push("iniciar", "agendar", "pausar", "cancelar");
+  if (c.status === "paused") disponiveis.push("retomar", "agendar", "cancelar");
   disponiveis.push("duplicar");
 
   // Campanha por número de QR code só sai depois do aceite do aviso de risco de
@@ -134,27 +140,39 @@ export function DetalheDaCampanha({ id }: { id: string }) {
           {disponiveis.map((a) => (
             <Button
               key={a}
-              variant={a === "cancelar" ? "outline" : "default"}
+              variant={a === "cancelar" || a === "agendar" ? "outline" : "default"}
               disabled={acao.isPending}
               onClick={() => {
+                // Um cartão de decisão por vez: abrir outro com o de agendar
+                // aberto deixaria dois "confirmar" na tela.
+                if (a !== "agendar") setAgendando(false);
                 // Iniciar e cancelar mexem com gente de verdade: confirmação
                 // explícita (PRD §34). As outras não pedem cerimônia — exceto
                 // retomar sem o aceite do risco, que mostra o aviso.
                 if (a === "iniciar" || a === "cancelar") setConfirmando(a);
                 else if (a === "retomar" && pedeAceiteDoRisco) setConfirmando(a);
+                // Agendar é iniciar com hora marcada: pede o mesmo aceite do
+                // risco, e só depois dele a escolha do dia e da hora.
+                else if (a === "agendar" && pedeAceiteDoRisco) setConfirmando(a);
+                else if (a === "agendar") {
+                  setConfirmando(null);
+                  setAgendando(true);
+                }
                 // O teste precisa saber PARA QUEM: mandar para o primeiro da
                 // lista transformaria um teste num envio real a um prospect.
                 else if (a === "testar") setTestando(true);
                 else acao.mutate({ acao: a });
               }}
             >
-              {t(ROTULO_DA_ACAO[a])}
+              {t(rotuloDaAcao(a, c.status))}
             </Button>
           ))}
         </div>
       </header>
 
-      {confirmando && (confirmando === "iniciar" || confirmando === "retomar") && pedeAceiteDoRisco ? (
+      {confirmando &&
+      (confirmando === "iniciar" || confirmando === "retomar" || confirmando === "agendar") &&
+      pedeAceiteDoRisco ? (
         <AvisoDeRiscoDeBanimento
           entendeu={entendeuORisco}
           onEntendeu={setEntendeuORisco}
@@ -162,7 +180,8 @@ export function DetalheDaCampanha({ id }: { id: string }) {
           onConfirmar={async () => {
             // O aceite é gravado (quem e quando) ANTES da ação, e auditado.
             await acao.mutateAsync({ acao: "aceitar-risco" });
-            acao.mutate({ acao: confirmando });
+            if (confirmando === "agendar") setAgendando(true);
+            else acao.mutate({ acao: confirmando });
             setConfirmando(null);
             setEntendeuORisco(false);
           }}
@@ -194,6 +213,26 @@ export function DetalheDaCampanha({ id }: { id: string }) {
           </div>
         </Card>
       ) : null}
+
+      {agendando && c.janela_de_envio && (
+        <AgendamentoDaCampanha
+          janela={c.janela_de_envio}
+          agendadaPara={c.status === "scheduled" ? c.scheduled_at : null}
+          pessoas={c.snapshot_eligible}
+          enviando={acao.isPending}
+          onAgendar={(quandoIso) =>
+            acao.mutate(
+              { acao: "agendar", corpo: { scheduled_at: quandoIso } },
+              { onSuccess: () => setAgendando(false) },
+            )
+          }
+          onVoltar={() => setAgendando(false)}
+        />
+      )}
+
+      {c.status === "scheduled" && c.scheduled_at && c.janela_de_envio && !agendando && (
+        <CampanhaAgendada agendadaPara={c.scheduled_at} janela={c.janela_de_envio} />
+      )}
 
       {c.status === "paused" && c.pausa_detalhe && (
         <Card className="space-y-1 border-warning-fg p-4" role="status" data-testid="pausa-automatica">
@@ -664,6 +703,17 @@ const ROTULO_DA_ACAO: Record<AcaoDeCampanha, string> = {
   testar: "Enviar teste",
   "aceitar-risco": "Aceitar o risco",
 };
+
+/**
+ * O nome do botão no estado em que a campanha está. Numa AGENDADA, "iniciar" é
+ * furar a fila da própria agenda e "agendar" é remarcar — os rótulos de sempre
+ * ("Iniciar envio", "Agendar") diriam a ação sem dizer o que ela desfaz.
+ */
+function rotuloDaAcao(acao: AcaoDeCampanha, status: CampanhaDetalhada["status"]): string {
+  if (status === "scheduled" && acao === "iniciar") return "Enviar agora";
+  if (status === "scheduled" && acao === "agendar") return "Mudar horário";
+  return ROTULO_DA_ACAO[acao];
+}
 
 const ROTULO_DO_DESTINATARIO: Record<string, string> = {
   pending: "Na fila",

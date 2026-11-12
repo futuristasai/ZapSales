@@ -1175,11 +1175,18 @@ jobs:
       # orgs, pessoas, token, fonte de captação e pedido de LGPD pelo service
       # role e apaga tudo no fim; não depende de seed de passo nem de vizinha.
       # PREVISÃO, não medida: ~1,5 min de caso.
+      #
+      # `disparo-agendar-pela-tela` entrou em 2026-11-12 (issue #292) na PARTE_6,
+      # ao lado da `disparo-em-massa-csv`. Semeia o próprio número (parado), o
+      # contato e a campanha pelo service role e apaga tudo no fim; chama o cron
+      # de campanha, como a `followup-journey` chama o dela. PREVISÃO, não
+      # medida: ~2,5 min de caso — ela espera o minuto marcado chegar.
       SPECS_PARTE_6: >-
         agenda-google-meet.spec.ts
         agenda-presenca-recuperacao.spec.ts
         conexao-oficial-assistente.spec.ts
         disparo-em-massa-csv.spec.ts
+        disparo-agendar-pela-tela.spec.ts
         ferramentas-externas-pela-tela.spec.ts
         acoes-externas-com-aprovacao.spec.ts
         aguardando-administrador.spec.ts
