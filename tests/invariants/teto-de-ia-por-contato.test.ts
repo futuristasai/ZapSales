@@ -280,7 +280,10 @@ describe("a conta recomeça quando uma pessoa devolve a conversa", () => {
 describe("o que o banco garante", () => {
   /** `aceitou` quando o statement passou; `recusou` quando o CHECK o barrou. */
   function tentar(statement: string): string {
-    return sql(`
+    // A ÚLTIMA linha: o psql do harness imprime a etiqueta do comando (`DO`)
+    // antes do resultado do `select`.
+    return (
+      sql(`
       do $t$ begin
         ${statement}
         raise exception 'ACEITOU';
@@ -288,7 +291,11 @@ describe("o que o banco garante", () => {
         when check_violation then null;
       end $t$;
       select 'recusou';
-    `);
+    `)
+        .split("
+")
+        .at(-1) ?? ""
+    );
   }
 
   it("teto negativo ou acima de 10.000 é recusado pelo CHECK", () => {
