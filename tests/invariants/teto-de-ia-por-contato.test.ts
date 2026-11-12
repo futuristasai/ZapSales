@@ -292,8 +292,7 @@ describe("o que o banco garante", () => {
       end $t$;
       select 'recusou';
     `)
-        .split("
-")
+        .split("\n")
         .at(-1) ?? ""
     );
   }
