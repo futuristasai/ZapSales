@@ -107,6 +107,12 @@ const QUEBRA = "\u0001";
 function juntar(a: Acumulador): string {
   const linhas = a.partes
     .join("")
+    // Espaço horizontal repetido vira UM antes de tratar as quebras. Não muda o
+    // resultado (cada linha é reduzida do mesmo jeito logo abaixo) e é o que
+    // mantém a troca seguinte LINEAR: sem isto, o `[ \t…]*` inicial dela varria
+    // cada sequência de espaços inteira, a partir de cada posição, à procura de
+    // uma quebra que não vinha — 200 mil espaços custavam 40 s (#269).
+    .replace(/[ \t\r\f\v]+/g, " ")
     .replace(/[ \t\r\f\v]*\u0001(?:\s*\u0001)*[ \t\r\f\v]*/g, "\n")
     .split("\n")
     .map((l) => l.replace(/[ \t\f\v\r]+/g, " ").trim());

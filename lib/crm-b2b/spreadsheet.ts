@@ -22,12 +22,18 @@ export type SheetMatrix = { headers: string[]; rows: string[][] };
 
 export const IMPORT_MAX_BYTES = 2 * 1024 * 1024;
 export const IMPORT_MAX_DATA_ROWS = 2_000;
+/** Largura máxima de uma linha. Uma célula `r="ZZZZZZ1"` sozinha pediria milhões de colunas vazias. */
+export const IMPORT_MAX_COLUMNS = 200;
 /**
- * Teto do XML DESCOMPACTADO por arquivo do zip. Os 2 MB do upload são do zip; XML
- * repetitivo comprime 100x, e sem este teto um arquivo pequeno vira centenas de
- * megabytes de memória no servidor.
+ * Teto do XML DESCOMPACTADO, somando tudo o que é lido do zip (a aba e a tabela
+ * de textos). Os 2 MB do upload são do zip; XML repetitivo comprime 100x, e sem
+ * este teto um arquivo pequeno vira centenas de megabytes de memória no
+ * servidor. É a SOMA, e não o maior arquivo: o teto por arquivo deixava passar
+ * cem abas de 40 MB cada.
  */
-const XLSX_MAX_XML_BYTES = 40 * 1024 * 1024;
+export const XLSX_MAX_XML_BYTES = 20 * 1024 * 1024;
+/** `workbook.xml` e o arquivo de relações só dizem qual é a primeira aba. */
+const XLSX_MAX_INDICE_BYTES = 1024 * 1024;
 
 type Leitura = { ok: true; sheet: SheetMatrix } | { ok: false; error: string };
 
@@ -85,24 +91,74 @@ function decodificarXml(texto: string): string {
   });
 }
 
+const ehEspaco = (codigo: number) => codigo === 32 || codigo === 9 || codigo === 10 || codigo === 13;
+
+/**
+ * Cada elemento `<tag …>…</tag>` ou `<tag …/>` de um XML, na ordem, em tempo
+ * LINEAR no tamanho do texto.
+ *
+ * Era `matchAll` com `[\s\S]*?` até o fechamento. Num XML malformado — uma
+ * abertura repetida milhares de vezes e nenhum fechamento — cada tentativa
+ * varria o texto até o fim, e o custo era quadrático: megabytes de XML paravam
+ * o servidor por minutos (#269). Aqui a busca só anda para a frente, e a
+ * primeira abertura sem fechamento encerra a leitura: não há mais elemento
+ * completo dali em diante.
+ */
+function* elementos(xml: string, tag: string): Generator<{ attrs: string; corpo: string }> {
+  const abre = `<${tag}`;
+  const fecha = `</${tag}>`;
+  let pos = 0;
+  for (;;) {
+    const inicio = xml.indexOf(abre, pos);
+    if (inicio < 0) return;
+    const depoisDoNome = xml.charCodeAt(inicio + abre.length);
+    // `<c` também começa `<col` e `<cols`: o nome da tag tem de acabar aqui.
+    if (depoisDoNome !== 62 /* > */ && depoisDoNome !== 47 /* / */ && !ehEspaco(depoisDoNome)) {
+      pos = inicio + abre.length;
+      continue;
+    }
+    const fimDaAbertura = xml.indexOf(">", inicio + abre.length);
+    if (fimDaAbertura < 0) return;
+    if (xml.charCodeAt(fimDaAbertura - 1) === 47 /* / */) {
+      yield { attrs: xml.slice(inicio + abre.length, fimDaAbertura - 1), corpo: "" };
+      pos = fimDaAbertura + 1;
+      continue;
+    }
+    const fechamento = xml.indexOf(fecha, fimDaAbertura + 1);
+    if (fechamento < 0) return;
+    yield {
+      attrs: xml.slice(inicio + abre.length, fimDaAbertura),
+      corpo: xml.slice(fimDaAbertura + 1, fechamento),
+    };
+    pos = fechamento + fecha.length;
+  }
+}
+
 /** O texto de um `<si>` ou `<is>`: todos os `<t>`, inclusive os de texto rico (`<r><t>`). */
 function textoDosRuns(xml: string): string {
   let out = "";
-  for (const m of xml.matchAll(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g)) out += decodificarXml(m[1] ?? "");
+  for (const t of elementos(xml, "t")) out += decodificarXml(t.corpo);
   return out;
 }
 
-/** "A" → 0, "Z" → 25, "AA" → 26. */
+/** "A" → 0, "Z" → 25, "AA" → 26. Além de `IMPORT_MAX_COLUMNS` devolve o próprio teto. */
 function indiceDaColuna(ref: string): number {
   let n = 0;
-  for (const ch of ref.replace(/\d+$/, "").toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+  for (const ch of ref.replace(/\d+$/, "").toUpperCase()) {
+    n = n * 26 + (ch.charCodeAt(0) - 64);
+    if (n > IMPORT_MAX_COLUMNS) return IMPORT_MAX_COLUMNS;
+  }
   return n - 1;
 }
 
 function valorDaCelula(attrs: string, corpo: string, compartilhados: string[]): string {
   const tipo = /\bt="([^"]+)"/.exec(attrs)?.[1];
   if (tipo === "inlineStr") return textoDosRuns(corpo);
-  const v = /<v>([\s\S]*?)<\/v>/.exec(corpo)?.[1];
+  let v: string | undefined;
+  for (const el of elementos(corpo, "v")) {
+    v = el.corpo;
+    break;
+  }
   if (v === undefined) return "";
   if (tipo === "s") return compartilhados[Number(v)] ?? "";
   if (tipo === "b") return v === "1" ? "TRUE" : "FALSE";
@@ -113,59 +169,94 @@ function valorDaCelula(attrs: string, corpo: string, compartilhados: string[]): 
   return Number.isFinite(n) ? String(n) : v;
 }
 
-function parseXlsx(bytes: ArrayBuffer): Leitura {
-  let arquivos: Record<string, Uint8Array>;
-  let grandeDemais = false;
+const GRANDE_DEMAIS = "Planilha grande demais para importar de uma vez.";
+const ILEGIVEL = "Não consegui ler o arquivo XLSX.";
+
+/**
+ * Descompacta do zip só os arquivos pedidos, recusando quando a soma do
+ * tamanho DESCOMPACTADO deles passa do teto. `null` = zip ilegível.
+ */
+function abrir(
+  zip: Uint8Array,
+  quer: (nome: string) => boolean,
+  teto: number,
+): { arquivos: Record<string, Uint8Array>; passouDoTeto: boolean } | null {
+  let total = 0;
+  let passouDoTeto = false;
   try {
-    arquivos = unzipSync(new Uint8Array(bytes), {
+    const arquivos = unzipSync(zip, {
       filter: (f) => {
-        const util =
-          f.name === "xl/workbook.xml" ||
-          f.name === "xl/_rels/workbook.xml.rels" ||
-          f.name === "xl/sharedStrings.xml" ||
-          /^xl\/worksheets\/[^/]+\.xml$/.test(f.name);
-        if (util && f.originalSize > XLSX_MAX_XML_BYTES) grandeDemais = true;
-        return util && !grandeDemais;
+        if (passouDoTeto || !quer(f.name)) return false;
+        total += f.originalSize;
+        if (total > teto) passouDoTeto = true;
+        return !passouDoTeto;
       },
     });
+    return { arquivos, passouDoTeto };
   } catch {
-    return { ok: false, error: "Não consegui ler o arquivo XLSX." };
+    return null;
   }
-  if (grandeDemais) return { ok: false, error: "Planilha grande demais para importar de uma vez." };
+}
 
-  const texto = (nome: string) => {
-    const a = arquivos[nome];
-    return a ? strFromU8(a) : null;
-  };
-  const workbook = texto("xl/workbook.xml");
-  if (workbook === null) return { ok: false, error: "Não consegui ler o arquivo XLSX." };
+function parseXlsx(bytes: ArrayBuffer): Leitura {
+  const zip = new Uint8Array(bytes);
+  const WORKBOOK = "xl/workbook.xml";
+  const RELS = "xl/_rels/workbook.xml.rels";
+  const TEXTOS = "xl/sharedStrings.xml";
+
+  // 1ª passada: só o índice, para saber QUAL aba ler. As outras abas nunca são
+  // descompactadas — antes vinham todas para a memória e só uma era lida.
+  const indice = abrir(zip, (nome) => nome === WORKBOOK || nome === RELS, XLSX_MAX_INDICE_BYTES);
+  if (indice === null) return { ok: false, error: ILEGIVEL };
+  if (indice.passouDoTeto) return { ok: false, error: GRANDE_DEMAIS };
+  const workbook = indice.arquivos[WORKBOOK] ? strFromU8(indice.arquivos[WORKBOOK]) : null;
+  if (workbook === null) return { ok: false, error: ILEGIVEL };
 
   // A PRIMEIRA aba na ordem das abas, que não é necessariamente `sheet1.xml`.
-  const rid = /<sheet\b[^>]*\br:id="([^"]+)"/.exec(workbook)?.[1];
-  const rels = texto("xl/_rels/workbook.xml.rels") ?? "";
+  let rid: string | undefined;
+  for (const sheet of elementos(workbook, "sheet")) {
+    rid = /\br:id="([^"]+)"/.exec(sheet.attrs)?.[1];
+    if (rid !== undefined) break;
+  }
+  const rels = indice.arquivos[RELS] ? strFromU8(indice.arquivos[RELS]) : "";
   let alvo: string | undefined;
-  for (const m of rels.matchAll(/<Relationship\b[^>]*>/g)) {
-    if (m[0].includes(`Id="${rid}"`)) alvo = /Target="([^"]+)"/.exec(m[0])?.[1];
+  for (const rel of elementos(rels, "Relationship")) {
+    if (rel.attrs.includes(`Id="${rid}"`)) alvo = /Target="([^"]+)"/.exec(rel.attrs)?.[1];
   }
   const caminho = alvo ? `xl/${alvo.replace(/^\/?xl\//, "").replace(/^\//, "")}` : "xl/worksheets/sheet1.xml";
-  const aba = texto(caminho);
+
+  // 2ª passada: a aba escolhida e a tabela de textos, com o teto sobre a soma.
+  const dados = abrir(zip, (nome) => nome === caminho || nome === TEXTOS, XLSX_MAX_XML_BYTES);
+  if (dados === null) return { ok: false, error: ILEGIVEL };
+  if (dados.passouDoTeto) return { ok: false, error: GRANDE_DEMAIS };
+  const aba = dados.arquivos[caminho] ? strFromU8(dados.arquivos[caminho]) : null;
   if (aba === null) return { ok: false, error: "Planilha vazia." };
 
-  const compartilhados = [...(texto("xl/sharedStrings.xml") ?? "").matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) =>
-    textoDosRuns(m[1] ?? ""),
-  );
+  const compartilhados: string[] = [];
+  if (dados.arquivos[TEXTOS]) {
+    for (const si of elementos(strFromU8(dados.arquivos[TEXTOS]), "si")) {
+      compartilhados.push(textoDosRuns(si.corpo));
+    }
+  }
 
   const matriz: string[][] = [];
-  for (const linha of aba.matchAll(/<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g)) {
+  for (const linha of elementos(aba, "row")) {
     const celulas: string[] = [];
-    for (const c of (linha[1] ?? "").matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
-      const attrs = c[1] ?? "";
-      const ref = /\br="([A-Z]+\d*)"/i.exec(attrs)?.[1];
+    for (const c of elementos(linha.corpo, "c")) {
+      const ref = /\br="([A-Z]+\d*)"/i.exec(c.attrs)?.[1];
       const i = ref ? indiceDaColuna(ref) : celulas.length;
+      if (i >= IMPORT_MAX_COLUMNS) {
+        return { ok: false, error: `Máximo de ${IMPORT_MAX_COLUMNS} colunas.` };
+      }
       while (celulas.length < i) celulas.push("");
-      celulas[i] = valorDaCelula(attrs, c[2] ?? "", compartilhados);
+      celulas[i] = valorDaCelula(c.attrs, c.corpo, compartilhados);
     }
     if (celulas.some((v) => v.trim() !== "")) matriz.push(celulas);
+    // +1 pelo cabeçalho. Para aqui em vez de montar a matriz inteira só para
+    // `matrizParaPlanilha` recusá-la depois.
+    if (matriz.length > IMPORT_MAX_DATA_ROWS + 1) {
+      return { ok: false, error: `Máximo de ${IMPORT_MAX_DATA_ROWS} linhas de dados.` };
+    }
   }
   return matrizParaPlanilha(matriz);
 }

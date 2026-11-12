@@ -42,12 +42,42 @@
  * a política — quem tem o poder de silenciar alguém para sempre é a pessoa.
  */
 
-/** minúsculas, sem acento — a forma sobre a qual todos os padrões daqui rodam. */
+/**
+ * Quanto de cada PONTA de uma mensagem os padrões leem. Mensagem maior que o
+ * dobro disto é recortada: começo + fim. As duas pontas, e não só o começo,
+ * porque quem escreve um texto longo costuma pedir para sair no fim dele.
+ */
+export const TETO_DE_ANALISE_POR_PONTA = 4_000;
+
+/** Entre as duas pontas de um recorte. Não é letra nem espaço: nenhum padrão casa por cima dela. */
+const EMENDA = " | ";
+
+/**
+ * minúsculas, sem acento, espaços em branco contados como UM, e no máximo duas
+ * pontas de `TETO_DE_ANALISE_POR_PONTA` — a forma sobre a qual todos os padrões
+ * daqui rodam.
+ *
+ * As duas últimas partes existem pelo TEMPO, não pelo sentido (#269). Esta
+ * função roda em TODA mensagem recebida, e os padrões têm trechos do tipo
+ * `\s+ … \s*`: numa sequência de N espaços o motor tenta as N² divisões entre
+ * um e outro. Medido antes: 16 mil espaços depois de "pare de me mandar"
+ * custavam 1,4 s, e o crescimento é quadrático — o processo fica parado para
+ * todo mundo enquanto isso. Com os espaços contados como um, a sequência tem
+ * tamanho 1 e não há o que dividir; o recorte é a segunda cerca, para o caso
+ * de um padrão futuro trazer outra forma de lentidão.
+ */
 export function normalizarTexto(texto: string): string {
-  return texto
+  const normalizado = texto
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/gu, "");
+    .replace(/[\u0300-\u036f]/gu, "")
+    .replace(/\s+/gu, " ");
+  if (normalizado.length <= 2 * TETO_DE_ANALISE_POR_PONTA) return normalizado;
+  return (
+    normalizado.slice(0, TETO_DE_ANALISE_POR_PONTA) +
+    EMENDA +
+    normalizado.slice(-TETO_DE_ANALISE_POR_PONTA)
+  );
 }
 
 /**
@@ -495,6 +525,9 @@ const FRASES_AMBIGUAS_DE_OPT_OUT: readonly RegExp[] = [
 
 /** A mensagem inteira é a palavra-chave (ignorando pontuação e emoji de borda). */
 function ehPalavraIsolada(normalizado: string): boolean {
+  // Texto recortado não é "a palavra sozinha" — e juntar as letras das duas
+  // pontas de um recorte poderia formar uma por acidente.
+  if (normalizado.length > 2 * TETO_DE_ANALISE_POR_PONTA) return false;
   const somenteLetras = normalizado.replace(/[^a-z]/gu, "");
   return PALAVRAS_DE_OPT_OUT.has(somenteLetras);
 }
