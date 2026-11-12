@@ -61,6 +61,7 @@ export function OrgMemoryClient({ initialState }: Props) {
   const document = data?.document ?? null;
   const versions = data?.versions ?? [];
   const entries = data?.entries ?? [];
+  const proposals = data?.proposals ?? [];
   const canPublish = usePermission("ai.memory.publish");
 
   const [content, setContent] = React.useState(document?.content ?? "");
@@ -129,6 +130,22 @@ export function OrgMemoryClient({ initialState }: Props) {
       {
         onSuccess: () => {
           toast.success(next === "archived" ? t("Aprendizado arquivado.") : t("Aprendizado reativado."));
+        },
+        onError: showApiError,
+      },
+    );
+  }
+
+  function handleDecidirProposta(id: string, decisao: "aprovar" | "recusar") {
+    setStatus.mutate(
+      { id, status: decisao === "aprovar" ? "active" : "archived" },
+      {
+        onSuccess: () => {
+          toast.success(
+            decisao === "aprovar"
+              ? t("Proposta aprovada. A regra passa a valer no próximo atendimento.")
+              : t("Proposta recusada. Ela não entra na memória."),
+          );
         },
         onError: showApiError,
       },
@@ -213,6 +230,58 @@ export function OrgMemoryClient({ initialState }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {proposals.length > 0 && (
+        <Card data-testid="propostas-do-agente">
+          <CardHeader>
+            <CardTitle>{t("Propostas do agente")}</CardTitle>
+            <CardDescription>
+              {t(
+                "Regras que um agente de IA anotou durante um atendimento. Nenhuma delas está valendo: só passam a ser seguidas por todos os agentes depois que você aprovar. Leia com cuidado — o agente pode ter anotado a pedido de quem estava do outro lado da conversa.",
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="flex flex-col gap-2">
+              {proposals.map((proposta) => (
+                <li
+                  key={proposta.id}
+                  data-testid="proposta-do-agente"
+                  className="flex flex-col gap-1.5 rounded-md border border-warning/40 bg-warning-bg/40 p-3 text-sm"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">{proposta.title}</span>
+                    <Badge variant="warning" className="text-[10px]">
+                      {t("aguardando aprovação")}
+                    </Badge>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {formatDate(proposta.created_at, tagDoIdioma)}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-text-muted">{proposta.body}</p>
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={setStatus.isPending}
+                      onClick={() => handleDecidirProposta(proposta.id, "recusar")}
+                    >
+                      {t("Recusar")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={setStatus.isPending}
+                      onClick={() => handleDecidirProposta(proposta.id, "aprovar")}
+                    >
+                      {t("Aprovar regra")}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

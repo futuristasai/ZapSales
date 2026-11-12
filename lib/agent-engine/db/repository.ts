@@ -87,6 +87,10 @@ export type InboxKind =
   // um humano. O item da Central carrega o pedido (ref_kind='external_tool_request') com os
   // botões de aprovar e recusar; resolve sozinho quando alguém decide ou o prazo vence.
   | 'external_tool_approval'
+  // (issue #272) Um agente anotou uma regra para a memória da organização. Ela nasce
+  // PROPOSTA e não vale até um gestor aprovar; este aviso é o que faz a proposta
+  // aparecer. Um aberto por organização; fecha quando a última proposta é decidida.
+  | 'regra_proposta_pelo_agente'
   | 'proposal_acceptance_rate_drop'
   | 'proposal_promised_not_created'
   // (migration 0312) O fluxo de follow-up PUBLICADO que nunca vai disparar:

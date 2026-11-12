@@ -61,10 +61,19 @@ export default async function OrgMemoryPage() {
     .neq("status", "proposed")
     .order("created_at", { ascending: false });
 
+  // As propostas do agente (#272), à parte: elas não valem enquanto ninguém aprova.
+  const { data: proposalsRaw } = await supabase
+    .from("org_memory_entries")
+    .select("id, title, body, source, status, created_at")
+    .eq("organization_id", activeOrg.orgId)
+    .eq("status", "proposed")
+    .order("created_at", { ascending: true });
+
   const initialState: OrgMemoryState = {
     document,
     versions: (versionsRaw ?? []) as unknown as OrgMemoryState["versions"],
     entries: (entriesRaw ?? []) as unknown as OrgMemoryState["entries"],
+    proposals: (proposalsRaw ?? []) as unknown as NonNullable<OrgMemoryState["proposals"]>,
   };
 
   return (

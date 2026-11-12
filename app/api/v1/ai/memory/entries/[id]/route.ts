@@ -13,6 +13,7 @@ import { audit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth/require-role";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { decidirPropostaDeRegra } from "@/lib/ai/memoria/propostas";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,49 @@ export async function PATCH(req: NextRequest, ctx: Ctx): Promise<Response> {
   }
 
   const admin = createAdminClient();
+
+  // ─── PROPOSTA DO AGENTE (#272) ───────────────────────────────────────────
+  //
+  // Uma entrada `proposed` não é arquivada nem reativada — é DECIDIDA: `active`
+  // aprova (a regra passa a valer no próximo atendimento) e `archived` recusa.
+  // O caminho é próprio por três razões: a trava otimista (só muda o que ainda
+  // está `proposed`), a ação de auditoria (quem aprovou uma regra é pergunta
+  // que alguém vai fazer sozinha) e o aviso da Central, que fecha quando a
+  // última proposta é decidida.
+  const { data: atual, error: erroDaLeitura } = await admin
+    .from("org_memory_entries")
+    .select("id, status")
+    .eq("id", id)
+    .eq("organization_id", org.orgId)
+    .maybeSingle();
+  if (erroDaLeitura || !atual) {
+    return fail("not_found", t("Entrada de memória não encontrada nesta organização."), 404, {
+      requestId,
+    });
+  }
+  if (atual.status === "proposed") {
+    const decisao = parsed.data.status === "active" ? "aprovar" : "recusar";
+    let decidida: Awaited<ReturnType<typeof decidirPropostaDeRegra>>;
+    try {
+      decidida = await decidirPropostaDeRegra(admin, { organizationId: org.orgId, id, decisao });
+    } catch {
+      return fail("internal_error", t("Não foi possível decidir a proposta."), 500, { requestId });
+    }
+    if (!decidida) {
+      return fail("conflict", t("Esta proposta já foi decidida por outra pessoa."), 409, { requestId });
+    }
+    await audit({
+      action: decisao === "aprovar" ? "ai.org_memory_proposal_approved" : "ai.org_memory_proposal_rejected",
+      actorUserId: authUser.id,
+      organizationId: org.orgId,
+      resourceType: "org_memory_entries",
+      resourceId: id,
+      requestId,
+      metadata: { status: { antes: "proposed", depois: decidida.status } },
+    });
+    return ok({ id: decidida.id, status: decidida.status }, { requestId });
+  }
+
   const { data, error } = await admin
     .from("org_memory_entries")
     .update({ status: parsed.data.status, updated_at: new Date().toISOString() })

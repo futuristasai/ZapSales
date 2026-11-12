@@ -218,6 +218,9 @@ export const AUDIT_ACTIONS = [
   "ai.org_memory_published",
   "ai.org_memory_entry_created",
   "ai.org_memory_entry_updated",
+  // Regra anotada pelo agente nasce proposta (#272): quem a aprovou, quem a recusou.
+  "ai.org_memory_proposal_approved",
+  "ai.org_memory_proposal_rejected",
   /** Provedor/modelo de um ponto do sistema que usa IA foi trocado no painel. */
   "ai.purpose_binding_updated",
   "ai.org_default_updated",

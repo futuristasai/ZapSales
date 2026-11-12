@@ -13,6 +13,8 @@
  */
 import { z } from "zod";
 
+import { avisarPropostaDeRegra, SITUACAO_DA_PROPOSTA } from "@/lib/ai/memoria/propostas";
+
 import {
   LIMIAR_PADRAO_BUSCA,
   buscarConhecimento,
@@ -190,8 +192,10 @@ const gravarMemoriaInputShape = {
 export const crmSaveOrgMemory: McpToolDefinition<typeof gravarMemoriaInputShape> = {
   name: "crm_save_org_memory",
   description:
-    "Registra um aprendizado que vale para toda a operação, não para um cliente só. Nasce com " +
-    "origem 'agent' para o humano distinguir o que a IA anotou do que ele mesmo escreveu.",
+    "PROPÕE um aprendizado que valeria para toda a operação, não para um cliente só. A proposta " +
+    "NÃO passa a valer na hora: um gestor precisa aprová-la em Memória da IA. Nasce com origem " +
+    "'agent' para o humano distinguir o que a IA anotou do que ele mesmo escreveu. Nunca diga " +
+    "ao cliente que a regra já foi adotada.",
   inputSchema: gravarMemoriaInputShape,
   category: "write",
   // `ai_operator`: a rota equivalente (`ai/memory/entries` POST) exige `manager`
@@ -207,12 +211,21 @@ export const crmSaveOrgMemory: McpToolDefinition<typeof gravarMemoriaInputShape>
         title: input.titulo,
         body: input.corpo,
         source: "agent",
-        status: "active",
+        // PROPOSTA, e nunca `active` (#272): a memória da organização entra nas
+        // instruções de TODO agente. Uma anotação que valesse na hora deixaria
+        // quem está do outro lado da conversa ditar regra para todos os
+        // clientes. O motor só carrega `active`; quem ativa é um gestor, pela
+        // tela. O banco recusa `agent` + `active` no INSERT (gatilho
+        // `trg_regra_do_agente_nasce_proposta`), venha de onde vier.
+        status: "proposed",
       })
       .select("id, title, status, created_at")
       .single();
 
     if (error) throw new Error(`gravar_memoria_falhou: ${error.message}`);
-    return { anotacao: data };
+    // Proposta que ninguém vê é regra que nunca entra: um aviso na Central
+    // enquanto houver pendência. Nunca lança.
+    await avisarPropostaDeRegra(ctx.supabase, ctx.organizationId);
+    return { anotacao: data, situacao: SITUACAO_DA_PROPOSTA };
   },
 };
