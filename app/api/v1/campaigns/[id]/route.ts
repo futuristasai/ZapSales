@@ -16,7 +16,9 @@ import type { NextRequest } from "next/server";
 
 import { fail, ok } from "@/lib/api/wrappers";
 import { requireRole } from "@/lib/auth/require-role";
+import { knobsDoCanal } from "@/lib/automation/janela-do-canal";
 import { carregarCampanha } from "@/lib/campanhas/acoes";
+import { janelaDeEnvioDaCampanha } from "@/lib/campanhas/agenda";
 import { ehEditavel, ehTerminal } from "@/lib/campanhas/maquina-de-estados";
 import { recusaDaConexaoComModelo, recusaDoNumeroDeAtendimento } from "@/lib/campanhas/modelo-da-campanha";
 import { gravarPool, lerPoolExtra } from "@/lib/campanhas/pool-de-numeros";
@@ -64,11 +66,26 @@ export async function GET(
   const extras = await lerPoolExtra(admin, authz.org.orgId, id);
   // Campanha oficial: quanto do limite diário do PORTFÓLIO já foi usado (issue
   // #9) — é o que explica uma campanha "em andamento" que parou de enviar.
-  const linha = data as unknown as { channel_session_id: string; meta_template_id: string | null };
+  const linha = data as unknown as {
+    channel_session_id: string;
+    meta_template_id: string | null;
+    janela_inicio_hora: number | null;
+    janela_fim_hora: number | null;
+  };
   const portfolio = linha.meta_template_id
     ? await usoDoPortfolio(admin, { channel_session_id: linha.channel_session_id })
     : null;
-  return ok({ ...(data as object), channel_session_ids: extras, portfolio }, { requestId });
+  // O horário de envio em vigor (issue #292): a tela de agendar precisa dele para
+  // ler o campo de data no fuso do NÚMERO e para avisar quando a hora escolhida
+  // cai fora — a campanha ficaria "em andamento" sem enviar nada até abrir.
+  const knobs = await knobsDoCanal(admin, authz.org.orgId, linha.channel_session_id);
+  const janela_de_envio = janelaDeEnvioDaCampanha(linha, {
+    fuso: knobs.timezone,
+    inicioHora: knobs.windowStartHour,
+    fimHora: knobs.windowEndHour,
+    permiteDomingo: knobs.allowSunday,
+  });
+  return ok({ ...(data as object), channel_session_ids: extras, portfolio, janela_de_envio }, { requestId });
 }
 
 export async function PATCH(

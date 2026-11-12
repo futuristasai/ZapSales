@@ -41,16 +41,16 @@
   <tbody>
     <tr><td><strong>Rascunho</strong></td><td>Criada e editável; nada foi enviado.</td><td>Editar, Preparar lista, Cancelar campanha, Duplicar.</td></tr>
     <tr><td><strong>Montando a lista</strong></td><td>Passagem curta, enquanto a lista é montada.</td><td>Só Duplicar.</td></tr>
-    <tr><td><strong>Pronta para iniciar</strong></td><td>Lista montada e congelada.</td><td>Enviar teste, Iniciar envio, Cancelar campanha, Duplicar.</td></tr>
-    <tr><td><strong>Agendada</strong></td><td>Tem data para começar.</td><td>Pausar, Cancelar campanha, Duplicar.</td></tr>
+    <tr><td><strong>Pronta para iniciar</strong></td><td>Lista montada e congelada.</td><td>Enviar teste, Iniciar envio, Agendar, Cancelar campanha, Duplicar.</td></tr>
+    <tr><td><strong>Agendada</strong></td><td>Tem dia e hora para começar sozinha.</td><td>Enviar agora, Mudar horário, Pausar, Cancelar campanha, Duplicar.</td></tr>
     <tr><td><strong>Enviando</strong></td><td>O sistema envia no ritmo do número.</td><td>Pausar, Cancelar campanha, Duplicar.</td></tr>
-    <tr><td><strong>Pausada</strong></td><td>Manual ou automática (com motivo).</td><td>Retomar, Cancelar campanha, Duplicar.</td></tr>
+    <tr><td><strong>Pausada</strong></td><td>Manual ou automática (com motivo).</td><td>Retomar, Agendar, Cancelar campanha, Duplicar.</td></tr>
     <tr><td><strong>Concluída</strong></td><td>Não resta ninguém a enviar.</td><td>Só Duplicar.</td></tr>
     <tr><td><strong>Cancelada</strong></td><td>Encerrada de vez.</td><td>Só Duplicar.</td></tr>
     <tr><td><strong>Falhou</strong></td><td>Falha do sistema.</td><td>Só Duplicar.</td></tr>
   </tbody>
 </table>
-<aside class="nota atencao"><strong>A tela não tem botão para agendar.</strong><p>“Agendada” só existe quando a campanha é agendada por integração (API). Pela tela, uma campanha pronta é iniciada na hora.</p></aside>
+<aside class="nota info"><strong>Dá para marcar dia e hora.</strong><p>Uma campanha pronta pode ser iniciada na hora (<span class="ui">Iniciar envio</span>) ou marcada para depois (<span class="ui">Agendar</span>). Vale para número de QR code e para a API Oficial. Veja <a href="#disparo-em-massa--agendar">Agendar o envio</a>.</p></aside>
 
 <h2 id="nova">Criar uma campanha</h2>
 <p>A tela <strong>Nova campanha</strong> é um formulário de uma página só, com uma <a href="#disparo-em-massa--faixa">faixa de resumo</a> no alto e cinco cartões. <em>“Isto cria um rascunho. Nada é enviado antes de você preparar a lista e iniciar.”</em></p>
@@ -225,6 +225,9 @@
     <tr><td><strong>Preparar lista</strong></td><td>Roda na hora: lê as pessoas do público, aplica os vetos e <strong>congela</strong> um destinatário por pessoa (com o texto já pronto). Nada é enviado. Se o recorte não achar ninguém — “O recorte não encontrou nenhum contato. Ajuste o filtro.” — ou ninguém puder receber, a campanha volta a Rascunho.</td></tr>
     <tr><td><strong>Enviar teste</strong></td><td>Manda <strong>uma mensagem real</strong>, pelo número da campanha, a um contato que você escolher. Veja abaixo.</td></tr>
     <tr><td><strong>Iniciar envio</strong></td><td>Pede confirmação (“Começar a enviar para N pessoa(s)? O envio segue o ritmo do número e pode levar horas.”). Depois a campanha vira <em>Enviando</em>. Em número de QR code exige antes o aceite do risco de banimento.</td></tr>
+    <tr><td><strong>Agendar</strong></td><td>Abre o cartão de dia e hora. Na hora marcada a campanha começa sozinha, sem ninguém clicar. Em número de QR code exige antes o aceite do risco de banimento. Veja <a href="#disparo-em-massa--agendar">abaixo</a>.</td></tr>
+    <tr><td><strong>Mudar horário</strong></td><td>Só em campanha <em>Agendada</em>: abre o mesmo cartão, já com o horário atual, e o botão vira <span class="ui">Salvar novo horário</span>.</td></tr>
+    <tr><td><strong>Enviar agora</strong></td><td>Só em campanha <em>Agendada</em>: é o <span class="ui">Iniciar envio</span> dela. Pede a mesma confirmação, começa na hora e a data marcada deixa de valer.</td></tr>
     <tr><td><strong>Pausar</strong></td><td>Para os novos envios. Sem confirmação. A mensagem que já estava saindo não é desfeita.</td></tr>
     <tr><td><strong>Retomar</strong></td><td>Reinicia de onde parou, com as mesmas recusas do Iniciar. Uma campanha que pausou por teto de gasto só retoma depois de aumentar o teto.</td></tr>
     <tr><td><strong>Cancelar campanha</strong></td><td>Pede confirmação: “Cancelar é definitivo: quem ainda não recebeu não recebe mais, e a campanha não volta a rodar.”. O que já saiu continua enviado.</td></tr>
@@ -270,6 +273,19 @@
   <li><strong>Salvar ritmo.</strong> Grava o ritmo. Mostra “Ritmo salvo.”.</li>
 </ol>
 <p>Pausas automáticas: <em>qualidade do número vermelha</em>, <em>modelo rejeitado, pausado, desativado ou recategorizado</em>, <em>risco de banimento não aceito</em> (campanha agendada que chegou na hora sem o aceite) e <em>teto de gasto</em>. Retomar com número de qualidade vermelha ou modelo reprovado é recusado.</p>
+
+<h3 id="agendar">Agendar o envio</h3>
+<p>Em campanha <em>Pronta para iniciar</em> (ou <em>Pausada</em>), clique em <span class="ui">Agendar</span>. O cartão <strong>Agendar o envio</strong> pede uma coisa só: o <strong>dia e hora do início</strong>.</p>
+<ul>
+  <li><strong>O horário é o do número.</strong> Logo abaixo do campo a tela diz qual fuso vale e que horas são nele agora (“Vale o horário do número: Horário de Brasília. Agora são 14:32.”). Se você está em outra cidade ou país, é esse relógio que conta, não o do seu computador.</li>
+  <li><strong>A tela diz quando o envio começa de verdade.</strong> Dentro do horário de envio: “A campanha começa a enviar sexta-feira, 13/11, 09:30.”</li>
+  <li><strong>Fora do horário de envio, ela avisa.</strong> Exemplo: “Esse horário fica fora do horário de envio (7h–22h). A campanha fica agendada, mas só começa a enviar sábado, 14/11, 07:00.” Dá para agendar assim mesmo: a campanha espera o horário abrir. O mesmo vale para o número que não envia aos domingos.</li>
+  <li><strong>Horário que já passou não agenda</strong> (“Esse horário já passou…”), nem data a mais de um ano.</li>
+</ul>
+<p>Clique em <span class="ui">Agendar envio</span>. A campanha vira <em>Agendada</em> e ganha o cartão <strong>Envio agendado</strong>, com o dia e a hora por extenso. Na lista de campanhas ela aparece como “começa 13/11/2026, 09:30”. Até a hora marcada dá para <span class="ui">Mudar horário</span>, <span class="ui">Enviar agora</span>, <span class="ui">Pausar</span> ou <span class="ui">Cancelar campanha</span>.</p>
+<p>Chegada a hora, o sistema começa o envio em até um minuto, no mesmo ritmo de uma campanha iniciada à mão. A tela aberta mostra a mudança sozinha.</p>
+<aside class="nota atencao"><strong>Pausar uma agendada tira a hora marcada de vigor.</strong><p>Numa campanha <em>Pausada</em>, <span class="ui">Retomar</span> começa a enviar <strong>na hora</strong>. Para ela voltar a esperar um dia e hora, use <span class="ui">Agendar</span>.</p></aside>
+<aside class="nota info"><strong>O agendamento não refaz a lista.</strong><p>Quem recebe é quem estava na lista quando ela foi preparada. Quem pediu para parar ou foi bloqueado depois disso continua de fora: essa conferência é feita de novo a cada envio.</p></aside>
 
 <h3>Outros cartões do detalhe</h3>
 <ul>

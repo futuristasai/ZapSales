@@ -20,6 +20,7 @@ import type { ApiErrorCode } from "@/lib/api/errors";
 import { sendMessageHandler } from "@/app/api/v1/messages/_handler";
 import { beginServiceAtOrigin } from "@/lib/atendimento/origem";
 
+import { recusaDaAgenda } from "./agenda";
 import { baseLegalValida, motivoParaExcluir, recusouMarketing } from "./elegibilidade";
 import { ehStatusDaCampanha, podeTransitar } from "./maquina-de-estados";
 import { prepararCampanha } from "./preparacao";
@@ -428,26 +429,42 @@ export async function iniciarAcao(
   return { ok: true, retomada };
 }
 
+/**
+ * Agendar — e REMARCAR, que é a mesma ação numa campanha já agendada.
+ *
+ * Remarcar não passa pela máquina de estados de propósito: ela só conhece
+ * mudança de estado, e responderia "a campanha já está em scheduled" a quem só
+ * quer trocar a hora (issue #292). O estado fica; muda o `scheduled_at`. Todo o
+ * resto do portão é o mesmo de agendar pela primeira vez — o modelo pode ter
+ * sido rejeitado, e o número pode ter ficado vermelho, entre uma marcação e a
+ * outra.
+ */
 export async function agendarAcao(
   admin: SupabaseClient,
   c: CampanhaCarregada,
   quando: Date,
   agora: Date,
-): Promise<Desfecho> {
-  const recusa = recusaDeTransicao(c.status, "scheduled") ?? faltaParaEnviar(c) ?? riscoNaoAceito(c);
+): Promise<Desfecho<{ remarcada: boolean }>> {
+  const remarcada = c.status === "scheduled";
+  const recusa =
+    (remarcada ? null : recusaDeTransicao(c.status, "scheduled")) ?? faltaParaEnviar(c) ?? riscoNaoAceito(c);
   if (recusa) return recusa;
+  const foraDaAgenda = recusaDaAgenda(quando, agora);
+  if (foraDaAgenda) {
+    return {
+      ok: false,
+      codigo: "campanha_agenda_invalida",
+      mensagem:
+        foraDaAgenda === "passado"
+          ? "Escolha uma data no futuro — para enviar agora, use Iniciar."
+          : "Escolha uma data dentro de um ano.",
+      status: 422,
+    };
+  }
   const conteudo = await conteudoOficial(admin, c);
   if (!conteudo.ok) return conteudo;
   const vermelho = await recusaPorQualidade(admin, c);
   if (vermelho) return vermelho;
-  if (quando.getTime() <= agora.getTime()) {
-    return {
-      ok: false,
-      codigo: "campanha_agenda_invalida",
-      mensagem: "Escolha uma data no futuro — para enviar agora, use Iniciar.",
-      status: 422,
-    };
-  }
   const { data } = await admin
     .from("campaigns")
     .update({
@@ -461,7 +478,7 @@ export async function agendarAcao(
     .eq("status", c.status)
     .select("id");
   if ((data ?? []).length === 0) return conflitoDeCorrida();
-  return { ok: true };
+  return { ok: true, remarcada };
 }
 
 export async function pausarAcao(

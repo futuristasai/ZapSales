@@ -111,9 +111,15 @@ export async function POST(
       if (!parsed.success) {
         return fail("validation_failed", t("Informe a data do agendamento."), 422, { requestId });
       }
-      desfecho = await agendarAcao(admin, campanha, new Date(parsed.data.scheduled_at), agora);
+      const r = await agendarAcao(admin, campanha, new Date(parsed.data.scheduled_at), agora);
+      desfecho = r;
       acaoAuditada = "campaign.scheduled";
-      extra = { scheduled_at: parsed.data.scheduled_at };
+      // Remarcação leva a hora ANTERIOR: sem ela a trilha diz que a campanha foi
+      // agendada duas vezes e não diz que a primeira data deixou de valer.
+      extra = {
+        scheduled_at: parsed.data.scheduled_at,
+        ...(r.ok && r.remarcada ? { scheduled_at_anterior: campanha.scheduled_at } : {}),
+      };
       break;
     }
     case "pausar": {

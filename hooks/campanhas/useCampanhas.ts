@@ -11,6 +11,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { showApiError } from "@/components/feedback/ApiErrorToast";
 import { apiClient } from "@/lib/api/client";
+import type { JanelaDeEnvio } from "@/lib/campanhas/agenda";
 import type { ContagemDaCampanha, TaxasDaCampanha } from "@/lib/campanhas/metricas";
 import type { ModeloParaCampanha } from "@/lib/campanhas/modelos-da-campanha";
 import type { UsoDoPortfolio } from "@/lib/campanhas/portfolio-da-campanha";
@@ -76,6 +77,8 @@ export interface CampanhaDetalhada extends CampanhaDaLista {
   risco_de_banimento_aceito_em?: string | null;
   /** Campanha oficial: o uso do limite diário do portfólio da Meta (issue #9). */
   portfolio?: UsoDoPortfolio | null;
+  /** O horário de envio em vigor, no fuso do número (issue #292). */
+  janela_de_envio?: JanelaDeEnvio;
 }
 
 export interface Destinatario {
