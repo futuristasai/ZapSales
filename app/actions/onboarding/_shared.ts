@@ -8,6 +8,7 @@
  */
 import { supportWriteError } from "@/lib/impersonate/support";
 import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
+import { roleAtLeast } from "@/lib/auth/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ehOperante } from "@/lib/organizacao/operante";
 import { redirect } from "next/navigation";
@@ -38,7 +39,27 @@ export interface OnboardingCtx {
   email: string;
 }
 
+/**
+ * A configuração inicial é de quem ADMINISTRA a organização (#273).
+ *
+ * As ações daqui gravam com o cliente de serviço e mexem no que define a
+ * empresa: o nome, o que o agente diz, o funil, a chave de IA. Conferir só "é
+ * membro?" deixava qualquer papel chamá-las — a tela some para quem não é
+ * admin, mas a ação por trás dela continua endereçável.
+ *
+ * Quem não é admin e cai numa organização ainda não configurada não fica
+ * preso num vai-e-vem: o layout do onboarding o manda para
+ * `/aguardando-administrador`.
+ */
+const MOTIVO_SO_ADMIN = "A configuração inicial é feita por quem administra a organização.";
+
 export async function requireOnboardingCtx(orgIdDaAba?: string): Promise<OnboardingCtx> {
+  const ctx = await resolverCtx(orgIdDaAba);
+  if (!roleAtLeast(ctx.role, "admin")) throw new OnboardingError("forbidden", MOTIVO_SO_ADMIN);
+  return ctx;
+}
+
+async function resolverCtx(orgIdDaAba?: string): Promise<OnboardingCtx> {
   const user = await loadAuthUser();
   if (!user) throw new OnboardingError("auth_required", "Auth required.");
   if (supportWriteError(user.support)) throw new OnboardingError("forbidden", "Acompanhamento somente leitura ou encerrado.");

@@ -26,7 +26,7 @@ export default async function FunilPage() {
   if (!activeOrg) redirect("/login");
   const idioma = user.idioma;
 
-  const { atual, sugestao } = await dadosDoPasso(activeOrg.orgId, activeOrg.name);
+  const { atual, sugestao } = await dadosDoPasso(activeOrg.name);
 
   return (
     <Passo

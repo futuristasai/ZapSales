@@ -3885,3 +3885,18 @@ Origem: o tipo de um anexo é escrito por quem o enviou, e o arquivo é servido 
 | Word, Excel e afins: download com o tipo do documento | `[P1]` | `tests/unit/entrega-segura-de-anexos.test.ts` |
 
 **Não coberto:** a prova com um arquivo enviado de um WhatsApp real para um número conectado — a spec semeia a mensagem e o objeto direto no banco e no Storage.
+
+
+## Membro que não administra, em empresa ainda não configurada `[P0]` (2026-11-12, issue #273)
+
+Origem: a configuração inicial passou a ser só de quem administra a organização — as ações do onboarding recusam os demais papéis. Quem não é admin e entra antes de ela terminar vai para `/aguardando-administrador`, fora dos layouts de `/app` e de `/onboarding`.
+
+| caso | prioridade | estado |
+|---|---|---|
+| Login de atendente em empresa não configurada para na tela de espera, com o nome da empresa | `[P0]` | spec `tests/e2e/aguardando-administrador.spec.ts` |
+| Pedir `/app`, `/app/inbox` e `/onboarding` à mão devolve para a mesma tela, sem erro e sem laço | `[P0]` | mesma spec |
+| Terminada a configuração, "Conferir de novo" entra no app | `[P0]` | mesma spec |
+| Administrador faz a configuração inicial inteira, como antes | `[P0]` | `vps-fresh-onboarding.spec.ts` (sem alteração) |
+| Viewer, atendente e gerente são recusados em toda ação do onboarding | `[P0]` | `tests/unit/onboarding-so-quem-administra.test.ts` |
+
+**Não coberto:** a tela de espera nos outros três idiomas pela tela (as traduções existem nos catálogos; só o português é dirigido pela spec).

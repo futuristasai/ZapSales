@@ -125,7 +125,12 @@ export interface DadosDoPasso {
  * passo com a proposta pronta na tela; pedir que ela clique em "gerar sugestão"
  * primeiro seria cobrar um passo a mais para chegar ao mesmo lugar.
  */
-export async function dadosDoPasso(orgId: string, negocio: string): Promise<DadosDoPasso> {
+export async function dadosDoPasso(negocio: string): Promise<DadosDoPasso> {
+  // A organização vem da SESSÃO, e só de quem a administra. Este arquivo é
+  // "use server": toda função exportada daqui é uma ação endereçável por
+  // qualquer sessão. Recebendo o id por argumento, quem chamasse escolhia de
+  // qual empresa ler o funil e com a chave de IA de quem gerar a sugestão (#273).
+  const { orgId } = await requireOnboardingCtx();
   const admin = createAdminClient();
   const atual = await carregarQuadroAtual(admin, orgId);
 

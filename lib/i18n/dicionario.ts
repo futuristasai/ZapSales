@@ -8021,6 +8021,10 @@ export const DICIONARIO: Traducoes = {
       es: "; en un Supabase propio, apuntando GOTRUE_MAILER_TEMPLATES_* a las rutas /email-templates/ de la app.",
     },
   "Conta suspensa": { es: "Cuenta suspendida" },
+  "Configuração em andamento": { es: "Configuración en curso" },
+  "Quem administra esta empresa ainda não terminou a configuração inicial. Assim que terminar, você entra normalmente.": { es: "Quien administra esta empresa todavía no terminó la configuración inicial. En cuanto termine, entrarás normalmente." },
+  "Você não precisa fazer nada agora.": { es: "No necesitas hacer nada ahora." },
+  "Conferir de novo": { es: "Comprobar de nuevo" },
   // Tela irmã de `/account-suspended`: quem TINHA acesso e não tem mais.
   "Acesso revogado": { es: "Acceso revocado" },
   "Seu acesso a esta organização foi retirado. Se você acredita que isso é um engano, fale com quem administra a empresa — só ela pode devolvê-lo.":
