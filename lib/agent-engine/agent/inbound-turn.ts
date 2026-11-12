@@ -71,6 +71,13 @@ import {
 } from '../edge/llm/run-model-call';
 import type { ProviderRegistry } from '../edge/llm/providers';
 import { HANDOFF_REASON_ORCAMENTO } from '../edge/llm/orcamento';
+import {
+  consultarTetoPorContato,
+  HANDOFF_REASON_TETO_POR_CONTATO,
+  resumoDoHandoffPorTetoDeContato,
+  TITULO_DO_HANDOFF_POR_TETO_DE_CONTATO,
+  type VereditoDoTeto,
+} from './teto-por-contato';
 import { abreAvisoDoEspelhoRecusado, mirrorLeadStageToCrm } from '../edge/crm/move-lead-stage';
 import { insertInboxItem } from '../db/repository';
 import { idiomaPeloPool } from '@/lib/i18n/aviso-no-idioma';
@@ -220,6 +227,7 @@ import {
   montarBriefingDaPassagem,
   type BriefingDaPassagem,
 } from '@/lib/escalacao/briefing-da-passagem';
+import type { MotivoDaPassagem } from '@/lib/escalacao/passagem';
 import { diffCheckpoint } from '@/lib/leads/checkpoint-diff';
 import { emitAgentActivityForContact } from '@/lib/leads/agent-activity';
 import { resolveActiveLeadForContact, type LeadCandidate } from '@/lib/leads/active-lead';
@@ -795,9 +803,10 @@ async function briefingDoCheckpointDuravel(
   tenantId: string,
   leadId: string,
   log: Logger,
+  motivo: MotivoDaPassagem = 'orcamento_de_ia',
 ): Promise<BriefingDaPassagem> {
   const montar = (checkpoint: Awaited<ReturnType<typeof latestCheckpoint>>) =>
-    montarBriefingDaPassagem({ checkpoint, motivo: { codigo: 'orcamento_de_ia' } });
+    montarBriefingDaPassagem({ checkpoint, motivo: { codigo: motivo } });
   try {
     return montar(await latestCheckpoint(pool, tenantId, leadId));
   } catch (err) {
@@ -806,6 +815,106 @@ async function briefingDoCheckpointDuravel(
     });
     return montar(null);
   }
+}
+
+/**
+ * O TETO DE ATENDIMENTOS AUTOMÁTICOS POR CONTATO (#271) — o desvio.
+ *
+ * A regra e a consulta moram em `./teto-por-contato.ts`. Aqui só o que o turno
+ * faz com o veredito: quando o contato já foi atendido pela IA o número de
+ * vezes que a organização permite, ESTE turno não chama modelo nenhum — avisa
+ * o cliente, passa a conversa para a fila humana e abre um aviso na Central.
+ *
+ * Devolve `true` quando o turno deve terminar aqui.
+ *
+ * ═══ POR QUE NÃO HÁ UM AVISO POR MENSAGEM ═══
+ *
+ * `performHumanHandoff` grava `force_human` e silencia a conversa. Toda
+ * mensagem seguinte do mesmo contato vira um turno que é no-op na primeira
+ * linha do núcleo (`isLeadInHandoff`), antes de chegar aqui. Um estouro, um
+ * aviso — e a conta recomeça quando uma pessoa devolve a conversa.
+ *
+ * ═══ LEITURA QUE FALHA NÃO DERRUBA O ATENDIMENTO ═══
+ *
+ * Se a consulta do teto lançar, o turno SEGUE e o motivo vai ao log. Esta
+ * guarda protege gasto; trocar "um contato pode gastar demais" por "ninguém é
+ * atendido enquanto a consulta falha" seria errar para o lado caro. O teto
+ * mensal da organização continua valendo no seam de modelo.
+ *
+ * A mesma ORDEM do desvio por orçamento: avisa ANTES de silenciar, porque a
+ * passagem arma a trava que o gate de envio lê.
+ */
+export async function passarParaHumanoSeOContatoEstourouOTeto(ctx: {
+  pool: pg.Pool;
+  tenantId: string;
+  leadId: string;
+  conversationId: string;
+  /** O relógio do turno — o mesmo que avalia a janela de envio. */
+  agora: Date;
+  /** Resolvido só quando o teto estourou; o caminho feliz não paga por ele. */
+  avisarLead: () => Promise<DesfechoDoAviso>;
+  log: Logger;
+}): Promise<boolean> {
+  let veredito: VereditoDoTeto;
+  try {
+    veredito = await consultarTetoPorContato(ctx.pool, {
+      tenantId: ctx.tenantId,
+      leadId: ctx.leadId,
+      agora: ctx.agora,
+    });
+  } catch (err) {
+    ctx.log.warn('teto por contato não pôde ser lido — o turno segue', {
+      error: (err instanceof Error ? err.message : String(err)).slice(0, 160),
+    });
+    return false;
+  }
+  if (!veredito.estourou) return false;
+
+  const idioma = await idiomaPeloPool(ctx.pool, ctx.tenantId);
+  const doCheckpoint = await briefingDoCheckpointDuravel(
+    ctx.pool,
+    ctx.tenantId,
+    ctx.leadId,
+    ctx.log,
+    HANDOFF_REASON_TETO_POR_CONTATO,
+  );
+  let aviso: DesfechoDoAviso;
+  try {
+    aviso = await ctx.avisarLead();
+  } catch (erroDoAviso) {
+    ctx.log.warn('aviso ao lead falhou antes da passagem por teto de contato', {
+      error: erroDoAviso instanceof Error ? erroDoAviso.message.slice(0, 200) : 'erro desconhecido',
+    });
+    aviso = { avisado: false, porque: 'erro_no_envio' };
+  }
+  const briefing: BriefingDaPassagem = {
+    ...doCheckpoint,
+    body: `${resumoDoHandoffPorTetoDeContato(veredito, idioma)}\n\n${doCheckpoint.body}`,
+  };
+  await performHumanHandoff(
+    ctx.pool,
+    { tenantId: ctx.tenantId, leadId: ctx.leadId, conversationId: ctx.conversationId },
+    {
+      reason: HANDOFF_REASON_TETO_POR_CONTATO,
+      conversationSummary: briefing.body,
+      inboxTitle: traduzir(TITULO_DO_HANDOFF_POR_TETO_DE_CONTATO, idioma),
+      passagem: {
+        origem: 'teto_por_contato',
+        motivoCodigo: HANDOFF_REASON_TETO_POR_CONTATO,
+        briefing,
+        idioma,
+      },
+      avisoAoLead: aviso,
+      log: ctx.log,
+    },
+  );
+  ctx.log.warn('turno recusado pelo teto por contato — conversa passada à fila humana', {
+    janela: veredito.janela,
+    contagem: veredito.contagem,
+    limite: veredito.limite,
+    lead_avisado: aviso.avisado,
+  });
+  return true;
 }
 
 /**
@@ -2072,6 +2181,49 @@ async function executarTurnoDoAgente(
         error: (err instanceof Error ? err.message : String(err)).slice(0, 120),
       });
     }
+  }
+
+  // TETO POR CONTATO (#271) — depois das guardas que não custam nada (handoff,
+  // elegibilidade, janela) e ANTES da primeira chamada de modelo do turno, que
+  // é o roteador de intenção logo abaixo. Só a REAÇÃO a uma mensagem recebida é
+  // medida: é ela que o outro lado consegue disparar à vontade. Retomada e
+  // retaguarda são agendadas pelo próprio sistema.
+  if (!preview && eTurnoDeResposta(liveJob())) {
+    const jobDoTeto = liveJob();
+    const estourou = await passarParaHumanoSeOContatoEstourouOTeto({
+      pool,
+      tenantId,
+      leadId,
+      conversationId: input.conversationId,
+      agora: clock(),
+      avisarLead: () =>
+        avisarLeadLendoOContato(
+          pool,
+          {
+            tenantId,
+            leadId,
+            conversationId: input.conversationId,
+            channelSessionId: input.channelSessionId,
+            jobId: jobDoTeto.id,
+          },
+          {
+            // A frase é a de "a IA está saindo de campo e o cliente não pediu":
+            // a mesma do teto de gasto, que não cita motivo nenhum ao cliente.
+            motivo: 'orcamento_de_ia',
+            channel: (deps.channel ?? ((p: pg.Pool) => new WahaChannelAdapter(p, deps.crmCfg)))(
+              pool,
+            ),
+            now: clock(),
+            log: runLog,
+            ...(deps.knobs.disclosureMode !== undefined
+              ? { disclosureMode: deps.knobs.disclosureMode }
+              : {}),
+            ...(deps.sleep !== undefined ? { sleep: deps.sleep } : {}),
+          },
+        ),
+      log: runLog,
+    });
+    if (estourou) return;
   }
 
   const routed = preview

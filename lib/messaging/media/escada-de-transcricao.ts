@@ -38,6 +38,12 @@ import { transcreveAudio } from "@/lib/agent-engine/edge/llm/capabilities";
 import { createDefaultRegistry } from "@/lib/agent-engine/edge/llm/providers";
 import { env } from "@/lib/env";
 
+import {
+  medidaDoModeloDeConversa,
+  medidaDoServicoDeTranscricao,
+  provedorDoServico,
+  type MedidaDeMidia,
+} from "@/lib/messaging/media/gasto-da-midia";
 import type { TranscriptionProvider } from "@/lib/messaging/media/transcription";
 import {
   apiTranscriptionProvider,
@@ -99,6 +105,8 @@ export function transcricaoPeloModelo(modelo: {
   modelId: string;
   apiKey: string; baseUrl?: string | null;
   languages?: readonly string[];
+  /** Recebe o que a chamada custou (#271). */
+  aoGastar?: (medida: MedidaDeMidia) => void;
 }): TranscriptionProvider {
   const registry = createDefaultRegistry();
   return {
@@ -109,6 +117,7 @@ export function transcricaoPeloModelo(modelo: {
         // e a exceção vira `failed` + motivo no worker em vez de texto vazio.
         throw new Error(`transcription_provider_unavailable: ${modelo.provider}`);
       }
+      const inicio = Date.now();
       const res = await generateText({
         model: factory(modelo.apiKey, modelo.modelId, modelo.baseUrl ?? undefined),
         messages: [
@@ -121,6 +130,15 @@ export function transcricaoPeloModelo(modelo: {
           },
         ],
       });
+      modelo.aoGastar?.(
+        medidaDoModeloDeConversa({
+          ponto: "transcricao_de_audio",
+          provider: modelo.provider,
+          model: modelo.modelId,
+          usage: res.usage,
+          latencyMs: Date.now() - inicio,
+        }),
+      );
       return (res.text ?? "").trim();
     },
   };
@@ -134,8 +152,22 @@ export async function decidirTranscricao(entrada: {
   conversa?: ConversaDaOrganizacao | null;
   idiomas?: readonly string[];
   chaveOpenai?: () => Promise<string | null>;
+  /**
+   * Recebe o gasto de cada transcrição que der certo, qualquer que seja o
+   * degrau (#271). Ausente = ninguém registra, que é o comportamento de antes.
+   */
+  aoGastar?: (medida: MedidaDeMidia) => void;
 }): Promise<DecisaoDeTranscricao> {
   const idiomas = entrada.idiomas ?? idiomasDaTranscricao(env.TRANSCRIPTION_LANGUAGES);
+  const aoGastar = entrada.aoGastar;
+  /** O degrau do serviço mede pela resposta do serviço; o provedor sai do endereço. */
+  const medirServico = (baseUrl: string | undefined) =>
+    aoGastar === undefined
+      ? {}
+      : {
+          aoMedir: (m: { model: string; usage: unknown; latencyMs: number }) =>
+            aoGastar(medidaDoServicoDeTranscricao({ provider: provedorDoServico(baseUrl), ...m })),
+        };
 
   // 1 · Serviço de transcrição da instalação — escolha explícita.
   const servico = env.TRANSCRIPTION_API_KEY;
@@ -147,6 +179,7 @@ export async function decidirTranscricao(entrada: {
         baseUrl: env.TRANSCRIPTION_BASE_URL || undefined,
         model: env.TRANSCRIPTION_MODEL || undefined,
         languages: idiomas,
+        ...medirServico(env.TRANSCRIPTION_BASE_URL || undefined),
       }),
       motivo:
         "o serviço de transcrição configurado nesta instalação (TRANSCRIPTION_API_KEY) é o que ouve os áudios",
@@ -167,6 +200,7 @@ export async function decidirTranscricao(entrada: {
           baseUrl: env.TRANSCRIPTION_BASE_URL,
         }),
         languages: idiomas,
+        ...medirServico(undefined),
       }),
       motivo: "a chave OpenAI desta organização ou instalação usa o padrão de transcrição de sempre",
     };
@@ -187,6 +221,7 @@ export async function decidirTranscricao(entrada: {
         apiKey: conversa.apiKey,
         baseUrl: conversa.baseUrl ?? null,
         languages: idiomas,
+        ...(aoGastar !== undefined ? { aoGastar } : {}),
       }),
       motivo: `o modelo de conversa ${conversa.modelId} declara a capacidade audio e transcreve com a própria chave`,
     };
