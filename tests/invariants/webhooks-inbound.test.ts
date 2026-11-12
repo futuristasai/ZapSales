@@ -1427,3 +1427,217 @@ describe("POST /api/v1/webhooks/in/[token] — Elementor Pro (fields[id][value])
     expect(cf).not.toHaveProperty("__is_ajax");
   });
 });
+
+/**
+ * O REPETIDO É DA FONTE, NÃO DA ORGANIZAÇÃO (#270).
+ *
+ * Uma organização tem várias fontes de captação, e o identificador externo é
+ * escolhido por quem envia. Enquanto o repetido era conferido pela organização
+ * inteira, quem preenchesse o formulário público com o identificador que a
+ * integração assinada ia usar "ocupava" esse identificador: o envio de verdade
+ * chegava depois, era tomado por repetido e nenhum lead nascia.
+ *
+ * As duas fontes daqui são as do topo do arquivo: `TOKEN_JSON` (sem assinatura,
+ * o formulário público) e `TOKEN_SECRET` (assinada, a integração).
+ */
+describe("repetidos por FONTE (#270)", () => {
+  function assinado(body: Record<string, unknown>) {
+    const raw = JSON.stringify(body);
+    return new NextRequest(`http://localhost/api/v1/webhooks/in/${TOKEN_SECRET}`, {
+      method: "POST",
+      body: raw,
+      headers: {
+        "content-type": "application/json",
+        "x-zapsales-signature": createHmac("sha256", SECRET).update(raw).digest("hex"),
+      },
+    });
+  }
+
+  async function leadDe(res: Response): Promise<string> {
+    expect(res.status).toBe(200);
+    return ((await res.json()) as { data: { lead_id: string } }).data.lead_id;
+  }
+
+  const doIdentificador = (x: string) =>
+    rows(
+      `select id, webhook_source_id from public.crm_leads
+        where organization_id = '${GOV_ORG}' and external_id = '${x}' order by created_at`,
+    );
+
+  /** Um lead de antes da coluna: tem identificador externo e não tem fonte. */
+  function leadLegado(x: string, titulo: string): string {
+    const id = randomUUID();
+    sql(`insert into public.crm_leads
+           (id, organization_id, pipeline_id, stage_id, title, status, position_in_stage, source, external_id)
+         values ('${id}', '${GOV_ORG}', '${GOV_PIPELINE}', '${GOV_STAGE}', '${titulo}', 'open', 1, 'webhook', '${x}');`);
+    return id;
+  }
+
+  it("⭐ o formulário público usa o identificador X; a integração assinada envia X e é processada normalmente", async () => {
+    const X = "pedido-270-ocupado-0001";
+    const doFormulario = await leadDe(
+      await POST(jsonReq(TOKEN_JSON, { nome: "Formulário 270", telefone: "11940002701", external_id: X }), reqCtx(TOKEN_JSON)),
+    );
+    const daIntegracao = await leadDe(
+      await POST(assinado({ nome: "Integração 270", telefone: "11940002702", external_id: X }), reqCtx(TOKEN_SECRET)),
+    );
+
+    expect(daIntegracao, "a integração assinada foi tomada por repetido do formulário público").not.toBe(doFormulario);
+    const linhas = doIdentificador(X);
+    expect(linhas).toHaveLength(2);
+    expect(linhas.map((l) => l.webhook_source_id).sort()).toEqual([WHIN_SOURCE_JSON, WHIN_SOURCE_SECRET].sort());
+    // E o lead da integração é o DELA: nome e contato do envio assinado.
+    expect(rows(`select title from public.crm_leads where id = '${daIntegracao}'`)[0]!.title).toBe("Integração 270");
+  });
+
+  it("⭐ a MESMA fonte reenviando o mesmo identificador continua deduplicada", async () => {
+    const X = "pedido-270-retry-0002";
+    const corpo = { nome: "Retry 270", telefone: "11940002703", external_id: X };
+    const primeiro = await leadDe(await POST(assinado(corpo), reqCtx(TOKEN_SECRET)));
+    const segundo = await leadDe(await POST(assinado(corpo), reqCtx(TOKEN_SECRET)));
+    expect(segundo).toBe(primeiro);
+    expect(doIdentificador(X)).toHaveLength(1);
+
+    // O mesmo vale para a fonte sem assinatura.
+    const Y = "pedido-270-retry-0003";
+    const corpoY = { nome: "Retry público 270", telefone: "11940002704", external_id: Y };
+    const a = await leadDe(await POST(jsonReq(TOKEN_JSON, corpoY), reqCtx(TOKEN_JSON)));
+    const b = await leadDe(await POST(jsonReq(TOKEN_JSON, corpoY), reqCtx(TOKEN_JSON)));
+    expect(b).toBe(a);
+    expect(doIdentificador(Y)).toHaveLength(1);
+  });
+
+  it("o lead novo nasce com a fonte gravada em COLUNA, não só no metadado", async () => {
+    const id = await leadDe(
+      await POST(jsonReq(TOKEN_JSON, { nome: "Coluna 270", telefone: "11940002705" }), reqCtx(TOKEN_JSON)),
+    );
+    const linha = rows(`select webhook_source_id, source_metadata from public.crm_leads where id = '${id}'`)[0]!;
+    expect(linha.webhook_source_id).toBe(WHIN_SOURCE_JSON);
+    expect((linha.source_metadata as Record<string, unknown>).webhook_source_id).toBe(WHIN_SOURCE_JSON);
+  });
+
+  it("fonte SEM assinatura: lead antigo sem fonte ainda conta como repetido (a idempotência de sempre)", async () => {
+    const X = "pedido-270-legado-0004";
+    const antigo = leadLegado(X, "Legado 270");
+    const devolvido = await leadDe(
+      await POST(jsonReq(TOKEN_JSON, { nome: "Depois do legado", telefone: "11940002706", external_id: X }), reqCtx(TOKEN_JSON)),
+    );
+    expect(devolvido).toBe(antigo);
+    expect(doIdentificador(X)).toHaveLength(1);
+  });
+
+  it("⭐ fonte ASSINADA: lead antigo sem fonte NÃO barra o envio", async () => {
+    const X = "pedido-270-legado-0005";
+    const antigo = leadLegado(X, "Legado ocupando 270");
+    const novo = await leadDe(
+      await POST(assinado({ nome: "Assinado depois do legado", telefone: "11940002707", external_id: X }), reqCtx(TOKEN_SECRET)),
+    );
+    expect(novo).not.toBe(antigo);
+    const linhas = doIdentificador(X);
+    expect(linhas).toHaveLength(2);
+    expect(linhas.find((l) => l.id === novo)!.webhook_source_id).toBe(WHIN_SOURCE_SECRET);
+    expect(linhas.find((l) => l.id === antigo)!.webhook_source_id).toBeNull();
+  });
+
+  describe("o que o banco garante", () => {
+    const inserir = (x: string, fonte: string | null) =>
+      `insert into public.crm_leads
+         (organization_id, pipeline_id, stage_id, title, status, position_in_stage, source, external_id, webhook_source_id)
+       values ('${GOV_ORG}', '${GOV_PIPELINE}', '${GOV_STAGE}', 'sonda 270', 'open', 1, 'webhook', '${x}',
+               ${fonte === null ? "null" : `'${fonte}'`});`;
+
+    it("o mesmo identificador em fontes DIFERENTES convive; na MESMA fonte é 23505", () => {
+      const X = "pedido-270-indice-0006";
+      sql(inserir(X, WHIN_SOURCE_JSON));
+      sql(inserir(X, WHIN_SOURCE_SECRET));
+      expect(() => sql(inserir(X, WHIN_SOURCE_JSON))).toThrowError(/uniq_crm_leads_org_fonte_external|duplicate key/);
+      expect(doIdentificador(X)).toHaveLength(2);
+    });
+
+    it("sem fonte, o índice antigo continua valendo: dois leads legados com o mesmo identificador não convivem", () => {
+      const X = "pedido-270-indice-0007";
+      sql(inserir(X, null));
+      expect(() => sql(inserir(X, null))).toThrowError(/uniq_crm_leads_org_source_external|duplicate key/);
+    });
+
+    it("os dois índices existem com a forma certa", () => {
+      const defs = rows(
+        `select indexname, indexdef from pg_indexes
+          where schemaname = 'public' and indexname in ('uniq_crm_leads_org_fonte_external', 'uniq_crm_leads_org_source_external')`,
+      );
+      const por = Object.fromEntries(defs.map((d) => [d.indexname as string, String(d.indexdef).toLowerCase()]));
+      expect(por.uniq_crm_leads_org_fonte_external).toMatch(/unique index/);
+      expect(por.uniq_crm_leads_org_fonte_external).toMatch(/\(organization_id, webhook_source_id, external_id\)/);
+      expect(por.uniq_crm_leads_org_fonte_external).toMatch(/webhook_source_id is not null/);
+      expect(por.uniq_crm_leads_org_source_external).toMatch(/webhook_source_id is null/);
+    });
+
+    it("apagar a fonte não apaga o lead: a coluna fica nula", () => {
+      const fonte = randomUUID();
+      const X = "pedido-270-fonte-apagada-0008";
+      sql(`insert into public.webhook_sources
+             (id, organization_id, name, path_token, default_pipeline_id, default_stage_id)
+           values ('${fonte}', '${GOV_ORG}', 'Fonte a apagar 270', 'wh-in-270-apagar-${fonte.slice(0, 8)}', '${GOV_PIPELINE}', '${GOV_STAGE}');`);
+      sql(inserir(X, fonte));
+      sql(`delete from public.webhook_sources where id = '${fonte}';`);
+      const linhas = doIdentificador(X);
+      expect(linhas).toHaveLength(1);
+      expect(linhas[0]!.webhook_source_id).toBeNull();
+    });
+  });
+
+  describe("quem atualiza", () => {
+    function blocoDoBaseline(marca: string): string | null {
+      const texto = readFileSync("supabase/baseline.sql", "utf8");
+      const inicio = texto.indexOf(marca);
+      if (inicio === -1) return null;
+      const resto = texto.slice(inicio + marca.length);
+      const fim = resto.indexOf("\n-- ---- ");
+      return resto.slice(0, fim === -1 ? undefined : fim);
+    }
+    const BLOCO = blocoDoBaseline("-- ---- repetidos de captação por fonte");
+
+    it("o bloco existe no baseline (guarda de vacuidade)", () => {
+      expect(BLOCO, "não achei o bloco dos repetidos por fonte no baseline.sql").not.toBeNull();
+      expect(BLOCO).toContain("uniq_crm_leads_org_fonte_external");
+    });
+
+    it("⭐ o bloco preenche a fonte a partir do metadado e não perde lead nenhum", () => {
+      const comFonte = randomUUID();
+      const fonteQueSumiu = randomUUID();
+      const semMetadado = randomUUID();
+      const fantasma = randomUUID();
+      // Como um banco de antes da coluna: a fonte só existe no metadado.
+      sql(`insert into public.crm_leads
+             (id, organization_id, pipeline_id, stage_id, title, status, position_in_stage, source, external_id, source_metadata)
+           values
+             ('${comFonte}', '${GOV_ORG}', '${GOV_PIPELINE}', '${GOV_STAGE}', 'antigo com fonte', 'open', 1, 'webhook',
+              'pedido-270-backfill-a', '{"webhook_source_id":"${WHIN_SOURCE_JSON}"}'::jsonb),
+             ('${fonteQueSumiu}', '${GOV_ORG}', '${GOV_PIPELINE}', '${GOV_STAGE}', 'antigo de fonte apagada', 'open', 1, 'webhook',
+              'pedido-270-backfill-b', '{"webhook_source_id":"${fantasma}"}'::jsonb),
+             ('${semMetadado}', '${GOV_ORG}', '${GOV_PIPELINE}', '${GOV_STAGE}', 'antigo anonimizado', 'open', 1, 'webhook',
+              'pedido-270-backfill-c', '{}'::jsonb);
+           -- e um metadado que não é uuid: não pode derrubar a atualização
+           update public.crm_leads set source_metadata = '{"webhook_source_id":"nao-e-uuid"}'::jsonb
+            where id = '${semMetadado}';`);
+      const total = Number(rows(`select count(*)::int as n from public.crm_leads`)[0]!.n);
+
+      sql(BLOCO as string);
+
+      expect(Number(rows(`select count(*)::int as n from public.crm_leads`)[0]!.n), "a atualização perdeu lead").toBe(total);
+      const fonteDe = (id: string) =>
+        rows(`select webhook_source_id from public.crm_leads where id = '${id}'`)[0]!.webhook_source_id;
+      expect(fonteDe(comFonte)).toBe(WHIN_SOURCE_JSON);
+      // Fonte que não existe mais e metadado inválido: a coluna fica nula, sem erro.
+      expect(fonteDe(fonteQueSumiu)).toBeNull();
+      expect(fonteDe(semMetadado)).toBeNull();
+    });
+
+    it("reaplicar o bloco não muda nada (é o que toda atualização faz)", () => {
+      const antes = rows(`select count(*)::int as n, count(webhook_source_id)::int as com from public.crm_leads`)[0]!;
+      sql(BLOCO as string);
+      expect(rows(`select count(*)::int as n, count(webhook_source_id)::int as com from public.crm_leads`)[0]!).toEqual(antes);
+    });
+  });
+});
+

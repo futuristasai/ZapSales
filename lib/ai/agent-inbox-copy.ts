@@ -55,6 +55,8 @@ export const KIND_LABEL = {
   // Diz o que a PESSOA tem de fazer, não o estado da fila: do lado de lá existe um cliente
   // esperando que uma ação seja aprovada. O que o agente quer fazer e os dados vão no corpo.
   external_tool_approval: "O agente quer executar uma ação num sistema externo e espera a sua aprovação",
+  // Diz o que FALTA, e de quem: a regra está escrita e parada, esperando uma decisão.
+  regra_proposta_pelo_agente: "O agente propôs uma regra nova — falta um gestor aprovar",
   // Diz o que o CLIENTE vive, não a configuração: do lado de lá as mensagens
   // chegam e ninguém responde. "Modo de teste sem número autorizado" descreve
   // o campo; "a IA não responde ninguém" é o que faz o operador agir.

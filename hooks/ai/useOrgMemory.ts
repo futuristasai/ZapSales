@@ -28,10 +28,16 @@ export interface OrgMemoryEntryRow {
   status: "active" | "archived";
   created_at: string;
 }
+/** Uma regra que o agente anotou e ninguém decidiu ainda. Não vale (#272). */
+export interface PropostaDeRegra extends Omit<OrgMemoryEntryRow, "status"> {
+  status: "proposed";
+}
 export interface OrgMemoryState {
   document: OrgMemoryDocument | null;
   versions: OrgMemoryVersionMeta[];
   entries: OrgMemoryEntryRow[];
+  /** Opcional: resposta em cache de antes da #272 não traz o campo. */
+  proposals?: PropostaDeRegra[];
 }
 export interface OrgMemoryVersionDetail {
   id: string;

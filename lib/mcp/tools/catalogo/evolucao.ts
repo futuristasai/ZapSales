@@ -64,9 +64,9 @@ export const TOOLS_EVOLUCAO = declararTools([
   {
     name: "crm_save_org_memory",
     category: "write",
-    rotulo: "Anotar uma regra aprendida",
+    rotulo: "Propor uma regra aprendida",
     explicacao:
-      "Guarda um aprendizado que vale para todos os atendimentos, marcado como escrito pelo assistente para você distinguir do que anotou.",
+      "Propõe um aprendizado que valeria para todos os atendimentos. A proposta só passa a valer depois que um gestor aprova em Memória da IA.",
     oQueToca: "Regras da empresa",
     risco: "atencao",
     pacotes: ["evoluir"],

@@ -135,6 +135,13 @@ export const POLITICAS_DE_AVISO = {
     orientacao: "Confira os dados e aprove para executar a ação, ou recuse para cancelá-la. Sem decisão no prazo, o pedido expira e o agente é avisado.",
     geral: { papel: "manager", href: "/app/ai/external-tools", rotulo: "Abrir ferramentas externas" },
   },
+  // A proposta de regra do agente (#272): sem referência a uma linha — o aviso é um por
+  // organização enquanto houver pendência —, então o destino é a tela onde se decide.
+  regra_proposta_pelo_agente: {
+    refs: [],
+    orientacao: "Abra a Memória da IA, leia o que o agente propôs e aprove ou recuse. Enquanto ninguém decide, a regra não vale.",
+    geral: { papel: "manager", href: "/app/ai/memory", rotulo: "Revisar propostas do agente" },
+  },
   // Mesmo par de `message_send_stuck`, para a proposta — o cron devolve a
   // rascunho sozinho, sem reenviar; quem lê decide se envia de novo.
   proposta_travada: { refs: ["proposal"], orientacao: "Confira a proposta antes de decidir se precisa enviar novamente." },

@@ -57,8 +57,13 @@ select :org, id from org_memory_versions where organization_id = :org and versio
 insert into org_memory_entries (organization_id, title, body, source, status, created_by, created_at) values
  (:org, 'Não oferecer frete grátis no primeiro contato', 'O frete grátis só vale para compras acima de R$ 299. Não ofereça antes de o cliente escolher os produtos.', 'manual', 'active', :usr, now()-interval '6 days'),
  (:org, 'Clientes de Pix preferem o link direto', 'Quando o cliente disser que vai pagar por Pix, envie o link de pagamento na mesma mensagem, sem perguntar de novo.', 'flywheel', 'active', null, now()-interval '4 days'),
- (:org, 'Cliente pediu o endereço da loja física', 'Não temos loja física: o atendimento é só online. Explique isso com simpatia e ofereça ajuda por aqui.', 'agent', 'active', null, now()-interval '1 day'),
+ (:org, 'Cliente pediu o endereço da loja física', 'Não temos loja física: o atendimento é só online. Explique isso com simpatia e ofereça ajuda por aqui.', 'agent', 'proposed', null, now()-interval '1 day'),
  (:org, 'Promoção de agosto', 'A promoção de agosto terminou. Não mencione mais descontos dessa campanha.', 'manual', 'archived', :usr, now()-interval '30 days');
+-- A anotação do agente NASCE proposta (o banco recusa 'agent' + 'active' no insert, #272);
+-- a demonstração a mostra já aprovada, como um gestor faria na tela de Memória.
+update org_memory_entries set status = 'active'
+ where organization_id = :org and source = 'agent' and status = 'proposed';
+
 
 -- ===== Skills =====
 insert into skill_versions (organization_id, name, description, body, matcher, forked_from_version_id)

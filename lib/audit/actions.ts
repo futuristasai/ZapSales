@@ -218,6 +218,9 @@ export const AUDIT_ACTIONS = [
   "ai.org_memory_published",
   "ai.org_memory_entry_created",
   "ai.org_memory_entry_updated",
+  // Regra anotada pelo agente nasce proposta (#272): quem a aprovou, quem a recusou.
+  "ai.org_memory_proposal_approved",
+  "ai.org_memory_proposal_rejected",
   /** Provedor/modelo de um ponto do sistema que usa IA foi trocado no painel. */
   "ai.purpose_binding_updated",
   "ai.org_default_updated",
@@ -549,6 +552,9 @@ export const AUDIT_ACTIONS = [
   "ai.budget_limit_changed",
   "ai.budget_enforcement_armed",
   "ai.budget_enforcement_disarmed",
+  // O teto de atendimentos automáticos por contato (#271) — quem mudou o
+  // limite por hora ou por dia, com antes/depois no metadata.
+  "ai.contact_reply_limit_changed",
   "contact.deleted",
 
   // A poda do histórico (issue #261). UMA linha por rodada que de fato
