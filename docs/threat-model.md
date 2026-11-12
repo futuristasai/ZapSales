@@ -230,6 +230,14 @@ Não avaliado por falta de execução/instância:
 - Postura do container WAHA — `docker-compose.prod.yml` comenta "Core por default, dashboard
   off", mas exposição de porta e rede não foram verificadas contra instância viva.
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
+- Escrita por papel direto no banco, MEDIDO (#268, migration 0560): `contacts`, `messages` e as dez
+  tabelas do financeiro exigem na policy o papel que as rotas já exigem — inclusive para apagar. A
+  sessão não leva `is_blocked` nem `is_anonymized` de verdadeiro para outra coisa (desbloquear é da
+  rota do admin, com cliente de serviço). Prova:
+  `tests/invariants/escrita-exige-o-papel-contatos-mensagens-financeiro.test.ts`. O que NÃO está
+  coberto: de atendente para cima, a sessão ainda grava mensagem e contato direto no banco, sem as
+  validações da rota; e as demais tabelas da lista `DIVIDA_RBAC_CONHECIDA`
+  (`tests/invariants/rbac-config-ia-canais.test.ts`) seguem só com a pergunta de organização.
 - Se `next.config.ts` define CSP / security headers.
 - Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
   URLs é adequada.
