@@ -23,6 +23,12 @@
  *
  * Both checks only hold back retention rows (`request_id` null) in
  * `whatsapp-media`: an LGPD cascade is never held back by a citation.
+ *
+ * Before any of that, every row is checked against the place it may point to
+ * (`foraDoAlcance`, issue #267): a known bucket, and a path inside the folder
+ * of the row's own organization. A row is an order to delete with the service
+ * credential, and the path it carries is copied from columns of other tables —
+ * the worker does not delete on the word of whoever wrote those.
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -115,6 +121,33 @@ async function citation(admin: AdminClient, row: QueueRow): Promise<string | nul
   return null;
 }
 
+/** Buckets whose objects live under `<organization>/…` and go through this queue. */
+export const BUCKETS_DA_FILA: ReadonlySet<string> = new Set([
+  "whatsapp-media",
+  "internal-media",
+  "propostas",
+]);
+
+/**
+ * Why this row must NOT be executed, or null when it may. A row may only point
+ * to a known bucket and to a path inside the folder of its own organization:
+ * `<organization_id>/<one or more plain segments>`.
+ */
+export function foraDoAlcance(row: {
+  organization_id: string;
+  bucket: string;
+  object_path: string;
+}): string | null {
+  if (!BUCKETS_DA_FILA.has(row.bucket)) return "bucket_fora_da_lista";
+  const [pasta, ...resto] = row.object_path.split("/");
+  const naPasta =
+    pasta === row.organization_id &&
+    resto.length > 0 &&
+    !row.object_path.includes("\\") &&
+    resto.every((parte) => parte !== "" && parte !== "." && parte !== "..");
+  return naPasta ? null : "fora_da_pasta_da_organizacao";
+}
+
 const MAX_ATTEMPTS = 3;
 const DEFAULT_BATCH = 50;
 
@@ -174,6 +207,28 @@ export async function drainStorageRedactionQueue(
     }
 
     try {
+      const recusa = foraDoAlcance(row);
+      if (recusa) {
+        // Terminal e sem nova tentativa: o caminho não muda entre uma rodada e
+        // outra. `error`, e não `warn`: uma linha assim não nasce do uso normal.
+        await admin
+          .from("storage_redaction_queue")
+          .update({
+            status: "skipped",
+            processed_at: new Date().toISOString(),
+            error_message: recusa,
+          })
+          .eq("id", row.id);
+        stats.skipped++;
+        logger.error("[lgpd-redact-worker] queue row refused", {
+          queue_id: row.id,
+          organization_id: row.organization_id,
+          bucket: row.bucket,
+          reason: recusa,
+        });
+        continue;
+      }
+
       const citedBy = await citation(admin, row);
       if (citedBy) {
         await admin

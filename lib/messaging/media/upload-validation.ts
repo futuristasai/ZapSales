@@ -24,7 +24,7 @@ export function isMediaPathOwnedBy(path: string, orgId: string, conversationId: 
   return resto.split("/").every((s) => s !== "" && s !== "." && s !== "..");
 }
 
-const DOCUMENT_MIMES = new Set([
+export const DOCUMENT_MIMES: ReadonlySet<string> = new Set([
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

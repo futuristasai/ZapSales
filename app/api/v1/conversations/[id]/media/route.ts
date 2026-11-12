@@ -12,6 +12,7 @@ import { resolveAuthDual, tetoDeEscritaDoToken } from "@/lib/api/auth-dual";
 import { IDIOMA_PADRAO } from "@/lib/i18n/idiomas";
 import { extFromMime, MAX_MEDIA_BYTES } from "@/lib/messaging/media/types";
 import { validateOutboundMedia } from "@/lib/messaging/media/upload-validation";
+import { tipoSeguro } from "@/lib/messaging/media/entrega-segura";
 import { transcodificarNotaDeVoz } from "@/lib/messaging/media/voice-transcode";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { traduzir } from "@/lib/i18n/dicionario";
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx): Promise<Response> {
   const admin = createAdminClient();
   const { error: upErr } = await admin.storage
     .from("whatsapp-media")
-    .upload(storagePath, buffer, { contentType: mimeFinal, upsert: false });
+    .upload(storagePath, buffer, { contentType: tipoSeguro(mimeFinal), upsert: false });
   if (upErr) {
     console.error("[conversations.media] upload failed", upErr.message);
     return fail("internal_error", t("Erro ao subir o arquivo."), 500, { requestId });

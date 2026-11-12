@@ -229,18 +229,38 @@ Não avaliado por falta de execução/instância:
 - Se as políticas RLS **realmente** isolam (os invariantes existem para provar; não foram rodados).
 - Postura do container WAHA — `docker-compose.prod.yml` comenta "Core por default, dashboard
   off", mas exposição de porta e rede não foram verificadas contra instância viva.
+- Storage, fila de exclusão de arquivos (`storage_redaction_queue`), MEDIDO (#267, migration 0559):
+  cada linha é uma ordem cumprida com a credencial de serviço. Nenhum papel de sessão tem
+  privilégio sobre a tabela — quem escreve são as funções `security definer` do banco e o
+  servidor do app. E o worker (`lib/lgpd/storage-redaction-queue.ts`, `foraDoAlcance`) só executa
+  linha que aponta para um bucket da lista e para dentro da pasta da organização da própria
+  linha; o resto vira `skipped` com o motivo, sem nova tentativa. Prova:
+  `tests/invariants/fila-de-exclusao-so-do-servidor.test.ts`. O que NÃO está coberto: dentro da
+  pasta da própria organização, a linha alcança qualquer arquivo — a conferência de citação por
+  modelo e por mensagem continua sendo a única guarda ali.
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
-- Escrita por papel direto no banco, MEDIDO (#268, migration 0560): `contacts`, `messages` e as dez
-  tabelas do financeiro exigem na policy o papel que as rotas já exigem — inclusive para apagar. A
-  sessão não leva `is_blocked` nem `is_anonymized` de verdadeiro para outra coisa (desbloquear é da
-  rota do admin, com cliente de serviço). Prova:
-  `tests/invariants/escrita-exige-o-papel-contatos-mensagens-financeiro.test.ts`. O que NÃO está
-  coberto: de atendente para cima, a sessão ainda grava mensagem e contato direto no banco, sem as
-  validações da rota; e as demais tabelas da lista `DIVIDA_RBAC_CONHECIDA`
+- Escrita por papel direto no banco, MEDIDO (#268, migration 0560): `messages` e as dez tabelas do
+  financeiro exigem na policy o papel que as rotas já exigem — inclusive para apagar. Em `contacts`,
+  ALTERAR e APAGAR exigem atendente (duas policies restritivas), e a sessão não leva `is_blocked` nem
+  `is_anonymized` de verdadeiro para outra coisa (desbloquear é da rota do admin, com cliente de
+  serviço). Prova: `tests/invariants/escrita-exige-o-papel-contatos-mensagens-financeiro.test.ts`.
+  O que NÃO está coberto: CRIAR contato segue sem papel no banco — o invariante das travas do
+  suporte usa `contacts` como a tabela em que só a trava recusa um INSERT, e fechar isso pede
+  reescrever aquele invariante; de atendente para cima, a sessão ainda grava mensagem e contato
+  direto no banco, sem as validações da rota; e as demais tabelas da lista `DIVIDA_RBAC_CONHECIDA`
   (`tests/invariants/rbac-config-ia-canais.test.ts`) seguem só com a pergunta de organização.
 - Se `next.config.ts` define CSP / security headers.
 - Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
   URLs é adequada.
+- Storage, anexos de conversa e de nota interna (`whatsapp-media`, `internal-media`), MEDIDO (#266):
+  o tipo de um anexo é escrito por quem o enviou, e o Storage responde no mesmo endereço do app.
+  Quem decide como o arquivo chega ao navegador é `lib/messaging/media/entrega-segura.ts`, com
+  lista fechada do que abre na tela (foto rasterizada, áudio, vídeo, PDF); o resto é download. A
+  regra vale em três pontos: o tipo gravado no upload, o redirecionamento para a URL assinada
+  (que pede download ao Storage quando o objeto não abre na tela) e a resposta com os bytes na
+  janela anterior à persistência. O que NÃO está coberto: objeto gravado antes desta regra com
+  tipo ativo continua assim no Storage — só não é mais alcançado inline pelas rotas do app; e os
+  demais buckets têm validação própria no upload, não esta.
 - Storage, e este é MEDIDO e DECLARADO em vez de "não avaliado": `brand-logos` (migration
   0158) é o **único bucket público** do repositório — todos os outros nascem
   `public = false` (inclusive `catalog-photos`, das fotos do catálogo, migration 0390), e

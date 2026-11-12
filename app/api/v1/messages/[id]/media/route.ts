@@ -3,6 +3,8 @@
  * GET /api/v1/messages/[id]/media — acesso autenticado à mídia da mensagem.
  * Persistida → 302 pra signed URL (TTL 1h) do bucket whatsapp-media.
  * Ainda não persistida (janela até o worker rodar) → proxy dos bytes do WAHA.
+ * Nos dois caminhos, quem decide se o arquivo abre na tela ou é baixado é
+ * `lib/messaging/media/entrega-segura.ts` — nunca o tipo que o remetente declarou.
  * A URL desta rota é usada diretamente como src de <img>/<video>/<audio>
  * (cookie de sessão vai junto por ser same-origin; RLS decide o acesso).
  */
@@ -21,6 +23,11 @@ import {
   type ChannelProvider,
   type ChannelSessionRef,
 } from "@/lib/channels";
+import {
+  cabecalhosDoAnexo,
+  nomeParaBaixar,
+  objetoAbreNaTela,
+} from "@/lib/messaging/media/entrega-segura";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -70,9 +77,16 @@ export async function GET(_req: NextRequest, ctx: RouteCtx): Promise<Response> {
 
   if (msg.media_storage_path) {
     const admin = createAdminClient();
+    // O que não abre na tela sai como download: o Storage responde no mesmo
+    // endereço do app e devolveria o arquivo com o tipo com que foi gravado.
+    const abre = objetoAbreNaTela(msg.media_mime, msg.media_storage_path);
     const { data: signed, error: signErr } = await admin.storage
       .from("whatsapp-media")
-      .createSignedUrl(msg.media_storage_path, SIGNED_URL_TTL_S);
+      .createSignedUrl(
+        msg.media_storage_path,
+        SIGNED_URL_TTL_S,
+        abre ? undefined : { download: nomeParaBaixar(msg.media_storage_path) },
+      );
     if (!signErr && signed?.signedUrl) {
       const response = NextResponse.redirect(signed.signedUrl, 302);
       response.headers.set("X-Request-Id", requestId);
@@ -122,7 +136,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx): Promise<Response> {
       return new Response(new Uint8Array(media.buffer), {
         status: 200,
         headers: {
-          "Content-Type": media.mime,
+          ...cabecalhosDoAnexo(media.mime, `anexo-${messageId}`),
           "Cache-Control": "private, max-age=60",
           "X-Request-Id": requestId,
         },

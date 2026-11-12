@@ -66,9 +66,12 @@ describe("quem baixa é o CANAL, não uma função fixa", () => {
 describe("o que cada canal faz com a URL", () => {
   it("o canal por QR delega no que já existia — comportamento idêntico", () => {
     // O risco desta mudança é mexer no canal que funciona bem. Ele chama a
-    // MESMA função, com os mesmos argumentos; só mudou quem a escolhe.
+    // MESMA função; só mudou quem a escolhe. A sessão vai junto porque a
+    // função só baixa da pasta de arquivos dela (#265).
     const w = readFileSync("lib/channels/adapters/waha.ts", "utf8");
-    expect(w).toMatch(/return fetchWahaMedia\(input\.url, input\.hintMime \?\? null\)/);
+    expect(w).toMatch(
+      /return fetchWahaMedia\(input\.url, input\.hintMime \?\? null, input\.sessionRef\)/,
+    );
   });
 
   it("o seam devolve o MESMO tipo, reusado e não redefinido", () => {
