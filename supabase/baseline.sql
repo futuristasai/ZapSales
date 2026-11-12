@@ -5362,23 +5362,30 @@ create policy "messages_select" on public.messages
     )
   );
 
+-- Gravar exige `agent` ou acima (migration 0560, #268): é o papel que toda rota
+-- que grava mensagem com a sessão do usuário já exige. Antes a policy só
+-- perguntava pela organização, e um `viewer` gravava falando direto com o banco.
 create policy "messages_insert" on public.messages
   for insert with check (
-    (organization_id in (select public.fn_user_org_ids()))
-    or public.fn_is_platform_admin_full()
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
   );
 create policy "messages_update" on public.messages
   for update using (
-    (organization_id in (select public.fn_user_org_ids()))
-    or public.fn_is_platform_admin_full()
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
   ) with check (
-    (organization_id in (select public.fn_user_org_ids()))
-    or public.fn_is_platform_admin_full()
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
   );
 create policy "messages_delete" on public.messages
   for delete using (
-    (organization_id in (select public.fn_user_org_ids()))
-    or public.fn_is_platform_admin_full()
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
   );
 
 -- Forward-fix do G4-01: fn_conversation_assign (0031/0032) passa a SECURITY
@@ -33328,11 +33335,24 @@ declare t text;
 begin
   foreach t in array array['financial_accounts', 'payment_methods', 'account_plans'] loop
     execute format('alter table public.%I enable row level security', t);
+    -- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
+    -- O papel estava só no WITH CHECK, e DELETE só avalia o USING: quem era da
+    -- organização apagava sem o papel, falando direto com o banco.
+    execute format('drop policy if exists tenant_isolation_%I_read on public.%I', t, t);
+    execute format($f$
+      create policy tenant_isolation_%I_read on public.%I
+        for select
+        using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+    $f$, t, t);
     execute format('drop policy if exists tenant_isolation_%I_all on public.%I', t, t);
     execute format($f$
       create policy tenant_isolation_%I_all on public.%I
         for all
-        using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+        using (
+          public.fn_is_platform_admin()
+          or (organization_id in (select public.fn_user_org_ids())
+              and public.fn_role_at_least(organization_id, 'manager'))
+        )
         with check (
           public.fn_is_platform_admin()
           or (organization_id in (select public.fn_user_org_ids())
@@ -33844,11 +33864,24 @@ begin
   foreach t in array array['sales', 'sale_items', 'commission_rules', 'commissions',
                            'financial_entries', 'loyalty_ledger'] loop
     execute format('alter table public.%I enable row level security', t);
+    -- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
+    -- O papel estava só no WITH CHECK, e DELETE só avalia o USING: quem era da
+    -- organização apagava sem o papel, falando direto com o banco.
+    execute format('drop policy if exists tenant_isolation_%I_read on public.%I', t, t);
+    execute format($f$
+      create policy tenant_isolation_%I_read on public.%I
+        for select
+        using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+    $f$, t, t);
     execute format('drop policy if exists tenant_isolation_%I_all on public.%I', t, t);
     execute format($f$
       create policy tenant_isolation_%I_all on public.%I
         for all
-        using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+        using (
+          public.fn_is_platform_admin()
+          or (organization_id in (select public.fn_user_org_ids())
+              and public.fn_role_at_least(organization_id, 'agent'))
+        )
         with check (
           public.fn_is_platform_admin()
           or (organization_id in (select public.fn_user_org_ids())
@@ -34184,10 +34217,19 @@ create unique index if not exists financial_entries_recorrencia_competencia_idx
   where recurring_entry_id is not null;
 
 alter table public.recurring_entries enable row level security;
+-- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
+drop policy if exists tenant_isolation_recurring_entries_read on public.recurring_entries;
+create policy tenant_isolation_recurring_entries_read on public.recurring_entries
+  for select
+  using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
 drop policy if exists tenant_isolation_recurring_entries_all on public.recurring_entries;
 create policy tenant_isolation_recurring_entries_all on public.recurring_entries
   for all
-  using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
+  using (
+    public.fn_is_platform_admin()
+    or (organization_id in (select public.fn_user_org_ids())
+        and public.fn_role_at_least(organization_id, 'manager'))
+  )
   with check (
     public.fn_is_platform_admin()
     or (organization_id in (select public.fn_user_org_ids())
@@ -46399,6 +46441,92 @@ revoke all on table public.storage_redaction_queue from anon, authenticated;
 -- As travas do modo somente leitura do suporte (`support_write_*`) saem desta
 -- tabela na chamada de `fn_aplicar_travas_de_suporte()` do fim do arquivo, que
 -- vem DEPOIS desta retirada: tabela só do servidor fica com zero travas.
+
+-- ---- escrita exige o papel da rota (migration 0560) ----
+-- As policies de `messages` e do financeiro mudaram NO PONTO em que são
+-- definidas, acima neste arquivo (procure por "migration 0560"): redefini-las aqui
+-- deixaria a versão antiga valendo, a cada atualização, até esta linha chegar.
+-- Aqui fica só o que é NOVO: as duas policies restritivas de `contacts` e a
+-- guarda que impede a sessão de desfazer a recusa de um contato.
+-- ─── contacts: alterar e apagar exigem atendente ─────────────────────────────
+-- Por policy RESTRITIVA (soma por E com a permissiva de sempre), e não mudando a
+-- permissiva `tenant_isolation_contacts_write`, por duas razões medidas no CI:
+--
+--   * `tests/invariants/travas-de-suporte-cobrem-toda-tabela-na-instalacao` usa
+--     `contacts` como a tabela em que a TRAVA do suporte é a única coisa que pode
+--     recusar um INSERT — e para isso a permissiva de insert não pode exigir
+--     papel. Por isso CRIAR contato segue sem papel no banco (pendência
+--     registrada em docs/threat-model.md);
+--   * `tests/invariants/cliente-nasce-do-agendamento` (I36) exige que a guarda
+--     das colunas de cliente responda 42501 a QUALQUER sessão, inclusive a de um
+--     `viewer`. O BEFORE UPDATE só dispara para linha que o USING alcança — então
+--     o papel fica no WITH CHECK, e o USING da restritiva é `true`: a linha é
+--     alcançada, a guarda fala primeiro, e o que não é de `agent` para cima é
+--     recusado na conferência da linha nova.
+drop policy if exists "contacts_alterar_exige_atendente" on public.contacts;
+create policy "contacts_alterar_exige_atendente" on public.contacts
+  as restrictive
+  for update
+  using (true)
+  with check (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
+
+drop policy if exists "contacts_apagar_exige_atendente" on public.contacts;
+create policy "contacts_apagar_exige_atendente" on public.contacts
+  as restrictive
+  for delete
+  using (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
+
+-- Desbloquear quem pediu para sair é ato do admin, pela rota própria
+-- (`POST /contacts/{id}/unblock`), que grava com o cliente de serviço e audita.
+-- Anonimização não se desfaz por caminho nenhum. Nenhuma das duas reversões é
+-- edição de ficha — e um `agent` ainda conseguiria fazê-las falando direto com o
+-- banco.
+--
+-- `auth.uid() is null` PASSA de propósito, como em
+-- `fn_colunas_de_cliente_sao_do_sistema`: é o cliente de serviço e as migrations.
+create or replace function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if auth.uid() is not null then
+    if old.is_blocked is true and new.is_blocked is not true then
+      raise exception 'desbloqueio_e_ato_do_admin_pela_rota' using errcode = '42501';
+    end if;
+    if old.is_anonymized is true and new.is_anonymized is not true then
+      raise exception 'lgpd_anonymization_irreversible' using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end $$;
+
+comment on function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao() is
+  'Guarda de contacts (migration 0560): sessão nenhuma leva is_blocked ou is_anonymized de true para outra coisa '
+  '(42501). O cliente de serviço e as migrations passam. Provado em '
+  'tests/invariants/escrita-exige-o-papel-contatos-mensagens-financeiro.test.ts.';
+
+-- Função de trigger não exige EXECUTE de quem dispara o UPDATE; revogar das duas
+-- origens (o grant a PUBLIC e o grant direto a `anon` do baseline) não quebra nada.
+revoke execute on function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao()
+  from public, anon, authenticated;
+
+-- A WHEN compara VALORES: o caso comum (nenhuma das duas mudou) nem chama a função.
+drop trigger if exists trg_contato_recusa_nao_se_desfaz on public.contacts;
+create trigger trg_contato_recusa_nao_se_desfaz
+  before update on public.contacts
+  for each row
+  when (old.is_blocked is distinct from new.is_blocked
+     or old.is_anonymized is distinct from new.is_anonymized)
+  execute function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao();
 
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
