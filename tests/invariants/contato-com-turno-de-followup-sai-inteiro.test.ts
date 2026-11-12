@@ -153,10 +153,16 @@ describe("excluir contato com turno de follow-up (#1862)", () => {
   beforeAll(() => semear());
 
   it("(b) o DELETE DIRETO do turno de follow-up continua recusado para auth.uid()", () => {
-    // A 42501 não afrouxa: quem tem sessão não apaga job de follow-up por conta
+    // A recusa não afrouxa: quem tem sessão não apaga job de follow-up por conta
     // própria. Se isto deixar de falhar, a guarda virou porta aberta.
+    //
+    // Desde a 0566 (#273) a sessão não tem privilégio de escrita em `job_queue`,
+    // então a recusa chega ANTES do gatilho `followup_job_internal` — a mesma
+    // mudança de camada que a 0490 fez com a trilha, logo abaixo. O gatilho
+    // continua na tabela como segunda camada; o que este caso mede é que o
+    // DELETE da sessão é recusado e a linha fica (conferido no fim).
     const doTurno = stderrDe(GOV_AGENT_A, `delete from public.job_queue where id = '${TURNO_A}';`);
-    expect(doTurno).toContain("followup_job_internal");
+    expect(doTurno).toContain("permission denied for table job_queue");
 
     // O outro alvo: o evento interno (idempotency_key 'nó:1'). Desde a 0490
     // (#1915) a trilha não tem policy de DELETE para a sessão, então a recusa
