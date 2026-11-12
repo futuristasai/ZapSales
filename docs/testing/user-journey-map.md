@@ -3925,3 +3925,25 @@ deixar linha em `llm_calls` — o gasto exibido em Uso de IA era menor que o rea
 **Não medido:** o desvio de ponta a ponta com um agente de verdade respondendo
 (exige provedor de IA no ambiente de teste). A regra, a consulta e o desvio são
 medidos separadamente, cada um contra a peça real.
+## Regra anotada pelo agente vira proposta `[P1]` (2026-11-12, issue #272)
+
+A memória da organização entra nas instruções de todo agente, em todo
+atendimento. A ferramenta do agente gravava a anotação já ativa: o que ele
+escrevesse numa conversa — inclusive a pedido de quem estava do outro lado dela —
+valia para todos os clientes no turno seguinte. Agora a anotação nasce proposta;
+só passa a valer depois que um gestor aprova em Memória da IA.
+
+| A ferramenta grava `proposed`, avisa a Central uma vez e diz ao agente que a regra não vale | a ferramenta | `tests/unit/regra-do-agente-vira-proposta.test.ts` |
+| Com uma proposta pendente, o texto montado para o agente NÃO contém a regra; aprovada, contém | o que o agente lê, com o carregador real num Postgres de verdade | `tests/invariants/regra-do-agente-nasce-proposta.test.ts` |
+| O banco recusa anotação do agente que nasça ativa, venha de onde vier | o gatilho | `tests/invariants/regra-do-agente-nasce-proposta.test.ts` |
+| Atendente e leitura não aprovam: 403 pela rota, e a sessão não escreve na tabela | a permissão, pela tela e direto no banco | os dois arquivos acima |
+| Decidir é trava otimista, audita com ação própria e fecha o aviso quando a última é decidida | a decisão | `tests/unit/regra-do-agente-vira-proposta.test.ts` |
+| Regras que já estavam ativas continuam ativas depois de atualizar | o caminho de quem atualiza | `tests/invariants/regra-do-agente-nasce-proposta.test.ts` |
+| O gestor vê as propostas num cartão à parte, aprova uma, recusa a outra, e só a aprovada vira aprendizado | a tela, pelo navegador | `tests/e2e/regra-do-agente-vira-proposta.spec.ts` |
+
+A lista de propostas mora na tela de Memória da IA, que já tem porta no menu.
+
+**Não medido:** o par completo com um agente de verdade (o cliente escreve
+"anote como regra…", a proposta aparece, o atendimento seguinte não a segue). Exige
+provedor de IA no ambiente de teste; as duas pontas são medidas separadamente — a
+ferramenta chamada direto e o texto que o agente recebe.

@@ -81,7 +81,22 @@ export async function GET(_req: NextRequest): Promise<Response> {
     return fail("internal_error", t("Erro ao carregar entradas da memória."), 500, { requestId });
   }
 
-  return ok({ document, versions: versions ?? [], entries: entries ?? [] }, { requestId });
+  // As propostas do agente (#272) vêm À PARTE: elas não valem, e misturá-las à
+  // lista de aprendizados faria a tela mostrar como regra o que ninguém aprovou.
+  const { data: proposals, error: proposalsErr } = await admin
+    .from("org_memory_entries")
+    .select("id, title, body, source, status, created_at")
+    .eq("organization_id", org.orgId)
+    .eq("status", "proposed")
+    .order("created_at", { ascending: true });
+  if (proposalsErr) {
+    return fail("internal_error", t("Erro ao carregar entradas da memória."), 500, { requestId });
+  }
+
+  return ok(
+    { document, versions: versions ?? [], entries: entries ?? [], proposals: proposals ?? [] },
+    { requestId },
+  );
 }
 
 export async function POST(req: NextRequest): Promise<Response> {

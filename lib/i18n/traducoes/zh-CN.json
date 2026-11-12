@@ -5430,5 +5430,20 @@
   "Salvar limite por contato": "保存每位联系人的上限",
   "Voltar ao padrão": "恢复默认值",
   "Em vigor:": "当前生效：",
-  "Só quem administra a organização altera este limite.": "只有组织管理员可以更改此上限。"
+  "Só quem administra a organização altera este limite.": "只有组织管理员可以更改此上限。",
+  "O agente propôs uma regra nova — falta um gestor aprovar": "智能体提出了一条新规则 — 仍需管理者批准",
+  "Um agente de IA anotou uma regra que valeria para todos os atendimentos. Ela ainda NÃO está valendo: abra Memória da IA, leia a proposta e aprove ou recuse.": "一个 AI 智能体记录了一条将适用于所有对话的规则。它尚未生效：请打开 AI 记忆，阅读该提案并批准或拒绝。",
+  "Abra a Memória da IA, leia o que o agente propôs e aprove ou recuse. Enquanto ninguém decide, a regra não vale.": "请打开 AI 记忆，阅读智能体的提案并批准或拒绝。在有人做出决定之前，该规则不会生效。",
+  "Revisar propostas do agente": "审阅智能体的提案",
+  "Não foi possível decidir a proposta.": "无法对该提案做出决定。",
+  "Esta proposta já foi decidida por outra pessoa.": "该提案已由其他人做出决定。",
+  "Proposta aprovada. A regra passa a valer no próximo atendimento.": "提案已批准。该规则将在下一次对话中生效。",
+  "Proposta recusada. Ela não entra na memória.": "提案已拒绝。它不会进入记忆。",
+  "Propostas do agente": "智能体的提案",
+  "Regras que um agente de IA anotou durante um atendimento. Nenhuma delas está valendo: só passam a ser seguidas por todos os agentes depois que você aprovar. Leia com cuidado — o agente pode ter anotado a pedido de quem estava do outro lado da conversa.": "AI 智能体在对话中记录的规则。它们均未生效：只有在您批准后，所有智能体才会遵循。请仔细阅读 — 智能体可能是应对话另一方的要求而记录的。",
+  "aguardando aprovação": "等待批准",
+  "Aprovar regra": "批准规则",
+  "Recusar": "拒绝",
+  "Propor uma regra aprendida": "提出一条学到的规则",
+  "Propõe um aprendizado que valeria para todos os atendimentos. A proposta só passa a valer depois que um gestor aprova em Memória da IA.": "提出一条将适用于所有对话的经验。只有在管理者于 AI 记忆中批准后，该提案才会生效。"
 }

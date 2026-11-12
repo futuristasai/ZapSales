@@ -10024,6 +10024,11 @@ alter table public.agent_inbox_items
     -- (migration 0552, issue #95) Uma ferramenta externa do agente quer EXECUTAR algo e espera
     -- um humano aprovar ou recusar. O item carrega o que o agente quer fazer e os dados.
     'external_tool_approval',
+    -- (migration 0564, issue #272) Um agente anotou uma regra para a memória da
+    -- organização. Ela nasce PROPOSTA e não vale até um gestor aprovar; este aviso
+    -- é o que faz a proposta aparecer. Um aberto por organização; fecha quando a
+    -- última proposta é decidida.
+    'regra_proposta_pelo_agente',
     'other'
   ));
 
@@ -46658,6 +46663,52 @@ create unique index if not exists uniq_crm_leads_org_source_external
 create index if not exists crm_leads_webhook_source_idx
   on public.crm_leads (webhook_source_id)
   where webhook_source_id is not null;
+
+-- ---- regra anotada pelo agente nasce proposta (migration 0564) ----
+--
+-- Issue #272. O tipo de aviso novo (`regra_proposta_pelo_agente`) entrou na lista
+-- única de `agent_inbox_items_kind_check`, acima neste arquivo. As travas do
+-- suporte saem desta tabela na chamada de `fn_aplicar_travas_de_suporte()` do fim
+-- do arquivo, que vem depois da retirada dos privilégios.
+-- A memória da organização entra no começo das instruções de TODO agente, em
+-- todo atendimento. A ferramenta do agente (`crm_save_org_memory`) gravava a
+-- anotação já como `active`: o que o agente escrevesse durante uma conversa —
+-- inclusive a pedido de quem estava do outro lado dela — passava a valer para
+-- todos os clientes no turno seguinte, sem ninguém ler.
+--
+-- A regra no banco, para não depender de a ferramenta lembrar: anotação de
+-- origem `agent` NASCE proposta. Quem a torna `active` é a aprovação (um UPDATE
+-- feito pela rota, depois de conferir o papel de gestor). O motor só carrega
+-- `active`. Regras que já estavam ativas não são tocadas: o gatilho é de INSERT.
+create or replace function public.fn_regra_do_agente_nasce_proposta()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if new.source = 'agent' and new.status = 'active' then
+    raise exception 'regra_do_agente_nasce_proposta'
+      using errcode = '23514',
+            hint = 'Anotação de origem agent entra como proposed; um gestor a aprova em Memória da IA.';
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.fn_regra_do_agente_nasce_proposta() from public, anon;
+
+drop trigger if exists trg_regra_do_agente_nasce_proposta on public.org_memory_entries;
+create trigger trg_regra_do_agente_nasce_proposta
+  before insert on public.org_memory_entries
+  for each row execute function public.fn_regra_do_agente_nasce_proposta();
+
+-- Só o servidor escreve na memória. Todo escritor do app usa o cliente de
+-- serviço (as rotas de Memória, a aplicação de proposta do sistema e a
+-- ferramenta do agente) — medido por varredura antes de retirar. A sessão do
+-- usuário continua LENDO: a tela de Memória lê com ela. Sem isto, um atendente
+-- aprovaria uma proposta com um UPDATE direto, por fora da rota que confere o
+-- papel.
+revoke insert, update, delete on table public.org_memory_entries from anon, authenticated;
 
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
