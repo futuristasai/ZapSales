@@ -29689,13 +29689,13 @@ create table if not exists public.passagens_de_atendimento (
   -- "que parte do sistema decidiu isto?".
   origem           text not null check (origem in (
                      'pedido_explicito','opt_out_provavel','ferramenta_do_modelo',
-                     'teto_de_gasto','caso_escalado','sentimento','legado_pedido',
+                     'teto_de_gasto','teto_por_contato','caso_escalado','sentimento','legado_pedido',
                      'legado_juridico','legado_etapa','legado_confianca','legado_teto',
                      'mcp_externo','runtime_nativo')),
   -- POR QUE saiu do automático. É o que vira FRASE na tela — o código nunca
   -- aparece para uma pessoa (`lib/escalacao/passagem.ts` → `FRASE_DO_MOTIVO`).
   motivo_codigo    text not null check (motivo_codigo in (
-                     'requested_human','suspected_optout','orcamento_de_ia','low_sentiment',
+                     'requested_human','suspected_optout','orcamento_de_ia','limite_por_contato','low_sentiment',
                      'low_confidence','critical_stage','legal_mention','refund_mention',
                      'caso_escalado')),
 
@@ -29779,7 +29779,7 @@ alter table public.passagens_de_atendimento
   add constraint passagens_de_atendimento_origem_check
   check (origem in (
     'pedido_explicito','opt_out_provavel','ferramenta_do_modelo',
-    'teto_de_gasto','caso_escalado','sentimento','legado_pedido',
+    'teto_de_gasto','teto_por_contato','caso_escalado','sentimento','legado_pedido',
     'legado_juridico','legado_etapa','legado_confianca','legado_teto',
     'mcp_externo','runtime_nativo'));
 
@@ -29788,7 +29788,7 @@ alter table public.passagens_de_atendimento
 alter table public.passagens_de_atendimento
   add constraint passagens_de_atendimento_motivo_codigo_check
   check (motivo_codigo in (
-    'requested_human','suspected_optout','orcamento_de_ia','low_sentiment',
+    'requested_human','suspected_optout','orcamento_de_ia','limite_por_contato','low_sentiment',
     'low_confidence','critical_stage','legal_mention','refund_mention',
     'caso_escalado'));
 
@@ -46455,8 +46455,8 @@ revoke all on table public.storage_redaction_queue from anon, authenticated;
 --   * `tests/invariants/travas-de-suporte-cobrem-toda-tabela-na-instalacao` usa
 --     `contacts` como a tabela em que a TRAVA do suporte é a única coisa que pode
 --     recusar um INSERT — e para isso a permissiva de insert não pode exigir
---     papel. Por isso CRIAR contato segue sem papel no banco (pendência
---     registrada em docs/threat-model.md);
+--     papel. (Aquele invariante passou a medir numa tabela-cobaia própria, e
+--     CRIAR contato ganhou a sua policy restritiva na migration 0562, abaixo.)
 --   * `tests/invariants/cliente-nasce-do-agendamento` (I36) exige que a guarda
 --     das colunas de cliente responda 42501 a QUALQUER sessão, inclusive a de um
 --     `viewer`. O BEFORE UPDATE só dispara para linha que o USING alcança — então
@@ -46527,6 +46527,50 @@ create trigger trg_contato_recusa_nao_se_desfaz
   when (old.is_blocked is distinct from new.is_blocked
      or old.is_anonymized is distinct from new.is_anonymized)
   execute function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao();
+
+-- ---- teto de atendimentos automáticos por contato (migration 0561) ----
+--
+-- Issue #271. O teto mensal protege a organização inteira; estas duas colunas
+-- são a medida por CONTATO, ajustada em Uso de IA. A regra e a consulta moram em
+-- lib/agent-engine/agent/teto-por-contato.ts. O motivo e a origem novos da
+-- passagem entraram nas listas de `passagens_de_atendimento`, no ponto em que
+-- elas são definidas.
+alter table public.ai_budgets
+  add column if not exists teto_por_contato_hora integer not null default 50
+    check (teto_por_contato_hora between 0 and 10000);
+alter table public.ai_budgets
+  add column if not exists teto_por_contato_dia integer not null default 150
+    check (teto_por_contato_dia between 0 and 10000);
+
+comment on column public.ai_budgets.teto_por_contato_hora is
+  'Quantas vezes a IA atende o MESMO contato em 60 minutos antes de passar a conversa para uma pessoa (issue #271). 0 = sem teto por hora. Organização sem linha usa o padrão do produto (50). Lido por lib/agent-engine/agent/teto-por-contato.ts.';
+comment on column public.ai_budgets.teto_por_contato_dia is
+  'Quantas vezes a IA atende o MESMO contato em 24 horas antes de passar a conversa para uma pessoa (issue #271). 0 = sem teto por dia. Organização sem linha usa o padrão do produto (150).';
+
+-- A contagem do teto filtra por contato dentro de uma janela de 24 horas. Sem
+-- este índice ela varreria as chamadas do dia da organização inteira a cada
+-- turno de resposta.
+create index if not exists llm_calls_contato_idx
+  on public.llm_calls (organization_id, contact_id, created_at desc)
+  where contact_id is not null;
+
+-- ---- criar contato exige atendente (migration 0562) ----
+--
+-- Issue #268. Fecha a última operação de `contacts` em que o papel só valia pela
+-- tela: ALTERAR e APAGAR já exigiam atendente (0560); CRIAR passa a exigir
+-- também. Toda rota e toda importação que cria contato com a sessão do usuário
+-- já exige atendente ou acima — a regra copia a rota, nunca é mais dura. Quem
+-- grava com o cliente de serviço (formulário público, avisos do canal) ou por
+-- função `security definer` não passa por esta policy.
+drop policy if exists "contacts_criar_exige_atendente" on public.contacts;
+create policy "contacts_criar_exige_atendente" on public.contacts
+  as restrictive
+  for insert
+  with check (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
 
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --

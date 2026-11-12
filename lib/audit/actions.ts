@@ -549,6 +549,9 @@ export const AUDIT_ACTIONS = [
   "ai.budget_limit_changed",
   "ai.budget_enforcement_armed",
   "ai.budget_enforcement_disarmed",
+  // O teto de atendimentos automáticos por contato (#271) — quem mudou o
+  // limite por hora ou por dia, com antes/depois no metadata.
+  "ai.contact_reply_limit_changed",
   "contact.deleted",
 
   // A poda do histórico (issue #261). UMA linha por rodada que de fato

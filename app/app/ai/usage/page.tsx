@@ -7,11 +7,13 @@ import { requireAuth, resolveActiveOrg } from "@/lib/auth/server";
 import { ROLE_RANK } from "@/lib/auth/types";
 import { createClient } from "@/lib/supabase/server";
 import { BudgetCard } from "@/components/ai/BudgetCard";
+import { TetoPorContatoCard } from "@/components/ai/TetoPorContatoCard";
 import { CartaoDeUsoDaVoz } from "@/components/ai/CartaoDeUsoDaVoz";
 import { ResumoDoUso } from "@/components/ai/ResumoDoUso";
 import { lerConfigDeAudio } from "@/lib/ai/resposta-em-audio/config";
 import { resumoDoUsoDaVoz } from "@/lib/ai/resposta-em-audio/uso";
 import { getBudgetStatus } from "@/lib/ai/budget/check";
+import { lerTetoPorContato } from "@/lib/ai/budget/teto-por-contato";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { UsageDashboardClient } from "./_client";
 
@@ -58,6 +60,8 @@ export default async function AiUsagePage({ searchParams }: PageProps) {
   };
 
   const budget = await getBudgetStatus(activeOrg.orgId);
+  // O teto por contato (#271). Nunca lança: leitura que falha mostra o padrão.
+  const tetoPorContato = await lerTetoPorContato(activeOrg.orgId);
   // A voz da resposta em áudio (#91): config e uso do mês. Leitura que falha vira
   // "não consegui ler" no cartão — nunca derruba a tela de Uso de IA.
   const { data: orgRow } = await supabase
@@ -82,6 +86,7 @@ export default async function AiUsagePage({ searchParams }: PageProps) {
       />
       <ResumoDoUso initialData={budget} isAdmin={isAdmin} />
       <BudgetCard initialData={budget} isAdmin={isAdmin} />
+      <TetoPorContatoCard initialData={tetoPorContato} isAdmin={isAdmin} />
       <CartaoDeUsoDaVoz config={configDaVoz} uso={usoDaVoz} idioma={idioma} />
       <UsageDashboardClient agents={agents} initial={initial} />
     </CorpoDaPagina>

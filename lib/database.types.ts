@@ -2102,6 +2102,8 @@ export type Database = {
           last_alarm_sent_at: string | null
           monthly_limit_cents: number
           organization_id: string
+          teto_por_contato_dia: number
+          teto_por_contato_hora: number
           updated_at: string
         }
         Insert: {
@@ -2116,6 +2118,8 @@ export type Database = {
           last_alarm_sent_at?: string | null
           monthly_limit_cents?: number
           organization_id: string
+          teto_por_contato_dia?: number
+          teto_por_contato_hora?: number
           updated_at?: string
         }
         Update: {
@@ -2130,6 +2134,8 @@ export type Database = {
           last_alarm_sent_at?: string | null
           monthly_limit_cents?: number
           organization_id?: string
+          teto_por_contato_dia?: number
+          teto_por_contato_hora?: number
           updated_at?: string
         }
         Relationships: [

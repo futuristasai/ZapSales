@@ -248,12 +248,11 @@ Não avaliado por falta de execução/instância:
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
 - Escrita por papel direto no banco, MEDIDO (#268, migration 0560): `messages` e as dez tabelas do
   financeiro exigem na policy o papel que as rotas já exigem — inclusive para apagar. Em `contacts`,
-  ALTERAR e APAGAR exigem atendente (duas policies restritivas), e a sessão não leva `is_blocked` nem
+  CRIAR, ALTERAR e APAGAR exigem atendente (três policies restritivas; criar entrou na migration
+  0562), e a sessão não leva `is_blocked` nem
   `is_anonymized` de verdadeiro para outra coisa (desbloquear é da rota do admin, com cliente de
   serviço). Prova: `tests/invariants/escrita-exige-o-papel-contatos-mensagens-financeiro.test.ts`.
-  O que NÃO está coberto: CRIAR contato segue sem papel no banco — o invariante das travas do
-  suporte usa `contacts` como a tabela em que só a trava recusa um INSERT, e fechar isso pede
-  reescrever aquele invariante; de atendente para cima, a sessão ainda grava mensagem e contato
+  O que NÃO está coberto: de atendente para cima, a sessão ainda grava mensagem e contato
   direto no banco, sem as validações da rota; e as demais tabelas da lista `DIVIDA_RBAC_CONHECIDA`
   (`tests/invariants/rbac-config-ia-canais.test.ts`) seguem só com a pergunta de organização.
 - Se `next.config.ts` define CSP / security headers.

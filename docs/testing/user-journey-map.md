@@ -3900,3 +3900,28 @@ Origem: a configuração inicial passou a ser só de quem administra a organiza�
 | Viewer, atendente e gerente são recusados em toda ação do onboarding | `[P0]` | `tests/unit/onboarding-so-quem-administra.test.ts` |
 
 **Não coberto:** a tela de espera nos outros três idiomas pela tela (as traduções existem nos catálogos; só o português é dirigido pela spec).
+
+## Limite de respostas automáticas por contato `[P1]` (2026-11-12, issue #271)
+
+O teto mensal de gasto protege a organização inteira; faltava a medida por
+contato. Um número que escreve sem parar (uma pessoa insistente, um robô, dois
+bots em laço) gerava um atendimento de IA por mensagem. Agora a IA atende o
+mesmo contato até 50 vezes por hora e 150 por dia; no atendimento seguinte ela
+não chama modelo nenhum, avisa o cliente, passa a conversa para a fila humana e
+abre um aviso na Central. Quem devolve a conversa ao automático zera a conta
+daquele contato. Junto, a transcrição de áudio e a leitura de imagem passaram a
+deixar linha em `llm_calls` — o gasto exibido em Uso de IA era menor que o real.
+
+| Caso | O que prova | Onde |
+|---|---|---|
+| O atendimento N responde, o N+1 não | a regra exata, com zero desligando a janela | `tests/unit/teto-de-ia-por-contato.test.ts` |
+| Ao estourar: nenhum modelo, cliente avisado ANTES do silêncio, passagem com motivo próprio, um aviso na Central | o desvio do turno | `tests/unit/teto-de-ia-por-contato.test.ts` |
+| A guarda roda antes da primeira chamada de modelo do turno | o lugar no código | `tests/unit/teto-de-ia-por-contato.test.ts` |
+| A hora reabre na hora certa; virada de dia e de mês não reabre nem trava; a conta recomeça depois da passagem; um contato não paga pelo outro | a consulta real, num Postgres de verdade | `tests/invariants/teto-de-ia-por-contato.test.ts` |
+| Só admin ajusta; fora de 0 a 10.000 é recusado; uma mudança = uma linha de auditoria | a rota | `tests/unit/api-teto-por-contato.test.ts` |
+| O admin vê o padrão, ajusta, recarrega e o valor continua; número inválido não salva | a tela, pelo navegador | `tests/e2e/teto-de-ia-por-contato.spec.ts` |
+| Áudio e imagem geram linha de gasto; preço desconhecido vira custo nulo, nunca zero | a conta de gasto | `tests/unit/gasto-da-midia.test.ts` |
+
+**Não medido:** o desvio de ponta a ponta com um agente de verdade respondendo
+(exige provedor de IA no ambiente de teste). A regra, a consulta e o desvio são
+medidos separadamente, cada um contra a peça real.

@@ -149,3 +149,23 @@ export function costCents(model: string, usage: TokenUsage, cacheTtl: CacheTtl =
     1_000_000;
   return usd * 100;
 }
+
+/**
+ * USD por MINUTO de áudio transcrito, por id EXATO de modelo.
+ *
+ * Fonte: https://developers.openai.com/api/docs/pricing (Whisper: US$ 0,006 por
+ * minuto). Só entra aqui o modelo cujo preço por DURAÇÃO é conhecido; os
+ * modelos `gpt-*-transcribe` cobram por token de áudio, e essa tarifa não está
+ * nesta tabela — eles voltam NULL, que é o contrato do arquivo: custo
+ * desconhecido nunca vira zero.
+ */
+const USD_POR_MINUTO_DE_AUDIO: Record<string, number> = {
+  'whisper-1': 0.006,
+};
+
+/** Custo em CENTS de `segundos` de áudio, ou null se o modelo não tem preço por duração. */
+export function custoDoAudioCents(model: string, segundos: number): number | null {
+  const porMinuto = USD_POR_MINUTO_DE_AUDIO[model];
+  if (porMinuto === undefined || !Number.isFinite(segundos) || segundos < 0) return null;
+  return (segundos / 60) * porMinuto * 100;
+}
