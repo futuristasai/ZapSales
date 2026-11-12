@@ -127,7 +127,11 @@ describe("o elo que some sem barulho", () => {
     // destinatário, e deixaria guardado um formato que só um canal aceita.
     const fonte = readFileSync("app/api/v1/conversations/[id]/media/route.ts", "utf8");
     expect(fonte).toContain("transcodificarNotaDeVoz");
-    expect(fonte).toMatch(/upload\(storagePath,\s*buffer,\s*\{\s*contentType:\s*mimeFinal/);
+    // O tipo gravado passa pela regra de entrega (`tipoSeguro`), que mantém
+    // o áudio como áudio — o que importa aqui é ser o mime JÁ convertido.
+    expect(fonte).toMatch(
+      /upload\(storagePath,\s*buffer,\s*\{\s*contentType:\s*tipoSeguro\(mimeFinal\)/,
+    );
   });
 
   it("devolve o mime do arquivo GUARDADO, não o que chegou", () => {

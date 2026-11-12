@@ -44,6 +44,7 @@ import { estadoDaJanela } from "@/lib/channels/janela";
 import { isMediaPathOwnedBy } from "@/lib/messaging/media/upload-validation";
 import { baixarMidiaExterna, MidiaExternaRecusada } from "@/lib/messaging/media/baixar-midia-externa";
 import { extFromMime } from "@/lib/messaging/media/types";
+import { tipoSeguro } from "@/lib/messaging/media/entrega-segura";
 import { ehUrlAssinadaDoProprioStorage } from "@/lib/messaging/media/url-de-midia-externa";
 import { ErroDeRedeSegura } from "@/lib/net/rede-segura";
 import {
@@ -434,7 +435,7 @@ async function guardarMidiaDaUrl(
   const caminho = `${organizationId}/${conversationId}/out-${randomUUID()}.${extFromMime(midia.mime)}`;
   const { error } = await createAdminClient()
     .storage.from("whatsapp-media")
-    .upload(caminho, midia.buffer, { contentType: midia.mime, upsert: false });
+    .upload(caminho, midia.buffer, { contentType: tipoSeguro(midia.mime), upsert: false });
   if (error) {
     logger.warn("[messages] media_url upload failed", {
       organization_id: organizationId,
