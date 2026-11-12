@@ -3947,3 +3947,15 @@ A lista de propostas mora na tela de Memória da IA, que já tem porta no menu.
 "anote como regra…", a proposta aparece, o atendimento seguinte não a segue). Exige
 provedor de IA no ambiente de teste; as duas pontas são medidas separadamente — a
 ferramenta chamada direto e o texto que o agente recebe.
+
+## Segredos do canal só pelo servidor `[P1]` (2026-11-12, issue #274)
+
+O código do endereço dos avisos do WhatsApp, o segredo da assinatura e as
+credenciais da conexão oficial deixaram de ser legíveis pela sessão do usuário.
+Sem efeito visível: as telas que listam os números pedem só colunas liberadas.
+
+| Caso | O que prova | Onde |
+|---|---|---|
+| Nenhuma coluna de segredo é legível pela sessão; toda outra coluna continua legível; as listas que as telas pedem são legíveis | o privilégio, num Postgres de verdade | `tests/invariants/segredos-do-canal-fora-da-sessao.test.ts` |
+| Nenhuma leitura feita com a sessão pede coluna de segredo nem `*` | o código do app, por varredura | `tests/unit/segredos-do-canal-so-pelo-servidor.test.ts` |
+| Conexões, inbox e exclusão de canal continuam funcionando com a sessão | as telas, pelo navegador | as specs de Conexões e do inbox que já rodam no job `e2e` |

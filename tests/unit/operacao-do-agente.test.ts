@@ -48,6 +48,8 @@ const PESSOA: Actor = { type: "user", id: USER_ID, role: "manager" };
 function deps(db: ReturnType<typeof makeDb>, actor: Actor = PESSOA): DepsDaOperacao {
   return {
     supabase: db.client as unknown as SupabaseClient,
+    // O que a sessão não lê sai pelo cliente de serviço (#274); aqui, o mesmo dublê.
+    servico: db.client as unknown as SupabaseClient,
     organizationId: ORG_ID,
     actor,
     requestId: "req-1",
@@ -232,6 +234,8 @@ describe("o que a leitura NÃO devolve", () => {
     (db.tabelas as unknown as Record<string, unknown[]>).webhook_events_log = [
       {
         id: "ev1",
+        // A leitura pelo servidor é presa à organização de quem chama (#274).
+        organization_id: ORG_ID,
         webhook_path_token: "tok",
         received_at: "2026-08-04T10:00:00Z",
         valid_signature: true,

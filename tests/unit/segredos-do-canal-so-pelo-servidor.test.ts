@@ -130,7 +130,7 @@ describe("as três leituras que usavam a sessão saem pelo servidor", () => {
     (arquivo) => {
       const fonte = readFileSync(arquivo, "utf8");
       const trecho = fonte.slice(fonte.indexOf('.from("webhook_events_log")') - 80);
-      expect(trecho.slice(0, 80)).toMatch(/createAdminClient\(\)/);
+      expect(trecho.slice(0, 80)).toMatch(/createAdminClient\(\)\)?\s*$/);
       expect(trecho.slice(0, 500)).toMatch(/\.eq\("organization_id", /);
       expect(trecho.slice(0, 500)).toMatch(/\.eq\("webhook_path_token", /);
     },

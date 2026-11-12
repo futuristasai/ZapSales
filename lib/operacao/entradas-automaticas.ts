@@ -30,6 +30,12 @@ type SB = SupabaseClient;
 
 export interface DepsDaOperacao {
   supabase: SB;
+  /**
+   * O cliente de serviço, para o pouco que a sessão do usuário não lê (o código
+   * do endereço dos avisos, #274). Ausente = `createAdminClient()`. Existe como
+   * campo para o teste poder entregar um dublê; em produção ninguém o preenche.
+   */
+  servico?: SB;
   organizationId: string;
   /** Resolvido de fonte confiável pelo chamador — nunca do body. */
   actor: Actor;
@@ -317,7 +323,7 @@ export async function recebimentosDaEntrada(
   // `fonteDaOrg` leu a fonte pelo cliente de quem chama (a RLS dele vale). O
   // arquivo é filtrado pelo código do endereço, coluna que a sessão do usuário
   // não lê (#274): o filtro sai pelo servidor, preso à organização do chamador.
-  const { data, error } = await createAdminClient()
+  const { data, error } = await (deps.servico ?? createAdminClient())
     .from("webhook_events_log")
     .select("id, received_at, valid_signature, payload_parsed, status")
     .eq("organization_id", deps.organizationId)
