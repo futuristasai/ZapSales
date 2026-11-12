@@ -320,11 +320,15 @@ describe("worker de mídia: base_url do binding de visão (#855)", () => {
 
     await deriveMessageMedia(eventRow());
 
+    // Os quatro campos de sempre, exatamente — e, desde a #271, o aviso de
+    // gasto: o worker entrega ao serviço a função que registra quanto a
+    // transcrição custou. Nenhum outro campo entra.
     expect(provedorDeTranscricaoMock).toHaveBeenCalledWith({
       apiKey: "chave-do-servico",
       baseUrl: "https://api.groq.com/openai/v1",
       model: "whisper-large-v3",
       languages: [],
+      aoMedir: expect.any(Function),
     });
   });
 
