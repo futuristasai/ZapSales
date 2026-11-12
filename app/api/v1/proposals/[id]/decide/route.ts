@@ -9,6 +9,7 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
 import { emitLeadActivity } from "@/lib/leads/activity-emitter";
 import { cancelaRetornoNoCrm } from "@/lib/followup/retorno-crm";
 import { logger } from "@/lib/logger";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { sePropostasDesligadas } from "@/lib/propostas/porta";
@@ -83,7 +84,13 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
   if ((proposta as { retorno_id: string | null }).retorno_id) {
     try {
       await cancelaRetornoNoCrm(
-        { admin: supabase, orgId: authz.org.orgId, actor: { type: "user", id: authz.user.id } },
+        // O retorno agendado mora em `cron_jobs`, a fila por onde toda mensagem
+        // automática sai — e ela só é escrita pelo servidor (#273). Este campo
+        // se chama `admin` e recebia a SESSÃO de quem decidiu: funcionava
+        // enquanto qualquer membro podia escrever na fila direto pelo banco. A
+        // proposta já foi lida e decidida pela sessão acima (é a RLS dela que
+        // prova o acesso); aqui o servidor grava, preso à organização da sessão.
+        { admin: createAdminClient(), orgId: authz.org.orgId, actor: { type: "user", id: authz.user.id } },
         (proposta as { retorno_id: string }).retorno_id,
         { motivo: `Proposta ${parsed.data.decisao} — retorno automático não é mais necessário` },
       );
