@@ -10742,5 +10742,9 @@
   "Só o administrador da empresa pode renovar a licença.": "Only the company administrator can renew the license.",
   "Renovando…": "Renewing…",
   "Tentar renovar agora": "Try to renew now",
-  "Se a licença está em dia, quando vence e como renovar.": "Whether the license is up to date, when it expires and how to renew it."
+  "Se a licença está em dia, quando vence e como renovar.": "Whether the license is up to date, when it expires and how to renew it.",
+  "Configuração em andamento": "Setup in progress",
+  "Quem administra esta empresa ainda não terminou a configuração inicial. Assim que terminar, você entra normalmente.": "The person who manages this company has not finished the initial setup yet. As soon as it is done, you will get in as usual.",
+  "Você não precisa fazer nada agora.": "There is nothing you need to do right now.",
+  "Conferir de novo": "Check again"
 }

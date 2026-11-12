@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { requireAuth, resolveActiveOrg } from "@/lib/auth/server";
+import { roleAtLeast } from "@/lib/auth/types";
 import { loadOnboardingState } from "@/app/actions/onboarding/_shared";
 import { Trilha, type PassoDaTrilha } from "./_components/Trilha";
 import { TITULO } from "./_components/fonte";
@@ -29,6 +30,11 @@ export default async function OnboardingLayout({ children }: { children: React.R
 
   const { state, onboardedAt } = await loadOnboardingState(activeOrg.orgId);
   if (onboardedAt) redirect("/app/inbox");
+  // A configuração inicial é de quem administra (as ações recusam os demais —
+  // `requireOnboardingCtx`). Mostrar o assistente a quem não pode concluí-lo
+  // seria uma tela em que todo botão falha; a espera tem tela própria, fora
+  // deste layout e do de `/app`, para não haver laço entre os dois.
+  if (!roleAtLeast(activeOrg.role, "admin")) redirect("/aguardando-administrador");
 
   // Os passos que ESTA instalação oferece, com o que já foi resolvido. A trilha
   // não decide mais nada sozinha — ela desenha o que recebe. "Pulado" vem do
