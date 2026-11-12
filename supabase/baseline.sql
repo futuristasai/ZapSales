@@ -48925,4 +48925,10 @@ comment on column public.platform_licenca.modo is
 -- continua ligada.
 revoke all on table public.storage_redaction_queue from anon, authenticated;
 
+-- Tabela que deixa de ser gravável pela sessão sai do alcance das travas do modo
+-- somente leitura do suporte: o contrato da casa (migration 0274) é tabela só do
+-- servidor com ZERO policies `support_write_*`. A rotina é a mesma que o resto
+-- do arquivo chama; aqui ela roda de novo porque a retirada acima veio depois.
+do $f$ begin perform public.fn_aplicar_travas_de_suporte(); end $f$;
+
 notify pgrst, 'reload schema';
