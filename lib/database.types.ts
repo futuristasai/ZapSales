@@ -5218,6 +5218,7 @@ export type Database = {
           title: string
           updated_at: string
           value_cents: number | null
+          webhook_source_id: string | null
         }
         Insert: {
           assigned_at?: string | null
@@ -5251,6 +5252,7 @@ export type Database = {
           title: string
           updated_at?: string
           value_cents?: number | null
+          webhook_source_id?: string | null
         }
         Update: {
           assigned_at?: string | null
@@ -5284,6 +5286,7 @@ export type Database = {
           title?: string
           updated_at?: string
           value_cents?: number | null
+          webhook_source_id?: string | null
         }
         Relationships: [
           {

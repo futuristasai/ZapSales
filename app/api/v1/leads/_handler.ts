@@ -403,8 +403,13 @@ export async function createLeadHandler(
   input: CreateLeadInput & {
     custom_fields?: Record<string, unknown>;
     source_metadata?: Record<string, unknown>;
-    /** Interno (webhook inbound) — idempotência via uniq_crm_leads_org_source_external. */
+    /** Interno (webhook inbound) — idempotência por FONTE via uniq_crm_leads_org_fonte_external. */
     external_id?: string;
+    /**
+     * Interno (webhook inbound) — a fonte de captação que criou o lead. É ela
+     * que escopa o repetido (#270). Não vem do corpo da requisição.
+     */
+    webhook_source_id?: string;
     /**
      * Interno (importação de planilha). Marca o `lead.created` com
      * `metadata.via`, e o gatilho de follow-up "Lead criado" não inscreve em
@@ -522,6 +527,7 @@ export async function createLeadHandler(
       source: input.source,
       source_metadata: input.source_metadata ?? {},
       external_id: input.external_id ?? null,
+      webhook_source_id: input.webhook_source_id ?? null,
       custom_fields: input.custom_fields ?? {},
       retomado_de_lead_id: input.retomado_de_lead_id ?? null,
       status: "open",
