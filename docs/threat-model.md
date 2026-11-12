@@ -247,6 +247,15 @@ Não avaliado por falta de execução/instância:
   modelo e por mensagem continua sendo a única guarda ali.
 - Config do Caddy (`Caddyfile`) — TLS, headers de segurança, HSTS.
 - Se `next.config.ts` define CSP / security headers.
+- Entrada de lead sem assinatura (`app/api/v1/webhooks/in/[token]`), MEDIDO (#270): fonte sem segredo é
+  endereço público, e o envio não prova quem o preencheu. A régua está em
+  `lib/webhooks/entrada-sem-assinatura.ts`: recusar sempre vale; conceder, por entrada sem
+  assinatura, não desfaz o "não" (nem o pedido de saída) de um contato que já existia, e não
+  autoriza a IA para ele. Toda mudança de consentimento desta rota grava `lgpd.consent_changed`.
+  O que NÃO está coberto: a chave de repetição (`external_id`) ainda é única por organização e não
+  por fonte — um envio público pode ocupar o identificador que uma integração assinada usaria, e o
+  envio dela é tratado como repetido. Corrigir pede coluna própria para a fonte no lead (o
+  `source_metadata` é apagado na anonimização e não serve de chave).
 - Storage: se o bucket `whatsapp-media` está privado de fato e se a expiração das signed
   URLs é adequada.
 - Storage, anexos de conversa e de nota interna (`whatsapp-media`, `internal-media`), MEDIDO (#266):
