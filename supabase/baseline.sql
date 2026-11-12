@@ -46455,8 +46455,8 @@ revoke all on table public.storage_redaction_queue from anon, authenticated;
 --   * `tests/invariants/travas-de-suporte-cobrem-toda-tabela-na-instalacao` usa
 --     `contacts` como a tabela em que a TRAVA do suporte é a única coisa que pode
 --     recusar um INSERT — e para isso a permissiva de insert não pode exigir
---     papel. Por isso CRIAR contato segue sem papel no banco (pendência
---     registrada em docs/threat-model.md);
+--     papel. (Aquele invariante passou a medir numa tabela-cobaia própria, e
+--     CRIAR contato ganhou a sua policy restritiva na migration 0562, abaixo.)
 --   * `tests/invariants/cliente-nasce-do-agendamento` (I36) exige que a guarda
 --     das colunas de cliente responda 42501 a QUALQUER sessão, inclusive a de um
 --     `viewer`. O BEFORE UPDATE só dispara para linha que o USING alcança — então
@@ -46553,6 +46553,24 @@ comment on column public.ai_budgets.teto_por_contato_dia is
 create index if not exists llm_calls_contato_idx
   on public.llm_calls (organization_id, contact_id, created_at desc)
   where contact_id is not null;
+
+-- ---- criar contato exige atendente (migration 0562) ----
+--
+-- Issue #268. Fecha a última operação de `contacts` em que o papel só valia pela
+-- tela: ALTERAR e APAGAR já exigiam atendente (0560); CRIAR passa a exigir
+-- também. Toda rota e toda importação que cria contato com a sessão do usuário
+-- já exige atendente ou acima — a regra copia a rota, nunca é mais dura. Quem
+-- grava com o cliente de serviço (formulário público, avisos do canal) ou por
+-- função `security definer` não passa por esta policy.
+drop policy if exists "contacts_criar_exige_atendente" on public.contacts;
+create policy "contacts_criar_exige_atendente" on public.contacts
+  as restrictive
+  for insert
+  with check (
+    public.fn_is_platform_admin_full()
+    or ((organization_id in (select public.fn_user_org_ids()))
+        and public.fn_role_at_least(organization_id, 'agent'))
+  );
 
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --

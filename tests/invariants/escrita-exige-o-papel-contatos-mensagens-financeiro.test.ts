@@ -20,8 +20,8 @@ import {
  * O BANCO EXIGE O PAPEL QUE AS ROTAS JÁ EXIGEM (issue #268, migration 0560).
  *
  * O PostgREST fala com o JWT da sessão direto, sem rota. Em `contacts` e
- * `messages` a policy de escrita só perguntava "é da organização?" (em
- * `contacts`, criar ainda é assim — ver o caso que declara a pendência); nas dez
+ * `messages` a policy de escrita só perguntava "é da organização?" (criar contato
+ * foi a última operação a fechar — migration 0562); nas dez
  * tabelas do financeiro o papel estava no WITH CHECK e não no USING — e DELETE
  * só avalia o USING. Em todos os casos o papel conferido pela rota não valia
  * para quem falasse com o banco por fora dela.
@@ -115,13 +115,33 @@ describe("contacts — gravar exige atendente", () => {
     expect(writeCountAs(GOV_AGENT_A, dml("alterado pelo atendente"))).toBe(1);
   });
 
-  it("atendente cria (e criar, por ora, não exige papel no banco — pendência declarada)", () => {
-    // `tenant_isolation_contacts_write` segue cega a papel no INSERT: o invariante
-    // das travas do suporte usa `contacts` como a tabela em que só a trava pode
-    // recusar um insert. O que este caso fixa é o lado que não pode quebrar.
+  it("⭐ viewer não cria; atendente cria (migration 0562)", () => {
     const dml = (id: string) =>
       `insert into public.contacts (id, organization_id, display_name) values ('${id}', '${GOV_ORG}', 'Contato sonda 268')`;
+    expect(writeCountAs(GOV_VIEWER, dml(CONTATO_NOVO_VIEWER))).toBe(0);
+    expect(existe("contacts", CONTATO_NOVO_VIEWER), "o contato do viewer entrou no banco").toBe(false);
+    // CONTROLE: o papel que as rotas aceitam consegue a MESMA escrita.
     expect(writeCountAs(GOV_AGENT_A, dml(CONTATO_NOVO_AGENT))).toBe(1);
+    expect(existe("contacts", CONTATO_NOVO_AGENT)).toBe(true);
+  });
+
+  it("quem recusa o viewer é a policy de criar, e ela diz o nome", () => {
+    const erro = erroAo(
+      GOV_VIEWER,
+      `insert into public.contacts (id, organization_id, display_name) values ('${CONTATO_NOVO_VIEWER}', '${GOV_ORG}', 'Contato sonda 268')`,
+    );
+    expect(erro).toMatch(/contacts_criar_exige_atendente/);
+  });
+
+  it("a policy de criar é restritiva, de INSERT, e confere organização E papel", () => {
+    const catalogo = sql(`
+      select count(*) from pg_policy p join pg_class c on c.oid = p.polrelid
+       where c.relname = 'contacts' and p.polname = 'contacts_criar_exige_atendente'
+         and not p.polpermissive and p.polcmd = 'a'
+         and pg_get_expr(p.polwithcheck, p.polrelid) like '%fn_user_org_ids()%'
+         and pg_get_expr(p.polwithcheck, p.polrelid) like '%fn_role_at_least(organization_id, ''agent''%';
+    `);
+    expect(lastLine(catalogo)).toBe("1");
   });
 
   it("a guarda das colunas de cliente continua respondendo ao viewer (a linha é alcançada)", () => {
