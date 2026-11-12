@@ -44,7 +44,9 @@ function blocoDoBaseline(marca: string): string | null {
   const texto = readFileSync(BASELINE, "utf8");
   const inicio = texto.indexOf(marca);
   if (inicio === -1) return null;
-  const resto = texto.slice(inicio + marca.length);
+  // A partir da linha SEGUINTE à do rótulo: a marca é só o começo dele, e o
+  // resto da linha ("(migration NNNN) ----") não é SQL.
+  const resto = texto.slice(texto.indexOf("\n", inicio));
   const fim = resto.indexOf("\n-- ---- ");
   return resto.slice(0, fim === -1 ? undefined : fim);
 }
