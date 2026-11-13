@@ -145,10 +145,21 @@ export function ListasSalvas({
     jaUsouAInicial.current = true;
     const lista = listasCarregadas.find((l) => l.id === listaInicial);
     if (lista) usarLista(lista);
-    else setAviso(t("A lista indicada não existe mais. Escolha as pessoas abaixo."));
-    // `usarLista` e `t` mudam de identidade a cada render; o `ref` é quem garante "uma vez".
+    // `usarLista` muda de identidade a cada render; o `ref` é quem garante "uma vez".
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listaInicial, listasCarregadas]);
+  // A lista do endereço que não existe é um FATO das listas carregadas, não um
+  // acontecimento: calculado a cada render, sem estado. Some assim que a tela
+  // tiver outra coisa a dizer (um aviso de salvar, usar ou excluir).
+  const listaDoEnderecoSumiu =
+    Boolean(listaInicial) &&
+    listasCarregadas !== undefined &&
+    !listasCarregadas.some((l) => l.id === listaInicial);
+  const avisoNaTela =
+    aviso ??
+    (listaDoEnderecoSumiu
+      ? t("A lista indicada não existe mais. Escolha as pessoas abaixo.")
+      : null);
 
   return (
     <div className="space-y-3 rounded-md border border-border p-3" data-testid="listas-salvas">
@@ -211,9 +222,9 @@ export function ListasSalvas({
         </ul>
       )}
 
-      {aviso && (
+      {avisoNaTela && (
         <p role="status" className="text-sm" data-testid="aviso-de-lista">
-          {aviso}
+          {avisoNaTela}
         </p>
       )}
 
