@@ -58,8 +58,14 @@ export interface AtRiskLead {
   next_followup_at: string | null;
   conversation_id: string | null;
   pipeline_id: string;
+  /** Nome do funil e da etapa, para a linha dizer ONDE o negócio está parado. */
+  pipeline_name: string | null;
+  stage_name: string | null;
   agenda?: ProtecaoAgenda;
 }
+
+/** As três situações que aparecem no radar (`em_dia` fica de fora). */
+export type SituacaoNoRadar = Exclude<RiskBucket, "em_dia">;
 
 /**
  * Demanda ABERTA sem próximo passo — o invariante 4 da doutrina em forma de
@@ -76,6 +82,16 @@ export interface DemandaSemProximoPasso {
   aberta_em: string;
   horas_aberta: number;
   origem: string;
+  assunto: string | null;
+  /**
+   * Por onde se chega até ela. Sem isto a lista era só leitura: a tela mostrava
+   * o nome de quem espera e não dava onde clicar. A conversa é a VINCULADA à
+   * demanda (`demanda_conversas`); sem vínculo, a mais recente do contato.
+   */
+  conversation_id: string | null;
+  lead_id: string | null;
+  /** Funil do negócio vinculado — só quando o negócio existe e é visível. */
+  pipeline_id: string | null;
 }
 
 /**
@@ -124,6 +140,13 @@ export interface OpcoesDoRadar {
   organizationId: string;
   limit?: number;
   minHours?: number;
+  /**
+   * Só uma situação. O corte de `limit` vem DEPOIS da ordenação por urgência,
+   * então sem este filtro quem pede "em voo" numa organização com mais de
+   * `limit` críticos recebe zero linhas com o contador dizendo 80.
+   * `counts` e `total` continuam sendo do radar inteiro.
+   */
+  risk?: SituacaoNoRadar;
   now?: Date;
   /** Apenas a rota humana passa o papel efetivo; as consultas usam seu client RLS. */
   humanRole?: Role;
@@ -151,13 +174,20 @@ export async function carregaRadarDeRisco(
   // forma a investigar é o join embutido — `crm_pipelines!inner(is_archived)` com
   // `.eq("crm_pipelines.is_archived", false)` —, que não carrega ids na URL. Não
   // medida: com ~50 funis arquivados são ~2 KB, dentro de qualquer limite.
-  const { data: arquivados, error: arquivadosErr } = await admin
+  //
+  // A leitura traz TODOS os funis (e não só os arquivados) porque a linha do
+  // radar também mostra o nome do funil: é a mesma consulta, sem ida extra.
+  const { data: funis, error: arquivadosErr } = await admin
     .from("crm_pipelines")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .eq("is_archived", true);
+    .select("id, name, is_archived")
+    .eq("organization_id", organizationId);
   if (arquivadosErr) throw new Error(`radar_pipelines_failed: ${arquivadosErr.message}`);
-  const funisArquivados = (arquivados ?? []).map((p) => p.id as string);
+  const funisArquivados: string[] = [];
+  const nomeDoFunil = new Map<string, string>();
+  for (const f of (funis ?? []) as Array<{ id: string; name?: string | null; is_archived?: boolean | null }>) {
+    if (f.is_archived) funisArquivados.push(f.id);
+    if (f.name) nomeDoFunil.set(f.id, f.name);
+  }
 
   let consultaDeLeads = admin
     .from("crm_leads")
@@ -201,17 +231,20 @@ export async function carregaRadarDeRisco(
   // resolveStageWindow — para o radar e o card nunca discordarem do mesmo lead.
   const stageIds = [...new Set(rows.map((l) => l.stage_id).filter(Boolean))];
   const windowByStage = new Map<string, ReturnType<typeof resolveStageWindow>>();
+  const nomeDaEtapa = new Map<string, string>();
   if (stageIds.length > 0) {
     const { data: stages } = await admin
       .from("crm_stages")
-      .select("id, expected_duration_hours")
+      .select("id, name, expected_duration_hours")
       .eq("organization_id", organizationId)
       .in("id", stageIds);
     for (const s of (stages ?? []) as Array<{
       id: string;
+      name?: string | null;
       expected_duration_hours: number | null;
     }>) {
       windowByStage.set(s.id, resolveStageWindow(s));
+      if (s.name) nomeDaEtapa.set(s.id, s.name);
     }
   }
   const contactIds = [
@@ -220,7 +253,9 @@ export async function carregaRadarDeRisco(
 
   // Follow-ups agendados no futuro por contato (mais próximo primeiro) — "em voo".
   const followupByContact = new Map<string, string>();
-  // Uma conversa por contato (qualquer serve para o deep-link do inbox) + assignee.
+  // Uma conversa por contato + assignee. A MAIS RECENTE, e não "qualquer uma":
+  // quem tem conversa em dois números caía numa ou noutra conforme a ordem que o
+  // banco devolvia, e o mesmo negócio abria conversas diferentes a cada visita.
   const convByContact = new Map<string, { id: string; assignee_kind: "user" | "ai" | null }>();
   const nameByContact = new Map<string, string | null>();
 
@@ -238,7 +273,8 @@ export async function carregaRadarDeRisco(
         .from("conversations")
         .select("id, contact_id, assignee_kind")
         .eq("organization_id", organizationId)
-        .in("contact_id", contactIds),
+        .in("contact_id", contactIds)
+        .order("last_message_at", { ascending: false, nullsFirst: false }),
       admin
         .from("contacts")
         .select("id, name, display_name")
@@ -297,6 +333,8 @@ export async function carregaRadarDeRisco(
       next_followup_at: nextFollowupAt,
       conversation_id: conv?.id ?? null,
       pipeline_id: l.pipeline_id,
+      pipeline_name: nomeDoFunil.get(l.pipeline_id) ?? null,
+      stage_name: l.stage_id ? (nomeDaEtapa.get(l.stage_id) ?? null) : null,
       agenda: protection,
     });
   }
@@ -315,7 +353,7 @@ export async function carregaRadarDeRisco(
   // paridade sem necessidade; acrescentar não arrisca nada.
   const { data: semPasso, error: demandaError } = await admin
     .from("demandas")
-    .select("id, lead_id, contact_id, aberta_em, origem, contacts(name, display_name)")
+    .select("id, lead_id, contact_id, aberta_em, origem, assunto, contacts(name, display_name)")
     .eq("organization_id", organizationId)
     .is("fechada_em", null)
     .is("proximo_passo", null)
@@ -387,7 +425,68 @@ export async function carregaRadarDeRisco(
     demandasVisiveis = demandasVisiveis.filter(d => d.lead_id ? visibleLeads.has(d.lead_id) : visibleLeadless.has(d.id));
   }
 
-  const semProximoPasso: DemandaSemProximoPasso[] = demandasVisiveis.map((d) => {
+  // POR ONDE SE CHEGA a cada demanda — só para as que cabem na página (`limit`),
+  // em lotes pelo mesmo motivo do laço acima (a lista viaja na querystring).
+  const demandasDaPagina = demandasVisiveis.slice(0, limit);
+  const conversaDaDemanda = new Map<string, string>();
+  const funilDoLead = new Map<string, string>(rows.map((l) => [l.id as string, l.pipeline_id as string]));
+  {
+    const idsDeDemanda = demandasDaPagina.map((d) => d.id as string);
+    for (let i = 0; i < idsDeDemanda.length; i += IDS_POR_CONSULTA) {
+      const { data: vinculos, error: vinculosErr } = await admin
+        .from("demanda_conversas")
+        .select("demanda_id, conversation_id, vinculada_em")
+        .eq("organization_id", organizationId)
+        .in("demanda_id", idsDeDemanda.slice(i, i + IDS_POR_CONSULTA))
+        .order("vinculada_em", { ascending: false });
+      if (vinculosErr) throw new Error(`radar_demanda_conversas_failed: ${vinculosErr.message}`);
+      for (const v of vinculos ?? []) {
+        // Ordenado da mais nova para a mais antiga: a primeira de cada demanda vale.
+        if (!conversaDaDemanda.has(v.demanda_id as string)) {
+          conversaDaDemanda.set(v.demanda_id as string, v.conversation_id as string);
+        }
+      }
+    }
+    // Sem vínculo: a conversa mais recente do contato (mesma regra dos negócios).
+    const contatosSemConversa = [
+      ...new Set(
+        demandasDaPagina
+          .filter((d) => !conversaDaDemanda.has(d.id as string) && !convByContact.has(d.contact_id as string))
+          .map((d) => d.contact_id as string),
+      ),
+    ];
+    for (let i = 0; i < contatosSemConversa.length; i += IDS_POR_CONSULTA) {
+      const { data: convsDoContato, error: convsErr } = await admin
+        .from("conversations")
+        .select("id, contact_id, assignee_kind")
+        .eq("organization_id", organizationId)
+        .in("contact_id", contatosSemConversa.slice(i, i + IDS_POR_CONSULTA))
+        .order("last_message_at", { ascending: false, nullsFirst: false });
+      if (convsErr) throw new Error(`radar_demanda_contatos_failed: ${convsErr.message}`);
+      for (const c of convsDoContato ?? []) {
+        if (!convByContact.has(c.contact_id)) {
+          convByContact.set(c.contact_id, { id: c.id, assignee_kind: c.assignee_kind ?? null });
+        }
+      }
+    }
+    // Funil do negócio vinculado, quando ele não veio no pool de negócios frios.
+    const leadsFaltando = [
+      ...new Set(
+        demandasDaPagina.flatMap((d) => (d.lead_id && !funilDoLead.has(d.lead_id as string) ? [d.lead_id as string] : [])),
+      ),
+    ];
+    for (let i = 0; i < leadsFaltando.length; i += IDS_POR_CONSULTA) {
+      const { data: leadsDaDemanda, error: leadsDaDemandaErr } = await admin
+        .from("crm_leads")
+        .select("id, pipeline_id")
+        .eq("organization_id", organizationId)
+        .in("id", leadsFaltando.slice(i, i + IDS_POR_CONSULTA));
+      if (leadsDaDemandaErr) throw new Error(`radar_demanda_leads_failed: ${leadsDaDemandaErr.message}`);
+      for (const l of leadsDaDemanda ?? []) funilDoLead.set(l.id as string, l.pipeline_id as string);
+    }
+  }
+
+  const semProximoPasso: DemandaSemProximoPasso[] = demandasDaPagina.map((d) => {
     // O join do PostgREST vem como ARRAY mesmo em relação um-para-um.
     const rel = d.contacts as unknown as ContatoNomeavel[] | ContatoNomeavel | null;
     const contato = Array.isArray(rel) ? (rel[0] ?? null) : rel;
@@ -400,6 +499,11 @@ export async function carregaRadarDeRisco(
         (now.getTime() - new Date(d.aberta_em as string).getTime()) / 3_600_000,
       ),
       origem: d.origem as string,
+      assunto: ((d as { assunto?: string | null }).assunto ?? null) || null,
+      conversation_id:
+        conversaDaDemanda.get(d.id as string) ?? convByContact.get(d.contact_id as string)?.id ?? null,
+      lead_id: (d.lead_id as string | null) ?? null,
+      pipeline_id: d.lead_id ? (funilDoLead.get(d.lead_id as string) ?? null) : null,
     };
   });
 
@@ -486,12 +590,14 @@ export async function carregaRadarDeRisco(
     created_at: p.created_at as string,
   }));
 
+  const daSituacao = opts.risk ? radar.filter((l) => l.risk === opts.risk) : radar;
+
   return {
-    items: radar.slice(0, limit),
+    items: daSituacao.slice(0, limit),
     counts: { critico: counts.critico, em_risco: counts.em_risco, em_voo: counts.em_voo },
     total: radar.length,
-    sem_proximo_passo: semProximoPasso.slice(0, limit),
-    total_sem_proximo_passo: semProximoPasso.length,
+    sem_proximo_passo: semProximoPasso,
+    total_sem_proximo_passo: demandasVisiveis.length,
     propostas_vencidas_sem_retomada,
     propostas_esperando_revisao,
   };

@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
 
@@ -12,7 +12,12 @@ import { apiClient } from "@/lib/api/client";
  */
 export type { AtRiskLead } from "@/app/api/v1/leads/at-risk/route";
 import type { AtRiskLead } from "@/app/api/v1/leads/at-risk/route";
-import type { DemandaSemProximoPasso, PropostaEsperandoRevisao, PropostaVencidaSemRetomada } from "@/lib/leads/radar-de-risco";
+import type {
+  DemandaSemProximoPasso,
+  PropostaEsperandoRevisao,
+  PropostaVencidaSemRetomada,
+  SituacaoNoRadar,
+} from "@/lib/leads/radar-de-risco";
 
 export interface AtRiskData {
   items: AtRiskLead[];
@@ -27,12 +32,32 @@ export interface AtRiskData {
   propostas_esperando_revisao: PropostaEsperandoRevisao[];
 }
 
-/** Radar de risco (C1). Polling 60s — a atividade dos leads muda no worker/inbox. */
-export function useAtRiskLeads() {
+export interface FiltroDoRadar {
+  /** Só uma situação; sem ela vêm todas, da mais urgente para a menos. */
+  risk?: SituacaoNoRadar;
+  /** Quantas linhas pedir (a tela cresce de 50 em 50 com "Mostrar mais"). */
+  limit?: number;
+}
+
+/**
+ * Radar de risco (C1). Polling 60s — a atividade dos leads muda no worker/inbox.
+ *
+ * A chave começa por `"leads-at-risk"` em TODAS as variações: quem invalida por
+ * esse prefixo (assumir uma conversa, por exemplo) alcança a lista filtrada
+ * também. `keepPreviousData` segura as linhas na tela enquanto o filtro novo
+ * carrega — sem ele a lista pisca vazia a cada clique.
+ */
+export function useAtRiskLeads(filtro: FiltroDoRadar = {}) {
+  const risk = filtro.risk ?? null;
+  const limit = filtro.limit ?? 50;
   return useQuery({
-    queryKey: ["leads-at-risk"],
+    queryKey: ["leads-at-risk", { risk, limit }],
     refetchInterval: 60_000,
-    queryFn: () =>
-      apiClient.get<{ data: AtRiskData }>(`/api/v1/leads/at-risk`).then((r) => r.data),
+    placeholderData: keepPreviousData,
+    queryFn: () => {
+      const q = new URLSearchParams({ limit: String(limit) });
+      if (risk) q.set("risk", risk);
+      return apiClient.get<{ data: AtRiskData }>(`/api/v1/leads/at-risk?${q}`).then((r) => r.data);
+    },
   });
 }

@@ -27,7 +27,7 @@ export default async function RadarPage() {
         titulo={t("Riscos de Perda")}
         ajuda={<ComoFunciona chave="radar" pagina={t("Riscos de Perda")} />}
         descricao={t(
-            "Demandas abertas que esfriaram e precisam de você. Se o assistente já agendou um retorno, aparece como “em voo”; sem próximo passo, é risco de perder o cliente.",
+            "Negócios e demandas que esfriaram e precisam de você. Escolha uma situação para ver só ela. Se já existe um retorno agendado, aparece como “em voo”; sem retorno, é risco de perder o cliente.",
           )}
       />
       <RiskRadarList />

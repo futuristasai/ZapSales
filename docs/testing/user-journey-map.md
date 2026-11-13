@@ -3960,3 +3960,20 @@ Sem efeito visível: as telas que listam os números pedem só colunas liberadas
 | Nenhuma coluna de segredo é legível pela sessão; toda outra coluna continua legível; as listas que as telas pedem são legíveis | o privilégio, num Postgres de verdade | `tests/invariants/segredos-do-canal-fora-da-sessao.test.ts` |
 | Nenhuma leitura feita com a sessão pede coluna de segredo nem `*` | o código do app, por varredura | `tests/unit/segredos-do-canal-so-pelo-servidor.test.ts` |
 | Conexões, inbox e exclusão de canal continuam funcionando com a sessão | as telas, pelo navegador | as specs de Conexões e do inbox que já rodam no job `e2e` |
+
+## Riscos de Perda: contadores que filtram e linha que diz para onde leva `[P1]` (2026-11-12)
+
+Queixa do dono, na tela em uso: a linha ora abria a conversa, ora o funil, sem avisar; os contadores (“160 crítico”, “107 em risco”, “80 em voo”) pareciam filtro e não filtravam; a lista “demandas abertas sem próximo passo” não era clicável; e o nome do cliente ficava apagado atrás do título do negócio.
+
+| Caso | O que prova | Onde |
+|---|---|---|
+| Clicar em “Em voo” mostra só os em voo, liga o cartão e grava `?ver=em_voo` no endereço; “Crítico” traz o crítico de volta; recarregar mantém a lista | o filtro, pelo navegador | `tests/e2e/risk-radar.spec.ts` |
+| O nome do cliente é o destaque; “Abrir conversa” leva à conversa; “Ver no funil” aponta para o CARTÃO (`?lead=`) | os destinos, pelo navegador | `tests/e2e/risk-radar.spec.ts` |
+| O filtro por situação vem ANTES do corte de `limit` (com 160 críticos, “em voo” filtrado no navegador daria zero linhas); contadores e total continuam do radar inteiro | a rota, com banco falso que aplica filtro, ordem e teto | `tests/unit/radar-filtra-e-da-o-caminho.test.ts` |
+| A conversa é a MAIS RECENTE do contato; a demanda traz a conversa vinculada a ela, o negócio e o funil | por onde se chega | `tests/unit/radar-filtra-e-da-o-caminho.test.ts` |
+| Negócio sem conversa leva ao cartão no funil e diz “Ainda sem conversa”; demanda sem conversa nem negócio leva à ficha do contato; “Mostrar mais” pede as próximas 50 | a tela, em jsdom | `app/app/radar/_components/RiskRadarList.test.tsx`, `visao-do-radar.test.ts` |
+| 14 telas medidas (computador 1440, tablet 900 e celular 390; claro e escuro): transbordo horizontal 0 em todas, nenhum erro de console, nome em peso 600 | o desenho, medido por ferramenta | `docs/testing/evidencias/radar-riscos-de-perda/` (`medidas.json` e as fotos) |
+
+Achado da própria medição: a primeira versão punha o selo (`div`) dentro de um parágrafo, HTML inválido que o navegador acusa na hidratação e o jsdom não. Corrigido antes do commit; as fotos são da versão corrigida.
+
+Não medido aqui: a tela com dados reais numa instalação (as fotos usam a tela real com a rota respondida por dados de exemplo, sem banco), e a lista de demandas com mais de 50 itens.

@@ -1,52 +1,102 @@
 "use client";
-import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { useT } from "@/hooks/i18n/useT";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useClaimConversation } from "@/hooks/inbox/useClaimConversation";
-import { useAtRiskLeads, type AtRiskLead } from "@/hooks/leads/useAtRiskLeads";
-import type { RiskBucket } from "@/lib/leads/risk-radar";
-import {
-  ArrowRight,
-  CheckCircle,
-  ClockCountdown,
-  PaperPlaneTilt,
-  Warning,
-} from "@/lib/ui/icons";
+import { useAtRiskLeads } from "@/hooks/leads/useAtRiskLeads";
+import { CheckCircle } from "@/lib/ui/icons";
+import { cn } from "@/lib/utils";
 
-const RISK_META: Record<
-  Exclude<RiskBucket, "em_dia">,
-  { label: string; variant: "error" | "warning" | "info" }
-> = {
-  critico: { label: "Crítico", variant: "error" },
-  em_risco: { label: "Em risco", variant: "warning" },
-  em_voo: { label: "Em voo", variant: "info" },
+import {
+  LinhaDeDemanda,
+  LinhaDeNegocio,
+  LinhaDePropostaParaRevisar,
+  LinhaDePropostaVencida,
+} from "./LinhasDoRadar";
+import { SituacoesDoRadar } from "./SituacoesDoRadar";
+import {
+  contagemDaVisao,
+  lerVisao,
+  situacaoDaVisao,
+  visaoEmVigor,
+  type VisaoDoRadar,
+} from "./visao-do-radar";
+
+const PASSO = 50;
+/** O teto da rota (`limit` máximo), que é o do pool varrido no servidor. */
+const TETO = 500;
+
+/** A frase que explica a lista em vigor — o "e daí?" de cada contador. */
+const EXPLICACAO: Record<VisaoDoRadar, string> = {
+  todos: "Do mais urgente para o menos urgente. A linha abre a conversa com o cliente.",
+  critico:
+    "Parados há tempo demais para a etapa em que estão, e ninguém marcou retorno. Comece por aqui.",
+  em_risco: "Passaram do tempo esperado da etapa e ainda não têm retorno marcado.",
+  em_voo: "Esfriaram, mas já existe um retorno marcado. É só acompanhar.",
+  sem_proximo_passo:
+    "Ninguém marcou o que acontece a seguir. Cada uma é alguém esperando sem que nada esteja combinado. Abra a conversa e marque o próximo passo no painel ao lado.",
+  propostas_vencidas: "O cliente recebeu e não decidiu. Retome antes que esfrie de vez.",
+  propostas_para_revisar: "Rascunhos que a IA terminou e ninguém revisou. Confira antes de enviar.",
 };
 
-function coldFor(hours: number, t: (texto: string) => string): string {
-  if (hours < 48) return `${t("parado há")} ${hours}h`;
-  return `${t("parado há")} ${Math.round(hours / 24)}d`;
-}
+const VAZIO: Record<VisaoDoRadar, string> = {
+  todos: "Nenhum negócio parado.",
+  critico: "Nenhum negócio em situação crítica.",
+  em_risco: "Nenhum negócio em risco.",
+  em_voo: "Nenhum negócio com retorno marcado.",
+  sem_proximo_passo: "Nenhuma demanda sem próximo passo.",
+  propostas_vencidas: "Nenhuma proposta vencida sem retomada.",
+  propostas_para_revisar: "Nenhuma proposta esperando revisão.",
+};
 
-function followupWhen(iso: string, t: (texto: string) => string): string {
-  const diffMs = new Date(iso).getTime() - Date.now();
-  if (diffMs <= 0) return t("agora");
-  const hours = Math.round(diffMs / 3_600_000);
-  if (hours < 48) return `${t("em")} ${Math.max(1, hours)}h`;
-  return `${t("em")} ${Math.round(hours / 24)}d`;
-}
+/** O `data-testid` de cada lista — os três últimos são os que as specs já liam. */
+const TESTE: Record<VisaoDoRadar, string> = {
+  todos: "radar-lista",
+  critico: "radar-lista",
+  em_risco: "radar-lista",
+  em_voo: "radar-lista",
+  sem_proximo_passo: "radar-sem-proximo-passo",
+  propostas_vencidas: "radar-propostas-vencidas",
+  propostas_para_revisar: "radar-propostas-esperando-revisao",
+};
 
 export function RiskRadarList() {
   const t = useT();
-  const { data, isLoading } = useAtRiskLeads();
+  const parametros = useSearchParams();
+  // A escolha mora na URL (`?ver=`): quem abre uma conversa e volta encontra a
+  // mesma lista, e o endereço pode ser guardado ou enviado a um colega.
+  const [escolhida, setEscolhida] = useState<VisaoDoRadar | null>(() =>
+    lerVisao(parametros?.get("ver")),
+  );
+  const [limite, setLimite] = useState(PASSO);
+
+  const { data, isLoading, isPlaceholderData, isFetching } = useAtRiskLeads({
+    risk: situacaoDaVisao(escolhida),
+    limit: limite,
+  });
+
+  function escolher(visao: VisaoDoRadar) {
+    setEscolhida(visao);
+    setLimite(PASSO);
+    // `replaceState` e não `router.replace`: a página é de servidor e
+    // `force-dynamic`, e navegar refaria a autenticação inteira só para trocar
+    // um filtro. O Next enxerga a troca e mantém `useSearchParams` em dia.
+    const url = new URL(window.location.href);
+    url.searchParams.set("ver", visao);
+    window.history.replaceState(null, "", url);
+  }
 
   if (isLoading) {
     return (
       <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Skeleton className="h-[88px] w-full" />
+          <Skeleton className="h-[88px] w-full" />
+          <Skeleton className="h-[88px] w-full" />
+          <Skeleton className="h-[88px] w-full" />
+        </div>
         <Skeleton className="h-16 w-full" />
         <Skeleton className="h-16 w-full" />
         <Skeleton className="h-16 w-full" />
@@ -54,14 +104,20 @@ export function RiskRadarList() {
     );
   }
 
-  // O vazio só é vazio se as TRÊS listas estiverem vazias. Sem esta condição,
+  // O vazio só é vazio se as QUATRO listas estiverem vazias. Sem esta condição,
   // uma organização com proposta vencida sem retomada e nenhum lead frio
   // veria "Nenhuma demanda em risco" — escondendo exatamente o vazamento que
-  // a lista nova existe para denunciar (mesma armadilha do invariante 4).
+  // a lista existe para denunciar (mesma armadilha do invariante 4).
   const semPasso = data?.sem_proximo_passo ?? [];
   const vencidas = data?.propostas_vencidas_sem_retomada ?? [];
   const esperandoRevisao = data?.propostas_esperando_revisao ?? [];
-  if (!data || (data.total === 0 && semPasso.length === 0 && vencidas.length === 0 && esperandoRevisao.length === 0)) {
+  if (
+    !data ||
+    (data.total === 0 &&
+      semPasso.length === 0 &&
+      vencidas.length === 0 &&
+      esperandoRevisao.length === 0)
+  ) {
     return (
       <div
         className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center"
@@ -76,219 +132,82 @@ export function RiskRadarList() {
     );
   }
 
+  const visao = visaoEmVigor(data, escolhida);
+  const quantos = contagemDaVisao(data, visao);
+
+  let linhas: ReactNode[];
+  switch (visao) {
+    case "sem_proximo_passo":
+      linhas = semPasso.map((d) => <LinhaDeDemanda key={d.id} demanda={d} />);
+      break;
+    case "propostas_vencidas":
+      linhas = vencidas.map((p) => <LinhaDePropostaVencida key={p.proposal_id} proposta={p} />);
+      break;
+    case "propostas_para_revisar":
+      linhas = esperandoRevisao.map((p) => (
+        <LinhaDePropostaParaRevisar key={p.proposal_id} proposta={p} />
+      ));
+      break;
+    default:
+      linhas = data.items.map((lead) => <LinhaDeNegocio key={lead.id} lead={lead} />);
+  }
+  // As listas de proposta chegam inteiras; negócios e demandas vêm até `limite`.
+  const haMais = linhas.length < quantos && limite < TETO;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* INVARIANTE 4 em forma acionável: o índice de atrito publica a CONTAGEM
           ("N demandas abertas sem próximo passo"); contagem sem lugar para agir
-          viola o invariante 5. Esta é a lista que responde "e daí?". */}
-      {semPasso.length > 0 ? (
-        <section
-          className="rounded-lg border border-warning-border bg-warning-bg/40 p-3"
-          data-testid="radar-sem-proximo-passo"
-        >
-          <p className="text-sm font-medium">
-            {semPasso.length}{" "}
-            {semPasso.length === 1
-              ? t("demanda aberta sem próximo passo")
-              : t("demandas abertas sem próximo passo")}
-          </p>
-          <p className="mb-2 text-xs text-muted-foreground">
-            {t(
-              "Ninguém marcou o que acontece a seguir. Cada uma é alguém esperando sem que nada esteja combinado.",
-            )}
-          </p>
-          <ul className="flex flex-col gap-1">
-            {semPasso.slice(0, 8).map((d) => (
-              <li key={d.id} className="flex items-baseline justify-between gap-3 text-xs">
-                <span className="truncate">{d.contact_name ?? t("Contato sem nome")}</span>
-                <span className="shrink-0 tabular-nums text-muted-foreground">
-                  {t("aberta há")} {d.horas_aberta}h
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+          viola o invariante 5. Cada contador daqui abre a lista que responde
+          "e daí?", e cada linha dela tem para onde ir. */}
+      <SituacoesDoRadar dados={data} ativa={visao} onEscolher={escolher} />
 
-      {/* N3 — proposta VENCIDA sem proposta mais nova: o cliente recebeu, não
-          decidiu, e ninguém retomou. Mesma estrutura da seção de cima (lista
-          paralela, não misturada nos itens do radar). */}
-      {vencidas.length > 0 ? (
-        <section
-          className="rounded-lg border border-warning-border bg-warning-bg/40 p-3"
-          data-testid="radar-propostas-vencidas"
-        >
-          <p className="text-sm font-medium">
-            {vencidas.length}{" "}
-            {vencidas.length === 1
-              ? t("proposta vencida sem retomada")
-              : t("propostas vencidas sem retomada")}
-          </p>
-          <p className="mb-2 text-xs text-muted-foreground">
-            {t("O cliente recebeu e não decidiu. Retome antes que esfrie de vez.")}
-          </p>
-          <ul className="flex flex-col gap-1">
-            {vencidas.slice(0, 8).map((p) => (
-              <li key={p.proposal_id} className="flex items-baseline justify-between gap-3 text-xs">
-                <Link href={`/app/proposals/${p.proposal_id}`} className="truncate hover:underline">
-                  {p.numero != null && p.ano != null ? `${String(p.numero).padStart(4, "0")}/${p.ano}` : t("Proposta sem número")}
-                </Link>
-                <span className="shrink-0 tabular-nums text-muted-foreground">
-                  {t("venceu em")} {p.valid_until ?? "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <section aria-live="polite" className="flex flex-col gap-2">
+        <p className="max-w-[80ch] text-sm text-text-muted" data-testid="radar-explicacao">
+          {t(EXPLICACAO[visao])}
+        </p>
 
-      {/* C6 — rascunho com aviso de revisão ABERTO: a IA terminou, ninguém
-          conferiu. Mesma estrutura das seções paralelas acima (lista própria,
-          não misturada nos itens do radar). */}
-      {esperandoRevisao.length > 0 ? (
-        <section
-          className="rounded-lg border border-warning-border bg-warning-bg/40 p-3"
-          data-testid="radar-propostas-esperando-revisao"
-        >
-          <p className="text-sm font-medium">
-            {esperandoRevisao.length}{" "}
-            {esperandoRevisao.length === 1
-              ? t("proposta esperando revisão")
-              : t("propostas esperando revisão")}
-          </p>
-          <p className="mb-2 text-xs text-muted-foreground">
-            {t("Rascunhos que a IA terminou e ninguém revisou. Confira antes de enviar.")}
-          </p>
-          <ul className="flex flex-col gap-1">
-            {esperandoRevisao.slice(0, 8).map((p) => (
-              <li key={p.proposal_id} className="flex items-baseline justify-between gap-3 text-xs">
-                <Link href={`/app/proposals/${p.proposal_id}`} className="truncate hover:underline">
-                  {p.titulo ?? t("Proposta sem título")}
-                </Link>
-                <span className="shrink-0 truncate text-muted-foreground">
-                  {p.contact_name ?? "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <div className="flex flex-wrap gap-2" data-testid="radar-counts">
-        <Badge variant="error">
-          {data.counts.critico} {t("crítico")}
-        </Badge>
-        <Badge variant="warning">
-          {data.counts.em_risco} {t("em risco")}
-        </Badge>
-        <Badge variant="info">
-          {data.counts.em_voo} {t("em voo")}
-        </Badge>
-      </div>
-
-      <ul className="divide-y divide-border rounded-lg border border-border">
-        {data.items.map((lead) => (
-          <RadarRow key={lead.id} lead={lead} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function RadarRow({ lead }: { lead: AtRiskLead }) {
-  const t = useT();
-  const meta = RISK_META[lead.risk as Exclude<RiskBucket, "em_dia">] ?? RISK_META.em_risco;
-  const href = lead.conversation_id
-    ? `/app/inbox?id=${lead.conversation_id}`
-    : `/app/pipelines/${lead.pipeline_id}`;
-
-  const claim = useClaimConversation();
-  const qc = useQueryClient();
-
-  // Dono do NEGÓCIO — humano OU agente (0070). Antes desta linha o radar lia só
-  // `owner_user_id`, então um lead que a IA trabalha há dezenas de turnos aparecia
-  // como "Sem dono" e mandava um humano resgatar o que já estava sendo tocado.
-  // A distinção é a MESMA do card (OwnerBadge): geométrica, nunca ícone de robô —
-  // uma fonte de verdade para "quem é o dono", em todas as telas.
-  const dono =
-    lead.owner_kind === "ai"
-      ? `${t("Agente:")} ${lead.owner_agent_name ?? t("sem nome")}`
-      : lead.owner_user_id || lead.assignee_kind === "user"
-        ? t("Com atendente")
-        : lead.assignee_kind === "ai"
-          ? t("Assistente na conversa")
-          : t("Sem dono");
-
-  // "Assumir" é tirar da IA e trazer para si: continua valendo enquanto não há
-  // dono HUMANO — dono agente não bloqueia o handoff, é justamente o caso dele.
-  const ownedByHuman = Boolean(lead.owner_user_id) || lead.assignee_kind === "user";
-  const canClaim = Boolean(lead.conversation_id) && !ownedByHuman;
-
-  function handleClaim() {
-    if (!lead.conversation_id) return;
-    claim.mutate(
-      { conversation_id: lead.conversation_id },
-      {
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: ["leads-at-risk"] });
-          toast.success(t("Você assumiu a demanda"));
-        },
-      },
-    );
-  }
-
-  return (
-    <li
-      data-testid="radar-item"
-      data-risk={lead.risk}
-      className="flex items-start gap-2 pr-3 transition-colors hover:bg-accent/50"
-    >
-      <Link href={href} className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3">
-        <Badge variant={meta.variant} className="mt-0.5 shrink-0">
-          {t(meta.label)}
-        </Badge>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{lead.title}</p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            {lead.contact_name ? <span className="truncate">{lead.contact_name}</span> : null}
-            <span className="inline-flex items-center gap-1">
-              <ClockCountdown size={13} aria-hidden />
-              {coldFor(lead.hours_since_activity, t)}
-            </span>
-            <span className="inline-flex items-center gap-1" data-testid="radar-assignee">
-              {dono}
-            </span>
-          </p>
-          {lead.agenda?.appointment_id ? (
-            <p className="mt-1 text-xs text-info-fg">{t(lead.agenda.motivo === "presenca_vencida" ? "Presença não confirmada · revise o compromisso" : lead.agenda.motivo === "presenca_pendente" ? "Confirme a presença · cobrança aguardando" : "Compromisso agendado · cobrança aguardando")}</p>
-          ) : lead.in_flight && lead.next_followup_at ? (
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-info-fg">
-              <PaperPlaneTilt size={13} aria-hidden />
-              {t("Assistente retorna")} {followupWhen(lead.next_followup_at, t)}
-            </p>
-          ) : (
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-warning-fg">
-              <Warning size={13} aria-hidden />
-              {t("Sem próximo passo agendado")}
-            </p>
-          )}
-        </div>
-      </Link>
-      <div className="flex shrink-0 items-center gap-2 self-center">
-        {lead.agenda?.appointment_id ? <Link className="text-xs underline" href={`/app/agenda?compromisso=${lead.agenda.appointment_id}`}>{t("Ver compromisso")}</Link> : null}
-        {canClaim ? (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={claim.isPending}
-            onClick={handleClaim}
-            data-testid="radar-claim"
+        {linhas.length === 0 ? (
+          <p
+            className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-text-muted"
+            data-testid="radar-lista-vazia"
           >
-            {t("Assumir")}
-          </Button>
+            {t(VAZIO[visao])}
+          </p>
+        ) : (
+          <ul
+            data-testid={TESTE[visao]}
+            data-visao={visao}
+            aria-busy={isPlaceholderData}
+            className={cn(
+              "@container divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface",
+              "transition-opacity duration-fast",
+              isPlaceholderData && "opacity-60",
+            )}
+          >
+            {linhas}
+          </ul>
+        )}
+
+        {linhas.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-text-muted tabular-nums" data-testid="radar-mostrando">
+              {t("Mostrando")} {linhas.length} {t("de")} {Math.max(quantos, linhas.length)}
+            </p>
+            {haMais ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isFetching}
+                onClick={() => setLimite((n) => Math.min(TETO, n + PASSO))}
+                data-testid="radar-mostrar-mais"
+              >
+                {t("Mostrar mais")}
+              </Button>
+            ) : null}
+          </div>
         ) : null}
-        <ArrowRight size={16} className="text-muted-foreground" aria-hidden />
-      </div>
-    </li>
+      </section>
+    </div>
   );
 }
