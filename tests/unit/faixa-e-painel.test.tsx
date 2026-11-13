@@ -150,12 +150,56 @@ describe("o painel abre em Todo dia", () => {
     const titulos = within(lista)
       .getAllByRole("heading", { level: 3 })
       .map((h) => h.textContent);
-    expect(titulos).toEqual(["Leads", "Gestão de Clientes CRM", "Se a sua empresa usa"]);
+    expect(titulos).toEqual([
+      "Leads",
+      "Gestão de Clientes CRM",
+      "Se a sua empresa usa",
+      "Dúvidas? Consulte o manual",
+    ]);
     expect(within(mesa).queryByRole("heading", { name: "Se a sua empresa usa" })).toBeNull();
     expect(within(lista).getByRole("link", { name: /Conversas/ })).toHaveAttribute(
       "href",
       "/app/inbox",
     );
+  });
+
+  it("Follow-ups está na mesa; Comandas e Chamadas não estão no painel", () => {
+    renderizar();
+    const mesa = screen.getByTestId("mesa-de-trabalho");
+    expect(within(mesa).getByRole("link", { name: /Follow-ups/ })).toHaveAttribute(
+      "href",
+      "/app/ai/followups",
+    );
+    const lista = painel()!;
+    expect(within(lista).queryByRole("link", { name: /Comandas/ })).toBeNull();
+    expect(within(lista).queryByRole("link", { name: /Chamadas/ })).toBeNull();
+  });
+
+  it("o Manual fecha a lista em destaque, com título próprio, e abre em outra aba", () => {
+    renderizar();
+    const destaque = within(painel()!).getByTestId("destaque-do-manual");
+    expect(
+      within(destaque).getByRole("heading", { level: 3, name: "Dúvidas? Consulte o manual" }),
+    ).toBeInTheDocument();
+    // O nome do link é só «Manual»; a frase de baixo é a descrição dele.
+    const manual = within(destaque).getByRole("link", { name: "Manual" });
+    expect(manual).toHaveAttribute("href", "/manual/index.html");
+    expect(manual).toHaveAttribute("target", "_blank");
+    expect(manual).toHaveAccessibleDescription("Passo a passo de cada tela");
+    // Um só Manual no painel: o link do rodapé saiu.
+    expect(screen.getAllByRole("link", { name: "Manual" })).toHaveLength(1);
+    // E vem DEPOIS de tudo o que a mesa lista.
+    const links = within(painel()!).getAllByRole("link");
+    expect(links[links.length - 1]).toBe(manual);
+  });
+
+  it("empresa sem Propostas: o Manual ocupa o lugar de «Se a sua empresa usa»", () => {
+    comoPapel("admin", { capacidades_ligadas: [] });
+    renderizar();
+    const titulos = within(painel()!)
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    expect(titulos).toEqual(["Leads", "Gestão de Clientes CRM", "Dúvidas? Consulte o manual"]);
   });
 
   it("os contadores existentes aparecem: a fila em Conversas e no ícone de Todo dia, os casos em Aguardando Humano", () => {
@@ -188,6 +232,22 @@ describe("o painel abre em Todo dia", () => {
     expect(botaoDaFaixa("Vender")).not.toHaveAttribute("aria-current");
     // O painel à vista é o de Todo dia, e o botão dele fica apertado.
     expect(botaoDaFaixa("Todo dia")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("«Quadro do funil» é o primeiro de Gestão de Clientes CRM, e um quadro aberto marca ele — não «Funis»", () => {
+    rota.atual = "/app/pipelines/11111111-1111-4111-8111-111111111111";
+    renderizar();
+    const mesa = screen.getByTestId("mesa-de-trabalho");
+    const crm = within(mesa).getByRole("region", { name: "Gestão de Clientes CRM" });
+    const links = within(crm).getAllByRole("link");
+    expect(links[0]).toHaveAttribute("href", "/app/pipelines");
+    expect(links[0]).toHaveTextContent("Quadro do funil");
+    // O termo técnico fica embaixo do nome, como «inbox» sob Conversas.
+    expect(links[0]).toHaveTextContent("kanban");
+    expect(links[1]).toHaveAttribute("href", "/app/kanban");
+    expect(links[0]).toHaveAttribute("aria-current", "page");
+    expect(links[1]).not.toHaveAttribute("aria-current");
+    expect(botaoDaFaixa("Todo dia")).toHaveAttribute("aria-current", "true");
   });
 });
 
@@ -382,7 +442,7 @@ describe("as áreas de Configurar e Resultados abrem a gaveta", () => {
 });
 
 describe("papel sem nenhuma tela em Todo dia", () => {
-  it("mantém o painel fixado (recolher, Manual) sem a lista, e a gaveta continua abrindo", async () => {
+  it("mantém o painel fixado (recolher, destaque do Manual) sem a lista, e a gaveta continua abrindo", async () => {
     const u = userEvent.setup();
     comoPapel("admin", {
       interface_settings: { preset: "simplificada", destinos: ["/app/connections"] },
@@ -593,6 +653,7 @@ describe("a faixa não carrega valor de marca no código", () => {
     "components/shell/Faixa.tsx",
     "components/shell/NavegacaoDoComputador.tsx",
     "components/shell/PainelDoMenu.tsx",
+    "components/shell/DestaqueDoManual.tsx",
     "components/shell/GavetaDaArea.tsx",
     "components/shell/ItemDoMenu.tsx",
     "components/shell/MenuDaConta.tsx",

@@ -55,8 +55,10 @@ function Grupo({
  * O que o painel lista: a MESA de Todo dia.
  *
  * Leads e Gestão de Clientes CRM juntos numa caixa, com os contadores, e depois «Se a
- * sua empresa usa» fora dela. As áreas de Configurar e Resultados não passam por aqui:
- * elas abrem a gaveta (`GavetaDaArea`, issue #189).
+ * sua empresa usa» fora dela — que só existe na empresa que ligou Propostas. As áreas de
+ * Configurar e Resultados não passam por aqui: elas abrem a gaveta (`GavetaDaArea`, issue #189).
+ * O destaque do Manual, que fecha o painel do computador, é de quem monta o painel
+ * (`NavegacaoDoComputador`), e não daqui: a folha do celular reusa esta lista para todas as abas.
  *
  * Não decide quem vê o quê: recebe os grupos já projetados (`faixaDoMenu`).
  */

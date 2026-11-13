@@ -3960,3 +3960,24 @@ Sem efeito visível: as telas que listam os números pedem só colunas liberadas
 | Nenhuma coluna de segredo é legível pela sessão; toda outra coluna continua legível; as listas que as telas pedem são legíveis | o privilégio, num Postgres de verdade | `tests/invariants/segredos-do-canal-fora-da-sessao.test.ts` |
 | Nenhuma leitura feita com a sessão pede coluna de segredo nem `*` | o código do app, por varredura | `tests/unit/segredos-do-canal-so-pelo-servidor.test.ts` |
 | Conexões, inbox e exclusão de canal continuam funcionando com a sessão | as telas, pelo navegador | as specs de Conexões e do inbox que já rodam no job `e2e` |
+
+## Painel Todo dia: quadro do funil direto, Follow-ups e Manual em destaque `[P0]` (2026-11-12)
+
+Pedido do dono do produto. O painel de Todo dia ganhou o atalho «Quadro do funil» (termo
+«kanban»), que abre direto o quadro do funil principal, e Follow-ups no grupo Leads; Comandas e
+Chamadas saíram dele e moram em Configurar › Vender; o Manual saiu do rodapé do painel e virou um
+cartão em destaque no fim da lista.
+
+| Caso | O que prova | Onde | Estado |
+|---|---|---|---|
+| A mesa de cada papel, tela por tela (Dono, Gerente, Atendente, Leitor) | Follow-ups na mesa para Gerente ou acima; Comandas e Chamadas fora de Todo dia e dentro de Vender; nenhuma tela some do menu | `tests/unit/navegacao-menu-novo.test.ts`, `tests/unit/faixa-do-menu.test.ts` | **PASS local** |
+| O painel desenhado: Manual com título próprio, um só link, último da lista, abre em outra aba | a superfície, com o nome acessível «Manual» e a descrição embaixo | `tests/unit/faixa-e-painel.test.tsx` | **PASS local** |
+| Com um quadro aberto, o menu marca «Quadro do funil» e não «Funis» | a tela atual, que antes ficava sem marca em qualquer quadro | `tests/unit/faixa-do-menu.test.ts`, `tests/unit/faixa-e-painel.test.tsx` | **PASS local** |
+| Clicar em «Quadro do funil» leva ao quadro de um funil, pelo id | o redirecionamento de `/app/pipelines`, contra o banco do `baseline.sql` | `tests/e2e/navegacao.spec.ts` | roda no `e2e` do CI |
+| O destaque do Manual cabe na área visível do painel em 1280×900 e abre o manual numa aba nova | medido por `getBoundingClientRect` | `tests/e2e/navegacao.spec.ts` | roda no `e2e` do CI |
+| O painel e a gaveta de Vender, pela tela | medido na vitrine local (`/vitrine-sistema`, 1280×900): três títulos no painel, 12 links, o cartão do Manual com 57 px e sem rolagem; Comandas e Chamadas na gaveta | print anexado ao PR | **PASS na vitrine** |
+
+**O que esta prova NÃO cobre:** a vitrine não tem banco, então o redirecionamento de
+`/app/pipelines` só é provado no `e2e` do CI e em produção; o celular não foi fotografado (a
+folha reusa a mesma lista, e o Manual dela continua no rodapé da folha); o print `menu-painel.png`
+do manual ainda mostra o painel antigo.

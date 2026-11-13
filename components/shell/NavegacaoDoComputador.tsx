@@ -3,9 +3,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { toggleSidebar } from "@/app/actions/shell/toggleSidebar";
+import { DestaqueDoManual } from "@/components/shell/DestaqueDoManual";
 import { Faixa } from "@/components/shell/Faixa";
 import { GavetaDaArea } from "@/components/shell/GavetaDaArea";
-import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import { PainelDoMenu } from "@/components/shell/PainelDoMenu";
 import { VersionFooter } from "@/components/shell/VersionFooter";
 import { useAuth } from "@/hooks/auth/AuthProvider";
@@ -17,7 +17,7 @@ import {
   type EntradaDaFaixaId,
 } from "@/lib/navigation/faixa";
 import { menuDoPapel } from "@/lib/navigation/menu";
-import { BookOpen, CaretDoubleLeft, CaretDoubleRight } from "@/lib/ui/icons";
+import { CaretDoubleLeft, CaretDoubleRight } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 
 /**
@@ -81,7 +81,7 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
   // E o id velho não fica de pé: se a área voltar, a gaveta não reabre sozinha.
   if (gavetaId !== null && gaveta === null) setGavetaId(null);
   // Quem não tem tela em Todo dia (a interface da empresa as escondeu) ainda tem o painel fixado,
-  // com o botão de recolher, o Manual e o aviso de versão — só sem a lista.
+  // com o botão de recolher, o destaque do Manual e o aviso de versão — só sem a lista.
   const todoDia = faixa.todoDia;
   const painelAberto = !recolhido || sobre;
 
@@ -188,21 +188,17 @@ export function NavegacaoDoComputador({ painelRecolhido }: { painelRecolhido: bo
                 hrefAtual={telaAtual(faixa, pathname)}
                 aoNavegar={aoNavegar}
               />
+              {/* O Manual fecha a lista, com título próprio: no rodapé ninguém o via. */}
+              <div className="mt-3">
+                <DestaqueDoManual aoNavegar={aoNavegar} />
+              </div>
             </nav>
           ) : (
-            <div className="min-h-0 flex-1" />
+            <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+              <DestaqueDoManual aoNavegar={aoNavegar} />
+            </div>
           )}
-          <footer className="border-t p-2">
-            <a
-              href={ENDERECO_DO_MANUAL}
-              target="_blank"
-              rel="noopener"
-              onClick={aoNavegar}
-              className="flex items-center gap-3 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent-soft hover:text-foreground"
-            >
-              <BookOpen size={18} aria-hidden />
-              <span>{t("Manual")}</span>
-            </a>
+          <footer className="border-t p-2 empty:hidden">
             <VersionFooter collapsed={false} onNavigate={aoNavegar} />
           </footer>
         </section>
