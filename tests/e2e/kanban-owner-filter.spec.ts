@@ -240,6 +240,7 @@ test.describe("trocar de funil pelo quadro", () => {
   const SUFIXO = `${Date.now()}`.slice(-7);
   const NOME = `Troca E2E ${SUFIXO}`;
   let outroFunilId = "";
+  let etapaDoOutroFunilId = "";
   let nomeDoFunilDeOrigem = "";
 
   async function limpar(): Promise<void> {
@@ -271,14 +272,19 @@ test.describe("trocar de funil pelo quadro", () => {
       .single();
     if (error) throw new Error(`funil: ${error.message}`);
     outroFunilId = (funil as { id: string }).id;
-    const { error: erroEtapa } = await admin.from("crm_stages").insert({
-      organization_id: creds.org_id,
-      pipeline_id: outroFunilId,
-      name: "Entrada",
-      slug: `entrada-${SUFIXO}`,
-      position: 1000,
-    });
+    const { data: etapa, error: erroEtapa } = await admin
+      .from("crm_stages")
+      .insert({
+        organization_id: creds.org_id,
+        pipeline_id: outroFunilId,
+        name: "Entrada",
+        slug: `entrada-${SUFIXO}`,
+        position: 1000,
+      })
+      .select("id")
+      .single();
     if (erroEtapa) throw new Error(`etapa: ${erroEtapa.message}`);
+    etapaDoOutroFunilId = (etapa as { id: string }).id;
   });
 
   test.afterAll(async () => {
@@ -302,8 +308,17 @@ test.describe("trocar de funil pelo quadro", () => {
     await menu.getByRole("menuitem", { name: NOME, exact: true }).click();
     await page.waitForURL(new RegExp(`/app/pipelines/${outroFunilId}$`));
     await expect(page.getByRole("heading", { level: 1, name: NOME })).toBeVisible();
-    // A coluna é a do funil novo: o quadro trocou, e não só o título.
-    await expect(page.getByText("Entrada", { exact: true }).first()).toBeVisible();
+    // A coluna é a do funil novo: o quadro trocou, e não só o título. Pela ETAPA, e não pelo
+    // texto: para quem pode renomear (o gerente deste caso) o nome da etapa é um campo, e
+    // `getByText` não lê valor de campo — foi o que reprovou a primeira versão deste caso. A
+    // coluna está vazia, então a medida é existir, e não ter altura.
+    await expect(
+      page.locator(`[data-rfd-droppable-id="${etapaDoOutroFunilId}"]`),
+    ).toHaveCount(1, { timeout: 30_000 });
+    await expect(
+      page.locator(`[data-rfd-droppable-id]`),
+      "o quadro do funil novo tem só a coluna dele",
+    ).toHaveCount(1);
 
     // Reaberto, o menu marca o funil novo — e só ele.
     await botao.click();
