@@ -26,5 +26,26 @@ export default async function PipelinePage({
     .eq("id", id)
     .maybeSingle();
   if (!pipeline) notFound();
-  return <PipelinePageClient pipelineId={id} initialName={pipeline.name} role={activeOrg.role} />;
+
+  // Os funis que o seletor do cabeçalho oferece: os vivos desta organização, na ordem da lista
+  // de Funis. O filtro de organização não é redundante com a RLS, pelo mesmo motivo de cima —
+  // sem ele, quem participa de duas empresas veria no seletor os funis das duas.
+  const { data: funis } = await supabase
+    .from("crm_pipelines")
+    .select("id, name")
+    .eq("organization_id", activeOrg.orgId)
+    .eq("is_archived", false)
+    .order("position");
+
+  return (
+    <PipelinePageClient
+      // `key`: trocar de funil pelo seletor mantém a mesma rota e o mesmo componente; sem
+      // remontar, a seleção em lote e o diálogo aberto de um funil ficariam de pé no outro.
+      key={id}
+      pipelineId={id}
+      initialName={pipeline.name}
+      role={activeOrg.role}
+      funis={funis ?? []}
+    />
+  );
 }

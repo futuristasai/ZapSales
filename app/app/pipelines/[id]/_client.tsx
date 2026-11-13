@@ -24,6 +24,7 @@ import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { FilterBar } from "@/components/kanban/FilterBar";
 import { BulkActionBar } from "@/components/kanban/BulkActionBar";
 import { NewLeadDialog } from "@/components/kanban/NewLeadDialog";
+import { SeletorDeFunil, type FunilDoSeletor } from "@/components/kanban/SeletorDeFunil";
 import { Button } from "@/components/ui/button";
 import { Plus } from "@/lib/ui/icons";
 import type { LeadFilters } from "@/lib/kanban/filters";
@@ -35,10 +36,13 @@ export function PipelinePageClient({
   pipelineId,
   initialName,
   role,
+  funis,
 }: {
   pipelineId: string;
   initialName: string;
   role: Role;
+  /** Os funis vivos da empresa, para trocar de quadro sem voltar à lista. */
+  funis: readonly FunilDoSeletor[];
 }) {
   const t = useT();
   const { data, isLoading, error, pulses, realtimeStatus, seguranca } = useBoard(pipelineId);
@@ -114,9 +118,13 @@ export function PipelinePageClient({
           fora da viewport em telas estreitas. De `sm:` pra cima volta a ser
           uma linha só, como sempre foi. */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight">
-          {data?.pipeline.name ?? initialName}
-        </h1>
+        {/* O nome e, colado nele, o seletor: é do nome que se parte para trocar de funil. */}
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight">
+            {data?.pipeline.name ?? initialName}
+          </h1>
+          <SeletorDeFunil funis={funis} atualId={pipelineId} />
+        </div>
         <Button onClick={() => setNewOpen(true)} disabled={!data} className="shrink-0">
           <Plus size={16} className="mr-2" /> {t("Novo Lead")}
         </Button>
