@@ -31,7 +31,12 @@ import {
 } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 
-import { destinosDaLinha, tempoDecorrido } from "./visao-do-radar";
+import {
+  destinosDaLinha,
+  temIniciais,
+  tempoDecorrido,
+  tituloQueAcrescenta,
+} from "./visao-do-radar";
 
 const SITUACAO: Record<
   SituacaoNoRadar,
@@ -136,7 +141,7 @@ function Iniciais({ nome, className }: { nome: string; className: string }) {
         className,
       )}
     >
-      {iniciaisDe(nome)}
+      {temIniciais(nome) ? iniciaisDe(nome) : <UserCircle size={20} />}
     </span>
   );
 }
@@ -237,6 +242,7 @@ export function LinhaDeNegocio({ lead }: { lead: AtRiskLead }) {
   // qual é o assunto. Sem contato, o título é tudo o que há e sobe para o lugar
   // do nome.
   const nome = lead.contact_name ?? lead.title;
+  const titulo = tituloQueAcrescenta(lead.contact_name, lead.title);
   const ondeEsta = [lead.pipeline_name, lead.stage_name].filter(Boolean).join(" › ");
 
   return (
@@ -282,7 +288,11 @@ export function LinhaDeNegocio({ lead }: { lead: AtRiskLead }) {
           {t(situacao.rotulo)}
         </Badge>
       </div>
-      {lead.contact_name ? <p className="truncate text-sm text-text-muted">{lead.title}</p> : null}
+      {lead.contact_name && titulo ? (
+        <p className="truncate text-sm text-text-muted" data-testid="radar-titulo">
+          {titulo}
+        </p>
+      ) : null}
       <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
         <Dado icone={<ClockCountdown size={13} aria-hidden />} className={situacao.tempo}>
           {t("Parado há")} {tempoDecorrido(lead.hours_since_activity, t)}

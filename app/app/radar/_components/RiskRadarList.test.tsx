@@ -202,6 +202,19 @@ describe("RiskRadarList — para onde cada clique leva", () => {
     );
   });
 
+  it("título igual ao nome do cliente não se repete na linha", () => {
+    devolve({
+      ...BASE,
+      items: [{ ...LEAD, title: "Larissa Rodrigues" }],
+      counts: { critico: 1, em_risco: 0, em_voo: 0 },
+      total: 1,
+    });
+    render(<RiskRadarList />);
+    const linha = screen.getByTestId("radar-item");
+    expect(within(linha).getAllByText("Larissa Rodrigues")).toHaveLength(1);
+    expect(within(linha).queryByTestId("radar-titulo")).not.toBeInTheDocument();
+  });
+
   it("negócio SEM conversa: a linha avisa e leva ao cartão no funil — nunca ao quadro solto", () => {
     devolve({
       ...BASE,

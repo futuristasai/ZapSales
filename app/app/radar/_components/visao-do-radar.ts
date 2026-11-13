@@ -114,6 +114,25 @@ export function destinosDaLinha(alvo: {
 }
 
 /**
+ * O título do negócio só aparece quando ACRESCENTA algo ao nome. Negócio criado
+ * a partir de uma conversa nasce com o nome do contato como título, e a linha
+ * dizia "Luh Dumont" duas vezes, uma em cima da outra — visto na produção, onde
+ * era o caso de quase toda linha; os dados de exemplo tinham títulos próprios e
+ * esconderam isso.
+ */
+export function tituloQueAcrescenta(nome: string | null, titulo: string | null): string | null {
+  const limpo = (titulo ?? "").trim();
+  if (!limpo) return null;
+  if (!nome) return limpo;
+  return limpo.toLocaleLowerCase() === nome.trim().toLocaleLowerCase() ? null : limpo;
+}
+
+/** Nome que é só número ("+55 21 …") não tem iniciais: "+5" não é de ninguém. */
+export function temIniciais(nome: string): boolean {
+  return /\p{L}/u.test(nome);
+}
+
+/**
  * "484h" não diz nada a quem lê; "20 dias" diz. Abaixo de dois dias fica em
  * horas, porque ali a hora ainda é a unidade em que se decide.
  */
