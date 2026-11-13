@@ -5,6 +5,7 @@ import type { ActiveOrg, AuthUser } from "@/lib/auth/types";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { CabecalhoDePagina } from "@/components/shell/CabecalhoDePagina";
 import { ComoFunciona } from "@/components/shell/ComoFunciona";
+import { SeletorDeFunil } from "@/components/kanban/SeletorDeFunil";
 import { Button } from "@/components/ui/button";
 import { Painel } from "@/components/ui/painel";
 import { Selo, type SignificadoDoSelo } from "@/components/ui/selo";
@@ -15,6 +16,15 @@ import { MENU_GRUPOS } from "@/lib/navigation/catalogo";
 import { NAV_DESTINATIONS, PAGINAS } from "@/lib/navigation/registry";
 
 const ORG_ID = "00000000-0000-4000-8000-000000000001";
+
+/** Os funis de uma clínica, para o seletor do quadro: um nome comprido de propósito. */
+const FUNIS_DE_EXEMPLO = [
+  { id: "funil-1", name: "Matrículas" },
+  { id: "funil-2", name: "Implantes" },
+  { id: "funil-3", name: "Ortodontia e alinhadores invisíveis para adultos" },
+  { id: "funil-4", name: "Clareamento" },
+  { id: "funil-5", name: "Pós-venda" },
+];
 
 const USUARIO = {
   id: "00000000-0000-4000-8000-0000000000a1",
@@ -77,6 +87,19 @@ export function VitrineDoSistema() {
               <div className="h-full [&>aside]:h-full">
                 <Sidebar collapsed />
               </div>
+            </div>
+          </div>
+        </Quadro>
+
+        <Quadro titulo="Cabeçalho do quadro, com o seletor para trocar de funil">
+          <div className="rounded-lg border bg-card p-6" data-vitrine="cabecalho-do-quadro">
+            {/* O mesmo arranjo de `app/app/pipelines/[id]/_client.tsx`: nome, seletor e o botão. */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+                <p className="min-w-0 truncate text-2xl font-semibold tracking-tight">Matrículas</p>
+                <SeletorDeFunil funis={FUNIS_DE_EXEMPLO} atualId="funil-1" />
+              </div>
+              <Button className="shrink-0">Novo Lead</Button>
             </div>
           </div>
         </Quadro>

@@ -1291,6 +1291,10 @@ export const DICIONARIO: Traducoes = {
   // O atalho direto ao quadro do funil principal (12/11/2026). O NOME é "Quadro do funil"; "kanban"
   // é o termo técnico embaixo dele, igual nos três idiomas, e "Kanban" é sinônimo de busca.
   "Quadro do funil": { es: "Tablero del embudo" },
+  // O seletor do cabeçalho do quadro (13/11/2026): trocar de funil sem voltar à lista.
+  "Trocar de funil": { es: "Cambiar de embudo" },
+  "Funis da empresa": { es: "Embudos de la empresa" },
+  "Ver todos os funis": { es: "Ver todos los embudos" },
   Kanban: { es: "Kanban" },
   "O quadro do seu funil principal, direto: arraste cada cliente de uma etapa para a outra.": {
     es: "El tablero de tu embudo principal, directo: arrastra cada cliente de una etapa a la otra.",

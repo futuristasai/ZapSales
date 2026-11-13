@@ -219,3 +219,98 @@ test.describe("arrastar o mesmo card duas vezes seguidas (#916)", () => {
     expect((data as { stage_id: string }).stage_id, "o banco guardou a terceira etapa").toBe(etapas[2]);
   });
 });
+
+/**
+ * Trocar de funil SEM sair do quadro (pedido do dono do produto, 13/11/2026).
+ *
+ * O atalho «Quadro do funil» do menu abre o funil principal, e o único jeito de ver outro era
+ * voltar a «Funis». O botão «Trocar de funil», ao lado do nome, lista os funis vivos da empresa.
+ * A prova é pelo clique e pela URL: escolher outro funil leva ao quadro DELE, com o nome dele no
+ * título, e o menu passa a marcar o novo como aberto.
+ *
+ * Funil PRÓPRIO, criado e apagado aqui: o caso precisa de dois funis, e o padrão é de outros specs.
+ */
+test.describe("trocar de funil pelo quadro", () => {
+  test.describe.configure({ timeout: 180_000 });
+
+  const env = carregarEnvLocal();
+  const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const SUFIXO = `${Date.now()}`.slice(-7);
+  const NOME = `Troca E2E ${SUFIXO}`;
+  let outroFunilId = "";
+  let nomeDoFunilDeOrigem = "";
+
+  async function limpar(): Promise<void> {
+    const { data } = await admin
+      .from("crm_pipelines")
+      .select("id")
+      .eq("organization_id", creds.org_id)
+      .like("name", "Troca E2E %");
+    const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
+    if (ids.length === 0) return;
+    await admin.from("crm_stages").delete().in("pipeline_id", ids);
+    await admin.from("crm_pipelines").delete().in("id", ids);
+  }
+
+  test.beforeAll(async () => {
+    await limpar();
+    const { data: origem, error: erroOrigem } = await admin
+      .from("crm_pipelines")
+      .select("name")
+      .eq("id", creds.kanban!.pipeline_id)
+      .single();
+    if (erroOrigem) throw new Error(`funil de origem: ${erroOrigem.message}`);
+    nomeDoFunilDeOrigem = (origem as { name: string }).name;
+
+    const { data: funil, error } = await admin
+      .from("crm_pipelines")
+      .insert({ organization_id: creds.org_id, name: NOME, slug: `troca-e2e-${SUFIXO}` })
+      .select("id")
+      .single();
+    if (error) throw new Error(`funil: ${error.message}`);
+    outroFunilId = (funil as { id: string }).id;
+    const { error: erroEtapa } = await admin.from("crm_stages").insert({
+      organization_id: creds.org_id,
+      pipeline_id: outroFunilId,
+      name: "Entrada",
+      slug: `entrada-${SUFIXO}`,
+      position: 1000,
+    });
+    if (erroEtapa) throw new Error(`etapa: ${erroEtapa.message}`);
+  });
+
+  test.afterAll(async () => {
+    await limpar();
+  });
+
+  test("o botão lista os funis, marca o aberto e leva ao quadro do escolhido", async ({ page }) => {
+    await login(page, creds.users.manager!.email);
+    await page.goto(`/app/pipelines/${creds.kanban!.pipeline_id}`);
+    await expect(page.getByRole("heading", { level: 1, name: nomeDoFunilDeOrigem })).toBeVisible();
+
+    const botao = page.getByRole("button", { name: "Trocar de funil" });
+    await botao.click();
+    const menu = page.getByRole("menu");
+    // Os dois funis estão na lista, e o aberto é o de origem.
+    await expect(menu.getByRole("menuitem", { name: NOME, exact: true })).toBeVisible();
+    await expect(
+      menu.getByRole("menuitem", { name: nomeDoFunilDeOrigem, exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+
+    await menu.getByRole("menuitem", { name: NOME, exact: true }).click();
+    await page.waitForURL(new RegExp(`/app/pipelines/${outroFunilId}$`));
+    await expect(page.getByRole("heading", { level: 1, name: NOME })).toBeVisible();
+    // A coluna é a do funil novo: o quadro trocou, e não só o título.
+    await expect(page.getByText("Entrada", { exact: true }).first()).toBeVisible();
+
+    // Reaberto, o menu marca o funil novo — e só ele.
+    await botao.click();
+    await expect(page.getByRole("menu").locator('[aria-current="page"]')).toHaveText(NOME);
+    // E a última linha leva à lista, onde se cria e se arquiva.
+    await page.getByRole("menu").getByRole("menuitem", { name: "Ver todos os funis" }).click();
+    await page.waitForURL(/\/app\/kanban$/);
+    await expect(page.getByRole("heading", { name: "Funis", level: 1 })).toBeVisible();
+  });
+});
