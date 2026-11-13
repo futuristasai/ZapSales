@@ -95,13 +95,32 @@ describe("o que cada papel vê no modelo novo", () => {
     expect(menu(DONO).map((b) => b.id)).toEqual(["todo-dia", "configurar", "resultados", "conta"]);
   });
 
-  it("Dono: a mesa de Todo dia está na ordem do protótipo 6", () => {
+  // A ordem do protótipo 6, com o ajuste do dono do produto de 12/11/2026: Follow-ups entrou em
+  // Leads, e Comandas e Chamadas saíram de Todo dia (moram em Configurar › Vender).
+  it("Dono: a mesa de Todo dia traz Follow-ups, e não traz Comandas nem Chamadas", () => {
     const todoDia = bloco(menu(DONO), "todo-dia");
     expect(gruposDe(todoDia).map((g) => [g.label, g.itens.map((i) => i.label)])).toEqual([
-      ["Leads", ["Conversas", "Aguardando Humano", "Alertas", "Riscos de Perda", "Compromissos"]],
-      ["Gestão de Clientes CRM", ["Funis", "Contatos", "Tarefas", "Disparo em massa"]],
-      ["Se a sua empresa usa", ["Propostas", "Comandas", "Chamadas"]],
+      ["Leads", ["Conversas", "Aguardando Humano", "Alertas", "Riscos de Perda", "Follow-ups", "Compromissos"]],
+      ["Gestão de Clientes CRM", ["Quadro do funil", "Funis", "Contatos", "Tarefas", "Disparo em massa"]],
+      ["Se a sua empresa usa", ["Propostas"]],
     ]);
+  });
+
+  it("Comandas e Chamadas continuam no menu: em Configurar › Vender", () => {
+    for (const papel of [DONO, GERENTE]) {
+      const doTodoDia = gruposDe(bloco(menu(papel), "todo-dia")).flatMap((g) => g.itens.map((i) => i.href));
+      expect(doTodoDia).not.toContain("/app/comandas");
+      expect(doTodoDia).not.toContain("/app/calls");
+      const configurar = bloco(menu(papel), "configurar");
+      if (configurar?.id !== "configurar") throw new Error(`${papel} deveria ter Configurar`);
+      const vender = configurar.areas.find((a) => a.id === "vender")!;
+      expect(vender.grupos.map((g) => [g.label, g.itens.map((i) => i.label)])).toEqual(
+        expect.arrayContaining([
+          ["O que você vende", ["Produtos", "Padrões de proposta", "Modelos de proposta", "Comandas"]],
+          ["Como a equipe vende", ["Respostas rápidas", "Etiquetas", "Chamadas"]],
+        ]),
+      );
+    }
   });
 
   it("Dono: Configurar tem as quatro áreas, com os grupos por tarefa", () => {
@@ -141,6 +160,7 @@ describe("o que cada papel vê no modelo novo", () => {
       "/app/ai/cases",
       "/app/ai/inbox",
       "/app/radar",
+      "/app/ai/followups",
       "/app/agenda",
     ]);
   });
@@ -149,8 +169,9 @@ describe("o que cada papel vê no modelo novo", () => {
     const blocos = menu(ATENDENTE);
     expect(gruposDe(bloco(blocos, "todo-dia")).map((g) => [g.label, g.itens.map((i) => i.label)])).toEqual([
       ["Leads", ["Conversas", "Aguardando Humano", "Alertas", "Riscos de Perda", "Compromissos"]],
-      ["Gestão de Clientes CRM", ["Funis", "Contatos", "Tarefas"]],
-      ["Se a sua empresa usa", ["Propostas", "Comandas"]],
+      // Follow-ups pede Gerente: o Atendente não o vê na mesa.
+      ["Gestão de Clientes CRM", ["Quadro do funil", "Funis", "Contatos", "Tarefas"]],
+      ["Se a sua empresa usa", ["Propostas"]],
     ]);
     const configurar = bloco(blocos, "configurar");
     if (configurar?.id !== "configurar") throw new Error("Atendente deveria ter Configurar");
@@ -168,16 +189,16 @@ describe("o que cada papel vê no modelo novo", () => {
     expect(configurar.areas.map((a) => a.label)).toEqual(["Vender", "Empresa"]);
   });
 
-  it("Gerente: tudo o que o Atendente vê, mais disparo, chamadas e a montagem do agente — sem o que é só do Dono", () => {
+  it("Gerente: tudo o que o Atendente vê, mais disparo, follow-ups, chamadas e a montagem do agente — sem o que é só do Dono", () => {
     expect(resumo(menu(GERENTE))).toEqual([
-      "Todo dia › Leads: Conversas, Aguardando Humano, Alertas, Riscos de Perda, Compromissos",
-      "Todo dia › Gestão de Clientes CRM: Funis, Contatos, Tarefas, Disparo em massa",
-      "Todo dia › Se a sua empresa usa: Propostas, Comandas, Chamadas",
+      "Todo dia › Leads: Conversas, Aguardando Humano, Alertas, Riscos de Perda, Follow-ups, Compromissos",
+      "Todo dia › Gestão de Clientes CRM: Quadro do funil, Funis, Contatos, Tarefas, Disparo em massa",
+      "Todo dia › Se a sua empresa usa: Propostas",
       "Configurar › Vender › O seu funil: Etapas do funil, Tipos de agendamento",
-      "Configurar › Vender › O que você vende: Produtos, Padrões de proposta, Modelos de proposta",
-      "Configurar › Vender › Como a equipe vende: Respostas rápidas, Etiquetas",
+      "Configurar › Vender › O que você vende: Produtos, Padrões de proposta, Modelos de proposta, Comandas",
+      "Configurar › Vender › Como a equipe vende: Respostas rápidas, Etiquetas, Chamadas",
       "Configurar › Vender › Cadastro de empresas: Importações, Empresas, Pessoas",
-      "Configurar › Agente › Montar o agente: Agentes, Follow-ups, Fluxos de atendimento, Quem atende cada conversa",
+      "Configurar › Agente › Montar o agente: Agentes, Fluxos de atendimento, Quem atende cada conversa",
       "Configurar › Agente › Ensinar o agente: Conhecimento, Memória, O que o agente sabe fazer",
       "Configurar › Agente › Conectar a IA: Conectar outros sistemas, Chave da IA, Qual IA usar",
       "Configurar › Conexões › Outros sistemas: Avisar outros sistemas, Dados de outro sistema",
@@ -194,10 +215,10 @@ describe("o que cada papel vê no modelo novo", () => {
   it("Leitor: só consulta — menu exato, sem nenhuma tela que peça mais que viewer", () => {
     expect(resumo(menu(LEITOR))).toEqual([
       "Todo dia › Leads: Conversas, Alertas, Riscos de Perda, Compromissos",
-      "Todo dia › Gestão de Clientes CRM: Funis, Contatos, Tarefas",
-      "Todo dia › Se a sua empresa usa: Propostas, Comandas",
+      "Todo dia › Gestão de Clientes CRM: Quadro do funil, Funis, Contatos, Tarefas",
+      "Todo dia › Se a sua empresa usa: Propostas",
       "Configurar › Vender › O seu funil: Tipos de agendamento",
-      "Configurar › Vender › O que você vende: Produtos",
+      "Configurar › Vender › O que você vende: Produtos, Comandas",
       "Configurar › Vender › Como a equipe vende: Respostas rápidas",
       "Configurar › Vender › Cadastro de empresas: Empresas, Pessoas",
       "Configurar › Conexões › Outros sistemas: Dados de outro sistema",
@@ -221,10 +242,10 @@ describe("o que cada papel vê no modelo novo", () => {
         }
       }
     }
-    // Sem módulos nem capacidades, a mesa opcional encolhe: Propostas (capacidade) some, Comandas (sem porta fechada) fica.
+    // Sem módulos nem capacidades, «Se a sua empresa usa» some inteiro de Todo dia: a única tela
+    // dele é Propostas, que depende da capacidade. O painel fica só com a mesa (e o Manual).
     const nada = menuDoPapel(false, LEITOR, undefined, [], []).blocos;
-    const opcional = gruposDe(bloco(nada, "todo-dia")).find((g) => g.id === "se-a-empresa-usa");
-    expect(opcional?.itens.map((i) => i.label)).toEqual(["Comandas"]);
+    expect(gruposDe(bloco(nada, "todo-dia")).map((g) => g.id)).toEqual(["leads", "gestao-de-clientes"]);
   });
 });
 

@@ -61,6 +61,9 @@ export const MENU_GRUPOS = [
   // Todo dia: a mesa de trabalho.
   { id: "leads", bloco: "todo-dia", label: "Leads" },
   { id: "gestao-de-clientes", bloco: "todo-dia", label: "Gestão de Clientes CRM" },
+  // Só Propostas mora aqui, e só aparece na empresa que ligou o recurso. Comandas e Chamadas
+  // saíram de Todo dia por decisão do dono do produto (12/11/2026) e moram em Configurar › Vender;
+  // no lugar delas o painel mostra o destaque do Manual (`DestaqueDoManual`).
   { id: "se-a-empresa-usa", bloco: "todo-dia", label: "Se a sua empresa usa" },
   // Configurar › Vender
   { id: "vender-funil", bloco: "configurar", area: "vender", label: "O seu funil" },
@@ -295,7 +298,7 @@ export const NAV_CATALOG = [
     sinonimos: ["Agenda", "calendário", "agendamentos"],
     description: "O que está marcado, com quem, e quem atende — seu e da equipe.",
     icon: "CalendarBlank",
-    menu: { grupo: "leads", ordem: 5 },
+    menu: { grupo: "leads", ordem: 6 },
   },
   {
     // Renomeado de "Templates": estes são scripts do atendente, consumidos pelo
@@ -309,6 +312,29 @@ export const NAV_CATALOG = [
   },
 
   // ---- CRM — o funil ----
+  {
+    // O ATALHO DIRETO AO QUADRO (pedido do dono do produto, 12/11/2026). O endereço não desenha
+    // tela: `app/app/pipelines/page.tsx` leva ao quadro do funil principal (o padrão, ou o
+    // primeiro da ordem), e à lista quando a empresa ainda não tem funil.
+    //
+    // O NOME é «Quadro do funil», com o termo «kanban» embaixo — o mesmo desenho de «Conversas /
+    // inbox» (issue #187). O dono pediu «o Kanban», e a palavra está à vista e na busca; mas o
+    // NOME segue a regra de `tests/unit/vocabulario-do-funil.test.ts`, que proíbe item de menu
+    // chamado «Kanban» ou «Pipelines» (eram cinco vocabulários para a mesma coisa). Não disputa
+    // nome com «Funis» logo abaixo: aqui é o QUADRO, onde se arrasta o cliente de uma etapa para
+    // a outra; lá é a LISTA, onde se escolhe outro funil, cria, renomeia e arquiva. Sem este
+    // atalho o quadro ficava a dois cliques, atrás de um nome que não dizia a quem procurava o
+    // Kanban que ele estava ali.
+    //
+    // Como o endereço é prefixo de `/app/pipelines/[id]`, o item fica marcado como tela atual em
+    // qualquer quadro aberto — antes, com um quadro na tela, o menu não marcava nada.
+    href: "/app/pipelines",
+    label: "Quadro do funil",
+    description: "O quadro do seu funil principal, direto: arraste cada cliente de uma etapa para a outra.",
+    sinonimos: ["Kanban", "quadro", "pipeline", "pipelines", "board"],
+    icon: "Kanban",
+    menu: { grupo: "gestao-de-clientes", ordem: 1, termo: "kanban" },
+  },
   {
     // ⚠️ ERA "Kanban", e a URL continua sendo. O nome saiu da interface porque o
     // produto tinha CINCO vocabulários para a mesma coisa — "Kanban" no menu,
@@ -324,7 +350,7 @@ export const NAV_CATALOG = [
     label: "Funis",
     description: "Seus funis de venda — clique em um para abrir o quadro de clientes.",
     icon: "FunilEmEtapas",
-    menu: { grupo: "gestao-de-clientes", ordem: 1 },
+    menu: { grupo: "gestao-de-clientes", ordem: 2 },
   },
   {
     // A campanha vive no CRM e não em Conexões: quem a usa está pensando em
@@ -345,7 +371,7 @@ export const NAV_CATALOG = [
       "Mande uma mensagem para muita gente de uma vez — suba uma planilha CSV ou escolha contatos que já estão aqui.",
     sinonimos: ["campanha", "Campanhas", "envio em massa", "broadcast"],
     icon: "Megaphone",
-    menu: { grupo: "gestao-de-clientes", ordem: 4 },
+    menu: { grupo: "gestao-de-clientes", ordem: 5 },
     minRole: "manager",
   },
   {
@@ -353,7 +379,7 @@ export const NAV_CATALOG = [
     label: "Contatos",
     description: "As pessoas do outro lado da conversa e seu histórico.",
     icon: "Users",
-    menu: { grupo: "gestao-de-clientes", ordem: 2 },
+    menu: { grupo: "gestao-de-clientes", ordem: 3 },
   },
   {
     href: "/app/companies",
@@ -384,17 +410,18 @@ export const NAV_CATALOG = [
     label: "Tarefas",
     description: "O que ficou combinado, com prazo — e o que já venceu sem ninguém fazer.",
     icon: "ListChecks",
-    menu: { grupo: "gestao-de-clientes", ordem: 3 },
+    menu: { grupo: "gestao-de-clientes", ordem: 4 },
   },
   {
-    // Módulo VoIP (migration 0347). No grupo do CRM pelo mesmo critério de
-    // Tarefas: quem atende confere ligações perdidas e transcrições no dia a
-    // dia, não como revisão deliberada.
+    // Módulo VoIP (migration 0347). Morava em Todo dia («Se a sua empresa usa»); saiu de lá por
+    // decisão do dono do produto (12/11/2026): o atalho sai da mesa, a tela continua no menu.
+    // Fica em Vender, ao lado do que a equipe usa para
+    // atender, e continua na página de área do CRM e na busca.
     href: "/app/calls",
     label: "Chamadas",
     description: "Histórico de ligações (voz por IA) com transcrição.",
     icon: "Phone",
-    menu: { grupo: "se-a-empresa-usa", ordem: 3 },
+    menu: { grupo: "vender-equipe", ordem: 3 },
     minRole: "manager",
   },
   {
@@ -466,9 +493,12 @@ export const NAV_CATALOG = [
     capacidade: "propostas",
   },
   {
-    // O BALCÃO. Fica em CRM, e não em Configurações, porque é uso diário de quem
-    // está com a cliente na frente — a tela irmã, em Configurações › Financeiro,
-    // é onde o negócio se descreve uma vez.
+    // O BALCÃO: o que foi vendido à cliente que está na frente — a tela irmã, em
+    // Empresa › Financeiro, é onde o negócio se descreve uma vez.
+    //
+    // Morava em Todo dia («Se a sua empresa usa») e saiu de lá por decisão do dono do produto
+    // (12/11/2026), pelo mesmo pedido que tirou Chamadas da mesa. Fica em Vender,
+    // junto do que se vende, e continua na página de área do CRM e na busca.
     //
     // `viewer` porque conferir o que foi lançado no dia não é privilégio de
     // quem lança; o que a RLS impede é ele escrever.
@@ -476,7 +506,7 @@ export const NAV_CATALOG = [
     label: "Comandas",
     description: "O que foi feito, por quem, e quanto o cliente paga.",
     icon: "Receipt",
-    menu: { grupo: "se-a-empresa-usa", ordem: 2 },
+    menu: { grupo: "vender-oferta", ordem: 4 },
     minRole: "viewer",
   },
   {
@@ -525,11 +555,15 @@ export const NAV_CATALOG = [
     minRole: "manager",
   },
   {
+    // Em TODO DIA, logo depois de Riscos de Perda: lá se vê quem esfriou, aqui se acompanha a
+    // retomada (a aba Fila mostra quem está sendo acompanhado agora). Morava em Agente › Montar o
+    // agente; o dono do produto pediu o atalho na mesa (12/11/2026). Como o grupo é Leads, a
+    // página de área do Agente continua listando a tela.
     href: "/app/ai/followups",
     label: "Follow-ups",
     description: "Como o agente retoma uma conversa que esfriou, para nenhuma morrer no silêncio.",
     icon: "FlowArrow",
-    menu: { grupo: "agente-montar", ordem: 2 },
+    menu: { grupo: "leads", ordem: 5 },
     minRole: "manager",
   },
   {
