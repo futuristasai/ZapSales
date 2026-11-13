@@ -10,8 +10,8 @@ import { describe, expect, it } from "vitest";
  *
  * ## A regra
  *
- * `docs/doctrine/versionamento.md`, seção "A vitrine". A LP (repositório
- * `zapsales-site`) tem uma página de changelog em pt-BR, en e es que lê o
+ * `docs/doctrine/versionamento.md`, seção "A vitrine". O site do instalador (repositório
+ * `zapsales-licencas`) tem uma página de changelog em pt-BR, en e es que lê o
  * `CHANGELOG.md` da `main`. Ninguém escreve release no site: a versão chega lá
  * sozinha, e o último passo do job `cortar-tag` confere que chegou.
  *
@@ -28,7 +28,7 @@ import { describe, expect, it } from "vitest";
  * uma saída, e forma nenhuma do YAML a prova.
  *
  * O contrato mora nos dois lados de propósito. O leitor da LP
- * (`zapsales-site/lib/changelog.ts`) usa esta mesma expressão; se alguém mudar o
+ * (`zapsales-licencas/lib/changelog/ler.ts`) usa esta mesma expressão; se alguém mudar o
  * cabeçalho do CHANGELOG aqui, este teste reprova ANTES de a LP perder a versão
  * em silêncio.
  */
@@ -160,7 +160,7 @@ describe("a release chega à página de changelog da LP", () => {
   it("confere os três idiomas e reprova — não só avisa", () => {
     const bloco = passo(PASSO_LP);
     for (const p of ["/changelog", "/en/changelog", "/es/changelog"]) expect(bloco).toContain(p);
-    expect(bloco).toContain("https://zapsales.futuristas.app");
+    expect(bloco).toContain("https://zapinstalador.futuristas.app");
     // Todo ramo que anuncia erro precisa sair com 1. Contar "existe um exit 1" não basta: a
     // sabotagem que tirou só o primeiro passou verde com essa régua.
     //
@@ -273,12 +273,12 @@ describe("a release chega à página de changelog da LP", () => {
 
   it("a doutrina de versionamento declara a vitrine", () => {
     expect(doutrina).toMatch(/^## A vitrine/m);
-    expect(doutrina).toContain("zapsales.futuristas.app/changelog");
+    expect(doutrina).toContain("zapinstalador.futuristas.app/changelog");
     expect(doutrina).toContain("A versão aparece na página de changelog da LP?");
   });
 
   it("toda seção do CHANGELOG segue o cabeçalho que a LP sabe ler", () => {
-    // A mesma expressão de zapsales-site/lib/changelog.ts (CABECALHO_VERSAO).
+    // A mesma expressão de zapsales-licencas/lib/changelog/ler.ts (CABECALHO_VERSAO).
     const CABECALHO_VERSAO = /^## \[(\d+\.\d+\.\d+)\]\s*[—–-]\s*(\d{4}-\d{2}-\d{2})\s*$/;
     const cabecalhos = changelog.split("\n").filter((l) => l.startsWith("## "));
     const fora = cabecalhos.filter((l) => !CABECALHO_VERSAO.test(l) && l.trim() !== "## [Não lançado]");

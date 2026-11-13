@@ -761,12 +761,16 @@ Antes de declarar uma task pronta:
     presença num check obrigatório reprovaria PR de Dependabot, PR de fork, e o próprio PR
     de release, que consome os fragmentos e deixa o diretório vazio. A presença é cobrada
     aqui, e por quem revisa.
-    **Toda versão publicada aparece na página de changelog da LP** (zapsales.futuristas.app/changelog,
-    pt-BR/en/es). Ninguém escreve no site: a LP lê o `CHANGELOG.md` da `main`, e o último passo
+    **Toda versão publicada aparece na página pública de changelog** (zapinstalador.futuristas.app/changelog,
+    pt-BR/en/es). Ninguém escreve no site: a página lê o `CHANGELOG.md` da `main`, e o último passo
     do corte (`release.yml`, job `cortar-tag`) reprova quando a versão não chegou. O texto do
     fragmento é, portanto, nota pública. Enquanto as três páginas não responderem 200 esse passo
-    reprova TODO corte — a vitrine vem de um PR do `zapsales-site`, e o `curl` que diz em que
-    estado ela está abre a seção. Lei: seção "A vitrine" de `versionamento.md`.
+    reprova TODO corte — a página mora no site do instalador (repositório `zapsales-licencas`), e o
+    `curl` que diz em que estado ela está abre a seção. Lei: seção "A vitrine" de `versionamento.md`.
+    **O corte é automático, e é ele que leva a mudança a quem compra:** o instalador entrega a última
+    release, não a `main`. Uma vez por dia, havendo fragmento, o `release.yml` abre o PR de release
+    e o mescla quando os checks fecham (interruptor: variável `RELEASE_AUTOMATICA`). PR sem fragmento
+    não entra em versão nenhuma — outra razão para não esquecê-lo.
 
 18. **Se o PR muda comportamento, ele declara o destino: núcleo, extensão, ambos ou
     infraestrutura** (lei em [`docs/doctrine/extensoes.md`](docs/doctrine/extensoes.md)), com a razão

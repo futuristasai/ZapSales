@@ -114,6 +114,35 @@ Três razões medidas, todas com consequência no parque instalado:
 Daí a regra que a doutrina de packaging já enuncia e esta reforça: **versão publicada é
 imutável**. Corrige-se com `X.Y.Z+1`, nunca republicando o mesmo número.
 
+### O corte é automático
+
+**O instalador entrega a última release, não a `main`** — o `kit/obter.sh` pergunta ao GitHub
+qual é ela (`/releases/latest`). Mesclar e implantar em produção, portanto, não leva nada a quem
+compra: só a versão cortada leva. Enquanto cortar dependia de alguém lembrar, a `main` chegou a
+ficar 88 commits à frente da única versão publicada, com uma série inteira de correções de
+segurança, e uma instalação nova veio sem nada disso (medido em 13/11/2026). A produção do
+projeto acompanha a `main`, então tudo parecia entregue.
+
+Por isso o `release.yml` tem um relógio: **uma vez por dia**, se houver fragmento em
+`.changes/`, ele abre o PR de release e já liga o merge automático. O PR entra sozinho quando os
+checks obrigatórios ficam verdes, e o merge dispara a tag, as imagens e a Release — nessa ordem,
+porque a Release é o que o instalador consulta e só pode aparecer depois de as imagens existirem.
+
+- **Segurar UMA versão:** feche o PR de release. O relógio do dia seguinte abre outro.
+- **Parar o corte automático:** a variável de repositório `RELEASE_AUTOMATICA` (só `ligado`
+  corta). "Run workflow" continua funcionando com ela desligada, e nesse caminho o PR espera
+  quem disparou ler e mesclar.
+- **Quem escreve é o GitHub App de release** (`RELEASE_APP_ID`, `RELEASE_APP_PRIVATE_KEY`,
+  `RELEASE_APP_CONFIGURADO=sim`). Sem ele os dois atos ficam pulados, e o corte volta a ser à mão.
+
+Para saber se há versão represada, pergunte em vez de acreditar nesta seção:
+
+```bash
+git fetch origin --tags -q
+git rev-list --count "$(git describe --tags --abbrev=0 origin/main)..origin/main"   # 0 = nada represado
+ls .changes/*.md 2>/dev/null | wc -l                                                # fragmentos à espera
+```
+
 ---
 
 ## O fragmento
@@ -197,36 +226,41 @@ E o `package.json` **não** é a fonte: ele segue em `0.1.0`, de propósito. A f
 
 ## A vitrine
 
-Toda versão publicada aparece na página de changelog da LP, nos três idiomas:
-[zapsales.futuristas.app/changelog](https://zapsales.futuristas.app/changelog),
-[/en/changelog](https://zapsales.futuristas.app/en/changelog) e
-[/es/changelog](https://zapsales.futuristas.app/es/changelog), cada versão com página própria
+Toda versão publicada aparece na página pública de changelog, nos três idiomas:
+[zapinstalador.futuristas.app/changelog](https://zapinstalador.futuristas.app/changelog),
+[/en/changelog](https://zapinstalador.futuristas.app/en/changelog) e
+[/es/changelog](https://zapinstalador.futuristas.app/es/changelog), cada versão com página própria
 (`/changelog/X.Y.Z`). É lá que quem ainda não instalou — e quem decide se atualiza — lê o que
 mudou sem abrir o GitHub.
 
-**Enquanto as três páginas não responderem 200, o parágrafo acima descreve o alvo e não o estado.**
-Elas nascem num PR do repositório `zapsales-site`, e o corte depende delas: com a vitrine fora do
-ar, o passo abaixo reprova **toda** release depois de 35 tentativas, cerca de meia hora de espera. Quem for cortar confere
-antes — o comando não envelhece, a frase envelheceria:
+A página mora no site do instalador (repositório privado `zapsales-licencas`, pasta
+`app/changelog`), que é a vitrine pública do produto. **Esta seção já apontou para
+`zapsales.futuristas.app/changelog` e para um repositório `zapsales-site` que nunca existiu**:
+aquele endereço é o app de produção e respondia 307 para o login (medido em 13/11/2026). Onde este
+documento diz "LP", leia "a página de changelog do site do instalador".
+
+O corte depende dela: com a vitrine fora do ar, o passo abaixo reprova o corte — a versão já
+saiu, mas o job fica vermelho. Quem for cortar confere antes — o comando não envelhece, a frase
+envelheceria:
 
 ```bash
-for p in /changelog /en/changelog /es/changelog /guias; do
-  echo "$p: $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://zapsales.futuristas.app$p")"
+for p in /changelog /en/changelog /es/changelog; do
+  echo "$p: $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://zapinstalador.futuristas.app$p")"
 done
 ```
 
-Quatro `200` e esta seção vale como está escrita. Qualquer `404` e a ordem é a inversa: a vitrine
-entra no ar primeiro, o corte depois.
+Três `200` e esta seção vale como está escrita. Qualquer outro status e a ordem é a inversa: a
+vitrine volta ao ar primeiro, o corte depois.
 
-**Ninguém escreve release no site.** A LP (repositório `zapsales-site`) lê o `CHANGELOG.md` da
-`main` e revalida a cada 10 minutos. Então a regra de quem corta release não é "lembre de
+**Ninguém escreve release no site.** A página lê o `CHANGELOG.md` da `main` e o guarda por
+10 minutos. Então a regra de quem corta release não é "lembre de
 atualizar a LP" — regra que não protege quem a escreve —, e sim:
 
 1. **A seção entra no `CHANGELOG.md` pelo caminho normal** (fragmentos → PR de release). Uma
    seção que chegou à `main` de outro jeito também aparece: a LP lê o arquivo, não as Releases
    do GitHub. Foi o que salvou a v1.20.0, cuja tag foi criada à mão e nunca ganhou Release.
 2. **O cabeçalho da seção é contrato.** `## [X.Y.Z] — AAAA-MM-DD`, subseções em `###`. O leitor
-   da LP (`zapsales-site/lib/changelog.ts`, outro repositório) usa a mesma expressão que
+   da página (`zapsales-licencas/lib/changelog/ler.ts`, outro repositório) usa a mesma expressão que
    `tests/unit/release-chega-na-lp.test.ts` cobra aqui. Mudar o formato é mudar os dois
    repositórios no mesmo movimento.
 3. **O corte confere a consequência.** O último passo do job `cortar-tag` —

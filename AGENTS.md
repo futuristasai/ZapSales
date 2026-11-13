@@ -520,11 +520,14 @@ nunca o número. O número é calculado a partir do conjunto; confira com `pnpm 
 corte com `pnpm release:cortar`. Régua e porquê: [`docs/doctrine/versionamento.md`](docs/doctrine/versionamento.md).
 Quem instalou lê o [`CHANGELOG.md`](CHANGELOG.md) antes de rodar o `kit/instalar.sh` — mudança que exige
 ação manual aparece sob "⚠️ Requer atenção".
-Toda versão publicada aparece também em [zapsales.futuristas.app/changelog](https://zapsales.futuristas.app/changelog)
-(pt-BR, en, es): a LP lê o `CHANGELOG.md` da `main`, ninguém escreve release no site, e o último
+Toda versão publicada aparece também em [zapinstalador.futuristas.app/changelog](https://zapinstalador.futuristas.app/changelog)
+(pt-BR, en, es): a página lê o `CHANGELOG.md` da `main`, ninguém escreve release no site, e o último
 passo do corte reprova se a versão não chegou lá. Mudar o cabeçalho `## [X.Y.Z] — AAAA-MM-DD` quebra
 essa página — ver "A vitrine" em `docs/doctrine/versionamento.md`. Enquanto as três páginas não
 responderem 200, esse passo reprova TODO corte; o `curl` que mede isso abre aquela seção.
+O corte é automático: uma vez por dia, havendo fragmento em `.changes/`, o `release.yml` abre o PR
+de release e o mescla quando os checks fecham (interruptor: variável `RELEASE_AUTOMATICA`). O
+instalador entrega a última release, não a `main` — ver "O corte é automático" na mesma doutrina.
 
 **Regra final — não invente.** Este repositório tem PRDs, specs, regras de negócio e doutrina
 escritos. Nunca invente regra de negócio, número, SLA ou comportamento de produto. Se a regra não
