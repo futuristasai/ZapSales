@@ -23,8 +23,12 @@ import { traduzir } from "@/lib/i18n/dicionario";
 
 export const dynamic = "force-dynamic";
 
+// O teto de `limit` é o do pool varrido (`SCAN_CAP` em radar-de-risco.ts): a
+// tela pede mais linhas com "Mostrar mais", e parar em 200 deixaria o contador
+// dizer 347 com 147 linhas que nenhum clique alcança.
 const querySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(200).default(50),
+  limit: z.coerce.number().int().min(1).max(500).default(50),
+  risk: z.enum(["critico", "em_risco", "em_voo"]).optional(),
   min_hours: z.coerce.number().int().min(0).max(2000).default(RADAR_MIN_HOURS_PADRAO),
 });
 
@@ -46,7 +50,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       details: parsed.error.flatten(),
     });
   }
-  const { limit, min_hours } = parsed.data;
+  const { limit, min_hours, risk } = parsed.data;
 
   try {
     const radar = await carregaRadarDeRisco(await createClient(), {
@@ -54,6 +58,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       humanRole: org.role,
       limit,
       minHours: min_hours,
+      ...(risk ? { risk } : {}),
     });
     return ok(radar, { requestId });
   } catch {

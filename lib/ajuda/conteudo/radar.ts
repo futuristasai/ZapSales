@@ -2,22 +2,24 @@ import type { AjudaDaPagina } from "../tipos";
 
 /**
  * Os nomes de botão, contador e frase aqui são os que a tela mostra em cada idioma (`Assumir` / `Asumir` /
- * `Take over`; contadores `crítico`, `em risco`, `em voo` / `crítico`, `en riesgo`, `en seguimiento` /
- * `critical`, `at risk`, `in follow-up`). Mudou o rótulo na tela, muda aqui.
+ * `Take over`; `Abrir conversa` / `Abrir conversación` / `Open conversation`; `Ver no funil` /
+ * `Ver en el embudo` / `View in pipeline`; cartões `Crítico`, `Em risco`, `Em voo` / `Crítico`,
+ * `En riesgo`, `En curso` / `Critical`, `At risk`, `In flight`). Mudou o rótulo na tela, muda aqui.
  */
 const ajuda: AjudaDaPagina = {
   "pt-BR": {
     oQueMostra:
-      "Aqui ficam as demandas abertas que esfriaram e precisam de você. Se o assistente já agendou um retorno, a demanda aparece como em voo; sem próximo passo, é risco de perder o cliente.",
+      "Aqui ficam os negócios e as demandas que esfriaram e precisam de você. Se já existe um retorno agendado, o negócio aparece como em voo; sem retorno, é risco de perder o cliente.",
     passos: [
-      "No alto, caixas de aviso aparecem quando existem demandas abertas sem próximo passo, propostas vencidas sem retomada ou propostas esperando revisão. Cada uma explica o que fazer.",
-      "Os três contadores (crítico, em risco e em voo) mostram quantas demandas há em cada situação. A lista vem ordenada com as mais graves primeiro.",
-      "Em cada linha você vê o título, o contato, há quanto tempo está parada, quem cuida dela e o próximo passo: Assistente retorna em um prazo, ou Sem próximo passo agendado.",
-      "Clique na linha para abrir a conversa em Conversas. Se não houver conversa, abre o funil da demanda.",
-      "Use Assumir quando a demanda ainda não tem atendente. O botão só aparece se há conversa e nenhuma pessoa cuida dela.",
+      "No alto, quatro cartões mostram quantos negócios parados há em cada situação: Todos, Crítico, Em risco e Em voo. Clique em um cartão para ver só os daquela situação; a lista vem com os mais graves primeiro.",
+      "Logo abaixo, em Também pedem atenção, aparecem (quando existem) as demandas abertas sem próximo passo, as propostas vencidas e as propostas para revisar. Clique em cada uma para abrir a lista dela.",
+      "Em cada linha você vê o nome do cliente em destaque, o título do negócio, há quanto tempo está parado, o funil e a etapa, quem cuida dele e o retorno: Assistente retorna em um prazo, ou Sem retorno agendado.",
+      "Clique na linha ou em Abrir conversa para falar com o cliente em Conversas. Ver no funil abre o cartão do negócio no funil. Quando o cliente ainda não tem conversa, a linha avisa e leva ao cartão no funil.",
+      "Use Assumir quando o negócio ainda não tem atendente. O botão só aparece se há conversa e nenhuma pessoa cuida dela.",
+      "Mostrar mais traz as próximas linhas da mesma lista.",
     ],
     termos: [
-      { termo: "Crítico / Em risco / Em voo", significa: "Crítico: parada há muito tempo e sem retorno combinado. Em risco: esfriou e está sem retorno. Em voo: esfriou, mas o assistente já agendou um retorno." },
+      { termo: "Crítico / Em risco / Em voo", significa: "Crítico: parado há muito tempo e sem retorno combinado. Em risco: esfriou e está sem retorno. Em voo: esfriou, mas já existe um retorno agendado." },
       { termo: "Demanda", significa: "Um atendimento ou negócio aberto de um cliente que ainda não foi concluído." },
       { termo: "Sem dono", significa: "Nenhuma pessoa nem agente de IA é responsável pela demanda." },
       { termo: "Assumir", significa: "Tira a demanda da IA e traz para você, para que você mesmo continue a conversa." },
@@ -25,16 +27,17 @@ const ajuda: AjudaDaPagina = {
   },
   es: {
     oQueMostra:
-      "Aquí están las demandas abiertas que se enfriaron y te necesitan. Si el asistente ya programó un seguimiento, aparece como en seguimiento; sin siguiente paso, hay riesgo de perder al cliente.",
+      "Aquí están los negocios y los casos que se enfriaron y te necesitan. Si ya hay un seguimiento programado, el negocio aparece como en curso; sin seguimiento, hay riesgo de perder al cliente.",
     passos: [
-      "Arriba aparecen cuadros de aviso cuando hay casos abiertos sin siguiente paso, propuestas vencidas sin retomar o propuestas esperando revisión. Cada uno explica qué hacer.",
-      "Los tres contadores (crítico, en riesgo y en seguimiento) muestran cuántos casos hay en cada situación. La lista viene ordenada con los más graves primero.",
-      "En cada fila ves el título, el contacto, hace cuánto está detenida, quién se ocupa de ella y el siguiente paso: El asistente dará seguimiento en un plazo, o Sin próximo paso programado.",
-      "Haz clic en la fila para abrir la conversación en Conversaciones. Si no hay conversación, abre el embudo del caso.",
-      "Usa Asumir cuando el caso aún no tiene asesor. El botón solo aparece si hay conversación y ninguna persona se ocupa de ella.",
+      "Arriba, cuatro tarjetas muestran cuántos negocios detenidos hay en cada situación: Todos, Crítico, En riesgo y En curso. Haz clic en una tarjeta para ver solo los de esa situación; la lista viene con los más graves primero.",
+      "Justo debajo, en También piden atención, aparecen (cuando existen) los casos abiertos sin siguiente paso, las propuestas vencidas y las propuestas para revisar. Haz clic en cada una para abrir su lista.",
+      "En cada fila ves el nombre del cliente destacado, el título del negocio, hace cuánto está detenido, el embudo y la etapa, quién se ocupa de él y el seguimiento: El asistente dará seguimiento en un plazo, o Sin seguimiento programado.",
+      "Haz clic en la fila o en Abrir conversación para hablar con el cliente en Conversaciones. Ver en el embudo abre la tarjeta del negocio en el embudo. Cuando el cliente aún no tiene conversación, la fila lo avisa y lleva a la tarjeta en el embudo.",
+      "Usa Asumir cuando el negocio aún no tiene asesor. El botón solo aparece si hay conversación y ninguna persona se ocupa de ella.",
+      "Mostrar más trae las siguientes filas de la misma lista.",
     ],
     termos: [
-      { termo: "Crítico / En riesgo / En seguimiento", significa: "Crítico: detenido hace mucho tiempo y sin seguimiento acordado. En riesgo: se enfrió y no tiene seguimiento. En seguimiento: se enfrió, pero el asistente ya programó un seguimiento." },
+      { termo: "Crítico / En riesgo / En curso", significa: "Crítico: detenido hace mucho tiempo y sin seguimiento acordado. En riesgo: se enfrió y no tiene seguimiento. En curso: se enfrió, pero ya hay un seguimiento programado." },
       { termo: "Caso", significa: "Una atención o negocio abierto de un cliente que todavía no se concluyó." },
       { termo: "Sin responsable", significa: "Ninguna persona ni agente de IA es responsable del caso." },
       { termo: "Asumir", significa: "Saca el caso de la IA y lo trae a ti, para que continúes tú mismo la conversación." },
@@ -42,16 +45,17 @@ const ajuda: AjudaDaPagina = {
   },
   en: {
     oQueMostra:
-      "This is where open cases that went cold and need you live. If the assistant has already scheduled a follow-up, the case shows as in follow-up; with no next step, there is a risk of losing the customer.",
+      "This is where deals and cases that went cold and need you live. If a follow-up is already scheduled, the deal shows as in flight; with no follow-up, there is a risk of losing the customer.",
     passos: [
-      "At the top, notice boxes appear when there are open cases with no next step, expired proposals not followed up, or proposals awaiting review. Each one explains what to do.",
-      "The three counters (critical, at risk and in follow-up) show how many cases are in each situation. The list is sorted with the most severe first.",
-      "On each row you see the title, the contact, how long it has been stalled, who is handling it and the next step: Assistant follows up in a given time, or No next step scheduled.",
-      "Click the row to open the conversation in Conversations. If there is no conversation, it opens the case's pipeline.",
-      "Use Take over when the case has no agent yet. The button only appears if there is a conversation and no person is handling it.",
+      "At the top, four cards show how many stalled deals are in each situation: All, Critical, At risk and In flight. Click a card to see only the deals in that situation; the list comes with the most severe first.",
+      "Right below, under Also need attention, you see (when they exist) open cases with no next step, expired proposals and proposals to review. Click each one to open its list.",
+      "On each row you see the customer's name highlighted, the deal title, how long it has been stalled, the pipeline and stage, who is handling it and the follow-up: Assistant follows up in a given time, or No follow-up scheduled.",
+      "Click the row or Open conversation to talk to the customer in Conversations. View in pipeline opens the deal's card in the pipeline. When the customer has no conversation yet, the row says so and takes you to the card in the pipeline.",
+      "Use Take over when the deal has no agent yet. The button only appears if there is a conversation and no person is handling it.",
+      "Show more brings the next rows of the same list.",
     ],
     termos: [
-      { termo: "Critical / At risk / In follow-up", significa: "Critical: stalled for a long time with no follow-up arranged. At risk: went cold with no follow-up. In follow-up: went cold, but the assistant has already scheduled a follow-up." },
+      { termo: "Critical / At risk / In flight", significa: "Critical: stalled for a long time with no follow-up arranged. At risk: went cold with no follow-up. In flight: went cold, but a follow-up is already scheduled." },
       { termo: "Case", significa: "An open conversation or deal of a customer that has not been concluded yet." },
       { termo: "No owner", significa: "No person or AI agent is responsible for the case." },
       { termo: "Take over", significa: "Takes the case away from the AI and brings it to you, so you continue the conversation yourself." },

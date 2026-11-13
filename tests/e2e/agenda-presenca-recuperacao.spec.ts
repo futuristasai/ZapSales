@@ -154,7 +154,10 @@ async function abrirRadar(page: Page) {
   const carregou = page.waitForResponse(
     (r) => new URL(r.url()).pathname === "/api/v1/leads/at-risk" && r.request().method() === "GET",
   );
-  await page.goto("/app/radar");
+  // `?ver=sem_proximo_passo`: o radar mostra UMA lista por vez, e a das demandas
+  // é a que estes casos leem. Sem o parâmetro a tela abre na primeira lista não
+  // vazia, que deixa de ser esta no dia em que o fixture ganhar um negócio frio.
+  await page.goto("/app/radar?ver=sem_proximo_passo");
   expect((await carregou).status()).toBe(200);
 }
 async function detail(page: Page, id: string, title: string) {

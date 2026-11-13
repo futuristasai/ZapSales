@@ -1,0 +1,1383 @@
+{
+  "computador-claro-1-todos": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "true",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 381,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-0",
+        "caixa": {
+          "x": 1081,
+          "y": 407,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-0",
+        "caixa": {
+          "x": 1215,
+          "y": 407,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 347",
+    "url": "",
+    "erros": []
+  },
+  "computador-claro-2-filtro-em-voo": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "true",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 381,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Érica Siqueira"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Assumir",
+        "href": null,
+        "caixa": {
+          "x": 980,
+          "y": 407,
+          "w": 93,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-267",
+        "caixa": {
+          "x": 1081,
+          "y": 407,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-267",
+        "caixa": {
+          "x": 1215,
+          "y": 407,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 80",
+    "url": "?ver=em_voo",
+    "erros": []
+  },
+  "computador-claro-3-em-risco": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "true",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 381,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-160",
+        "caixa": {
+          "x": 1081,
+          "y": 407,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-160",
+        "caixa": {
+          "x": 1215,
+          "y": 407,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 107",
+    "url": "?ver=em_risco",
+    "erros": []
+  },
+  "computador-claro-4-sem-proximo-passo": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "true",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 401,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": null,
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-d-0",
+        "caixa": {
+          "x": 1081,
+          "y": 427,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-d-0",
+        "caixa": {
+          "x": 1215,
+          "y": 427,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 19,
+    "mostrando": "Mostrando 19 de 19",
+    "url": "?ver=sem_proximo_passo",
+    "erros": []
+  },
+  "computador-claro-5-propostas-vencidas": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "true",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": null,
+    "nome": null,
+    "acoesDaPrimeiraLinha": [],
+    "linhas": 0,
+    "mostrando": "Mostrando 3 de 3",
+    "url": "?ver=propostas_vencidas",
+    "erros": []
+  },
+  "computador-claro-6-propostas-para-revisar": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "true",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": null,
+    "nome": null,
+    "acoesDaPrimeiraLinha": [],
+    "linhas": 0,
+    "mostrando": "Mostrando 2 de 2",
+    "url": "?ver=propostas_para_revisar",
+    "erros": []
+  },
+  "computador-claro-7-mostrar-mais": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": -7721,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "true",
+        "caixa": {
+          "x": 414,
+          "y": -7721,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": -7721,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": -7721,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": -7591,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": -7591,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": -7591,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": -7508,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-0",
+        "caixa": {
+          "x": 1081,
+          "y": -7482,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-0",
+        "caixa": {
+          "x": 1215,
+          "y": -7482,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 100,
+    "mostrando": "Mostrando 100 de 160",
+    "url": "?ver=critico",
+    "erros": []
+  },
+  "computador-claro-8-so-demandas": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "true",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 401,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": null,
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-d-0",
+        "caixa": {
+          "x": 1081,
+          "y": 427,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-d-0",
+        "caixa": {
+          "x": 1215,
+          "y": 427,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 19,
+    "mostrando": "Mostrando 19 de 19",
+    "url": "?caso=so-demandas",
+    "erros": []
+  },
+  "computador-claro-9-vazio": {
+    "transbordoHorizontal": 0,
+    "filtros": [],
+    "primeiraLinha": null,
+    "nome": null,
+    "acoesDaPrimeiraLinha": [],
+    "linhas": 0,
+    "mostrando": null,
+    "url": "?caso=vazio",
+    "erros": []
+  },
+  "computador-escuro-1-todos": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "true",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 381,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-0",
+        "caixa": {
+          "x": 1081,
+          "y": 407,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-0",
+        "caixa": {
+          "x": 1215,
+          "y": 407,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 347",
+    "url": "",
+    "erros": []
+  },
+  "computador-escuro-2-sem-proximo-passo": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 104,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 414,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 724,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 1034,
+          "y": 168,
+          "w": 302,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "true",
+        "caixa": {
+          "x": 104,
+          "y": 298,
+          "w": 385,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 497,
+          "y": 298,
+          "w": 313,
+          "h": 38
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 818,
+          "y": 298,
+          "w": 308,
+          "h": 38
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 105,
+      "y": 401,
+      "w": 1230,
+      "h": 85
+    },
+    "nome": null,
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-d-0",
+        "caixa": {
+          "x": 1081,
+          "y": 427,
+          "w": 126,
+          "h": 32
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-d-0",
+        "caixa": {
+          "x": 1215,
+          "y": 427,
+          "w": 108,
+          "h": 32
+        }
+      }
+    ],
+    "linhas": 19,
+    "mostrando": "Mostrando 19 de 19",
+    "url": "?ver=sem_proximo_passo",
+    "erros": []
+  },
+  "celular-claro-1-todos": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "true",
+        "caixa": {
+          "x": 24,
+          "y": 164,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 199,
+          "y": 164,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 246,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 199,
+          "y": 246,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 356,
+          "w": 198,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 408,
+          "w": 186,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 460,
+          "w": 205,
+          "h": 44
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 25,
+      "y": 569,
+      "w": 340,
+      "h": 177
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-0",
+        "caixa": {
+          "x": 97,
+          "y": 689,
+          "w": 126,
+          "h": 44
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-0",
+        "caixa": {
+          "x": 231,
+          "y": 689,
+          "w": 108,
+          "h": 44
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 347",
+    "url": "",
+    "erros": []
+  },
+  "celular-claro-2-sem-proximo-passo": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 164,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 199,
+          "y": 164,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 246,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 199,
+          "y": 246,
+          "w": 167,
+          "h": 74
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "true",
+        "caixa": {
+          "x": 24,
+          "y": 356,
+          "w": 198,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 408,
+          "w": 186,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 460,
+          "w": 205,
+          "h": 44
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 25,
+      "y": 609,
+      "w": 340,
+      "h": 157
+    },
+    "nome": null,
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-d-0",
+        "caixa": {
+          "x": 97,
+          "y": 709,
+          "w": 126,
+          "h": 44
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-d-0",
+        "caixa": {
+          "x": 231,
+          "y": 709,
+          "w": 108,
+          "h": 44
+        }
+      }
+    ],
+    "linhas": 19,
+    "mostrando": "Mostrando 19 de 19",
+    "url": "?ver=sem_proximo_passo",
+    "erros": []
+  },
+  "tablet-claro-1-todos": {
+    "transbordoHorizontal": 0,
+    "filtros": [
+      {
+        "id": "radar-filtro-todos",
+        "ligado": "true",
+        "caixa": {
+          "x": 24,
+          "y": 144,
+          "w": 207,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-critico",
+        "ligado": "false",
+        "caixa": {
+          "x": 239,
+          "y": 144,
+          "w": 207,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_risco",
+        "ligado": "false",
+        "caixa": {
+          "x": 454,
+          "y": 144,
+          "w": 207,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-em_voo",
+        "ligado": "false",
+        "caixa": {
+          "x": 669,
+          "y": 144,
+          "w": 207,
+          "h": 94
+        }
+      },
+      {
+        "id": "radar-filtro-sem_proximo_passo",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 274,
+          "w": 385,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_vencidas",
+        "ligado": "false",
+        "caixa": {
+          "x": 417,
+          "y": 274,
+          "w": 313,
+          "h": 44
+        }
+      },
+      {
+        "id": "radar-filtro-propostas_para_revisar",
+        "ligado": "false",
+        "caixa": {
+          "x": 24,
+          "y": 326,
+          "w": 308,
+          "h": 44
+        }
+      }
+    ],
+    "primeiraLinha": {
+      "x": 25,
+      "y": 415,
+      "w": 850,
+      "h": 105
+    },
+    "nome": {
+      "peso": "600",
+      "tamanho": "14px",
+      "texto": "Larissa Rodrigues"
+    },
+    "acoesDaPrimeiraLinha": [
+      {
+        "texto": "Abrir conversa",
+        "href": "/app/inbox?id=conv-0",
+        "caixa": {
+          "x": 621,
+          "y": 445,
+          "w": 126,
+          "h": 44
+        }
+      },
+      {
+        "texto": "Ver no funil",
+        "href": "/app/pipelines/funil-1?lead=lead-0",
+        "caixa": {
+          "x": 755,
+          "y": 445,
+          "w": 108,
+          "h": 44
+        }
+      }
+    ],
+    "linhas": 50,
+    "mostrando": "Mostrando 50 de 347",
+    "url": "",
+    "erros": []
+  }
+}

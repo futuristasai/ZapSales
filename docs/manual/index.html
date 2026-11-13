@@ -1528,10 +1528,10 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="radar" data-titulo="Riscos de Perda" data-grupo="atendimento" data-grupo-titulo="Atendimento" data-resumo="A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Mostra o que é crítico, o que está em risco e o que já tem retorno combinado." data-palavras="radar risco esfriou parado crítico em risco em voo sem próximo passo assumir demanda retorno agendado radar de risco riscos de perda risco de perda" hidden>
+<article class="pagina" id="radar" data-titulo="Riscos de Perda" data-grupo="atendimento" data-grupo-titulo="Atendimento" data-resumo="A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil." data-palavras="radar risco esfriou parado crítico em risco em voo sem próximo passo sem retorno agendado assumir demanda retorno agendado radar de risco riscos de perda risco de perda filtrar abrir conversa ver no funil mostrar mais propostas vencidas" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Atendimento › Riscos de Perda</p>
   <h1>Riscos de Perda</h1>
-  <p class="lede">A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Mostra o que é crítico, o que está em risco e o que já tem retorno combinado.</p>
+  <p class="lede">A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil.</p>
   <dl class="ficha"><dt>Onde fica</dt><dd>Todo dia › Leads › Riscos de Perda (clique em Todo dia na faixa à esquerda)</dd><dt>Quem pode usar</dt><dd>Todos abrem a tela. Quem é Atendente ou acima vê a lista e pode assumir; Atendente só enxerga os negócios que são dele ou que não têm dono.</dd><dt>Endereço</dt><dd><code>/app/radar</code></dd></dl>
   <div class="conteudo-pagina">
 <h2 id="radar--visao-geral">Para que serve</h2>
@@ -1539,21 +1539,42 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>Riscos de Perda <strong>não envia nada e não altera nada sozinho</strong>. Ele só lê: a única ação que grava algo é o botão <span class="ui">Assumir</span>.</p>
 
 <figure class="print">
-  <img src="img/radar.png" alt="Tela Riscos de Perda com o aviso de demandas sem próximo passo, os três contadores e a lista de negócios, numerada de 1 a 9" loading="lazy">
-  <figcaption>Riscos de Perda na loja de demonstração: um aviso no alto, os três contadores (crítico, em risco e em voo) e a lista de negócios.</figcaption>
+  <img src="img/radar.png" alt="Tela Riscos de Perda: quatro cartões de situação no alto (Todos, Crítico, Em risco e Em voo), a faixa Também pedem atenção e a lista de negócios, cada linha com o nome do cliente em destaque e os botões Abrir conversa e Ver no funil" loading="lazy">
+  <figcaption>Riscos de Perda com dados de exemplo: os cartões de situação, a faixa “Também pedem atenção” e a lista de negócios parados.</figcaption>
 </figure>
-<ol class="legenda">
-  <li><strong>Como funciona.</strong> Abre um painel lateral com a explicação resumida da tela.</li>
-  <li><strong>Demandas abertas sem próximo passo.</strong> Um aviso no alto, quando existe gente esperando sem que nada tenha sido combinado: ele lista o contato e há quantas horas a demanda está aberta.</li>
-  <li><strong>Crítico.</strong> Quantos negócios estão parados há 72 horas ou mais, ou têm um compromisso que já passou sem que ninguém registrasse se o cliente veio.</li>
-  <li><strong>Em risco.</strong> Parados há 24 horas ou mais, sem nada combinado para o futuro.</li>
-  <li><strong>Em voo.</strong> Já têm um retorno agendado pela IA, ou um compromisso marcado em <a href="#agenda">Compromissos</a> que protege o cliente. “Em voo” quer dizer que alguém já está cuidando — pode esperar.</li>
-  <li><strong>Uma linha da lista.</strong> É o negócio inteiro: o selo de risco, o título do negócio, o nome do cliente e há quanto tempo está parado (“parado há 30h”; a partir de 48 horas, em dias, como “parado há 3d”). Clicar abre a conversa em <a href="#inbox">Conversas</a> (ou o <a href="#funis">funil</a>, quando o negócio não tem conversa).</li>
-  <li><strong>Ver compromisso.</strong> Só aparece quando existe um compromisso em Compromissos ligado ao cliente. Leva direto ao compromisso.</li>
-  <li><strong>O próximo passo.</strong> A linha de baixo diz por que o negócio está (ou não) protegido: <em>“Presença não confirmada · revise o compromisso”</em>, <em>“Confirme a presença · cobrança aguardando”</em>, <em>“Compromisso agendado · cobrança aguardando”</em>, <em>“Assistente retorna em 5h”</em> ou, em amarelo, <em>“Sem próximo passo agendado”</em>.</li>
+<p>De cima para baixo, a tela tem:</p>
+<ul>
+  <li><strong>Como funciona</strong> (no canto de cima). Abre um painel lateral com a explicação resumida da tela.</li>
+  <li><strong>Os quatro cartões de situação.</strong> <span class="ui">Todos</span>, <span class="ui">Crítico</span>, <span class="ui">Em risco</span> e <span class="ui">Em voo</span>, cada um com a quantidade de negócios. <strong>Clique em um cartão para ver só os negócios daquela situação</strong>; o cartão escolhido fica destacado.</li>
+  <li><strong>Também pedem atenção.</strong> Uma faixa que só aparece quando há algo: <span class="ui">Sem próximo passo</span>, <span class="ui">Propostas vencidas</span> e <span class="ui">Propostas para revisar</span>. Clicar em uma delas troca a lista de baixo. Veja <a href="#radar--avisos">Também pedem atenção</a>.</li>
+  <li><strong>Uma frase</strong> que explica a lista que você está vendo.</li>
+  <li><strong>A lista.</strong> Uma linha por negócio, com uma faixa colorida à esquerda (vermelha no crítico, amarela no em risco, azul no em voo).</li>
+  <li><strong>Mostrar mais.</strong> A lista traz 50 linhas por vez; o botão traz as próximas 50. Ao lado, “Mostrando 50 de 347” diz quantas você está vendo.</li>
+</ul>
+
+<h2 id="radar--linha">O que cada linha mostra</h2>
+<ul>
+  <li><strong>O nome do cliente</strong>, em destaque, com o selo da situação (<em>Crítico</em>, <em>Em risco</em> ou <em>Em voo</em>) ao lado. Negócio sem cliente ligado mostra o título no lugar do nome.</li>
+  <li><strong>O título do negócio</strong>, logo abaixo.</li>
+  <li><strong>Há quanto tempo está parado</strong>: “Parado há 30 horas”; a partir de 48 horas, em dias (“Parado há 3 dias”).</li>
+  <li><strong>O funil e a etapa</strong> em que o negócio está, como “Matrículas › Interessado”.</li>
   <li><strong>O dono.</strong> <em>Agente: nome</em> (a IA é a dona), <em>Com atendente</em> (há uma pessoa responsável), <em>Assistente na conversa</em> ou <em>Sem dono</em>.</li>
-</ol>
-<p>Nas linhas que têm conversa e ainda não têm uma pessoa como dona, aparece também o botão <span class="ui">Assumir</span> (fora do print). Veja abaixo o que ele faz.</p>
+  <li><strong>O retorno.</strong> Diz por que o negócio está (ou não) protegido: <em>“Presença não confirmada · revise o compromisso”</em>, <em>“Confirme a presença · cobrança aguardando”</em>, <em>“Compromisso agendado · cobrança aguardando”</em>, <em>“Assistente retorna em 5h”</em> ou, em amarelo, <em>“Sem retorno agendado”</em>.</li>
+</ul>
+
+<h2 id="radar--cliques">Para onde cada clique leva</h2>
+<p>A regra é uma só, e os botões dizem o destino por escrito:</p>
+<table class="tabela">
+  <thead><tr><th>Onde você clica</th><th>O que abre</th></tr></thead>
+  <tbody>
+    <tr><td>Na linha (nome, título) ou em <span class="ui">Abrir conversa</span></td><td>A conversa com o cliente, em <a href="#inbox">Conversas</a>. É onde se resolve um risco de perda: falando com o cliente. O painel ao lado da conversa já mostra o negócio. Quando o cliente tem mais de uma conversa, abre a mais recente.</td></tr>
+    <tr><td><span class="ui">Ver no funil</span></td><td>O <a href="#funis">funil</a>, já com o <strong>cartão desse negócio aberto</strong>.</td></tr>
+    <tr><td><span class="ui">Ver compromisso</span></td><td>O compromisso em <a href="#agenda">Compromissos</a>. Só aparece quando existe um compromisso ligado ao cliente.</td></tr>
+    <tr><td><span class="ui">Assumir</span></td><td>Não abre nada: passa a conversa para você. Veja <a href="#radar--assumir">Assumir uma conversa</a>.</td></tr>
+  </tbody>
+</table>
+<p>Quando o cliente <strong>ainda não tem conversa</strong>, a linha mostra “Ainda sem conversa”, o botão <span class="ui">Abrir conversa</span> não aparece e o clique na linha leva ao cartão no funil.</p>
+<aside class="nota dica"><strong>A lista que você escolheu fica guardada no endereço.</strong><p>Se você filtrou por <em>Crítico</em>, abriu uma conversa e voltou, a tela continua em <em>Crítico</em>. O endereço também pode ser salvo nos favoritos.</p></aside>
 
 <h2 id="radar--como-classifica">Como a tela decide quem entra</h2>
 <table class="tabela">
@@ -1568,18 +1589,19 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li>Entram só negócios <strong>abertos</strong> de funis que <strong>não estão arquivados</strong>.</li>
   <li>A ordem é: críticos, depois em risco, depois em voo; dentro de cada grupo, o mais frio primeiro.</li>
   <li>O limite de “frio” vem da <strong>etapa do funil</strong>: se a etapa tem um prazo esperado (em <em>Configurar › Vender › O seu funil › Etapas do funil</em>), ele vale no lugar das 24 horas, e o crítico é o triplo dele.</li>
-  <li>A tela mostra os <strong>50 mais graves</strong>, mas os contadores do alto contam o conjunto inteiro.</li>
+  <li>A lista traz <strong>50 linhas por vez</strong> (<span class="ui">Mostrar mais</span> traz as próximas, até 500), e os cartões do alto contam o conjunto inteiro.</li>
   <li>A lista se atualiza sozinha a cada minuto.</li>
 </ul>
 <aside class="nota info"><strong>O compromisso protege, mas não resolve.</strong><p>Um compromisso futuro deixa o negócio “em voo”. Um compromisso que já passou e ficou sem desfecho vira <em>crítico</em>: registre em <a href="#agenda">Compromissos</a> se o cliente compareceu ou faltou.</p></aside>
 
-<h2 id="radar--avisos">As caixas de aviso amarelas</h2>
-<p>Acima da lista podem aparecer até três caixas amarelas (cada uma mostra no máximo 8 linhas). Elas só existem quando há algo a mostrar:</p>
+<h2 id="radar--avisos">Também pedem atenção</h2>
+<p>Abaixo dos cartões pode aparecer a faixa <strong>Também pedem atenção</strong>, com até três botões. Cada um só existe quando há algo a mostrar, e clicar nele troca a lista de baixo:</p>
 <ul>
-  <li><strong>Demandas abertas sem próximo passo</strong> — alguém está esperando e nada foi combinado. A linha mostra o nome do contato e há quantas horas a demanda está aberta.</li>
-  <li><strong>Propostas vencidas sem retomada</strong> — o cliente recebeu a proposta e não decidiu. Cada linha leva à proposta e mostra a data em que ela venceu. Só aparece com o recurso Propostas ligado.</li>
-  <li><strong>Propostas esperando revisão</strong> — rascunhos que a IA terminou e ninguém revisou. Confira antes de enviar.</li>
+  <li><strong>Sem próximo passo</strong> — demandas abertas em que alguém está esperando e nada foi combinado. Cada linha mostra o nome do contato, o assunto (quando há) e há quanto tempo a demanda está aberta. Clique na linha ou em <span class="ui">Abrir conversa</span> e marque o próximo passo no painel ao lado da conversa (<span class="ui">Marcar próximo passo</span>). Se a demanda tem um negócio ligado, há também <span class="ui">Ver no funil</span>; sem conversa e sem negócio, o botão é <span class="ui">Ver contato</span>.</li>
+  <li><strong>Propostas vencidas</strong> — o cliente recebeu a proposta e não decidiu. Cada linha mostra o número da proposta e a data em que ela venceu, e leva à proposta. Só aparece com o recurso Propostas ligado.</li>
+  <li><strong>Propostas para revisar</strong> — rascunhos que a IA terminou e ninguém revisou. Confira antes de enviar.</li>
 </ul>
+<p>Se não há nenhum negócio parado e existe alguma dessas pendências, a tela já abre na primeira delas.</p>
 
 <h2 id="radar--assumir">Assumir uma conversa</h2>
 <p>O botão <span class="ui">Assumir</span> aparece nas linhas que têm conversa e ainda não têm um atendente como dono. Com um clique, sem janela de confirmação:</p>
@@ -1593,7 +1615,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Assumir silencia a IA de forma permanente nessa conversa.</strong><p>Use quando você realmente vai atender. Se assumiu por engano, devolva a conversa em <a href="#inbox">Conversas</a>.</p></aside>
 
 <h2 id="radar--quando-vazio">Quando não há nada</h2>
-<p>Se todos os negócios abertos tiveram atividade recente ou já têm retorno marcado, a tela mostra um ✔ verde com <em>“Nenhuma demanda em risco”</em> e, embaixo, “Toda demanda aberta teve atividade recente ou já tem um retorno agendado.”. É o estado que você quer ver. (Se ao menos uma das caixas amarelas acima tiver algo a mostrar, a tela não mostra esse vazio.)</p>
+<p>Se todos os negócios abertos tiveram atividade recente ou já têm retorno marcado, a tela mostra um ✔ verde com <em>“Nenhuma demanda em risco”</em> e, embaixo, “Toda demanda aberta teve atividade recente ou já tem um retorno agendado.”. É o estado que você quer ver. (Se houver algo em <a href="#radar--avisos">Também pedem atenção</a>, a tela não mostra esse vazio.) Um cartão com zero continua clicável e mostra uma frase curta, como “Nenhum negócio em risco.”</p>
 
 <h2 id="radar--papeis">O que cada papel vê</h2>
 <table class="tabela">
@@ -9321,7 +9343,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 12 de novembro de 2026 a partir do código na revisão <code>6d8daded</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 12 de novembro de 2026 a partir do código na revisão <code>43c65cf1</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

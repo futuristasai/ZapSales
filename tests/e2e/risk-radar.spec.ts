@@ -64,7 +64,55 @@ test("o atendente vê no Radar a demanda aberta que esfriou sem próximo passo",
   await expect(item).toBeVisible();
   await expect(item).toHaveAttribute("data-risk", "critico");
   await expect(item.getByText("Crítico")).toBeVisible();
-  await expect(item.getByText(/Sem próximo passo/)).toBeVisible();
+  await expect(item.getByText("Sem retorno agendado")).toBeVisible();
+});
+
+test("os contadores filtram: “Em voo” esconde o crítico, “Crítico” o traz de volta", async ({ page }) => {
+  await login(page, creds.users.manager!.email);
+  await gotoRadar(page);
+  await expect(radarItem(page)).toBeVisible();
+
+  // Antes eram etiquetas: tinham cara de filtro e o clique não fazia nada.
+  const emVoo = page.getByTestId("radar-filtro-em_voo");
+  await emVoo.click();
+  await expect(emVoo).toHaveAttribute("aria-pressed", "true");
+  await expect(page).toHaveURL(/[?&]ver=em_voo/);
+  await expect(radarItem(page)).toHaveCount(0);
+  await expect(page.locator('[data-testid="radar-item"]:not([data-risk="em_voo"])')).toHaveCount(0);
+
+  const critico = page.getByTestId("radar-filtro-critico");
+  await critico.click();
+  await expect(critico).toHaveAttribute("aria-pressed", "true");
+  await expect(emVoo).toHaveAttribute("aria-pressed", "false");
+  await expect(radarItem(page)).toBeVisible();
+  await expect(page.locator('[data-testid="radar-item"]:not([data-risk="critico"])')).toHaveCount(0);
+
+  // A escolha mora no endereço: recarregar (ou voltar de uma conversa) mantém a lista.
+  await page.reload();
+  await expect(page.getByTestId("radar-filtro-critico")).toHaveAttribute("aria-pressed", "true");
+  await expect(radarItem(page)).toBeVisible();
+});
+
+test("a linha diz para onde leva: a conversa do cliente e o cartão no funil", async ({ page }) => {
+  await login(page, creds.users.manager!.email);
+  await gotoRadar(page);
+
+  const item = radarItem(page);
+  await expect(item).toBeVisible();
+  // O nome da pessoa é o destaque da linha.
+  await expect(item.getByTestId("radar-nome")).toHaveText("Cliente Radar E2E");
+
+  // O funil abre o CARTÃO do negócio (`?lead=`), não o quadro solto.
+  await expect(item.getByTestId("radar-ver-no-funil")).toHaveAttribute(
+    "href",
+    /\/app\/pipelines\/[0-9a-f-]+\?lead=[0-9a-f-]+$/,
+  );
+
+  // O clique principal leva sempre à conversa.
+  const conversa = item.getByTestId("radar-abrir-conversa");
+  await expect(conversa).toHaveAttribute("href", /\/app\/inbox\?id=[0-9a-f-]+$/);
+  await conversa.click();
+  await page.waitForURL(/\/app\/inbox\?id=/);
 });
 
 test("o atendente assume a demanda direto do Radar e vira o responsável", async ({ page }) => {
