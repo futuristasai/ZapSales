@@ -1288,6 +1288,13 @@ export const DICIONARIO: Traducoes = {
   // "Kanban" saiu do menu (a tela virou "Funis"); "Etapas do funil" é o nome novo
   // da tela de configuração, que antes disputava "Funis" com ela.
   Funis: { es: "Embudos" },
+  // O atalho direto ao quadro do funil principal (12/11/2026). O NOME é "Quadro do funil"; "kanban"
+  // é o termo técnico embaixo dele, igual nos três idiomas, e "Kanban" é sinônimo de busca.
+  "Quadro do funil": { es: "Tablero del embudo" },
+  Kanban: { es: "Kanban" },
+  "O quadro do seu funil principal, direto: arraste cada cliente de uma etapa para a outra.": {
+    es: "El tablero de tu embudo principal, directo: arrastra cada cliente de una etapa a la otra.",
+  },
   "Etapas do funil": { es: "Etapas del embudo" },
   "Tipos de agendamento": { es: "Tipos de cita" },
   Automação: { es: "Automatización" },
@@ -1581,6 +1588,8 @@ export const DICIONARIO: Traducoes = {
   "Resultados": { es: "Resultados" },
   "Vender": { es: "Vender" },
   "Se a sua empresa usa": { es: "Si tu empresa lo usa" },
+  "Dúvidas? Consulte o manual": { es: "¿Dudas? Consulta el manual" },
+  "Passo a passo de cada tela": { es: "Paso a paso de cada pantalla" },
   "O seu funil": { es: "Tu embudo" },
   "O que você vende": { es: "Lo que vendes" },
   "Como a equipe vende": { es: "Cómo vende el equipo" },

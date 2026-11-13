@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { MODULOS_OPCIONAIS } from "@/lib/instalacao/modulos";
 import { CAPACIDADES_DA_ORGANIZACAO } from "@/lib/organizacao/capacidades";
 import { destinosDaInterface, type InterfaceSettings } from "@/lib/navigation/interface";
-import { entradaDaTela, faixaDoMenu } from "@/lib/navigation/faixa";
+import { entradaDaTela, faixaDoMenu, telaAtual } from "@/lib/navigation/faixa";
 import { menuDoPapel } from "@/lib/navigation/menu";
 import { NAV_DESTINATIONS } from "@/lib/navigation/registry";
 
@@ -73,8 +73,27 @@ describe("as entradas da faixa", () => {
       "Aguardando Humano",
       "Alertas",
       "Riscos de Perda",
+      "Follow-ups",
       "Compromissos",
     ]);
+  });
+
+  it("Comandas e Chamadas não estão em Todo dia: moram em Vender", () => {
+    const f = faixa("admin");
+    const hrefsDaEntrada = (id: string) =>
+      [f.todoDia, ...f.configurar]
+        .find((e) => e?.id === id)!
+        .grupos.flatMap((g) => g.itens.map((i) => i.href));
+    expect(hrefsDaEntrada("todo-dia")).not.toContain("/app/comandas");
+    expect(hrefsDaEntrada("todo-dia")).not.toContain("/app/calls");
+    expect(hrefsDaEntrada("vender")).toEqual(
+      expect.arrayContaining(["/app/comandas", "/app/calls"]),
+    );
+  });
+
+  it("sem Propostas, Todo dia não tem «Se a sua empresa usa»: só a mesa", () => {
+    const sem = faixaDoMenu(menuDoPapel(false, "admin", undefined, MODULOS_OPCIONAIS, []));
+    expect(sem.todoDia!.grupos.map((g) => g.label)).toEqual(["Leads", "Gestão de Clientes CRM"]);
   });
 
   it("Propostas só aparece em «Se a sua empresa usa» quando a empresa liga o recurso", () => {
@@ -147,6 +166,15 @@ describe("a entrada onde a pessoa está", () => {
     // /app/settings/tenant (Dados da empresa) e /app/settings/tenant/pipelines (Etapas do funil)
     expect(entradaDaTela(f, "/app/settings/tenant")).toBe("empresa");
     expect(entradaDaTela(f, "/app/settings/tenant/pipelines")).toBe("vender");
+  });
+
+  it("um quadro aberto pertence ao atalho «Quadro do funil», e não à lista de funis", () => {
+    const f = faixa("admin");
+    const quadro = "/app/pipelines/11111111-1111-4111-8111-111111111111";
+    expect(telaAtual(f, quadro)).toBe("/app/pipelines");
+    expect(entradaDaTela(f, quadro)).toBe("todo-dia");
+    // A lista continua sendo a tela atual só quando é ela que está aberta.
+    expect(telaAtual(f, "/app/kanban")).toBe("/app/kanban");
   });
 
   it("não confunde prefixo de texto com sub-rota", () => {

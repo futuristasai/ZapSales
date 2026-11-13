@@ -250,6 +250,26 @@ test.describe("navegação agrupada", () => {
     await expect(page.getByRole("heading", { name: "Funis", level: 1 })).toBeVisible();
   });
 
+  test("«Quadro do funil» abre direto o quadro do funil principal, e fica marcado como a tela atual", async ({
+    page,
+  }) => {
+    await loginAdmin(page);
+    // O nome acessível junta o nome e o termo técnico de baixo («kanban»).
+    const kanban = sidebar(page).getByRole("link", { name: /^Quadro do funil/ });
+    await expect(kanban).toContainText("kanban");
+    // Primeiro do grupo, antes de «Funis»: é o atalho, e a lista vem depois.
+    await expect(kanban).toHaveAttribute("href", "/app/pipelines");
+    await kanban.click();
+    // O endereço do atalho não desenha tela: leva ao quadro de UM funil, pelo id dele.
+    await page.waitForURL(/\/app\/pipelines\/[0-9a-f-]{36}/);
+    await expect(page.getByRole("button", { name: /Novo Lead/ })).toBeVisible();
+    // Com o quadro aberto, o menu diz onde a pessoa está — e «Funis», a lista, não.
+    await expect(kanban).toHaveAttribute("aria-current", "page");
+    await expect(
+      sidebar(page).getByRole("link", { name: "Funis", exact: true }),
+    ).not.toHaveAttribute("aria-current", "page");
+  });
+
   test("chega em Conhecimento, que só existia atrás das abas de IA, pela área Agente", async ({
     page,
   }) => {
@@ -691,8 +711,8 @@ test.describe("a gaveta das áreas", () => {
 });
 
 /**
- * O manual do usuário, dentro do próprio sistema: o link no rodapé do painel (e no menu
- * «Você»), e a rota `/manual` por trás dele.
+ * O manual do usuário, dentro do próprio sistema: o destaque que fecha a lista do painel de
+ * Todo dia (e o item do menu «Você»), e a rota `/manual` por trás dele.
  *
  * Duas coisas só se provam no navegador contra o servidor de verdade: que o link abre o
  * manual numa aba nova, e que a imagem do manual — que o `proxy` deixa passar por terminar
@@ -703,17 +723,32 @@ test.describe("o manual dentro do sistema", () => {
     await menuExpandido(context, baseURL);
   });
 
-  test("o link 'Manual' fica no rodapé do painel e abre o manual numa aba nova", async ({
+  test("o Manual fica em destaque na lista de Todo dia, à vista sem rolar, e abre numa aba nova", async ({
     page,
     context,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginAdmin(page);
 
-    const manual = sidebar(page)
-      .locator("xpath=..")
-      .getByRole("link", { name: "Manual", exact: true });
+    // Era uma linha no rodapé do painel; agora é um bloco da lista, com título próprio.
+    const destaque = sidebar(page).getByTestId("destaque-do-manual");
+    await expect(
+      destaque.getByRole("heading", { name: "Dúvidas? Consulte o manual" }),
+    ).toBeVisible();
+    const manual = destaque.getByRole("link", { name: "Manual", exact: true });
     await expect(manual).toBeVisible();
+    // «À vista» medido, e não presumido: o cartão inteiro cabe na área visível da lista em 900 px.
+    // O link é a palavra «Manual», esticado sobre o cartão: quem se mede é o cartão.
+    const cabe = await destaque.getByTestId("cartao-do-manual").evaluate((cartao) => {
+      const lista = cartao.closest("nav")!.getBoundingClientRect();
+      const r = cartao.getBoundingClientRect();
+      return r.top >= lista.top && r.bottom <= lista.bottom + 1;
+    });
+    expect(cabe, "o destaque do Manual ficou abaixo da dobra do painel").toBe(true);
+    // Um só no painel: o link do rodapé saiu.
+    await expect(
+      sidebar(page).locator("xpath=..").getByRole("link", { name: "Manual", exact: true }),
+    ).toHaveCount(1);
     await expect(manual).toHaveAttribute("href", "/manual/index.html");
     await expect(manual).toHaveAttribute("target", "_blank");
 

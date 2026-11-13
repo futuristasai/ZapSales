@@ -40,6 +40,7 @@ const temIngles = (texto: string): boolean => Boolean(INGLES[texto]);
  */
 const TERMOS_IGUAIS_EM_TODOS_OS_IDIOMAS = new Set([
   "inbox",
+  "kanban",
   "B2B",
   "CSV / XLSX",
   "API key",

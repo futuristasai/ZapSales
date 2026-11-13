@@ -16,7 +16,7 @@ Hoje o menu é organizado pelas áreas do sistema (Atendimento, CRM, Agente de I
 
 Um menu novo, organizado pela frequência de uso, com três blocos que a pessoa entende pelo nome:
 
-- **Todo dia:** o que se abre toda hora, numa "mesa de trabalho". Tem dois subtítulos: **Leads** (Conversas, Aguardando Humano, Alertas, Riscos de Perda, Compromissos) e **Gestão de Clientes CRM** (Funis, Contatos, Tarefas, Disparo em massa). Mostra os contadores de pendências e, para quem usa, as telas dos recursos opcionais (Propostas, Comandas, Chamadas).
+- **Todo dia:** o que se abre toda hora, numa "mesa de trabalho". Tem dois subtítulos: **Leads** (Conversas, Aguardando Humano, Alertas, Riscos de Perda, Follow-ups, Compromissos) e **Gestão de Clientes CRM** (Quadro do funil, Funis, Contatos, Tarefas, Disparo em massa). Mostra os contadores de pendências e, para quem ligou o recurso, Propostas. A lista termina com o destaque do Manual. *(Ajuste do dono do produto em 12/11/2026: Follow-ups entrou na mesa; «Quadro do funil» (termo «kanban») entrou como atalho direto ao quadro do funil principal; Comandas e Chamadas saíram dela e moram em Configurar › Vender; o Manual saiu do rodapé do painel e ganhou destaque.)*
 - **Configurar:** o que se ajusta de vez em quando, em quatro áreas: **Vender**, **Agente**, **Conexões** e **Empresa**. Cada área abre numa **gaveta larga**, em duas colunas, com as telas agrupadas por tarefa e uma frase explicando cada uma.
 - **Resultados:** números do negócio, trabalho da equipe e da IA, e o histórico para investigar quando algo dá errado.
 
