@@ -3999,6 +3999,21 @@ Achado da própria medição: a primeira versão punha o selo (`div`) dentro de 
 
 Não medido aqui: a tela com dados reais numa instalação (as fotos usam a tela real com a rota respondida por dados de exemplo, sem banco), e a lista de demandas com mais de 50 itens.
 
+## Trocar de funil pelo quadro `[P1]` (2026-11-13)
+
+Pedido do dono do produto: o atalho «Quadro do funil» abre o funil principal, e faltava um jeito
+de ver os outros sem voltar a «Funis». O botão «Trocar de funil», ao lado do nome do funil, lista
+os funis vivos da empresa.
+
+| Caso | O que prova | Onde | Estado |
+|---|---|---|---|
+| A lista traz todos os funis na ordem recebida, cada um como link para o seu quadro; o aberto é o único marcado; a última linha leva à lista | a peça, pela superfície | `components/kanban/SeletorDeFunil.test.tsx` | **PASS local** |
+| Com dois funis no banco: abrir o botão, escolher o outro, a URL e o título viram os dele, a coluna é a dele, e o menu passa a marcar o novo | a troca de verdade, pelo clique, contra o banco do `baseline.sql` | `tests/e2e/kanban-owner-filter.spec.ts` | roda no `e2e` do CI |
+| O botão fica na linha do nome, o menu abre dentro da janela, sem estouro horizontal e sem violação grave de acessibilidade | medido na vitrine local a 1280×900 (claro) e 390×844 (escuro): botão de 132×32 px no computador e 132×44 px no celular, menu de 288 px | `docs/testing/evidencias/quadro-trocar-de-funil/` | **PASS na vitrine** |
+
+**O que esta prova NÃO cobre:** a vitrine desenha só o cabeçalho, sem o quadro por baixo; a troca
+com dados reais é provada no `e2e` do CI e, depois da implantação, pela tela em produção.
+
 ## Riscos de Perda: resgatar com disparo em massa `[P1]` (2026-11-13, issue #299)
 
 Pedido do dono: levar quem esfriou para um disparo em massa. Das quatro opções (exportar CSV, etiquetas de situação, botão de resgate, automatizar), ficou o botão: sem mudança de banco, reaproveita as listas salvas (#209) e passa por todas as proteções do disparo. Etiqueta de situação foi recusada porque a situação muda sozinha e a etiqueta não.
