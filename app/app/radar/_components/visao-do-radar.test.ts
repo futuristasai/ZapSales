@@ -5,7 +5,9 @@ import {
   destinosDaLinha,
   lerVisao,
   situacaoDaVisao,
+  temIniciais,
   tempoDecorrido,
+  tituloQueAcrescenta,
   visaoEmVigor,
 } from "./visao-do-radar";
 
@@ -87,6 +89,32 @@ describe("visão do radar", () => {
     ).toBe("todos");
     expect(visaoEmVigor({ ...VAZIO, total_sem_proximo_passo: 3 }, null)).toBe("sem_proximo_passo");
     expect(visaoEmVigor(VAZIO, null)).toBe("todos");
+  });
+});
+
+describe("tituloQueAcrescenta — o título só aparece quando diz algo além do nome", () => {
+  it("título igual ao nome some, sem ligar para maiúsculas nem espaços nas pontas", () => {
+    expect(tituloQueAcrescenta("Luh Dumont", "Luh Dumont")).toBeNull();
+    expect(tituloQueAcrescenta("Luh Dumont", "  luh dumont ")).toBeNull();
+  });
+
+  it("título diferente fica", () => {
+    expect(tituloQueAcrescenta("Larissa Rodrigues", "Matrícula — Curso de ASB")).toBe(
+      "Matrícula — Curso de ASB",
+    );
+  });
+
+  it("sem nome, o título é tudo o que há; título vazio não vira linha em branco", () => {
+    expect(tituloQueAcrescenta(null, "Negócio sem contato")).toBe("Negócio sem contato");
+    expect(tituloQueAcrescenta("Luh Dumont", "   ")).toBeNull();
+    expect(tituloQueAcrescenta("Luh Dumont", null)).toBeNull();
+  });
+});
+
+describe("temIniciais", () => {
+  it("nome com letra tem iniciais; nome que é só telefone não", () => {
+    expect(temIniciais("João Francisco")).toBe(true);
+    expect(temIniciais("+552120181242")).toBe(false);
   });
 });
 
