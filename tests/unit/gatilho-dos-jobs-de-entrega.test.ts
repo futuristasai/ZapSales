@@ -66,10 +66,16 @@ const DIR = join(process.cwd(), ".github/workflows");
 const GATILHO_ESPERADO: Record<string, { condicao: string | null; efeito: string }> = {
   // --- a cadeia que leva o conserto até a VPS ---------------------------------
   "release.yml::abrir-pr-de-release": {
-    condicao: "github.event_name == 'workflow_dispatch' && vars.RELEASE_APP_CONFIGURADO == 'sim'",
+    // O relógio (corte automático) só corta com RELEASE_AUTOMATICA=ligado; "Run workflow"
+    // corta sempre. Os dois dependem do App de release.
+    condicao:
+      "(github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && " +
+      "vars.RELEASE_AUTOMATICA == 'ligado')) && vars.RELEASE_APP_CONFIGURADO == 'sim'",
     efeito:
-      "Este job é quem monta o PR de release a partir dos fragmentos de `.changes/`. " +
-      "Desligá-lo faz nenhuma versão ser fechada — sem erro em lugar nenhum.",
+      "Este job é quem monta o PR de release a partir dos fragmentos de `.changes/`, à mão ou " +
+      "pelo relógio diário. Desligá-lo faz nenhuma versão ser fechada — sem erro em lugar " +
+      "nenhum — e o instalador segue entregando a versão antiga enquanto a `main` anda: foi " +
+      "assim que uma instalação nova saiu sem a série de correções de segurança (13/11/2026).",
   },
   "release.yml::cortar-tag": {
     condicao: "github.event_name == 'push' && vars.RELEASE_APP_CONFIGURADO == 'sim'",

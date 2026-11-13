@@ -2,11 +2,26 @@ name: release
 
 # Os dois atos do ciclo, e nenhum deles cria tag na máquina de ninguém.
 #
-#   1. VOCÊ dispara "Run workflow" → ele lê `.changes/`, calcula o número, monta
-#      a seção do CHANGELOG e abre um PR de release em português dizendo o que
-#      vai sair. Nada é publicado ainda.
-#   2. VOCÊ faz merge desse PR → ele cria a tag `vX.Y.Z`, e é a tag que faz o
-#      `publish-image.yml` publicar as três imagens que a VPS puxa.
+#   1. O PR de release nasce → o workflow lê `.changes/`, calcula o número, monta
+#      a seção do CHANGELOG e abre um PR em português dizendo o que vai sair.
+#      Nada é publicado ainda.
+#   2. O PR é mesclado → o workflow cria a tag `vX.Y.Z`, e é a tag que faz o
+#      `publish-image.yml` publicar as imagens que a VPS puxa.
+#
+# O ato 1 tem dois gatilhos:
+#
+#   - O RELÓGIO (corte automático): todo dia, se houver fragmento em `.changes/`,
+#     o PR é aberto E já sai com o merge automático ligado — entra sozinho quando
+#     os checks obrigatórios ficam verdes, e o ato 2 segue dele. Ninguém precisa
+#     lembrar. Interruptor sem PR: a variável RELEASE_AUTOMATICA (só `ligado`
+#     corta); para segurar UMA versão, feche o PR de release.
+#   - "Run workflow" (à mão): abre o mesmo PR, SEM merge automático — quem
+#     disparou lê e mescla.
+#
+# Por que o relógio existe: o instalador entrega a última release, não a `main`.
+# Medido em 13/11/2026: a `main` estava 88 commits à frente da única versão
+# publicada, com uma série inteira de correções de segurança, e uma instalação
+# nova veio sem nada disso — porque cortar dependia de alguém lembrar.
 #
 # Quem escreve (branch, PR, tag) é o token de um GitHub App, NUNCA o
 # GITHUB_TOKEN. A razão é uma armadilha documentada pelo próprio GitHub: evento
@@ -25,6 +40,11 @@ name: release
 
 on:
   workflow_dispatch: {}
+  schedule:
+    # 09:07 UTC = 06:07 em Brasília: o corte do dia sai antes do expediente, com
+    # o que entrou na `main` na véspera. Fora da hora cheia de propósito — é
+    # quando a fila de agendamentos do GitHub mais atrasa.
+    - cron: "7 9 * * *"
   push:
     branches: [main]
 
@@ -35,7 +55,10 @@ permissions:
 
 jobs:
   abrir-pr-de-release:
-    if: github.event_name == 'workflow_dispatch' && vars.RELEASE_APP_CONFIGURADO == 'sim'
+    # O relógio só corta com o interruptor ligado; "Run workflow" corta sempre.
+    # A condição inteira mora aqui, e não num passo, para o gate
+    # `gatilho-dos-jobs-de-entrega` enxergar quem desliga o corte.
+    if: (github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && vars.RELEASE_AUTOMATICA == 'ligado')) && vars.RELEASE_APP_CONFIGURADO == 'sim'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,12 +76,42 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.token.outputs.token }}
 
+      # O relógio bate todo dia, e na maioria deles não há o que cortar. Os dois
+      # desfechos abaixo são "nada a fazer", não falha: job vermelho todo dia
+      # ensinaria a ignorar o vermelho do dia em que ele importa.
+      - name: Há versão a cortar?
+        id: haver
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          # A mesma borda de `arquivosDeFragmento` em scripts/cortar-release.ts:
+          # só `.md` conta, o `.gitkeep` não.
+          fragmentos=$(find .changes -maxdepth 1 -name '*.md' | wc -l | tr -d ' ')
+          abertos=$(gh pr list --base main --state open --limit 100 --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("release/"))] | length')
+          echo "fragmentos em .changes/: ${fragmentos}; PRs de release abertos: ${abertos}"
+          if [ "${fragmentos}" -eq 0 ]; then
+            echo "::notice::Nenhum fragmento em .changes/: a main não traz nada além da última versão. Nada a cortar."
+            echo "cortar=nao" >> "$GITHUB_OUTPUT"
+          elif [ "${abertos}" -gt 0 ]; then
+            # Um PR de release por vez: o de ontem ainda espera os checks (ou
+            # alguém o segurou de propósito). Abrir outro cortaria a MESMA
+            # versão duas vezes, de bases diferentes.
+            echo "::warning::Já existe um PR de release aberto. Ele sai quando os checks fecharem; para trocar, feche-o e dispare o workflow de novo."
+            echo "cortar=nao" >> "$GITHUB_OUTPUT"
+          else
+            echo "cortar=sim" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: ./.github/actions/preparar-node
+        if: steps.haver.outputs.cortar == 'sim'
         # O teto do preâmbulo mora aqui porque passo de composite action não
         # aceita `timeout-minutes`. Razão e medições: o cabeçalho da action.
         timeout-minutes: 5
 
       - name: Calcular o número e montar a seção
+        if: steps.haver.outputs.cortar == 'sim'
         id: corte
         run: |
           set -euo pipefail
@@ -67,9 +120,11 @@ jobs:
           echo "versao=${versao}" >> "$GITHUB_OUTPUT"
 
       - name: Abrir o PR
+        if: steps.haver.outputs.cortar == 'sim'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           VERSAO: ${{ steps.corte.outputs.versao }}
+          EVENTO: ${{ github.event_name }}
         run: |
           set -euo pipefail
           git config user.name  'zapsales-release[bot]'
@@ -77,6 +132,14 @@ jobs:
           git checkout -b "release/${VERSAO}"
           git add CHANGELOG.md .changes
           git commit -m "release(${VERSAO}): a versão montada a partir dos fragmentos declarados"
+          # Sobra de um PR de release FECHADO (o passo acima garante que não há
+          # nenhum aberto): o ramo com este número ficou, e o push comum seria
+          # recusado todo dia até alguém apagá-lo à mão. O ramo é do próprio
+          # corte e é refeito a partir da main de agora.
+          if git ls-remote --exit-code --heads origin "release/${VERSAO}" >/dev/null 2>&1; then
+            echo "::notice::O ramo release/${VERSAO} sobrou de um PR de release fechado; ele é refeito a partir da main de agora."
+            git push origin --delete "release/${VERSAO}"
+          fi
           git push origin "release/${VERSAO}"
           {
             echo "Esta versão sai como **${VERSAO}**, e o número foi CALCULADO a partir do que cada PR declarou — ninguém digitou."
@@ -85,11 +148,22 @@ jobs:
             cat /tmp/corte.txt
             echo '```'
             echo
-            echo "Ao fazer merge deste PR, a tag \`v${VERSAO}\` é criada automaticamente e as três imagens são publicadas."
-            echo "Se algo aqui estiver errado, **feche o PR** em vez de editar o número: corrija o fragmento e dispare o workflow de novo."
+            if [ "${EVENTO}" = "schedule" ]; then
+              echo "Este PR foi aberto pelo **corte automático** e entra sozinho quando os checks obrigatórios ficarem verdes. No merge, a tag \`v${VERSAO}\` é criada e as imagens são publicadas."
+              echo "Para segurar esta versão, **feche o PR**. Para parar o corte automático, mude a variável \`RELEASE_AUTOMATICA\` do repositório."
+            else
+              echo "Ao fazer merge deste PR, a tag \`v${VERSAO}\` é criada automaticamente e as três imagens são publicadas."
+              echo "Se algo aqui estiver errado, **feche o PR** em vez de editar o número: corrija o fragmento e dispare o workflow de novo."
+            fi
           } > /tmp/corpo.md
           gh pr create --base main --head "release/${VERSAO}" \
             --title "Release ${VERSAO}" --body-file /tmp/corpo.md
+          # Só o relógio liga o merge automático: quem disparou à mão quer ler
+          # antes. O merge só acontece com os checks obrigatórios verdes — é a
+          # mesma régua de qualquer PR, e quem a aplica é a proteção da `main`.
+          if [ "${EVENTO}" = "schedule" ]; then
+            gh pr merge "release/${VERSAO}" --auto --merge
+          fi
 
   cortar-tag:
     if: github.event_name == 'push' && vars.RELEASE_APP_CONFIGURADO == 'sim'
@@ -359,34 +433,6 @@ jobs:
           git tag -a "v${VERSAO}" -m "v${VERSAO}"
           git push origin "v${VERSAO}"
 
-      # A tag basta para a VPS (o `agent.sh` faz `git fetch --tags`), mas não
-      # para quem chega pelo GitHub: sem a release publicada, a página do
-      # projeto continua anunciando a versão anterior como a mais recente.
-      # Medido em 2026-08-27: a v1.7.0 nasceu como tag e o `gh release list`
-      # seguiu mostrando a v1.6.0 como Latest até alguém publicar à mão.
-      #
-      # Publicar a release NÃO reconstrói imagem: `publish-image.yml` reage a
-      # `push: tags`, e o gatilho `release:` é proibido lá por teste — ele já
-      # esteve, e o efeito medido na v1.3.0 foi o mesmo commit construído duas
-      # vezes, movendo uma tag de versão já publicada.
-      - name: Publicar a release no GitHub
-        if: steps.pendente.outputs.cortar == 'sim'
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          VERSAO: ${{ steps.pendente.outputs.versao }}
-        run: |
-          set -euo pipefail
-          pnpm exec tsx -e '
-            import fs from "node:fs";
-            import { extractChangelogSection } from "./lib/system/changelog";
-            const v = process.env.VERSAO ?? "";
-            const s = extractChangelogSection(fs.readFileSync("CHANGELOG.md", "utf8"), v);
-            if (!s) { console.error(`seção [${v}] não achada no CHANGELOG`); process.exit(1); }
-            const atencao = s.requiresAttention ? `### ⚠️ Requer atenção\n\n${s.requiresAttention}\n\n` : "";
-            fs.writeFileSync("/tmp/notas.md", atencao + s.body);
-          '
-          gh release create "v${VERSAO}" --title "v${VERSAO}" --notes-file /tmp/notas.md
-
       # A falha desta cadeia é silenciosa por natureza — a tag existe e ninguém
       # vê erro —, então o workflow prova a CONSEQUÊNCIA em vez de supô-la.
       - name: As três imagens existem nesta versão?
@@ -464,10 +510,45 @@ jobs:
           fi
           echo "stable e ${VERSAO} são o mesmo manifesto nas três imagens"
 
+      # A tag basta para a VPS (o `agent.sh` faz `git fetch --tags`), mas não
+      # para quem chega pelo GitHub: sem a release publicada, a página do
+      # projeto continua anunciando a versão anterior como a mais recente.
+      # Medido em 2026-08-27: a v1.7.0 nasceu como tag e o `gh release list`
+      # seguiu mostrando a v1.6.0 como Latest até alguém publicar à mão.
+      #
+      # DEPOIS das imagens, e não logo depois da tag: o instalador pergunta ao
+      # GitHub qual é a última release (`/releases/latest`, em kit/obter.sh) e
+      # puxa as imagens com esse número. Publicada antes de as imagens existirem,
+      # a release nova quebraria toda instalação feita nesse intervalo — e, se a
+      # publicação das imagens falhasse, para sempre. Aqui, quando a release
+      # aparece, o passo de cima já provou que as imagens respondem.
+      #
+      # Publicar a release NÃO reconstrói imagem: `publish-image.yml` reage a
+      # `push: tags`, e o gatilho `release:` é proibido lá por teste — ele já
+      # esteve, e o efeito medido na v1.3.0 foi o mesmo commit construído duas
+      # vezes, movendo uma tag de versão já publicada.
+      - name: Publicar a release no GitHub
+        if: steps.pendente.outputs.cortar == 'sim'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          VERSAO: ${{ steps.pendente.outputs.versao }}
+        run: |
+          set -euo pipefail
+          pnpm exec tsx -e '
+            import fs from "node:fs";
+            import { extractChangelogSection } from "./lib/system/changelog";
+            const v = process.env.VERSAO ?? "";
+            const s = extractChangelogSection(fs.readFileSync("CHANGELOG.md", "utf8"), v);
+            if (!s) { console.error(`seção [${v}] não achada no CHANGELOG`); process.exit(1); }
+            const atencao = s.requiresAttention ? `### ⚠️ Requer atenção\n\n${s.requiresAttention}\n\n` : "";
+            fs.writeFileSync("/tmp/notas.md", atencao + s.body);
+          '
+          gh release create "v${VERSAO}" --title "v${VERSAO}" --notes-file /tmp/notas.md
+
       # ─── A VERSÃO CHEGOU À VITRINE? ───────────────────────────────────────
       #
       # Lei em docs/doctrine/versionamento.md, seção "A vitrine". A página de
-      # changelog da LP (zapsales-site) lê o CHANGELOG.md da `main` e revalida a
+      # changelog (no site do instalador, repositório zapsales-licencas) lê o CHANGELOG.md da `main` e revalida a
       # cada 10 min; somando o cache de 5 min do raw.githubusercontent.com, a
       # versão aparece em até ~15 min. Ninguém escreve release no site — por isso
       # o que se confere aqui é a CONSEQUÊNCIA, nos três idiomas, e não um passo
@@ -489,7 +570,7 @@ jobs:
         timeout-minutes: 55
         env:
           VERSAO: ${{ steps.pendente.outputs.versao }}
-          LP: https://zapsales.futuristas.app
+          LP: https://zapinstalador.futuristas.app
         run: |
           set -euo pipefail
           paginas="/changelog /en/changelog /es/changelog"
@@ -569,7 +650,7 @@ jobs:
             done
             echo "::error::v${VERSAO} saiu (tag, release e imagens conferidas), mas a LP não a lista em:${faltando}"
             echo "::error::Confira se ${LP}/changelog responde e se o CHANGELOG.md da main tem a seção '## [${VERSAO}] — AAAA-MM-DD'."
-            echo "::error::Se o formato do cabeçalho mudou, o leitor da LP (lib/changelog.ts em zapsales-site) precisa mudar junto."
+            echo "::error::Se o formato do cabeçalho mudou, o leitor da página (lib/changelog/ler.ts em zapsales-licencas) precisa mudar junto."
             exit 1
           fi
           # A página da própria versão é gerada no primeiro acesso: confirma que ela abre.
