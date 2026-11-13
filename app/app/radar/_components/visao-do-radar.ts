@@ -113,6 +113,60 @@ export function destinosDaLinha(alvo: {
   return { conversa, funil, principal: conversa ?? funil };
 }
 
+/** As visões que listam NEGÓCIOS parados — as que podem virar público de um disparo. */
+export function visaoDeNegocios(visao: VisaoDoRadar): visao is "todos" | SituacaoNoRadar {
+  return visao === "todos" || SITUACOES.includes(visao);
+}
+
+export interface PessoasDoResgate {
+  /** Os contatos, sem repetir: é isto que vira a lista salva. */
+  ids: string[];
+  /** Negócios da visão que não têm contato ligado: não há para quem mandar. */
+  semContato: number;
+  /** Em "Todos": quantas pessoas ficaram de fora por já terem retorno marcado. */
+  emVooDeFora: number;
+}
+
+/**
+ * QUEM ENTRA no resgate por disparo em massa.
+ *
+ * Em "Todos", quem está EM VOO fica de fora: já tem um retorno marcado, e um
+ * disparo por cima manda duas mensagens à mesma pessoa. Quem quer mesmo assim
+ * escolhe o cartão "Em voo", onde a tela avisa antes. A pessoa com dois
+ * negócios entra uma vez só — e, se um deles está em voo, ela não entra em
+ * "Todos": o retorno marcado é da PESSOA, não do negócio.
+ */
+export function pessoasParaResgatar(
+  itens: ReadonlyArray<{ contact_id: string | null; risk: string }>,
+  visao: "todos" | SituacaoNoRadar,
+): PessoasDoResgate {
+  const daVisao = visao === "todos" ? itens : itens.filter((l) => l.risk === visao);
+  const emVoo = new Set(
+    visao === "todos"
+      ? itens.flatMap((l) => (l.risk === "em_voo" && l.contact_id ? [l.contact_id] : []))
+      : [],
+  );
+  const ids = new Set<string>();
+  let semContato = 0;
+  for (const l of daVisao) {
+    if (!l.contact_id) semContato += 1;
+    else if (!emVoo.has(l.contact_id)) ids.add(l.contact_id);
+  }
+  return { ids: [...ids], semContato, emVooDeFora: emVoo.size };
+}
+
+/**
+ * O nome da lista: de onde veio, qual situação e quando. A hora entra porque o
+ * nome é único na organização — dois resgates no mesmo dia não podem colidir —
+ * e porque a lista é uma FOTO: amanhã "Crítico" é outra gente.
+ */
+export function nomeDaListaDeResgate(tela: string, situacao: string, agora: Date): string {
+  const dois = (n: number) => String(n).padStart(2, "0");
+  const dia = `${dois(agora.getDate())}/${dois(agora.getMonth() + 1)}`;
+  const hora = `${dois(agora.getHours())}h${dois(agora.getMinutes())}`;
+  return `${tela} · ${situacao} · ${dia} ${hora}`;
+}
+
 /**
  * O título do negócio só aparece quando ACRESCENTA algo ao nome. Negócio criado
  * a partir de uma conversa nasce com o nome do contato como título, e a linha

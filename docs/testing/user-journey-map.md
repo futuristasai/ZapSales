@@ -4013,3 +4013,18 @@ os funis vivos da empresa.
 
 **O que esta prova NÃO cobre:** a vitrine desenha só o cabeçalho, sem o quadro por baixo; a troca
 com dados reais é provada no `e2e` do CI e, depois da implantação, pela tela em produção.
+
+## Riscos de Perda: resgatar com disparo em massa `[P1]` (2026-11-13, issue #299)
+
+Pedido do dono: levar quem esfriou para um disparo em massa. Das quatro opções (exportar CSV, etiquetas de situação, botão de resgate, automatizar), ficou o botão: sem mudança de banco, reaproveita as listas salvas (#209) e passa por todas as proteções do disparo. Etiqueta de situação foi recusada porque a situação muda sozinha e a etiqueta não.
+
+| Caso | O que prova | Onde |
+|---|---|---|
+| Gerente clica em Resgatar, confirma, cai em Nova campanha com `?lista=` e a lista entra no público sozinha, com o aviso de quem ficou de fora | o caminho inteiro, pelo navegador e com banco de verdade | `tests/e2e/risk-radar.spec.ts` |
+| Pede ao servidor só a situação escolhida, com o teto da rota; conta PESSOAS (sem repetir); em Todos deixa quem está em voo de fora e diz quantos; em Em voo avisa antes; nome vazio ou lista recusada não navega | a janela, com a rede dublada | `app/app/radar/_components/ResgatarComDisparo.test.tsx` |
+| O retorno marcado é da pessoa: com um negócio em voo e outro crítico, ela não entra em Todos | a regra de quem entra | `app/app/radar/_components/visao-do-radar.test.ts` |
+| Quem não é gerente não vê o botão; ele vale para a lista que está na tela e some em lista vazia e nas listas de Também pedem atenção | quando o botão aparece | `app/app/radar/_components/RiskRadarList.test.tsx` |
+| A lista do endereço entra pelo MESMO caminho de "Usar esta lista" (mesmos vetos, mesmo aviso), uma vez só; lista apagada vira aviso | o encaixe na tela de campanha | `components/campanhas/ListasSalvas.test.tsx` |
+| 7 telas medidas (computador claro e escuro, celular): a janela cabe na tela, transbordo horizontal 0, nenhum erro de console | o desenho, medido por ferramenta | `docs/testing/evidencias/radar-resgatar-com-disparo/` |
+
+Não medido aqui: o envio em si (é o disparo de sempre, com as provas dele), e o resgate com mais de 500 negócios.

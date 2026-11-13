@@ -129,3 +129,29 @@ test("o atendente assume a demanda direto do Radar e vira o responsável", async
   await expect(radarItem(page).getByTestId("radar-assignee")).toHaveText("Com atendente");
   await expect(radarItem(page).getByTestId("radar-claim")).toHaveCount(0);
 });
+
+test("o gerente resgata quem esfriou: a lista nasce no Radar e entra sozinha na nova campanha", async ({ page }) => {
+  await login(page, creds.users.manager!.email);
+  await gotoRadar(page);
+  await expect(radarItem(page)).toBeVisible();
+
+  await page.getByTestId("radar-filtro-critico").click();
+  await page.getByTestId("radar-resgatar").click();
+
+  const dialogo = page.getByTestId("radar-resgatar-dialogo");
+  await expect(dialogo.getByTestId("radar-resgatar-total")).toContainText(/\d+ pessoas? em Crítico\./);
+  // O nome já vem preenchido com a situação e a data; aqui ganha um sufixo para
+  // a repetição do teste não bater no nome único da organização.
+  const campo = dialogo.getByLabel("Nome da lista");
+  await expect(campo).toHaveValue(/^Riscos de Perda · Crítico · /);
+  const nome = `Resgate E2E ${Date.now()}`;
+  await campo.fill(nome);
+  await dialogo.getByTestId("radar-resgatar-confirmar").click();
+
+  // Nada foi enviado: a pessoa cai na tela de NOVA campanha, com a lista no endereço…
+  await page.waitForURL(/\/app\/campaigns\/new\?lista=[0-9a-f-]+$/);
+  // …a lista existe entre as salvas…
+  await expect(page.getByTestId("lista-salva").filter({ hasText: nome })).toBeVisible();
+  // …e entrou no público sozinha, pelo mesmo caminho do botão "Usar esta lista".
+  await expect(page.getByTestId("aviso-de-lista")).toContainText(nome);
+});

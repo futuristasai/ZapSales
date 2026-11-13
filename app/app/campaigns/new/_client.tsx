@@ -62,7 +62,14 @@ import { useAgentesPublicados, useEtapas, useFunis } from "@/hooks/campanhas/use
 import { VARIAVEIS_DA_CAMPANHA, DESCRICAO_DA_VARIAVEL } from "@/lib/campanhas/renderizador";
 import type { MapaDeVariaveis } from "@/lib/campanhas/variaveis-do-modelo";
 
-export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: boolean }) {
+export function NovaCampanha({
+  podeCriarModelo = false,
+  listaInicial,
+}: {
+  podeCriarModelo?: boolean;
+  /** Lista salva que já entra no público ao abrir (veio no endereço, `?lista=`). */
+  listaInicial?: string;
+}) {
   const t = useT();
   const router = useRouter();
   const canais = useChannelSessions();
@@ -473,7 +480,12 @@ export function NovaCampanha({ podeCriarModelo = false }: { podeCriarModelo?: bo
             "Escolha pessoas do CRM, suba uma lista de contatos, ou os dois — um público sem ninguém escolhido não se confere antes de apertar.",
           )}
         </p>
-        <SeletorDePessoas marcados={marcados} onMarcados={setMarcados} daPlanilha={incluidos} />
+        <SeletorDePessoas
+          marcados={marcados}
+          onMarcados={setMarcados}
+          daPlanilha={incluidos}
+          listaInicial={listaInicial}
+        />
         <SubirListaCsv incluidos={incluidos} onIncluidos={setIncluidos} />
         <div className="flex flex-wrap items-center gap-3">
           <Button
