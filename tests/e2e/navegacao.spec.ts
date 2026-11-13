@@ -738,9 +738,10 @@ test.describe("o manual dentro do sistema", () => {
     const manual = destaque.getByRole("link", { name: "Manual", exact: true });
     await expect(manual).toBeVisible();
     // «À vista» medido, e não presumido: o cartão inteiro cabe na área visível da lista em 900 px.
-    const cabe = await manual.evaluate((a) => {
-      const lista = a.closest("nav")!.getBoundingClientRect();
-      const r = a.getBoundingClientRect();
+    // O link é a palavra «Manual», esticado sobre o cartão: quem se mede é o cartão.
+    const cabe = await destaque.getByTestId("cartao-do-manual").evaluate((cartao) => {
+      const lista = cartao.closest("nav")!.getBoundingClientRect();
+      const r = cartao.getBoundingClientRect();
       return r.top >= lista.top && r.bottom <= lista.bottom + 1;
     });
     expect(cabe, "o destaque do Manual ficou abaixo da dobra do painel").toBe(true);
