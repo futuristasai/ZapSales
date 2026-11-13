@@ -3,7 +3,8 @@ import type { AjudaDaPagina } from "../tipos";
 /**
  * Os nomes de botão, contador e frase aqui são os que a tela mostra em cada idioma (`Assumir` / `Asumir` /
  * `Take over`; `Abrir conversa` / `Abrir conversación` / `Open conversation`; `Ver no funil` /
- * `Ver en el embudo` / `View in pipeline`; cartões `Crítico`, `Em risco`, `Em voo` / `Crítico`,
+ * `Ver en el embudo` / `View in pipeline`; `Resgatar com disparo em massa` / `Recuperar con envío masivo` /
+ * `Win back with a bulk send`; cartões `Crítico`, `Em risco`, `Em voo` / `Crítico`,
  * `En riesgo`, `En curso` / `Critical`, `At risk`, `In flight`). Mudou o rótulo na tela, muda aqui.
  */
 const ajuda: AjudaDaPagina = {
@@ -17,6 +18,7 @@ const ajuda: AjudaDaPagina = {
       "Clique na linha ou em Abrir conversa para falar com o cliente em Conversas. Ver no funil abre o cartão do negócio no funil. Quando o cliente ainda não tem conversa, a linha avisa e leva ao cartão no funil.",
       "Use Assumir quando o negócio ainda não tem atendente. O botão só aparece se há conversa e nenhuma pessoa cuida dela.",
       "Mostrar mais traz as próximas linhas da mesma lista.",
+      "Gerente e administrador veem Resgatar com disparo em massa acima da lista: o botão guarda as pessoas da situação escolhida numa lista salva e abre uma nova campanha com elas já no público. Nada é enviado nesse clique.",
     ],
     termos: [
       { termo: "Crítico / Em risco / Em voo", significa: "Crítico: parado há muito tempo e sem retorno combinado. Em risco: esfriou e está sem retorno. Em voo: esfriou, mas já existe um retorno agendado." },
@@ -35,6 +37,7 @@ const ajuda: AjudaDaPagina = {
       "Haz clic en la fila o en Abrir conversación para hablar con el cliente en Conversaciones. Ver en el embudo abre la tarjeta del negocio en el embudo. Cuando el cliente aún no tiene conversación, la fila lo avisa y lleva a la tarjeta en el embudo.",
       "Usa Asumir cuando el negocio aún no tiene asesor. El botón solo aparece si hay conversación y ninguna persona se ocupa de ella.",
       "Mostrar más trae las siguientes filas de la misma lista.",
+      "Gerente y administrador ven Recuperar con envío masivo arriba de la lista: el botón guarda a las personas de la situación elegida en una lista guardada y abre una nueva campaña con ellas ya en la audiencia. No se envía nada con ese clic.",
     ],
     termos: [
       { termo: "Crítico / En riesgo / En curso", significa: "Crítico: detenido hace mucho tiempo y sin seguimiento acordado. En riesgo: se enfrió y no tiene seguimiento. En curso: se enfrió, pero ya hay un seguimiento programado." },
@@ -53,6 +56,7 @@ const ajuda: AjudaDaPagina = {
       "Click the row or Open conversation to talk to the customer in Conversations. View in pipeline opens the deal's card in the pipeline. When the customer has no conversation yet, the row says so and takes you to the card in the pipeline.",
       "Use Take over when the deal has no agent yet. The button only appears if there is a conversation and no person is handling it.",
       "Show more brings the next rows of the same list.",
+      "Managers and admins see Win back with a bulk send above the list: the button saves the people in the chosen situation to a saved list and opens a new campaign with them already in the audience. Nothing is sent by that click.",
     ],
     termos: [
       { termo: "Critical / At risk / In flight", significa: "Critical: stalled for a long time with no follow-up arranged. At risk: went cold with no follow-up. In flight: went cold, but a follow-up is already scheduled." },

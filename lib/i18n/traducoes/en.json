@@ -10840,5 +10840,19 @@
   "Propostas vencidas": "Expired proposals",
   "O cliente não decidiu": "The customer has not decided",
   "Propostas para revisar": "Proposals to review",
-  "Rascunhos da IA": "AI drafts"
+  "Rascunhos da IA": "AI drafts",
+  "A lista fica guardada em Listas salvas, na tela de campanha. Quem não puder receber é deixado de fora na hora de usar.": "The list is kept under Saved lists, on the campaign screen. Anyone who cannot receive messages is left out when the list is used.",
+  "A lista indicada não existe mais. Escolha as pessoas abaixo.": "The list in the link no longer exists. Choose the people below.",
+  "A lista leva até 500 negócios por vez, os mais urgentes primeiro.": "The list takes up to 500 deals at a time, most urgent first.",
+  "As pessoas desta lista são guardadas com um nome e a tela de nova campanha abre com elas já escolhidas. Nada é enviado agora: você ainda escolhe o número e a mensagem.": "The people on this list are saved under a name and the new campaign screen opens with them already selected. Nothing is sent now: you still choose the number and the message.",
+  "Contando as pessoas…": "Counting people…",
+  "Criar lista e abrir campanha": "Create list and open campaign",
+  "Estas pessoas já têm um retorno marcado. Um disparo por cima manda duas mensagens à mesma pessoa.": "These people already have a follow-up scheduled. A bulk send on top of it sends two messages to the same person.",
+  "Não foi possível carregar as pessoas. Feche e tente de novo.": "Could not load the people. Close and try again.",
+  "Não há ninguém para resgatar nesta lista.": "There is no one to win back on this list.",
+  "Resgatar com disparo em massa": "Win back with a bulk send",
+  "em voo ficaram de fora: já têm retorno marcado. Para incluí-las, escolha o cartão Em voo.": "in flight were left out: they already have a follow-up scheduled. To include them, pick the In flight card.",
+  "negócio(s) sem cliente ligado ficaram de fora.": "deal(s) with no customer linked were left out.",
+  "pessoa em": "person in",
+  "pessoas em": "people in"
 }

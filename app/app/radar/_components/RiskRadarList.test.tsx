@@ -16,6 +16,13 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(busca.atual) }));
+// O botão de resgate tem o seu próprio teste (com a rede dublada); aqui importa só
+// QUANDO ele aparece e para qual lista.
+vi.mock("./ResgatarComDisparo", () => ({
+  ResgatarComDisparo: ({ visao }: { visao: string }) => (
+    <button data-testid="radar-resgatar">{visao}</button>
+  ),
+}));
 
 const BASE = {
   items: [],
@@ -173,6 +180,40 @@ describe("RiskRadarList — os contadores escolhem a lista", () => {
       "true",
     );
     expect(screen.getByTestId("radar-sem-proximo-passo")).toHaveTextContent("Érica Santos");
+  });
+});
+
+describe("RiskRadarList — o botão de resgatar com disparo em massa", () => {
+  const CHEIO = {
+    ...BASE,
+    items: [LEAD],
+    counts: { critico: 1, em_risco: 0, em_voo: 0 },
+    total: 1,
+    sem_proximo_passo: [DEMANDA],
+    total_sem_proximo_passo: 1,
+  };
+
+  it("quem não opera o disparo não vê o botão", () => {
+    devolve(CHEIO);
+    render(<RiskRadarList />);
+    expect(screen.queryByTestId("radar-resgatar")).not.toBeInTheDocument();
+  });
+
+  it("gerente vê o botão, e ele vale para a lista que está na tela", () => {
+    devolve(CHEIO);
+    render(<RiskRadarList podeResgatar />);
+    expect(screen.getByTestId("radar-resgatar")).toHaveTextContent("todos");
+    fireEvent.click(screen.getByTestId("radar-filtro-critico"));
+    expect(screen.getByTestId("radar-resgatar")).toHaveTextContent("critico");
+  });
+
+  it("lista vazia e listas que não são de negócio não oferecem resgate", () => {
+    devolve(CHEIO);
+    render(<RiskRadarList podeResgatar />);
+    fireEvent.click(screen.getByTestId("radar-filtro-em_voo"));
+    expect(screen.queryByTestId("radar-resgatar")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("radar-filtro-sem_proximo_passo"));
+    expect(screen.queryByTestId("radar-resgatar")).not.toBeInTheDocument();
   });
 });
 

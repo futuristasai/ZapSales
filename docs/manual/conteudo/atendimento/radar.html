@@ -1,4 +1,4 @@
-<!--meta {"id":"radar","grupo":"atendimento","titulo":"Riscos de Perda","ordem":2,"resumo":"A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil.","palavras":["radar","risco","esfriou","parado","crítico","em risco","em voo","sem próximo passo","sem retorno agendado","assumir","demanda","retorno agendado","radar de risco","riscos de perda","risco de perda","filtrar","abrir conversa","ver no funil","mostrar mais","propostas vencidas"],"onde":"Todo dia › Leads › Riscos de Perda (clique em Todo dia na faixa à esquerda)","quem":"Todos abrem a tela. Quem é Atendente ou acima vê a lista e pode assumir; Atendente só enxerga os negócios que são dele ou que não têm dono.","rotas":["/app/radar"]} -->
+<!--meta {"id":"radar","grupo":"atendimento","titulo":"Riscos de Perda","ordem":2,"resumo":"A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil.","palavras":["radar","risco","esfriou","parado","crítico","em risco","em voo","sem próximo passo","sem retorno agendado","assumir","demanda","retorno agendado","radar de risco","riscos de perda","risco de perda","filtrar","abrir conversa","ver no funil","mostrar mais","propostas vencidas","resgatar","resgate","disparo em massa","campanha","lista salva"],"onde":"Todo dia › Leads › Riscos de Perda (clique em Todo dia na faixa à esquerda)","quem":"Todos abrem a tela. Quem é Atendente ou acima vê a lista e pode assumir; Atendente só enxerga os negócios que são dele ou que não têm dono.","rotas":["/app/radar"]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>Todo negócio aberto no funil que fica parado vira, com o tempo, um cliente perdido. A tela <strong>Riscos de Perda</strong> (antes chamada <em>Radar</em>) junta, numa lista só, os negócios abertos em que <strong>ninguém mexe há tempo</strong> e que precisam de você. É a tela para abrir de manhã e perguntar: <em>“quem eu estou deixando esfriar?”</em></p>
@@ -69,6 +69,27 @@
 </ul>
 <p>Se não há nenhum negócio parado e existe alguma dessas pendências, a tela já abre na primeira delas.</p>
 
+<h2 id="resgatar">Resgatar com disparo em massa</h2>
+<p>Quando há muita gente parada, falar com uma por uma não dá conta. O botão <span class="ui">Resgatar com disparo em massa</span>, acima da lista, leva as pessoas da situação escolhida para uma campanha de <a href="#disparo-em-massa">Disparo em massa</a>. <strong>O botão não envia nada</strong>: ele só prepara o público.</p>
+<figure class="print">
+  <img src="img/radar-resgatar.png" alt="Janela Resgatar com disparo em massa sobre a tela Riscos de Perda: a contagem de pessoas, o aviso de quem ficou de fora, o campo Nome da lista e o botão Criar lista e abrir campanha" loading="lazy">
+  <figcaption>A janela do resgate, com dados de exemplo: quantas pessoas vão, quem ficou de fora e o nome da lista.</figcaption>
+</figure>
+<ol class="passos">
+  <li>Escolha o cartão da situação (por exemplo, <span class="ui">Crítico</span>) e clique em <span class="ui">Resgatar com disparo em massa</span>.</li>
+  <li>A janela mostra <strong>quantas pessoas</strong> vão para a lista. Quem tem dois negócios parados conta uma vez só, e negócio sem cliente ligado fica de fora.</li>
+  <li>Confira o <span class="ui">Nome da lista</span>. Ele já vem preenchido com a situação, o dia e a hora (“Riscos de Perda · Crítico · 13/11 09h50”); pode trocar.</li>
+  <li>Clique em <span class="ui">Criar lista e abrir campanha</span>. As pessoas são guardadas numa <a href="#disparo-em-massa--listas">lista salva</a> e a tela de nova campanha abre com elas já no público.</li>
+  <li>Daí em diante é uma campanha comum: escolha o número (API Oficial ou QR code), o modelo ou a mensagem, e envie ou agende.</li>
+</ol>
+<ul>
+  <li><strong>Em Todos, quem está em voo fica de fora.</strong> Essas pessoas já têm retorno marcado, e um disparo por cima mandaria duas mensagens. A janela diz quantas ficaram de fora. Para incluí-las mesmo assim, escolha o cartão <span class="ui">Em voo</span>: a janela avisa antes de seguir.</li>
+  <li><strong>A lista é uma foto do momento.</strong> Quem responder depois continua nela; por isso o nome leva o dia e a hora. Para um resgate novo, crie uma lista nova.</li>
+  <li><strong>As proteções do disparo valem todas.</strong> Quem pediu para não receber, quem está sem telefone e quem já está em outra campanha não entram no público, e a tela de campanha diz quantos ficaram de fora e por quê. A API Oficial continua exigindo modelo aprovado e o QR code, o aceite do aviso de risco de banimento.</li>
+  <li>A lista leva até <strong>500 negócios</strong> por vez, os mais urgentes primeiro.</li>
+  <li>O botão aparece para <strong>gerente</strong> e <strong>administrador</strong>, que são quem cria campanha. Ele não aparece nas listas de <em>Também pedem atenção</em> nem em lista vazia.</li>
+</ul>
+
 <h2 id="assumir">Assumir uma conversa</h2>
 <p>O botão <span class="ui">Assumir</span> aparece nas linhas que têm conversa e ainda não têm um atendente como dono. Com um clique, sem janela de confirmação:</p>
 <ol class="passos">
@@ -88,8 +109,8 @@
   <thead><tr><th>Papel</th><th>Resultado</th></tr></thead>
   <tbody>
     <tr><td>Somente leitura</td><td>Abre a tela, mas a lista chega vazia (a consulta exige Atendente). Não é um defeito: é a permissão.</td></tr>
-    <tr><td>Atendente</td><td>Vê só os negócios <strong>dele</strong> e os <strong>sem dono</strong> (a menos que a organização tenha escolhido “todos veem tudo”). Pode assumir.</td></tr>
-    <tr><td>Gerente e Administrador</td><td>Veem todos os negócios e podem assumir.</td></tr>
+    <tr><td>Atendente</td><td>Vê só os negócios <strong>dele</strong> e os <strong>sem dono</strong> (a menos que a organização tenha escolhido “todos veem tudo”). Pode assumir. Não vê o botão de resgate.</td></tr>
+    <tr><td>Gerente e Administrador</td><td>Veem todos os negócios, podem assumir e podem <a href="#radar--resgatar">resgatar com disparo em massa</a>.</td></tr>
   </tbody>
 </table>
 <p>Mais sobre os papéis em <a href="#conceitos--papeis">Papéis</a>.</p>

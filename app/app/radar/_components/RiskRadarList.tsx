@@ -15,11 +15,13 @@ import {
   LinhaDePropostaParaRevisar,
   LinhaDePropostaVencida,
 } from "./LinhasDoRadar";
+import { ResgatarComDisparo } from "./ResgatarComDisparo";
 import { SituacoesDoRadar } from "./SituacoesDoRadar";
 import {
   contagemDaVisao,
   lerVisao,
   situacaoDaVisao,
+  visaoDeNegocios,
   visaoEmVigor,
   type VisaoDoRadar,
 } from "./visao-do-radar";
@@ -62,7 +64,7 @@ const TESTE: Record<VisaoDoRadar, string> = {
   propostas_para_revisar: "radar-propostas-esperando-revisao",
 };
 
-export function RiskRadarList() {
+export function RiskRadarList({ podeResgatar = false }: { podeResgatar?: boolean }) {
   const t = useT();
   const parametros = useSearchParams();
   // A escolha mora na URL (`?ver=`): quem abre uma conversa e volta encontra a
@@ -163,9 +165,17 @@ export function RiskRadarList() {
       <SituacoesDoRadar dados={data} ativa={visao} onEscolher={escolher} />
 
       <section aria-live="polite" className="flex flex-col gap-2">
-        <p className="max-w-[80ch] text-sm text-text-muted" data-testid="radar-explicacao">
-          {t(EXPLICACAO[visao])}
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="max-w-[80ch] text-sm text-text-muted" data-testid="radar-explicacao">
+            {t(EXPLICACAO[visao])}
+          </p>
+          {/* O resgate é de quem opera o disparo (gerente ou acima): a rota das
+              listas e a das campanhas exigem o mesmo papel, e mostrar o botão a
+              quem levaria um 403 no fim seria mandar a pessoa a uma porta trancada. */}
+          {podeResgatar && visaoDeNegocios(visao) && quantos > 0 ? (
+            <ResgatarComDisparo visao={visao} />
+          ) : null}
+        </div>
 
         {linhas.length === 0 ? (
           <p

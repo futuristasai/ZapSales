@@ -8,7 +8,7 @@
  * não entra ao usar a lista, e a tela diz quantas ficaram de fora e por quê — a lista nunca é um
  * caminho para furar um veto.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   AlertDialog,
@@ -41,9 +41,20 @@ interface Props {
   daPlanilha: string[];
   /** Na edição: os destinatários desta campanha não contam como "já em campanha". */
   campanhaId?: string;
+  /**
+   * Lista que entra no público sozinha, uma vez, quando a tela abre — o id veio
+   * no endereço (`?lista=`), posto por outra tela que acabou de criar a lista.
+   */
+  listaInicial?: string;
 }
 
-export function ListasSalvas({ marcados, onMarcados, daPlanilha, campanhaId }: Props) {
+export function ListasSalvas({
+  marcados,
+  onMarcados,
+  daPlanilha,
+  campanhaId,
+  listaInicial,
+}: Props) {
   const t = useT();
   const listas = useListasDePessoas();
   const salvar = useSalvarListaDePessoas();
@@ -121,6 +132,23 @@ export function ListasSalvas({ marcados, onMarcados, daPlanilha, campanhaId }: P
   }
 
   const todas = listas.data ?? [];
+
+  // A LISTA DO ENDEREÇO entra pelo MESMO caminho do botão "Usar esta lista":
+  // os mesmos vetos, o mesmo aviso de quem ficou de fora. Uma vez só — o `ref`
+  // segura a repetição quando as listas recarregam — e só depois que as listas
+  // chegaram, porque o aviso leva o nome dela. Id que não é de nenhuma lista
+  // desta organização (apagada, ou de outra empresa) vira aviso, não erro.
+  const jaUsouAInicial = useRef(false);
+  const listasCarregadas = listas.data;
+  useEffect(() => {
+    if (!listaInicial || jaUsouAInicial.current || !listasCarregadas) return;
+    jaUsouAInicial.current = true;
+    const lista = listasCarregadas.find((l) => l.id === listaInicial);
+    if (lista) usarLista(lista);
+    else setAviso(t("A lista indicada não existe mais. Escolha as pessoas abaixo."));
+    // `usarLista` e `t` mudam de identidade a cada render; o `ref` é quem garante "uma vez".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listaInicial, listasCarregadas]);
 
   return (
     <div className="space-y-3 rounded-md border border-border p-3" data-testid="listas-salvas">

@@ -48,13 +48,21 @@ interface Props {
   daPlanilha: string[];
   /** Na edição: os destinatários desta campanha não contam como "já em campanha". */
   campanhaId?: string;
+  /** Lista salva que entra no público sozinha ao abrir (veio no endereço da tela). */
+  listaInicial?: string;
 }
 
 function alternar(lista: string[], valor: string): string[] {
   return lista.includes(valor) ? lista.filter((v) => v !== valor) : [...lista, valor];
 }
 
-export function SeletorDePessoas({ marcados, onMarcados, daPlanilha, campanhaId }: Props) {
+export function SeletorDePessoas({
+  marcados,
+  onMarcados,
+  daPlanilha,
+  campanhaId,
+  listaInicial,
+}: Props) {
   const t = useT();
   const etiquetas = useEtiquetasDoCrm();
   const funis = useFunis();
@@ -172,6 +180,7 @@ export function SeletorDePessoas({ marcados, onMarcados, daPlanilha, campanhaId 
         onMarcados={onMarcados}
         daPlanilha={daPlanilha}
         campanhaId={campanhaId}
+        listaInicial={listaInicial}
       />
 
       <div className="space-y-2">

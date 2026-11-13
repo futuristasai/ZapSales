@@ -15988,6 +15988,21 @@ export const DICIONARIO: Traducoes = {
   "O cliente não decidiu": { es: "El cliente no decidió" },
   "Propostas para revisar": { es: "Propuestas para revisar" },
   "Rascunhos da IA": { es: "Borradores de la IA" },
+  // Riscos de Perda — resgatar com disparo em massa.
+  "A lista fica guardada em Listas salvas, na tela de campanha. Quem não puder receber é deixado de fora na hora de usar.": { es: "La lista queda guardada en Listas guardadas, en la pantalla de campaña. Quien no pueda recibir queda fuera al momento de usarla." },
+  "A lista indicada não existe mais. Escolha as pessoas abaixo.": { es: "La lista indicada ya no existe. Elige a las personas abajo." },
+  "A lista leva até 500 negócios por vez, os mais urgentes primeiro.": { es: "La lista lleva hasta 500 negocios por vez, los más urgentes primero." },
+  "As pessoas desta lista são guardadas com um nome e a tela de nova campanha abre com elas já escolhidas. Nada é enviado agora: você ainda escolhe o número e a mensagem.": { es: "Las personas de esta lista se guardan con un nombre y la pantalla de nueva campaña se abre con ellas ya elegidas. No se envía nada ahora: todavía eliges el número y el mensaje." },
+  "Contando as pessoas…": { es: "Contando a las personas…" },
+  "Criar lista e abrir campanha": { es: "Crear lista y abrir campaña" },
+  "Estas pessoas já têm um retorno marcado. Um disparo por cima manda duas mensagens à mesma pessoa.": { es: "Estas personas ya tienen un seguimiento programado. Un envío masivo encima manda dos mensajes a la misma persona." },
+  "Não foi possível carregar as pessoas. Feche e tente de novo.": { es: "No fue posible cargar a las personas. Cierra e inténtalo de nuevo." },
+  "Não há ninguém para resgatar nesta lista.": { es: "No hay nadie para recuperar en esta lista." },
+  "Resgatar com disparo em massa": { es: "Recuperar con envío masivo" },
+  "em voo ficaram de fora: já têm retorno marcado. Para incluí-las, escolha o cartão Em voo.": { es: "en curso quedaron fuera: ya tienen seguimiento programado. Para incluirlas, elige la tarjeta En curso." },
+  "negócio(s) sem cliente ligado ficaram de fora.": { es: "negocio(s) sin cliente vinculado quedaron fuera." },
+  "pessoa em": { es: "persona en" },
+  "pessoas em": { es: "personas en" },
 };
 
 /**

@@ -1528,7 +1528,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="radar" data-titulo="Riscos de Perda" data-grupo="atendimento" data-grupo-titulo="Atendimento" data-resumo="A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil." data-palavras="radar risco esfriou parado crítico em risco em voo sem próximo passo sem retorno agendado assumir demanda retorno agendado radar de risco riscos de perda risco de perda filtrar abrir conversa ver no funil mostrar mais propostas vencidas" hidden>
+<article class="pagina" id="radar" data-titulo="Riscos de Perda" data-grupo="atendimento" data-grupo-titulo="Atendimento" data-resumo="A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil." data-palavras="radar risco esfriou parado crítico em risco em voo sem próximo passo sem retorno agendado assumir demanda retorno agendado radar de risco riscos de perda risco de perda filtrar abrir conversa ver no funil mostrar mais propostas vencidas resgatar resgate disparo em massa campanha lista salva" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Atendimento › Riscos de Perda</p>
   <h1>Riscos de Perda</h1>
   <p class="lede">A lista de quem esfriou (antes chamada Radar): negócios abertos em que ninguém mexe há tempo e que podem morrer sem resposta. Os cartões do alto filtram por situação, e cada linha abre a conversa com o cliente ou o cartão no funil.</p>
@@ -1603,6 +1603,27 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ul>
 <p>Se não há nenhum negócio parado e existe alguma dessas pendências, a tela já abre na primeira delas.</p>
 
+<h2 id="radar--resgatar">Resgatar com disparo em massa</h2>
+<p>Quando há muita gente parada, falar com uma por uma não dá conta. O botão <span class="ui">Resgatar com disparo em massa</span>, acima da lista, leva as pessoas da situação escolhida para uma campanha de <a href="#disparo-em-massa">Disparo em massa</a>. <strong>O botão não envia nada</strong>: ele só prepara o público.</p>
+<figure class="print">
+  <img src="img/radar-resgatar.png" alt="Janela Resgatar com disparo em massa sobre a tela Riscos de Perda: a contagem de pessoas, o aviso de quem ficou de fora, o campo Nome da lista e o botão Criar lista e abrir campanha" loading="lazy">
+  <figcaption>A janela do resgate, com dados de exemplo: quantas pessoas vão, quem ficou de fora e o nome da lista.</figcaption>
+</figure>
+<ol class="passos">
+  <li>Escolha o cartão da situação (por exemplo, <span class="ui">Crítico</span>) e clique em <span class="ui">Resgatar com disparo em massa</span>.</li>
+  <li>A janela mostra <strong>quantas pessoas</strong> vão para a lista. Quem tem dois negócios parados conta uma vez só, e negócio sem cliente ligado fica de fora.</li>
+  <li>Confira o <span class="ui">Nome da lista</span>. Ele já vem preenchido com a situação, o dia e a hora (“Riscos de Perda · Crítico · 13/11 09h50”); pode trocar.</li>
+  <li>Clique em <span class="ui">Criar lista e abrir campanha</span>. As pessoas são guardadas numa <a href="#disparo-em-massa--listas">lista salva</a> e a tela de nova campanha abre com elas já no público.</li>
+  <li>Daí em diante é uma campanha comum: escolha o número (API Oficial ou QR code), o modelo ou a mensagem, e envie ou agende.</li>
+</ol>
+<ul>
+  <li><strong>Em Todos, quem está em voo fica de fora.</strong> Essas pessoas já têm retorno marcado, e um disparo por cima mandaria duas mensagens. A janela diz quantas ficaram de fora. Para incluí-las mesmo assim, escolha o cartão <span class="ui">Em voo</span>: a janela avisa antes de seguir.</li>
+  <li><strong>A lista é uma foto do momento.</strong> Quem responder depois continua nela; por isso o nome leva o dia e a hora. Para um resgate novo, crie uma lista nova.</li>
+  <li><strong>As proteções do disparo valem todas.</strong> Quem pediu para não receber, quem está sem telefone e quem já está em outra campanha não entram no público, e a tela de campanha diz quantos ficaram de fora e por quê. A API Oficial continua exigindo modelo aprovado e o QR code, o aceite do aviso de risco de banimento.</li>
+  <li>A lista leva até <strong>500 negócios</strong> por vez, os mais urgentes primeiro.</li>
+  <li>O botão aparece para <strong>gerente</strong> e <strong>administrador</strong>, que são quem cria campanha. Ele não aparece nas listas de <em>Também pedem atenção</em> nem em lista vazia.</li>
+</ul>
+
 <h2 id="radar--assumir">Assumir uma conversa</h2>
 <p>O botão <span class="ui">Assumir</span> aparece nas linhas que têm conversa e ainda não têm um atendente como dono. Com um clique, sem janela de confirmação:</p>
 <ol class="passos">
@@ -1622,8 +1643,8 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <thead><tr><th>Papel</th><th>Resultado</th></tr></thead>
   <tbody>
     <tr><td>Somente leitura</td><td>Abre a tela, mas a lista chega vazia (a consulta exige Atendente). Não é um defeito: é a permissão.</td></tr>
-    <tr><td>Atendente</td><td>Vê só os negócios <strong>dele</strong> e os <strong>sem dono</strong> (a menos que a organização tenha escolhido “todos veem tudo”). Pode assumir.</td></tr>
-    <tr><td>Gerente e Administrador</td><td>Veem todos os negócios e podem assumir.</td></tr>
+    <tr><td>Atendente</td><td>Vê só os negócios <strong>dele</strong> e os <strong>sem dono</strong> (a menos que a organização tenha escolhido “todos veem tudo”). Pode assumir. Não vê o botão de resgate.</td></tr>
+    <tr><td>Gerente e Administrador</td><td>Veem todos os negócios, podem assumir e podem <a href="#radar--resgatar">resgatar com disparo em massa</a>.</td></tr>
   </tbody>
 </table>
 <p>Mais sobre os papéis em <a href="#conceitos--papeis">Papéis</a>.</p>
@@ -2437,6 +2458,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ol>
 <aside class="nota atencao"><strong>A lista é fixa, e quem não pode receber fica de fora.</strong><p>A lista guarda <em>quem</em> estava marcado na hora de salvar — não um filtro. Uma etiqueta que alguém ganhar depois não traz essa pessoa para ela. E ela nunca fura as proteções: ao usá-la, quem pediu para não receber, está anonimizado, não tem telefone ou já está em outra campanha <strong>não entra</strong>, e a tela diz quantas pessoas ficaram de fora e por quê. Se alguém foi apagado do CRM, também não volta.</p></aside>
 <p>Salvar, usar e excluir listas é com <strong>gerente</strong> ou <strong>administrador</strong>, o mesmo nível de quem cria campanha. Cada organização enxerga só as suas listas, e cada uma guarda até 200.</p>
+<aside class="nota dica"><strong>Uma lista também pode nascer em Riscos de Perda.</strong><p>O botão <span class="ui">Resgatar com disparo em massa</span> daquela tela guarda as pessoas paradas numa lista salva e abre a nova campanha com ela já usada: as pessoas chegam marcadas, com o mesmo aviso de quem ficou de fora. Veja <a href="#radar--resgatar">Resgatar com disparo em massa</a>.</p></aside>
 
 <h3 id="disparo-em-massa--csv">Subir uma planilha CSV</h3>
 <p>Em vez de (ou além de) marcar pessoas do CRM, você pode subir uma planilha de pessoas. Quem está na planilha <strong>entra em Contatos</strong> (se já existir, é reaproveitado) e recebe a campanha.</p>
@@ -9343,7 +9365,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 13 de novembro de 2026 a partir do código na revisão <code>54c15612</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 13 de novembro de 2026 a partir do código na revisão <code>22c7bdbb</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

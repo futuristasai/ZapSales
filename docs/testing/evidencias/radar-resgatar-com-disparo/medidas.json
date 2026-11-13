@@ -1,0 +1,147 @@
+{
+  "computador-claro-1-botao-na-lista": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 1113,
+      "y": 278,
+      "w": 223,
+      "h": 32
+    },
+    "dialogo": null,
+    "dialogoCabeNaTela": null,
+    "total": null,
+    "nome": null,
+    "url": "/vitrine-radar?ver=critico",
+    "erros": []
+  },
+  "computador-claro-2-dialogo-critico": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 1113,
+      "y": 278,
+      "w": 223,
+      "h": 32
+    },
+    "dialogo": {
+      "x": 464,
+      "y": 269,
+      "w": 512,
+      "h": 363
+    },
+    "dialogoCabeNaTela": true,
+    "total": "155 pessoas em Crítico.",
+    "nome": "Riscos de Perda · Crítico · 13/11 09h50",
+    "url": "/vitrine-radar?ver=critico",
+    "erros": []
+  },
+  "computador-claro-3-dialogo-todos": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 1113,
+      "y": 278,
+      "w": 223,
+      "h": 32
+    },
+    "dialogo": {
+      "x": 464,
+      "y": 243,
+      "w": 512,
+      "h": 415
+    },
+    "dialogoCabeNaTela": true,
+    "total": "214 pessoas em Todos.",
+    "nome": "Riscos de Perda · Todos · 13/11 09h50",
+    "url": "/vitrine-radar",
+    "erros": []
+  },
+  "computador-claro-4-dialogo-em-voo": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 1113,
+      "y": 278,
+      "w": 223,
+      "h": 32
+    },
+    "dialogo": {
+      "x": 464,
+      "y": 231,
+      "w": 512,
+      "h": 439
+    },
+    "dialogoCabeNaTela": true,
+    "total": "78 pessoas em Em voo.",
+    "nome": "Riscos de Perda · Em voo · 13/11 09h51",
+    "url": "/vitrine-radar?ver=em_voo",
+    "erros": []
+  },
+  "computador-claro-5-depois-de-confirmar": {
+    "transbordoHorizontal": 0,
+    "botao": null,
+    "dialogo": null,
+    "dialogoCabeNaTela": null,
+    "total": null,
+    "nome": null,
+    "url": "/login?next=%2Fapp%2Fcampaigns%2Fnew%3Flista%3D11111111-1111-4111-8111-111111111111",
+    "destino": "/login?next=%2Fapp%2Fcampaigns%2Fnew%3Flista%3D11111111-1111-4111-8111-111111111111",
+    "enviado": {
+      "name": "Riscos de Perda · Crítico · 13/11 09h51",
+      "pessoas": 155
+    },
+    "erros": []
+  },
+  "computador-escuro-1-dialogo-critico": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 1113,
+      "y": 278,
+      "w": 223,
+      "h": 32
+    },
+    "dialogo": {
+      "x": 464,
+      "y": 269,
+      "w": 512,
+      "h": 363
+    },
+    "dialogoCabeNaTela": true,
+    "total": "155 pessoas em Crítico.",
+    "nome": "Riscos de Perda · Crítico · 13/11 09h51",
+    "url": "/vitrine-radar?ver=critico",
+    "erros": []
+  },
+  "celular-claro-1-botao-na-lista": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 24,
+      "y": 388,
+      "w": 223,
+      "h": 44
+    },
+    "dialogo": null,
+    "dialogoCabeNaTela": null,
+    "total": null,
+    "nome": null,
+    "url": "/vitrine-radar?ver=critico",
+    "erros": []
+  },
+  "celular-claro-2-dialogo-todos": {
+    "transbordoHorizontal": 0,
+    "botao": {
+      "x": 24,
+      "y": 388,
+      "w": 223,
+      "h": 44
+    },
+    "dialogo": {
+      "x": 0,
+      "y": 179,
+      "w": 390,
+      "h": 487
+    },
+    "dialogoCabeNaTela": true,
+    "total": "214 pessoas em Todos.",
+    "nome": "Riscos de Perda · Todos · 13/11 09h52",
+    "url": "/vitrine-radar",
+    "erros": []
+  }
+}

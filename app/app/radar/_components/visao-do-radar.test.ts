@@ -4,6 +4,8 @@ import {
   contagemDaVisao,
   destinosDaLinha,
   lerVisao,
+  nomeDaListaDeResgate,
+  pessoasParaResgatar,
   situacaoDaVisao,
   temIniciais,
   tempoDecorrido,
@@ -115,6 +117,61 @@ describe("temIniciais", () => {
   it("nome com letra tem iniciais; nome que é só telefone não", () => {
     expect(temIniciais("João Francisco")).toBe(true);
     expect(temIniciais("+552120181242")).toBe(false);
+  });
+});
+
+describe("pessoasParaResgatar — quem entra no disparo de resgate", () => {
+  const ITENS = [
+    { contact_id: "c1", risk: "critico" },
+    { contact_id: "c1", risk: "em_risco" },
+    { contact_id: "c2", risk: "em_risco" },
+    { contact_id: null, risk: "critico" },
+    { contact_id: "c3", risk: "em_voo" },
+  ];
+
+  it("numa situação: só os dela, cada pessoa uma vez, e conta os negócios sem contato", () => {
+    expect(pessoasParaResgatar(ITENS, "critico")).toEqual({
+      ids: ["c1"],
+      semContato: 1,
+      emVooDeFora: 0,
+    });
+    expect(pessoasParaResgatar(ITENS, "em_risco")).toEqual({
+      ids: ["c1", "c2"],
+      semContato: 0,
+      emVooDeFora: 0,
+    });
+  });
+
+  it("em Todos, quem está em voo fica de fora — e a contagem diz quantos", () => {
+    expect(pessoasParaResgatar(ITENS, "todos")).toEqual({
+      ids: ["c1", "c2"],
+      semContato: 1,
+      emVooDeFora: 1,
+    });
+  });
+
+  it("o retorno marcado é da PESSOA: com um negócio em voo e outro crítico, ela não entra em Todos", () => {
+    const r = pessoasParaResgatar(
+      [
+        { contact_id: "c9", risk: "critico" },
+        { contact_id: "c9", risk: "em_voo" },
+      ],
+      "todos",
+    );
+    expect(r.ids).toEqual([]);
+    expect(r.emVooDeFora).toBe(1);
+  });
+
+  it("Em voo escolhido de propósito leva os em voo", () => {
+    expect(pessoasParaResgatar(ITENS, "em_voo").ids).toEqual(["c3"]);
+  });
+});
+
+describe("nomeDaListaDeResgate", () => {
+  it("diz de onde veio, qual situação e quando — a lista é uma foto com data", () => {
+    expect(nomeDaListaDeResgate("Riscos de Perda", "Crítico", new Date(2026, 10, 13, 9, 5))).toBe(
+      "Riscos de Perda · Crítico · 13/11 09h05",
+    );
   });
 });
 

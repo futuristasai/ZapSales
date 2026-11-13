@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { requireAuth, resolveActiveOrg } from "@/lib/auth/server";
+import { ROLE_RANK } from "@/lib/auth/types";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { RiskRadarList } from "./_components/RiskRadarList";
 
@@ -30,7 +31,7 @@ export default async function RadarPage() {
             "Negócios e demandas que esfriaram e precisam de você. Escolha uma situação para ver só ela. Se já existe um retorno agendado, aparece como “em voo”; sem retorno, é risco de perder o cliente.",
           )}
       />
-      <RiskRadarList />
+      <RiskRadarList podeResgatar={ROLE_RANK[activeOrg.role] >= ROLE_RANK.manager} />
     </CorpoDaPagina>
   );
 }

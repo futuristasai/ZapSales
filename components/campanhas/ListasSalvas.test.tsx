@@ -181,6 +181,29 @@ describe("ListasSalvas", () => {
     );
   });
 
+  it("lista vinda no endereço entra no público sozinha, uma vez, pelo mesmo caminho do botão", async () => {
+    dublarRede([VIP]);
+    const { aoMarcar } = montar({ listaInicial: "l1" });
+
+    await waitFor(() => expect(aoMarcar).toHaveBeenCalledWith(["p1", "p3"]));
+    expect(aoMarcar).toHaveBeenCalledTimes(1);
+    // O mesmo aviso de quem clica em "Usar esta lista": quem entrou e quem ficou de fora.
+    const aviso = await screen.findByTestId("aviso-de-lista");
+    expect(aviso).toHaveTextContent("Clientes VIP");
+    expect(aviso).toHaveTextContent("1 ficaram de fora");
+    expect(chamadas.filter((c) => c.caminho.includes("/listas/l1")).length).toBe(1);
+  });
+
+  it("lista do endereço que não existe mais vira aviso, sem marcar ninguém", async () => {
+    dublarRede([VIP]);
+    const { aoMarcar } = montar({ listaInicial: "apagada" });
+
+    expect(await screen.findByTestId("aviso-de-lista")).toHaveTextContent(
+      "A lista indicada não existe mais. Escolha as pessoas abaixo.",
+    );
+    expect(aoMarcar).not.toHaveBeenCalled();
+  });
+
   it("excluir pede confirmação, avisa que só a lista some, e depois a tira da tela", async () => {
     dublarRede([VIP]);
     montar();
