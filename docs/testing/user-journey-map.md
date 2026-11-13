@@ -3975,7 +3975,7 @@ cartão em destaque no fim da lista.
 | Com um quadro aberto, o menu marca «Quadro do funil» e não «Funis» | a tela atual, que antes ficava sem marca em qualquer quadro | `tests/unit/faixa-do-menu.test.ts`, `tests/unit/faixa-e-painel.test.tsx` | **PASS local** |
 | Clicar em «Quadro do funil» leva ao quadro de um funil, pelo id | o redirecionamento de `/app/pipelines`, contra o banco do `baseline.sql` | `tests/e2e/navegacao.spec.ts` | roda no `e2e` do CI |
 | O destaque do Manual cabe na área visível do painel em 1280×900 e abre o manual numa aba nova | medido por `getBoundingClientRect` | `tests/e2e/navegacao.spec.ts` | roda no `e2e` do CI |
-| O painel e a gaveta de Vender, pela tela | medido na vitrine local (`/vitrine-sistema`, 1280×900): três títulos no painel, 12 links, o cartão do Manual com 57 px e sem rolagem; Comandas e Chamadas na gaveta | print anexado ao PR | **PASS na vitrine** |
+| O painel e a gaveta de Vender, pela tela | medido na vitrine local (`/vitrine-sistema`, 1280×900): três títulos no painel, 12 links, o cartão do Manual com 57 px e sem rolagem; Comandas e Chamadas na gaveta | `docs/testing/evidencias/todo-dia-quadro-followups-manual/` | **PASS na vitrine** |
 
 **O que esta prova NÃO cobre:** a vitrine não tem banco, então o redirecionamento de
 `/app/pipelines` só é provado no `e2e` do CI e em produção; o celular não foi fotografado (a
