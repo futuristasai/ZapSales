@@ -37,7 +37,7 @@
 
 import type { CacheTtl } from './stable-prefix';
 
-interface Preco {
+export interface Preco {
   input: number;
   output: number;
   cacheRead: number;
@@ -49,6 +49,15 @@ interface Preco {
 
 /** USD por MILHÃO de tokens, por id EXATO de modelo (o sufixo de data é tolerado). */
 const USD_PER_MTOK: Record<string, Preco> = {
+  // Geração 5.5 e Fable 5.2 (catálogo 0568, conferido em 13/11/2026). A leitura de
+  // cache desta geração NÃO é 0.1× a entrada: é US$ 0,20 no Opus 5.5 e no Fable
+  // 5.2 e US$ 0,10 no Sonnet 5.5 — derivar pela regra antiga cobraria a mais.
+  // Haiku 5.5: a faixa acima de 100 mil tokens de entrada custa 5× e fica FORA da
+  // tabela (o prompt de atendimento não chega perto disso).
+  'claude-fable-5-2': { input: 8, output: 40, cacheRead: 0.2, cacheWrite5m: 10, cacheWrite1h: 16 },
+  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2, cacheWrite5m: 5, cacheWrite1h: 8 },
+  'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.1, cacheWrite5m: 2.5, cacheWrite1h: 4 },
+  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite5m: 0.125, cacheWrite1h: 0.2 },
   'claude-sonnet-5': { input: 2, output: 10, cacheRead: 0.2, cacheWrite5m: 2.5, cacheWrite1h: 4 },
   'claude-sonnet-4-6': { input: 3, output: 15, cacheRead: 0.3, cacheWrite5m: 3.75, cacheWrite1h: 6 },
   'claude-sonnet-4-5': { input: 3, output: 15, cacheRead: 0.3, cacheWrite5m: 3.75, cacheWrite1h: 6 },
@@ -139,6 +148,47 @@ export function costCents(model: string, usage: TokenUsage, cacheTtl: CacheTtl =
   if (p === undefined) {
     return null;
   }
+  return custoComPreco(p, usage, cacheTtl);
+}
+
+/**
+ * O preço de um modelo que ESTA tabela não conhece, montado a partir do catálogo
+ * (`ai_models`, centavos por milhão de tokens).
+ *
+ * Existe por causa do catálogo que se atualiza sozinho (`sync-model-catalog`):
+ * modelo novo da Anthropic aparece no seletor no dia seguinte ao lançamento,
+ * antes de alguém acrescentar a linha acima. Sem isto ele rodaria com custo
+ * NULL — o teto de orçamento não somaria um centavo dele, que é o defeito 1 do
+ * cabeçalho voltando por outra porta.
+ *
+ * O catálogo só tem entrada e saída; o cache é derivado, sempre na direção de
+ * cobrar A MAIS (um teto que subestima é um teto que não segura):
+ *  - **Anthropic** publica multiplicadores estáveis — gravação 1.25× (5 min) e
+ *    2× (1 h). A leitura é 0.1× na geração 4 e 5, e MENOS que isso da 5.5 em
+ *    diante; 0.1× fica do lado seguro.
+ *  - **Demais provedores**: cache cobrado como entrada cheia. Cada um tem a sua
+ *    regra, e chutar um desconto seria inventar preço.
+ *
+ * `null` quando o catálogo não tem os dois preços — preço desconhecido continua
+ * desconhecido, nunca vira zero.
+ */
+export function precoDerivadoDoCatalogo(
+  provider: string,
+  entradaCentsPorMilhao: number | null,
+  saidaCentsPorMilhao: number | null,
+): Preco | null {
+  if (entradaCentsPorMilhao === null || saidaCentsPorMilhao === null) return null;
+  if (!Number.isFinite(entradaCentsPorMilhao) || !Number.isFinite(saidaCentsPorMilhao)) return null;
+  const input = entradaCentsPorMilhao / 100;
+  const output = saidaCentsPorMilhao / 100;
+  if (provider === 'anthropic') {
+    return { input, output, cacheRead: input * 0.1, cacheWrite5m: input * 1.25, cacheWrite1h: input * 2 };
+  }
+  return { input, output, cacheRead: input, cacheWrite5m: input, cacheWrite1h: input };
+}
+
+/** Custo em CENTS com um preço já resolvido (da tabela ou do catálogo). */
+export function custoComPreco(p: Preco, usage: TokenUsage, cacheTtl: CacheTtl = '1h'): number {
   const cacheWrite = cacheTtl === '5m' ? p.cacheWrite5m : p.cacheWrite1h;
   const noCacheInput = Math.max(0, usage.inputTokens - usage.cacheReadTokens - usage.cacheWriteTokens);
   const usd =

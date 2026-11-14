@@ -43,6 +43,13 @@ export interface PlanoDeSincronizacao {
   paraDepreciar: string[];
   /** Estavam depreciados e voltaram → `deprecated_at = null`. */
   paraRessuscitar: string[];
+  /**
+   * Vieram da origem, mas o mesmo `(provider, model_id)` já existe com OUTRA
+   * origem (a curadoria das migrations). Ficam como estão: o upsert por
+   * `(provider, model_id)` sobrescreveria a descrição curada e trocaria o dono
+   * da linha.
+   */
+  preservados: string[];
 }
 
 /**
@@ -73,6 +80,13 @@ export class CatalogoSuspeitoError extends Error {
 export function planejarSincronizacao(
   daOrigem: readonly LinhaDeCatalogo[],
   noBanco: readonly ModeloExistente[],
+  /**
+   * Ids que já existem, no MESMO provedor, com outra origem. Até a fonte
+   * `openrouter-anthropic` este conjunto era sempre vazio: a OpenRouter grava
+   * em `provider = 'openrouter'`, onde só ela escreve. A fonte da Anthropic
+   * grava em `provider = 'anthropic'`, ao lado da curadoria.
+   */
+  idsDeOutraOrigem: ReadonlySet<string> = new Set(),
 ): PlanoDeSincronizacao {
   const ativosConhecidos = noBanco.filter((m) => m.deprecated_at === null).length;
 
@@ -92,5 +106,10 @@ export function planejarSincronizacao(
     .filter((m) => m.deprecated_at !== null && idsDaOrigem.has(m.model_id))
     .map((m) => m.model_id);
 
-  return { paraGravar: [...daOrigem], paraDepreciar, paraRessuscitar };
+  const paraGravar = daOrigem.filter((l) => !idsDeOutraOrigem.has(l.model_id));
+  const preservados = daOrigem
+    .filter((l) => idsDeOutraOrigem.has(l.model_id))
+    .map((l) => l.model_id);
+
+  return { paraGravar, paraDepreciar, paraRessuscitar, preservados };
 }

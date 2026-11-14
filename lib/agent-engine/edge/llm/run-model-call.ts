@@ -40,6 +40,7 @@ import {
 } from './orcamento';
 import { somarUsoDoTurno } from './uso-do-turno';
 import { costCents } from './pricing';
+import { custoPeloCatalogo } from './custo-pelo-catalogo';
 import { chaveDeOrcamentoDaInstalacao } from '../../../instalacao/comportamento';
 import { createDefaultRegistry, type ProviderRegistry } from './providers';
 import { buildStablePrefix } from './stable-prefix';
@@ -806,7 +807,12 @@ export async function runModelCall(db: pg.Pool, cfg: LlmEdgeConfig, input: RunMo
   // O TTL é o MESMO que gravou o prefixo estável acima: a gravação de cache custa
   // 1.25× a entrada em 5m e 2× em 1h, e supor a doutrina superfaturaria 60% da
   // parcela de cache write em quem usa o knob.
-  const cost = costCents(model, usage, cfg.cacheTtl ?? '1h');
+  // Modelo que a tabela escrita à mão ainda não conhece (o catálogo se atualiza
+  // sozinho e chega antes dela) é cobrado pelo preço do catálogo — sem isto ele
+  // rodaria fora do teto de orçamento. Ver `./custo-pelo-catalogo.ts`.
+  const cost =
+    costCents(model, usage, cfg.cacheTtl ?? '1h') ??
+    (await custoPeloCatalogo(db, config.provider, model, usage, cfg.cacheTtl ?? '1h'));
   // Quem mede o gasto do turno (a tela de teste do agente) recebe a soma de TODAS as chamadas.
   somarUsoDoTurno({ tokensIn: usage.inputTokens, tokensOut: usage.outputTokens, costCents: cost });
 
