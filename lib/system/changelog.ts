@@ -129,6 +129,29 @@ export function extractChangelogRange(
 }
 
 /**
+ * A seção de UMA versão, ou `null` quando o cabeçalho não está no texto.
+ *
+ * Quem chama é o passo "Publicar a release no GitHub" de
+ * `.github/workflows/release.yml`, que monta as notas da Release a partir do
+ * CHANGELOG.md. Ela sumiu deste módulo quando a tela de atualização passou a
+ * mostrar intervalos (`extractChangelogRange`), e nada reprovou: o import vive
+ * dentro de um `tsx -e` no YAML, onde o typecheck não chega. O primeiro corte
+ * automático de verdade (v1.2.0, 14/11/2026) criou a tag, publicou as imagens e
+ * morreu aqui — a Release, que é o que o instalador lê como "última versão",
+ * não saiu. A cerca é `tests/unit/release-importa-o-que-existe.test.ts`.
+ */
+export function extractChangelogSection(raw: string, versao: string): ChangelogSection | null {
+  if (!raw || !versao) return null;
+  const lines = raw.split("\n");
+  const alvo = normalize(versao);
+  const inicio = lines.findIndex((l) => normalize(VERSION_HEADING.exec(l)?.[1] ?? "") === alvo);
+  if (inicio === -1) return null;
+  const relativoAoProximo = lines.slice(inicio + 1).findIndex((l) => VERSION_HEADING.test(l));
+  const fim = relativoAoProximo === -1 ? lines.length : inicio + 1 + relativoAoProximo;
+  return montarSecao(lines, inicio + 1, fim, alvo);
+}
+
+/**
  * Limpa referências de link do final do corpo (formato `[algo]: http://...`).
  * Isso evita que o rodapé do arquivo apareça na seção antes do botão "Atualizar".
  */
