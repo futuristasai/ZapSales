@@ -123,10 +123,49 @@ describe("o piso de sanidade", () => {
 
 describe("o plano nunca manda apagar", () => {
   it("não existe caminho que produza DELETE", () => {
-    // A garantia é estrutural: o plano só tem gravar/depreciar/ressuscitar. Um
-    // campo `paraApagar` que aparecesse aqui levaria junto o preço com que a
-    // conta do mês passado foi somada.
+    // A garantia é estrutural: o plano só tem gravar/depreciar/ressuscitar (e
+    // `preservados`, que é NÃO tocar). Um campo `paraApagar` que aparecesse aqui
+    // levaria junto o preço com que a conta do mês passado foi somada.
     const p = planejarSincronizacao([linha("a")], [existente("b")]);
-    expect(Object.keys(p).sort()).toEqual(["paraDepreciar", "paraGravar", "paraRessuscitar"]);
+    expect(Object.keys(p).sort()).toEqual([
+      "paraDepreciar",
+      "paraGravar",
+      "paraRessuscitar",
+      "preservados",
+    ]);
+  });
+});
+
+describe("a linha de outro dono", () => {
+  // A fonte da Anthropic grava em `provider = 'anthropic'`, ao lado da curadoria
+  // das migrations. O upsert é por `(provider, model_id)`: sem o filtro, a
+  // sincronização tomaria para si a linha curada (`claude-opus-5`), trocando a
+  // descrição em português pela ausência dela e o dono da linha.
+  it("não grava o que já existe com outra origem", () => {
+    const p = planejarSincronizacao(
+      [linha("claude-opus-5"), linha("claude-fable-5-1")],
+      [],
+      new Set(["claude-opus-5"]),
+    );
+    expect(p.paraGravar.map((l) => l.model_id)).toEqual(["claude-fable-5-1"]);
+    expect(p.preservados).toEqual(["claude-opus-5"]);
+  });
+
+  it("o piso de sanidade conta a origem INTEIRA, antes de preservar", () => {
+    // Preservar não é sumir da origem: 3 vindos, 3 conhecidos, nada recusado
+    // mesmo que 2 deles sejam da curadoria.
+    const p = planejarSincronizacao(
+      [linha("a"), linha("b"), linha("c")],
+      [existente("a"), existente("b"), existente("c")],
+      new Set(["a", "b"]),
+    );
+    expect(p.paraDepreciar).toEqual([]);
+    expect(p.paraGravar.map((l) => l.model_id)).toEqual(["c"]);
+  });
+
+  it("sem o terceiro argumento, tudo segue como antes", () => {
+    const p = planejarSincronizacao([linha("a")], []);
+    expect(p.preservados).toEqual([]);
+    expect(p.paraGravar.map((l) => l.model_id)).toEqual(["a"]);
   });
 });

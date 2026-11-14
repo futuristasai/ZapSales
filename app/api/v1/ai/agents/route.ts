@@ -23,6 +23,7 @@ import { audit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mcpAgentDraftRecords } from "@/lib/ai/agents/create-draft";
 import { mensagemDoEscopo, validarEscopoDaVersao } from "@/lib/ai/agents/escopo";
+import { DEFAULT_BOT_MODEL } from "@/lib/ai/gateway";
 import { agentCreateSchema } from "@/lib/ai/guardrails-schema";
 import { agentMcpCreateSchema } from "@/lib/ai/agents/validation";
 import { traduzir } from "@/lib/i18n/dicionario";
@@ -188,7 +189,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       organization_id: organizationId,
       name: input.name,
       description: input.description ?? null,
-      model: input.model ?? "anthropic/claude-sonnet-5",
+      model: input.model ?? DEFAULT_BOT_MODEL,
       system_prompt: input.system_prompt,
       is_active: true,
       is_default: false,

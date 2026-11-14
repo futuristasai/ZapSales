@@ -65,6 +65,14 @@ describe("catálogo de modelos", () => {
     expect(padroes.sort()).toEqual(["anthropic=1", "google=1", "openai=1"]);
   });
 
+  it("o padrão da Anthropic é o Sonnet 5.5 (decisão do dono do produto, 0568)", () => {
+    const out = sql(
+      `select model_id from public.ai_models
+        where provider = 'anthropic' and is_default_for_provider;`,
+    );
+    expect(out.trim()).toBe("claude-sonnet-5-5");
+  });
+
   it("o padrão de cada provedor não está depreciado", () => {
     const out = sql(
       `select provider from public.ai_models
@@ -124,6 +132,8 @@ describe("catálogo de modelos", () => {
          left join public.ai_pricing p on p.model = m.model_id
         where m.deprecated_at is null
           and m.model_id in ('claude-opus-5','claude-sonnet-5','claude-opus-4-8',
+                             'claude-opus-5-5','claude-sonnet-5-5','claude-haiku-5-5',
+                             'claude-fable-5-2',
                              'gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna','gpt-5.5',
                              'gpt-5.5-pro','gpt-5.4','gpt-5.4-mini','gpt-5.4-nano',
                              'gpt-5.4-pro','gemini-3.1-pro-preview','gemini-3.5-flash',
@@ -146,6 +156,12 @@ describe("catálogo de modelos", () => {
     for (const esperado of [
       "claude-opus-5",
       "claude-sonnet-5",
+      // Geração 5.5 e Fable 5.2 (migration 0568). Faltavam desde o lançamento,
+      // e o dono de uma instalação perguntou por eles com a chave já validada.
+      "claude-opus-5-5",
+      "claude-sonnet-5-5",
+      "claude-haiku-5-5",
+      "claude-fable-5-2",
       "gpt-5.6-sol",
       "gpt-5.6-terra",
       "gpt-5.6-luna",

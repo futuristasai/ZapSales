@@ -12,6 +12,14 @@
  * OpenRouter é aberto), traduz e concilia. A regra da conciliação vive em
  * `lib/ai/catalogo/sincronizar.ts`; aqui é só borda e I/O.
  *
+ * Do MESMO download saem duas fontes (`FONTES` abaixo):
+ *  - `openrouter` — o catálogo inteiro, em `provider = 'openrouter'`;
+ *  - `openrouter-anthropic` — os modelos da Anthropic de geração 5 em diante,
+ *    em `provider = 'anthropic'`, com o id da API da Anthropic. É o que faz o
+ *    seletor do provedor "Anthropic (Claude)" receber modelo novo sem release.
+ *    Ela grava AO LADO da curadoria das migrations e nunca toma uma linha
+ *    curada para si (`preservados`). Ver `lib/ai/catalogo/anthropic.ts`.
+ *
  * O que ele deliberadamente NÃO faz:
  *
  *  - **não apaga nada.** Modelo que sai da origem recebe `deprecated_at`. A
@@ -39,8 +47,13 @@ import type { NextRequest } from "next/server";
 import { autorizaCron } from "@/lib/auth/cron-auth";
 import { fail, ok } from "@/lib/api/wrappers";
 import {
+  FONTE_ANTHROPIC_VIA_OPENROUTER,
+  derivarCatalogoDaAnthropic,
+} from "@/lib/ai/catalogo/anthropic";
+import {
   FONTE_OPENROUTER,
   traduzirCatalogo,
+  type LinhaDeCatalogo,
   type ModeloDaOpenRouter,
 } from "@/lib/ai/catalogo/openrouter";
 import {
@@ -63,7 +76,36 @@ export interface ResultadoDaSincronizacao {
   gravados: number;
   depreciados: number;
   ressuscitados: number;
+  /** Vieram da origem, mas a linha é da curadoria — ficaram como estavam. */
+  preservados: number;
+  /** A rodada desta fonte foi recusada pelo piso de sanidade. */
+  recusado?: true;
+  motivo?: string;
 }
+
+/**
+ * Uma fonte = um recorte da MESMA resposta da OpenRouter, gravado com a sua
+ * própria `source`. As duas compartilham o download (uma requisição por dia) e
+ * nada mais: cada uma lê, deprecia e conta só o que é dela.
+ */
+interface FonteDoCatalogo {
+  fonte: string;
+  /** O `provider` em que esta fonte grava — onde ela pode encontrar outro dono. */
+  provider: string;
+  derivar: (modelos: readonly ModeloDaOpenRouter[]) => LinhaDeCatalogo[];
+}
+
+const FONTES: readonly FonteDoCatalogo[] = [
+  { fonte: FONTE_OPENROUTER, provider: "openrouter", derivar: traduzirCatalogo },
+  // Os modelos da Anthropic oferecidos com a chave da PRÓPRIA Anthropic. Sem
+  // esta fonte, o seletor do provedor "Anthropic (Claude)" só mudava com uma
+  // migration — e parou em agosto/2026. Ver `lib/ai/catalogo/anthropic.ts`.
+  {
+    fonte: FONTE_ANTHROPIC_VIA_OPENROUTER,
+    provider: "anthropic",
+    derivar: derivarCatalogoDaAnthropic,
+  },
+];
 
 /**
  * Separado do handler para o teste exercitar a REGRA sem montar request/auth —
@@ -72,16 +114,59 @@ export interface ResultadoDaSincronizacao {
 export async function sincronizarCatalogo(
   admin: ReturnType<typeof createAdminClient>,
   buscar: () => Promise<ModeloDaOpenRouter[]>,
+): Promise<ResultadoDaSincronizacao[]> {
+  const modelos = await buscar();
+  const resultados: ResultadoDaSincronizacao[] = [];
+  for (const fonte of FONTES) {
+    try {
+      resultados.push(await sincronizarFonte(admin, fonte, modelos));
+    } catch (err) {
+      // Uma fonte recusada não derruba a outra: o piso de sanidade é POR
+      // fonte, porque cada uma conhece o próprio tamanho.
+      if (!(err instanceof CatalogoSuspeitoError)) throw err;
+      resultados.push({
+        fonte: fonte.fonte,
+        recebidos: err.recebidos,
+        gravados: 0,
+        depreciados: 0,
+        ressuscitados: 0,
+        preservados: 0,
+        recusado: true,
+        motivo: err.message,
+      });
+    }
+  }
+  return resultados;
+}
+
+async function sincronizarFonte(
+  admin: ReturnType<typeof createAdminClient>,
+  fonte: FonteDoCatalogo,
+  modelos: readonly ModeloDaOpenRouter[],
 ): Promise<ResultadoDaSincronizacao> {
-  const daOrigem = traduzirCatalogo(await buscar());
+  const daOrigem = fonte.derivar(modelos);
 
   const { data: existentes, error: erroLeitura } = await admin
     .from("ai_models")
     .select("model_id, deprecated_at")
-    .eq("source", FONTE_OPENROUTER);
+    .eq("source", fonte.fonte);
   if (erroLeitura) throw new Error(`catalogo_leitura_falhou: ${erroLeitura.message}`);
 
-  const plano = planejarSincronizacao(daOrigem, (existentes ?? []) as ModeloExistente[]);
+  // Quem já tem o mesmo `(provider, model_id)` com outra origem — a curadoria
+  // das migrations. O upsert abaixo é por `(provider, model_id)` e, sem este
+  // filtro, tomaria a linha curada para si.
+  const { data: deOutraOrigem, error: erroOutraOrigem } = await admin
+    .from("ai_models")
+    .select("model_id")
+    .eq("provider", fonte.provider)
+    .neq("source", fonte.fonte);
+  if (erroOutraOrigem) throw new Error(`catalogo_leitura_falhou: ${erroOutraOrigem.message}`);
+
+  const plano = planejarSincronizacao(
+    daOrigem,
+    (existentes ?? []) as ModeloExistente[],
+    new Set(((deOutraOrigem ?? []) as Array<{ model_id: string }>).map((l) => l.model_id)),
+  );
 
   const agora = new Date().toISOString();
 
@@ -97,7 +182,7 @@ export async function sincronizarCatalogo(
     const { error } = await admin
       .from("ai_models")
       .update({ deprecated_at: agora })
-      .eq("source", FONTE_OPENROUTER)
+      .eq("source", fonte.fonte)
       .in("model_id", plano.paraDepreciar);
     if (error) throw new Error(`catalogo_depreciacao_falhou: ${error.message}`);
   }
@@ -106,11 +191,12 @@ export async function sincronizarCatalogo(
   // reportado para o log distinguir "voltou" de "entrou agora" — sem isso, um
   // catálogo que oscila pareceria estável.
   return {
-    fonte: FONTE_OPENROUTER,
+    fonte: fonte.fonte,
     recebidos: daOrigem.length,
     gravados: plano.paraGravar.length,
     depreciados: plano.paraDepreciar.length,
     ressuscitados: plano.paraRessuscitar.length,
+    preservados: plano.preservados.length,
   };
 }
 
@@ -146,24 +232,22 @@ async function handler(req: NextRequest): Promise<Response> {
   const bloqueioDeLicenca = await guardaDeLicenca("cron");
   if (bloqueioDeLicenca) return bloqueioDeLicenca;
   try {
-    const resultado = await sincronizarCatalogo(createAdminClient(), buscarDaOpenRouter);
-    logger.info("[sync-model-catalog] concluído", { ...resultado, request_id: requestId });
-    return ok(resultado, { requestId });
-  } catch (err) {
-    if (err instanceof CatalogoSuspeitoError) {
-      // Não é erro do servidor: a origem respondeu, e nós recusamos. 200 com o
-      // motivo, para o agendador não tratar como incidente e ficar retentando
-      // contra uma origem que está tendo problema.
-      logger.warn("[sync-model-catalog] rodada recusada pelo piso de sanidade", {
-        recebidos: err.recebidos,
-        conhecidos: err.conhecidos,
-        request_id: requestId,
-      });
-      return ok(
-        { fonte: FONTE_OPENROUTER, recusado: true, motivo: err.message },
-        { requestId },
-      );
+    const resultados = await sincronizarCatalogo(createAdminClient(), buscarDaOpenRouter);
+    for (const r of resultados) {
+      if (r.recusado) {
+        // Não é erro do servidor: a origem respondeu, e nós recusamos. 200 com o
+        // motivo, para o agendador não tratar como incidente e ficar retentando
+        // contra uma origem que está tendo problema.
+        logger.warn("[sync-model-catalog] rodada recusada pelo piso de sanidade", {
+          ...r,
+          request_id: requestId,
+        });
+      } else {
+        logger.info("[sync-model-catalog] concluído", { ...r, request_id: requestId });
+      }
     }
+    return ok({ fontes: resultados }, { requestId });
+  } catch (err) {
     const detalhe = err instanceof Error ? err.message : String(err);
     logger.error("[sync-model-catalog] falhou", { error: detalhe, request_id: requestId });
     return fail("cron_failed", detalhe, 500, { requestId });

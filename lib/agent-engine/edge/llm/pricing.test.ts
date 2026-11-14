@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { costCents, precoDoModelo, type TokenUsage } from "./pricing";
+import {
+  costCents,
+  custoComPreco,
+  precoDerivadoDoCatalogo,
+  precoDoModelo,
+  type TokenUsage,
+} from "./pricing";
 
 /**
  * O defeito de origem, medido numa VPS real: o agente atende em
@@ -52,6 +58,12 @@ describe("costCents — cada tarifa isolada, por modelo", () => {
   // acidental de 5/25 por 25/5 daria os mesmos US$ 30 e passaria verde.
   it.each([
     // modelo,              entrada, saída, leitura de cache, gravação 5m, gravação 1h
+    // Geração 5.5 e Fable 5.2 (catálogo 0568): a leitura de cache NÃO é 0.1× a
+    // entrada — 0.05× no Opus 5.5 e no Sonnet 5.5, 0.025× no Fable 5.2.
+    ["claude-fable-5-2", 800, 4000, 20, 1000, 1600],
+    ["claude-opus-5-5", 400, 2000, 20, 500, 800],
+    ["claude-sonnet-5-5", 200, 1000, 10, 250, 400],
+    ["claude-haiku-5-5", 10, 50, 1, 12.5, 20],
     ["claude-sonnet-5", 200, 1000, 20, 250, 400],
     ["claude-sonnet-4-6", 300, 1500, 30, 375, 600],
     ["claude-haiku-4-5", 100, 500, 10, 125, 200],
@@ -234,5 +246,64 @@ describe("costCents — o Jev cobra só a entrada, em fração de centavo", () =
 
   it("o apelido móvel NÃO herda o preço da versão fixada", () => {
     expect(costCents("jev-latest", { ...NADA, inputTokens: 1_000 })).toBeNull();
+  });
+});
+
+describe("precoDerivadoDoCatalogo — modelo que a tabela ainda não conhece", () => {
+  // O catálogo se atualiza sozinho e chega ANTES desta tabela: um modelo novo da
+  // Anthropic aparece no seletor no dia seguinte ao lançamento. Sem o preço
+  // derivado, ele rodaria com custo NULL — fora do teto de orçamento.
+  const UM_MILHAO = 1_000_000;
+
+  it("Anthropic: entrada e saída do catálogo, cache pelos multiplicadores publicados", () => {
+    const p = precoDerivadoDoCatalogo("anthropic", 1000, 5000)!;
+    expect(custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO })).toBeCloseTo(1000, 6);
+    expect(custoComPreco(p, { ...NADA, outputTokens: UM_MILHAO })).toBeCloseTo(5000, 6);
+    expect(custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, cacheReadTokens: UM_MILHAO })).toBeCloseTo(100, 6);
+    expect(
+      custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, cacheWriteTokens: UM_MILHAO }, "5m"),
+    ).toBeCloseTo(1250, 6);
+    expect(
+      custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, cacheWriteTokens: UM_MILHAO }, "1h"),
+    ).toBeCloseTo(2000, 6);
+  });
+
+  it("a derivação nunca cobra MENOS que a tabela exata nos modelos que ela já conhece", () => {
+    // A direção do erro importa: um teto que subestima não segura. Medido contra
+    // os quatro da geração 5.5, cujo cache é mais barato que 0.1×.
+    const uso: TokenUsage = {
+      inputTokens: 300_000,
+      outputTokens: 5_000,
+      cacheReadTokens: 250_000,
+      cacheWriteTokens: 30_000,
+    };
+    for (const [id, entradaCents, saidaCents] of [
+      ["claude-fable-5-2", 800, 4000],
+      ["claude-opus-5-5", 400, 2000],
+      ["claude-sonnet-5-5", 200, 1000],
+      ["claude-haiku-5-5", 10, 50],
+    ] as const) {
+      const derivado = custoComPreco(precoDerivadoDoCatalogo("anthropic", entradaCents, saidaCents)!, uso);
+      expect(derivado, id).toBeGreaterThanOrEqual(costCents(id, uso)!);
+    }
+  });
+
+  it("outro provedor: cache cobrado como entrada cheia, sem chutar desconto", () => {
+    const p = precoDerivadoDoCatalogo("openrouter", 200, 800)!;
+    expect(custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, cacheReadTokens: UM_MILHAO })).toBeCloseTo(200, 6);
+    expect(
+      custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, cacheWriteTokens: UM_MILHAO }, "1h"),
+    ).toBeCloseTo(200, 6);
+  });
+
+  it("preço ausente continua desconhecido — nunca vira zero", () => {
+    expect(precoDerivadoDoCatalogo("anthropic", null, 5000)).toBeNull();
+    expect(precoDerivadoDoCatalogo("anthropic", 1000, null)).toBeNull();
+    expect(precoDerivadoDoCatalogo("anthropic", Number.NaN, 5000)).toBeNull();
+  });
+
+  it("modelo gratuito no catálogo custa zero de verdade", () => {
+    const p = precoDerivadoDoCatalogo("openrouter", 0, 0)!;
+    expect(custoComPreco(p, { ...NADA, inputTokens: UM_MILHAO, outputTokens: UM_MILHAO })).toBe(0);
   });
 });
