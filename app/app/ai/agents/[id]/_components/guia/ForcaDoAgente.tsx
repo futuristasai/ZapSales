@@ -27,7 +27,7 @@ export function ForcaDoAgenteFaixa({ forca, onIrPara }: Props) {
   const faixa = faixaDaForca(forca.percentual);
 
   const titulo: Record<IdDoPasso, string> = {
-    materiais: t("Dar materiais ao agente"),
+    materiais: t("Alimentar o cérebro do agente"),
     personalidade: t("Dizer quem ele é e como fala"),
     acoes: t("Ligar o que ele pode fazer"),
     pessoa: t("Deixar que ele chame uma pessoa"),
@@ -37,7 +37,7 @@ export function ForcaDoAgenteFaixa({ forca, onIrPara }: Props) {
     modelo: t("Escolher o modelo de IA"),
   };
   const motivo: Record<IdDoPasso, string> = {
-    materiais: t("Sem preços e regras por escrito, ele improvisa. Ligue ao menos um material."),
+    materiais: t("O cérebro está vazio: sem preços e regras por escrito, ele improvisa. Ligue ao menos um material."),
     personalidade: t("Sem personalidade, ele responde de um jeito genérico, igual para qualquer negócio."),
     acoes: t("Sem ações, ele só conversa: não registra o cliente nem avisa a equipe."),
     pessoa: t("Quando não souber, ele passa para a equipe em vez de arriscar uma resposta errada."),

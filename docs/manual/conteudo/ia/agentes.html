@@ -85,9 +85,9 @@
   <thead><tr><th>Seção</th><th>O que tem</th></tr></thead>
   <tbody>
     <tr><td><strong>Quem é</strong></td><td>Nome, Descrição e Ordem de preferência. Só a equipe vê. Ao criar, também o ícone.</td></tr>
+    <tr><td><strong>Cérebro do agente</strong></td><td>Os materiais do Conhecimento que ele consulta antes de responder. Vem logo depois de “Quem é”, em destaque, com os botões <em>Adicionar material</em> e <em>Abrir o acervo</em>.</td></tr>
     <tr><td><strong>Personalidade</strong> (“Como ele se apresenta”)</td><td>O perfil guiado (quem ele é, tom, objetivo, boas-vindas, idioma, restringir assuntos) e, recolhido, o bloco <em>Avançado: instruções livres e temperatura</em>.</td></tr>
     <tr><td><strong>Jeito de responder</strong></td><td>Texto único ou várias mensagens curtas, resposta em áudio e uma prévia ao vivo.</td></tr>
-    <tr><td><strong>O que ele sabe</strong></td><td>Os materiais do Conhecimento que ele consulta (título: “O que ele consulta antes de responder”).</td></tr>
     <tr><td><strong>O que ele faz</strong></td><td>As ferramentas, em pacotes (título: “O que o agente pode fazer”).</td></tr>
     <tr><td><strong>Onde e quando atende</strong></td><td>O número de WhatsApp e quando ele entra em ação.</td></tr>
     <tr><td><strong>Passar para uma pessoa</strong></td><td>Palavras de repasse, pedir ajuda sem sair da conversa e, só num agente já criado, Comandos pelo celular.</td></tr>
@@ -151,11 +151,11 @@
 <p>Duas capacidades aparecem bloqueadas, com o motivo em azul: <em>Enviar mensagem no WhatsApp</em> e <em>Chamar um atendente humano</em>. O agente já faz as duas por conta própria, pelo caminho seguro do sistema (com opt-out e regra anti-banimento); não há nada a ligar.</p>
 
 <figure class="print">
-  <img src="img/ia-agente-consulta.png" alt="Cartão O que ele consulta antes de responder, com dois materiais marcados e um ainda não preparado, numerados de 1 a 3" loading="lazy">
-  <figcaption>Os materiais que o agente consulta (seção <em>O que ele sabe</em>). Aqui dois materiais estão marcados.</figcaption>
+  <img src="img/ia-agente-consulta.png" alt="Cartão Cérebro do agente (o que ele consulta antes de responder), com dois materiais marcados e um ainda não preparado, numerados de 1 a 3" loading="lazy">
+  <figcaption>Os materiais que o agente consulta (seção <em>Cérebro do agente</em>). Aqui dois materiais estão marcados.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>O que ele consulta antes de responder.</strong> Marque os materiais do <a href="#conhecimento">Conhecimento</a> que este agente pode ler. Ele procura ali antes de responder e <em>cita de onde tirou</em>. Sem nenhum marcado, ele responde só com o que o modelo já sabe — e a tela avisa quando existem materiais no acervo que ele não lê.</li>
+  <li><strong>Cérebro do agente</strong> (o que ele consulta antes de responder). Marque os materiais do <a href="#conhecimento">Conhecimento</a> que este agente pode ler; cada material é uma linha inteira, com o tipo e se já foi preparado. <em>Adicionar material</em> abre o acervo em outra aba já com a janela de cadastro, e o material novo aparece na lista quando você volta. Ele procura ali antes de responder e <em>cita de onde tirou</em>. Sem nenhum marcado, ele responde só com o que o modelo já sabe — e a tela avisa quando existem materiais no acervo que ele não lê.</li>
   <li><strong>Um material.</strong> Mostra quantos trechos tem (<em>4 trechos</em>). Marcar um material enche a <a href="#agentes--editor">Força do agente</a> e faz o resumo do índice passar de <em>Nenhum material</em> para, por exemplo, <em>2 materiais</em>.</li>
   <li><strong>Material “ainda não preparado”.</strong> Marcar um material que ainda não foi preparado não adianta: o agente não acha nada nele.</li>
 </ol>

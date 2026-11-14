@@ -29,7 +29,13 @@ export const dynamic = "force-dynamic";
  * ele decide o que a tela pode prometer, e prometer primeiro para desmentir
  * depois é o defeito que esta página tinha.
  */
-export default async function AcervoPage() {
+export default async function AcervoPage({
+  searchParams,
+}: {
+  // `?novo=1` chega do botão "Adicionar material" do editor do agente: a pessoa
+  // veio para cadastrar, e a janela já abre em vez de pedir mais um clique.
+  searchParams: Promise<{ novo?: string }>;
+}) {
   const user = await requireAuth();
   // `t` local em vez do hook: esta página é componente de SERVIDOR, e lá o
   // idioma vem resolvido em `user.idioma` (a cadeia pessoa → organização →
@@ -95,6 +101,7 @@ export default async function AcervoPage() {
         initialSources={initialSources}
         initialChave={estadoDaChave}
         agentes={agentes}
+        abrirNovo={(await searchParams).novo === "1"}
       />
     </CorpoDaPagina>
   );

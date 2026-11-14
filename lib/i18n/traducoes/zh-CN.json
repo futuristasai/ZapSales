@@ -5445,5 +5445,17 @@
   "Aprovar regra": "批准规则",
   "Recusar": "拒绝",
   "Propor uma regra aprendida": "提出一条学到的规则",
-  "Propõe um aprendizado que valeria para todos os atendimentos. A proposta só passa a valer depois que um gestor aprova em Memória da IA.": "提出一条将适用于所有对话的经验。只有在管理者于 AI 记忆中批准后，该提案才会生效。"
+  "Propõe um aprendizado que valeria para todos os atendimentos. A proposta só passa a valer depois que um gestor aprova em Memória da IA.": "提出一条将适用于所有对话的经验。只有在管理者于 AI 记忆中批准后，该提案才会生效。",
+  "Cérebro do agente": "智能体的大脑",
+  "O material do seu negócio que ele lê antes de cada resposta — preços, horários, regras, perguntas frequentes. Com ele, o agente responde com o que está escrito e cita de onde tirou; sem ele, improvisa.": "它在每次回答前阅读的您的业务资料——价格、营业时间、规则、常见问题。有了它，智能体会依据书面内容回答并注明出处；没有它，就只能即兴发挥。",
+  "Adicionar o primeiro material": "添加第一份资料",
+  "abre em outra aba": "在新标签页中打开",
+  "Abrir o acervo": "打开资料库",
+  "material do acervo ligado a este agente": "份资料库资料已连接到此智能体",
+  "materiais do acervo ligados a este agente": "份资料库资料已连接到此智能体",
+  "Ele lê": "会读取",
+  "Alimentar o cérebro do agente": "充实智能体的大脑",
+  "O cérebro está vazio: sem preços e regras por escrito, ele improvisa. Ligue ao menos um material.": "大脑是空的：没有书面的价格和规则，它只能即兴发挥。请至少连接一份资料。",
+  "Quem ele é, o que ele sabe (o cérebro), como fala e o que pode fazer. Mudanças ficam num rascunho até você publicar.": "它是谁、它知道什么（大脑）、如何说话以及能做什么。更改会保存在草稿中，直到您发布。",
+  "Site": "网站"
 }
