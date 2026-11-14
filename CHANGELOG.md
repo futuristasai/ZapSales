@@ -8,6 +8,19 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.2.0] — 2026-11-14
+
+### Adicionado
+
+- **Modelos mais novos da Anthropic no agente, e a lista passa a se atualizar sozinha** No agente, em **Inteligência e limites › Modelo**, o provedor **Anthropic (Claude)** passou a oferecer os modelos mais novos: **Claude Opus 5.5**, **Claude Sonnet 5.5**, **Claude Haiku 5.5** e **Claude Fable 5.2**, cada um com o preço oficial. Antes a lista parava no Opus 5 e no Sonnet 5, mesmo com a chave da Anthropic já configurada. Quem respondia pela lista era o próprio ZapSales, não a chave.
+
+  - **A lista da Anthropic se atualiza sozinha.** A atualização diária do catálogo, que já trazia os modelos da OpenRouter, agora acrescenta também os modelos novos da Anthropic, com preço, no dia seguinte ao lançamento. Não é preciso esperar uma versão nova do ZapSales.
+  - **Os modelos que vieram por versão continuam como estavam**, com a descrição em português. A atualização automática só acrescenta o que falta, e um modelo que sai da lista pública some do seletor sem apagar o histórico de gasto.
+  - **O teto de orçamento conta os modelos novos desde o primeiro atendimento.** Modelo que ainda não está na tabela de preços do ZapSales passa a ser cobrado pelo preço do catálogo, arredondado para cima, em vez de rodar sem contar no teto.
+  - **Corrigido:** o Claude Opus 4.7 aparecia por US$ 15/75 por milhão de tokens, três vezes o preço real (US$ 5/25).
+
+  **O modelo padrão da Anthropic passa a ser o Claude Sonnet 5.5**, pelo mesmo preço do Sonnet 5. Ele vale para agente criado daqui em diante; os agentes que já existem seguem com o modelo escolhido.
+
 ## [1.1.0] — 2026-11-13
 
 ### Adicionado
@@ -193,7 +206,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.1.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/futuristasai/ZapSales/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/futuristasai/ZapSales/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/futuristasai/ZapSales/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/futuristasai/ZapSales/releases/tag/v1.0.0
