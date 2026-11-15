@@ -1056,7 +1056,7 @@ test("pacote pós-build atravessa catálogo, tenants, guia e Tarefas com recuper
         response.status() === 200
       );
     });
-    await auditPage.getByLabel("Filtrar por actor user ID").fill(atores!.usuarios.owner.id);
+    await auditPage.getByLabel("Filtrar pelo código da pessoa que fez a ação").fill(atores!.usuarios.owner.id);
     await respostaFiltrada;
     await expect(auditPage.locator(`a[href="/admin/audit/${configuredAudit.id}"]`)).toBeVisible({
       timeout: 30_000,
