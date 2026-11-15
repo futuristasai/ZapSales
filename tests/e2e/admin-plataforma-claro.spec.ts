@@ -236,13 +236,15 @@ test("em inglês, o menu, o cabeçalho, a aba e a gaveta saem do catálogo tradu
   // Controle: se o catálogo não tivesse inglês, a spec passaria medindo português.
   for (const grupo of GRUPOS_DO_ADMIN) expect(en(grupo.label)).not.toBe(grupo.label);
 
+  // Entra ANTES de trocar o idioma: a verificação em duas etapas também é traduzida, e o
+  // ajudante de login procura os campos pelo nome em português ("Dígito 1").
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await loginComoDono(page, lerCreds());
   const trocar = await db.auth.admin.updateUserById(dono.id, {
     user_metadata: { ...dono.user_metadata, locale: "en" },
   });
   if (trocar.error) throw trocar.error;
   try {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await loginComoDono(page, lerCreds());
     const item = CATALOGO_DO_ADMIN.find((i) => i.href === "/admin/audit")!;
     const menu = page.getByRole("navigation", { name: en("Navegação da administração") });
     // O usuário repassado pelo proxy vale até 30 s (`lib/auth/sessao-repassada.ts`):
