@@ -1,36 +1,39 @@
-<!--meta {"id":"admin-usage","grupo":"admin","titulo":"Usage, Users, Platform Admins e Inbox","ordem":5,"resumo":"Quatro telas de leitura do painel: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e o espiar de conversas de qualquer empresa.","palavras":["usage","uso","custo","ia","tokens","exportar csv","users","usuários","platform admins","inbox","conversas","somente leitura","dba"],"onde":"Modo administrador › Usage, Users, Platform Admins e Inbox (/admin/usage, /admin/users, /admin/platform-admins, /admin/inbox)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
+<!--meta {"id":"admin-usage","grupo":"admin","titulo":"Uso e custo, Usuários, Administradores da plataforma e Conversas de todas as empresas","ordem":5,"resumo":"Quatro telas de leitura da administração: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e a leitura das conversas de qualquer empresa.","palavras":["uso e custo","usage","uso","custo","ia","tokens","exportar csv","usuários","users","administradores da plataforma","platform admins","conversas de todas as empresas","inbox","conversas","somente leitura","dba"],"onde":"Administração da instalação › Acompanhar e proteger › Uso e custo; Empresas e pessoas › Usuários, Administradores da plataforma e Conversas de todas as empresas (/admin/usage, /admin/users, /admin/platform-admins, /admin/inbox)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
 
-<h2 id="usage">Usage — Uso &amp; Custo</h2>
-<p>Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
+<h2 id="usage">Uso e custo</h2>
+<p>Antes chamada “Usage” e “Uso &amp; Custo”. Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-usage.png" alt="Tela Uso e Custo com o seletor de período, os gráficos e a tabela Uso por tenant, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Uso &amp; Custo (só a empresa de demonstração).</figcaption>
+  <img src="img/admin-usage.png" alt="Tela Uso e custo com o seletor de período, os gráficos e a tabela Uso por empresa, numerada de 1 a 6" loading="lazy">
+  <figcaption>A tela Uso e custo (só a empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Título.</strong> “Consumo de mensagens, conversas e AI por tenant”.</li>
+  <li><strong>Cabeçalho.</strong> “Mostra o consumo de cada empresa e quanto a inteligência artificial custou.” e “Quando usar: Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.”.</li>
   <li><strong>Período.</strong> “Últimos 30 dias” (padrão), “Últimos 7 dias” ou “Últimos 90 dias”.</li>
   <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo AI / dia” e “AI Tokens / dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
-  <li><strong>Uso por tenant.</strong> A tabela: Tenant, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor).</li>
+  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
   <li><strong>Custo AI.</strong> A última coluna.</li>
   <li><strong>Exportar CSV.</strong> Baixa <code>usage-&lt;periodo&gt;.csv</code> com os dados de <em>todas</em> as empresas (gerado no navegador).</li>
 </ol>
 <aside class="nota atencao"><strong>A moeda é dólar, mesmo onde está escrito “R$”.</strong><p>Os valores vêm do custo registrado em dólar; a tabela mostra “US$”, mas o título do gráfico diz “(R$)” e a coluna do CSV se chama <code>custo_reais</code> sem converter. Trate o custo como <em>dólares</em>.</p></aside>
 
-<h2 id="users">Users — Usuários</h2>
+<h2 id="users">Usuários</h2>
+<p>Antes chamada “Users”. O cabeçalho diz “Lista quem entra no sistema, em qual empresa e com qual papel.” e “Quando usar: Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.”, com a contagem “N usuário(s)”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-users.png" alt="Lista de usuários do painel com busca, filtros de tenant e role e as colunas Email, Nome, Tenant, Role, Último acesso e Status, numerada de 1 a 7" loading="lazy">
-  <figcaption>A lista de usuários (só a empresa de demonstração).</figcaption>
+  <img src="img/admin-users.png" alt="Lista de usuários com busca, filtros de empresa e papel e as colunas da tabela, numerada de 1 a 7" loading="lazy">
+  <figcaption>A lista de usuários (só a empresa de demonstração; print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Busca.</strong> “Buscar por email ou nome…”.</li>
-  <li><strong>Tenant.</strong> “Todos os tenants” ou uma empresa.</li>
-  <li><strong>Role.</strong> “Todos os roles”, Admin, Manager, Agente ou Viewer.</li>
-  <li><strong>Role</strong> (coluna). Selo colorido por papel.</li>
+  <li><strong>Empresa.</strong> “Todas as empresas” ou uma empresa.</li>
+  <li><strong>Papel.</strong> O papel na empresa: “Todos os papéis”, Admin, Manager, Agente ou Viewer.</li>
+  <li><strong>Papel</strong> (coluna). Selo colorido por papel.</li>
   <li><strong>Último acesso.</strong> Relativo.</li>
   <li><strong>Status.</strong> <em>Ativo</em> ou <em>Revogado</em> (vínculo retirado).</li>
   <li><strong>Ver.</strong></li>
 </ol>
-<p>É <strong>uma linha por vínculo</strong> entre pessoa e empresa (quem trabalha em duas empresas aparece duas vezes). 30 por página (com <span class="ui">Carregar mais</span>); com os filtros sem resultado a tela sugere “Ajuste os filtros para refinar a busca.”. O detalhe mostra o cartão “Informações do usuário” (e-mail confirmado, último acesso, criado em, <em>MFA</em> Ativo/Inativo, telefone), “Memberships” (empresa, papel, aceito em, status) e “Audit recente” (últimas 50 ações). <strong>Não há</strong> ação de redefinir senha, banir, revogar ou apagar usuário aqui.</p>
+<p>As colunas da tabela são E-mail, Nome, Empresa, Papel, Último acesso e Status. É <strong>uma linha por vínculo</strong> entre pessoa e empresa (quem trabalha em duas empresas aparece duas vezes). 30 por página (com <span class="ui">Carregar mais</span>); com os filtros sem resultado a tela sugere “Ajuste os filtros para refinar a busca.”. O detalhe mostra o cartão “Informações do usuário” (e-mail confirmado, último acesso, criado em, <em>MFA</em> Ativo/Inativo, telefone), “Memberships” (empresa, papel, aceito em, status) e “Audit recente” (últimas 50 ações). <strong>Não há</strong> ação de redefinir senha, banir, revogar ou apagar usuário aqui.</p>
 
 <figure class="print media">
   <img src="img/admin-user-detalhe.png" alt="Detalhe de um usuário com informações, memberships e a auditoria recente, numerado de 1 a 3" loading="lazy">
@@ -39,32 +42,35 @@
 <ol class="legenda">
   <li><strong>Informações do usuário.</strong> E-mail confirmado, último acesso, criado em e MFA.</li>
   <li><strong>Memberships.</strong> As empresas a que a pessoa pertence, com papel e status.</li>
-  <li><strong>Audit recente.</strong> As últimas ações da pessoa (inclusive as aberturas de tela do próprio painel).</li>
+  <li><strong>Audit recente.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
 </ol>
 
-<h2 id="platform-admins">Platform Admins</h2>
+<h2 id="platform-admins">Administradores da plataforma</h2>
+<p>Antes chamada “Platform Admins”. O cabeçalho diz “Mostra quem administra a instalação inteira, acima de todas as empresas.” e “Quando usar: Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-platform-admins.png" alt="Tela Platform Admins com o aviso de que o gerenciamento é restrito ao DBA e a tabela de administradores, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Platform Admins.</figcaption>
+  <img src="img/admin-platform-admins.png" alt="Tela Administradores da plataforma com o aviso de que só se muda direto no banco de dados e a tabela de administradores, numerada de 1 a 4" loading="lazy">
+  <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>“Gerenciamento de Platform Admins é restrito ao DBA”.</strong> Adicionar, remover ou alterar é feito exclusivamente por SQL pelo DBA, com nota na auditoria. A página é informativa e não tem nenhum botão de alteração.</li>
+  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Adicionar, remover ou alterar é feito exclusivamente por SQL (comandos direto no banco) pelo DBA, a pessoa que cuida do banco, com nota na auditoria. A página é informativa e não tem nenhum botão de alteração.</li>
   <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
   <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>
 </ol>
 <p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Scope</em>, <em>MFA</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. Há um link “Ver runbook →” que aponta para um arquivo que não existe no aplicativo (provavelmente um link quebrado). Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
 
-<h2 id="inbox">Inbox (leitura)</h2>
-<p>Permite <em>espiar</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador.</p>
+<h2 id="inbox">Conversas de todas as empresas (leitura)</h2>
+<p>Antes chamada “Inbox”. Permite <em>ler</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador. Enquanto nenhuma conversa está aberta, a área da direita mostra o cabeçalho da tela: “Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.” e “Quando usar: Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-inbox.png" alt="Inbox do painel com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
-  <figcaption>O Inbox do painel (só conversas da empresa de demonstração).</figcaption>
+  <img src="img/admin-inbox.png" alt="Conversas de todas as empresas com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
+  <figcaption>A tela Conversas de todas as empresas (só conversas da empresa de demonstração; print anterior à reorganização, sem o cabeçalho).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Buscar mensagem…</strong> Busca só na <em>prévia da última mensagem</em>, não em todo o histórico.</li>
   <li><strong>Status.</strong> “Todos”, “Pendente”, “Aberto” ou “Resolvido”.</li>
-  <li><strong>Selecione uma conversa.</strong> “Modo somente-leitura. Para responder como atendente, abra a organização e use “Acompanhar organização”.”</li>
+  <li><strong>Selecione uma conversa para visualizar.</strong> “Modo somente-leitura. Para responder como atendente, abra a organização e use “Acompanhar organização”.”</li>
 </ol>
 <ul>
   <li>Cada item mostra o contato (ou o telefone, ou “Sem nome”), a hora, o selo da empresa, a prévia e o contador de não lidas. Atualiza em tempo real; a lista traz o botão <span class="ui">Carregar mais</span> e, sem resultado, “Nenhuma conversa encontrada.”.</li>

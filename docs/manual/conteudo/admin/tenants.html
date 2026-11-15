@@ -1,24 +1,25 @@
-<!--meta {"id":"admin-tenants","grupo":"admin","titulo":"Tenants (empresas)","ordem":3,"resumo":"A lista de todas as empresas hospedadas na instalação, o cadastro de uma empresa nova e a ficha de cada uma (visão geral, saúde, agente), com suspender, reativar e acompanhar.","palavras":["tenants","empresas","organizações","novo tenant","ficha","saúde","agente","suspender","reativar","acompanhar","suporte","impersonate","cnpj","slug"],"onde":"Modo administrador › Tenants (/admin/tenants)","quem":"Ver: administrador da plataforma. Criar, suspender, reativar e acompanhar: escopo full com a verificação em dia.","rotas":[]} -->
+<!--meta {"id":"admin-tenants","grupo":"admin","titulo":"Empresas","ordem":3,"resumo":"A lista de todas as empresas hospedadas na instalação, o cadastro de uma empresa nova e a ficha de cada uma (visão geral, saúde, agente), com suspender, reativar e acompanhar.","palavras":["empresas","tenants","organizações","nova empresa","novo tenant","ficha","saúde","agente","suspender empresa","reativar empresa","acompanhar","suporte","impersonate","cnpj","slug"],"onde":"Administração da instalação › Empresas e pessoas › Empresas (/admin/tenants)","quem":"Ver: administrador da plataforma. Criar, suspender, reativar e acompanhar: escopo full com a verificação em dia.","rotas":[]} -->
 
 <h2 id="lista">A lista de empresas</h2>
-<p>“Tenant” é o jargão do painel para <strong>empresa cliente</strong> (organização). A lista mostra todas as hospedadas nesta instalação, das mais recentes para as mais antigas.</p>
+<p>A lista mostra todas as <strong>empresas clientes</strong> (organizações) hospedadas nesta instalação, das mais recentes para as mais antigas. (Antes esta tela se chamava “Tenants”, o jargão técnico para empresa cliente; o endereço continua <code>/admin/tenants</code>.) O cabeçalho diz “Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.” e “Quando usar: Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.”, seguido da contagem (“12 empresas”).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-tenants.png" alt="Lista de tenants com o botão Novo tenant, filtros e colunas Slug, Nome, CNPJ, Status, Users, Conversas, numerada de 1 a 8" loading="lazy">
-  <figcaption>A lista de tenants (nomes trocados por exemplos).</figcaption>
+  <img src="img/admin-tenants.png" alt="Lista de empresas com o botão de criar, filtros e colunas Slug, Nome, CNPJ, Status, Usuários, Conversas, numerada de 1 a 8" loading="lazy">
+  <figcaption>A lista de empresas (nomes trocados por exemplos; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Novo tenant.</strong> Abre o cadastro de uma empresa.</li>
+  <li><strong>Nova empresa.</strong> Abre o cadastro de uma empresa.</li>
   <li><strong>Busca.</strong> “Buscar por nome, slug ou CNPJ…”, parcial e sem diferenciar maiúsculas (aplica após 0,3 s).</li>
   <li><strong>Status.</strong> “Todos os status”, “Ativo”, “Onboarding”, “Suspenso” e “Redigido”. <em>Onboarding</em> é calculado: empresa ativa que ainda não concluiu os <a href="#onboarding">primeiros passos</a>. <em>Redigido</em> quer dizer que os dados foram anonimizados por LGPD.</li>
   <li><strong>Slug.</strong> O apelido curto da empresa, em letra de máquina.</li>
   <li><strong>CNPJ.</strong> Aparece <em>truncado</em> na lista; completo só na ficha.</li>
   <li><strong>Status.</strong> O selo: Ativo (verde), Onboarding (azul), Suspenso (amarelo), Redigido (vermelho).</li>
-  <li><strong>Users.</strong> Pessoas vinculadas (e, ao lado, o número de conversas).</li>
+  <li><strong>Usuários.</strong> Pessoas vinculadas (e, ao lado, o número de conversas).</li>
   <li><strong>Ver.</strong> Abre a ficha.</li>
 </ol>
-<p>Entre o <em>Conversas</em> e o <span class="ui">Ver</span> há ainda a coluna <em>Criado em</em> (a data de criação da empresa). 30 por página; <span class="ui">Carregar mais</span> traz o resto. Sem resultado: “Nenhum tenant encontrado — Ajuste os filtros ou crie um novo tenant.”. A consulta é auditada (<code>platform_admin.tenants_listed</code>).</p>
+<p>Entre o <em>Conversas</em> e o <span class="ui">Ver</span> há ainda a coluna <em>Criado em</em> (a data de criação da empresa). 30 por página; <span class="ui">Carregar mais</span> traz o resto. Sem resultado: “Nenhuma empresa encontrada — Ajuste os filtros ou cadastre uma nova empresa.”. A consulta é auditada (<code>platform_admin.tenants_listed</code>).</p>
 
-<h2 id="novo">Novo tenant</h2>
+<h2 id="novo">Nova empresa</h2>
 <figure class="print">
   <img src="img/admin-novo-tenant.png" alt="Formulário Nova organização com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
   <figcaption>O formulário “Nova organização” (com um nome de exemplo digitado e nada enviado).</figcaption>
@@ -31,32 +32,34 @@
   <li><strong>Plano.</strong> Standard (padrão), Pro ou Enterprise — hoje só um rótulo informativo (não confirmado se libera ou limita algo).</li>
   <li><strong>E-mail do responsável.</strong> Obrigatório. A pessoa que vai administrar a empresa.</li>
   <li><strong>Interface.</strong> O mesmo editor de áreas visíveis do responsável (padrão: completa; deve restar ao menos uma área).</li>
-  <li><strong>Criar organização.</strong> “Criando…”. Ao lado fica o botão <span class="ui">Cancelar</span>, que volta à tela anterior. O botão de criar fica desabilitado se o editor de interface ficar sem nenhuma área visível para o administrador.</li>
+  <li><strong>Criar organização.</strong> “Criando…”; ao terminar, o aviso “Empresa criada!”. Ao lado fica o botão <span class="ui">Cancelar</span>, que volta à tela anterior. O botão de criar fica desabilitado se o editor de interface ficar sem nenhuma área visível para o administrador.</li>
 </ol>
 <ul>
   <li><strong>Você entra como Administrador da empresa nova.</strong> Quando o responsável é outra pessoa, o seu vínculo é “provisório” até a passagem de bastão.</li>
   <li>Se o e-mail do responsável é <em>outro</em>, o sistema gera um <strong>convite de administrador</strong> (válido por tempo limitado) e tenta enviar por e-mail; sem e-mail configurado, a tela mostra o <em>Link do convite</em> com o botão <span class="ui">Copiar convite</span> (“O envio por e-mail não foi confirmado. Copie o link e compartilhe com o responsável.”); quando o envio deu certo a tela diz “Convite enviado por e-mail.” e, nos dois casos, mostra o link e “Válido até <em>data e hora</em>”, com a dica “Se o convite vencer, abra Equipe na organização para gerar outro.”. Se o e-mail é o seu, não há convite.</li>
   <li>Termina em “Organização criada — Você já é administrador de &lt;nome&gt;.” com os botões <span class="ui">Voltar ao aplicativo</span> e <span class="ui">Ver organização</span>.</li>
-  <li>É idempotente (repetir o mesmo envio não duplica) e fica na auditoria como <code>tenant.created_by_platform_admin</code>. <strong>Não existe botão de apagar empresa</strong> no painel: só suspender (ou redigir por LGPD). A empresa nova nasce <em>ativa</em> mas aparece como “Onboarding” até o responsável concluir os primeiros passos.</li>
+  <li>É idempotente (repetir o mesmo envio não duplica) e fica na auditoria como <code>tenant.created_by_platform_admin</code>. <strong>Não existe botão de apagar empresa</strong> na administração: só suspender (ou anonimizar por LGPD). A empresa nova nasce <em>ativa</em> mas aparece como “Onboarding” até o responsável concluir os primeiros passos.</li>
   <li>Esta tela <em>não foi enviada</em> nas capturas.</li>
 </ul>
 
 <h2 id="ficha">A ficha da empresa</h2>
-<p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Tenants</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
+<p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Empresas</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-geral.png" alt="Ficha de uma empresa com informações, volumes, integrações, compliance e os botões de ação, numerada de 1 a 7" loading="lazy">
   <figcaption>A aba Visão Geral da ficha.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Tenants.</strong> Link de volta à lista.</li>
+  <li><strong>Empresas.</strong> Link de volta à lista (no print ainda aparece “Tenants”).</li>
   <li><strong>Abas.</strong> Visão Geral, Saúde (marcada) e Agente.</li>
   <li><strong>Informações.</strong> Plano, razão social, CNPJ (completo), “Onboarding concluído” (data e hora), “Criado em” e, se houver, “Suspenso em”.</li>
   <li><strong>Volumes.</strong> Totais da empresa: Usuários, Conversas, Mensagens, Leads e Pedidos. Em “Integrações”: quantas sessões de WhatsApp existem (de qualquer status).</li>
   <li><strong>Compliance &amp; IA.</strong> “Solicitações LGPD pendentes” (destaque se &gt; 0) e “Invocações IA (30d)”.</li>
   <li><strong>Acompanhar organização.</strong> Veja abaixo. Ele fica no cartão “Ações”, ao lado das informações.</li>
-  <li><strong>Suspender tenant.</strong> Vermelho; só se a empresa está ativa. Se está suspensa aparece <span class="ui">Reativar tenant</span>; se redigida, só “Tenant redigido — ações de gestão não disponíveis.”.</li>
+  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa (no print ainda aparece “Suspender tenant”). Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
 </ol>
 <h3 id="saude">Aba Saúde</h3>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões WAHA, Orçamento IA e Audit Lag, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
@@ -70,6 +73,7 @@
 <p>O cartão <em>Audit Lag</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
 <p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Audit Lag” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="agente">Aba Agente</h3>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-tenant-agente.png" alt="Aba Agente com a lista dos agentes de IA da empresa, a versão publicada e a data" loading="lazy">
   <figcaption>A aba Agente: dois agentes da empresa de demonstração.</figcaption>
@@ -77,18 +81,20 @@
 <p>Lista os agentes de IA da empresa, só para leitura: nome, “Ativo/Inativo”, <em>Tipo</em>, <em>Versão publicada</em> (<code>vN · provedor · modelo</code> ou “Nenhum agente publicado”) e <em>Publicado em</em>. Vazio: “Nenhum agente publicado”.</p>
 
 <h2 id="suspender">Suspender e reativar</h2>
-<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Tenant suspenso” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
+<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Empresa suspensa” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-suspender.png" alt="Janela Suspender tenant com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
-  <figcaption>A janela “Suspender tenant” (cancelada nesta captura).</figcaption>
+  <img src="img/admin-suspender.png" alt="Janela Suspender empresa com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
+  <figcaption>A janela “Suspender empresa” (cancelada nesta captura; o print ainda traz o título antigo, “Suspender tenant”).</figcaption>
 </figure>
 <ul>
-  <li><strong>Suspender:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo.</li>
-  <li><strong>Reativar:</strong> restabelece o acesso (“Motivo da reativação”, 10 a 500). Só reativa a suspensão <em>administrativa</em>; se foi por falta de pagamento, a resposta é “Esta suspensão é por falta de pagamento. Use Dar prazo ou Tornar isenta.”. Abre um item “org_reativada” na Central da empresa. As mensagens e tarefas descartadas <strong>não voltam</strong>.</li>
+  <li><strong>Suspender empresa:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo. Ao terminar, o aviso “Empresa suspensa com sucesso”.</li>
+  <li><strong>Reativar empresa:</strong> “A reativação devolve o acesso das pessoas desta empresa. Informe o motivo, que fica guardado no Registro de ações.” (“Motivo da reativação”, 10 a 500 caracteres; aviso final “Empresa reativada”). Só reativa a suspensão <em>administrativa</em>; se foi por falta de pagamento, a resposta é “Esta suspensão é por falta de pagamento. Use Dar prazo ou Tornar isenta.”. Abre um item “org_reativada” na Central da empresa. As mensagens e tarefas descartadas <strong>não voltam</strong>.</li>
   <li>Exigem escopo <code>full</code> e verificação em dia. Se outra operação está em andamento: “Outra operação está em andamento para esta empresa. Tente de novo em instantes.”.</li>
 </ul>
 
 <h2 id="acompanhar">Acompanhar organização (suporte temporário)</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-acompanhar.png" alt="Janela Iniciar acompanhamento com a caixa Somente leitura e o botão Confirmar e entrar" loading="lazy">
   <figcaption>A janela “Iniciar acompanhamento?”.</figcaption>
@@ -105,6 +111,6 @@
 <ul>
   <li>Só empresas <em>ativas</em> podem ser acompanhadas (suspensa ou redigida, não). Não passa pelo onboarding e não pode aceitar convites durante a sessão.</li>
   <li><strong>Como termina:</strong> pelo botão; pelo tempo (1 hora — o navegador vai sozinho a <a href="#entrada-avisos">“Encerre o acompanhamento para continuar”</a>); ou se você perder a autoridade (administrador revogado, sessão encerrada, verificação perdida, empresa deixou de estar ativa).</li>
-  <li>Fica na auditoria (<code>platform_admin.impersonate_started</code> e <code>…_ended</code>) e toda ação feita é gravada como feita “pelo administrador da plataforma”. Não manda e-mail nem avisa a empresa (<em>não confirmado fora do código lido</em>). É o <strong>único caminho do painel para responder como atendente</strong> (o <a href="#admin-usage--inbox">Inbox do painel</a> é só leitura).</li>
+  <li>Fica na auditoria (<code>platform_admin.impersonate_started</code> e <code>…_ended</code>) e toda ação feita é gravada como feita “pelo administrador da plataforma”. Não manda e-mail nem avisa a empresa (<em>não confirmado fora do código lido</em>). É o <strong>único caminho da administração para responder como atendente</strong> (a tela <a href="#admin-usage--inbox">Conversas de todas as empresas</a> é só leitura).</li>
   <li>Erros comuns: “Administração da plataforma necessária.”, “Confirme a verificação em duas etapas.”, “Encerre o acompanhamento atual primeiro.”, “Acompanhamento não configurado nesta instalação.” (falta o segredo de acompanhamento no servidor).</li>
 </ul>

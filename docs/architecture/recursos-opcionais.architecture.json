@@ -98,6 +98,38 @@
       "sublabel": "reprova módulo/porta fora do catálogo, link morto e texto sem espanhol",
       "type": "test",
       "dot": "amber"
+    },
+    {
+      "id": "checklist",
+      "lane": "nucleo",
+      "label": "checklist.ts",
+      "sublabel": "«Sua instalação está pronta?» · itens = recursos com `checklist`, estado = estadoDoRecurso (issue #308)",
+      "type": "lib",
+      "dot": "violet"
+    },
+    {
+      "id": "painel",
+      "lane": "telas",
+      "label": "/admin/dashboard",
+      "sublabel": "Painel da administração · checklist + cartões clicáveis",
+      "type": "ui",
+      "dot": "emerald"
+    },
+    {
+      "id": "modulosDeTabela",
+      "lane": "fontes",
+      "label": "listarModulos()",
+      "sublabel": "lib/modulos/service.ts · módulo de tabela (ADR-0002), instalado no bloco Módulos de /admin/sistema",
+      "type": "lib",
+      "dot": "blue"
+    },
+    {
+      "id": "testeChecklist",
+      "lane": "guarda",
+      "label": "checklist-da-instalacao.test.ts",
+      "sublabel": "o estado do checklist é o MESMO da tela de Recursos opcionais",
+      "type": "test",
+      "dot": "amber"
     }
   ],
   "edges": [
@@ -160,6 +192,36 @@
       "from": "teste",
       "to": "navcatalogo",
       "label": "varre as portas condicionadas"
+    },
+    {
+      "id": "e11",
+      "from": "catalogo",
+      "to": "checklist",
+      "label": "recursos marcados com checklist"
+    },
+    {
+      "id": "e12",
+      "from": "estado",
+      "to": "checklist",
+      "label": "mesmas fontes do servidor"
+    },
+    {
+      "id": "e13",
+      "from": "checklist",
+      "to": "painel",
+      "label": "calculado no servidor"
+    },
+    {
+      "id": "e14",
+      "from": "modulosDeTabela",
+      "to": "telaAdmin",
+      "label": "botão Instalar (era /admin/modulos)"
+    },
+    {
+      "id": "e15",
+      "from": "testeChecklist",
+      "to": "checklist",
+      "label": "vigia"
     }
   ]
 }

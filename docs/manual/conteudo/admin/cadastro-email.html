@@ -1,13 +1,14 @@
-<!--meta {"id":"admin-cadastro","grupo":"admin","titulo":"Cadastro e E-mail da instalação","ordem":8,"resumo":"Quem pode criar conta nesta instalação (aberto, só por convite ou com aprovação) e por onde o sistema envia e-mail (servidor próprio ou serviço externo).","palavras":["cadastro","signup","convite","aprovação","pedidos","modo de cadastro","e-mail","smtp","resend","remetente","servidor de e-mail","testar conexão"],"onde":"Modo administrador › Cadastro e E-mail (/admin/cadastro, /admin/email)","quem":"Administrador da plataforma; salvar e testar exigem escopo full e a verificação em dia","rotas":[]} -->
+<!--meta {"id":"admin-cadastro","grupo":"admin","titulo":"Quem pode criar conta e E-mail","ordem":8,"resumo":"Quem pode criar conta nesta instalação (aberto, só por convite ou com aprovação) e por onde o sistema envia e-mail (servidor próprio ou serviço externo).","palavras":["quem pode criar conta","cadastro","signup","convite","aprovação","pedidos","modo de cadastro","e-mail","smtp","resend","remetente","servidor de e-mail","testar conexão"],"onde":"Administração da instalação › Configurar a instalação › Quem pode criar conta e E-mail (/admin/cadastro, /admin/email)","quem":"Administrador da plataforma; salvar e testar exigem escopo full e a verificação em dia","rotas":[]} -->
 
-<h2 id="cadastro">Cadastro — quem pode criar conta</h2>
-<p>Decide quem consegue criar uma conta nesta instalação. Vale para a instalação inteira; quem já tem conta continua entrando normalmente.</p>
+<h2 id="cadastro">Quem pode criar conta</h2>
+<p>Antes o item do menu se chamava “Cadastro”. Decide quem consegue criar uma conta nesta instalação. Vale para a instalação inteira; quem já tem conta continua entrando normalmente. O cabeçalho diz “Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.” e “Quando usar: Ao abrir a instalação para clientes novos, ou para fechá-la de novo.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-cadastro.png" alt="Tela Cadastro com o aviso de troca de modo e os interruptores Cadastro apenas por convite e Cadastro com aprovação, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Cadastro, no modo aberto (o padrão).</figcaption>
+  <img src="img/admin-cadastro.png" alt="Tela Quem pode criar conta com o aviso de troca de modo e os interruptores Cadastro apenas por convite e Cadastro com aprovação, numerada de 1 a 3" loading="lazy">
+  <figcaption>A tela Quem pode criar conta, no modo aberto (o padrão; print anterior à reorganização, com o título antigo “Cadastro”).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Quem pode criar conta.</strong> O cartão dos modos.</li>
+  <li><strong>Quem pode criar conta.</strong> O cartão dos modos (tem o mesmo nome da tela).</li>
   <li><strong>Cadastro apenas por convite.</strong> Ligado, só entra quem recebeu convite; quem abrir a tela de cadastro sem convite vê um aviso e vai ao login. Desligado: “qualquer pessoa pode criar uma conta e abrir a própria empresa. É como o sistema sempre funcionou.”</li>
   <li><strong>Cadastro com aprovação.</strong> Ligado, quem cria conta sem convite <em>pede</em> a empresa, e ela só é criada quando você aprova nesta tela. Fica desabilitado enquanto “apenas por convite” estiver ligado.</li>
 </ol>
@@ -17,16 +18,19 @@
   <li><strong>Aviso amarelo “A troca de modo ainda não chegou ao servidor.”</strong> Aparece quando o modo gravado diverge do estado do servidor de login. O CRM já segue o modo novo, mas o servidor de login continua com o anterior; a tela só avisa (na captura, o texto para instalações com Supabase separado: ligar “Allow new users to sign up” em Authentication → Sign In / Up, ou <code>DISABLE_SIGNUP=false</code>; na VPS do kit, rodar o comando de atualização que a tela mostra: <code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>). O aviso só aparece quando dá para perguntar ao servidor de login e ele está com outro valor.</li>
   <li><strong>Pedidos aguardando aprovação</strong> (só no modo com aprovação): lista com o nome da empresa pedida e o e-mail, e os botões <span class="ui">Recusar</span> e <span class="ui">Aprovar</span>. Aprovar cria a empresa e torna quem pediu administrador dela; <strong>recusar é final</strong> para aquela conta. Vazio: “Nenhum pedido aguardando.”. Não há envio de e-mail ao solicitante nesta ação.</li>
   <li>Auditoria: <code>platform.signup_mode_updated</code>, <code>registration.approved</code>, <code>registration.rejected</code>. A tela que o visitante vê é a <a href="#entrada-acesso">de cadastro</a>.</li>
+  <li>No <a href="#admin-dashboard--checklist">checklist do Painel</a> e em <a href="#admin-sistema--comportamento">Recursos opcionais</a>, este item normalmente aparece como pronto (“Configurado”): sempre há um modo em vigor, e o convite é só para revisar a escolha.</li>
 </ul>
 
-<h2 id="email">E-mail — servidor de e-mail da instalação</h2>
-<p>Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo: o e-mail passa a sair pelo <strong>seu próprio servidor</strong> (SMTP).</p>
+<h2 id="email">E-mail</h2>
+<p>Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo: o e-mail passa a sair pelo <strong>seu próprio servidor</strong> (SMTP, o protocolo de envio de e-mail). O cabeçalho diz “Configura o servidor de e-mail próprio ou o serviço externo que manda os e-mails de todas as empresas.” e “Quando usar: Logo depois de instalar: sem e-mail não sai convite de equipe nem recuperação de senha.”.</p>
+<aside class="nota atencao"><strong>É o único item obrigatório.</strong><p>No <a href="#admin-dashboard--checklist">checklist do Painel</a>, o E-mail é marcado como <em>Obrigatório</em>, e o cartão “Sua instalação está pronta?” fica aberto até ele ser configurado.</p></aside>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-email.png" alt="Tela E-mail com os campos do servidor SMTP, os botões Testar conexão e Salvar e o cartão Serviço externo de envio, numerada de 1 a 8" loading="lazy">
-  <figcaption>A tela E-mail, sem nenhum caminho configurado.</figcaption>
+  <figcaption>A tela E-mail, sem nenhum caminho configurado (print anterior à reorganização: o título antigo era “Servidor de e-mail desta instalação”).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Servidor de e-mail desta instalação.</strong> O estado aparece na faixa: “Em uso: o e-mail está saindo por este servidor.”, “O e-mail desta instalação já sai por um serviço externo…” ou, como na captura, “Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.”</li>
+  <li><strong>Estado do envio.</strong> O estado aparece na faixa: “Em uso: o e-mail está saindo por este servidor.”, “O e-mail desta instalação já sai por um serviço externo…” ou, como na captura, “Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.”</li>
   <li><strong>Endereço do servidor.</strong> Só o endereço (normalmente <code>smtp.seudominio.com</code>), sem <code>smtp://</code> na frente e sem a porta.</li>
   <li><strong>Porta.</strong> De 1 a 65535 (587 é o comum).</li>
   <li><strong>Segurança.</strong> “STARTTLS (normalmente a porta 587)”, “TLS/SSL (normalmente a porta 465)” ou “Sem criptografia”.</li>

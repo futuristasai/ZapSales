@@ -1,28 +1,65 @@
-<!--meta {"id":"admin-dashboard","grupo":"admin","titulo":"Dashboard","ordem":2,"resumo":"A visão de relance de todas as empresas da instalação: quantas estão ativas e o que está pegando fogo (WhatsApp caído, prazo de LGPD, estouro de orçamento de IA, filas paradas).","palavras":["dashboard","painel","kpi","alertas","tenants ativos","pendentes","waha","lgpd em risco","budgets ia","cross-tenant"],"onde":"Modo administrador › Dashboard (/admin/dashboard)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
+<!--meta {"id":"admin-dashboard","grupo":"admin","titulo":"Painel","ordem":2,"resumo":"A primeira tela da Administração da instalação: o checklist “Sua instalação está pronta?” e, de relance, o que pede atenção em todas as empresas (número de WhatsApp com problema, prazo de LGPD, teto de IA, clientes esperando resposta).","palavras":["painel","dashboard","checklist","sua instalação está pronta","kpi","indicadores","alertas","empresas ativas","tenants ativos","esperando resposta","pendentes","números com problema","waha","pedidos de lgpd","lgpd em risco","teto de ia","budgets ia","cross-tenant"],"onde":"Administração da instalação › Visão geral › Painel (/admin/dashboard)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>Responde, de relance: <em>“alguma empresa da minha instalação está com problema agora?”</em>. Atualiza sozinho <strong>a cada 30 segundos</strong> e também em tempo real quando chega um alerta novo (aparece um aviso amarelo “Novo Alerta WAHA”, “Novo Prazo LGPD”, “Novo Budget IA” ou “Novo Overflow de conversas”).</p>
-<figure class="print">
-  <img src="img/admin-dashboard.png" alt="Dashboard do painel com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">
-  <figcaption>O Dashboard (organização de demonstração).</figcaption>
-</figure>
-<ol class="legenda">
-  <li><strong>Subtítulo.</strong> “Visão cross-tenant — atualiza a cada 30 segundos.”</li>
-  <li><strong>Tenants Ativos.</strong> Quantas empresas estão com status ativo.</li>
-  <li><strong>Pendentes &gt;10min.</strong> Conversas esperando resposta há mais de 10 minutos (amarelo se &gt; 0).</li>
-  <li><strong>Alertas WAHA.</strong> Números de WhatsApp com problema: suspeita de banimento, desconexão inesperada ou desconectados nas últimas 24 horas (amarelo se &gt; 0). “WAHA” é o nome do programa que conecta o WhatsApp.</li>
-  <li><strong>LGPD em Risco.</strong> Pedidos de titulares ainda abertos cujo prazo vence em até 5 dias — inclui os já vencidos (vermelho se &gt; 0).</li>
-  <li><strong>Budgets IA.</strong> Empresas cujo gasto <em>acumulado</em> de IA já passou de 80% do teto (amarelo se &gt; 0).</li>
-</ol>
-<p>Abaixo dos cartões fica <strong>“Alertas ativos”</strong> (na captura, 1 alerta). Sem alertas aparece “Nenhum alerta crítico no momento. Tudo certo!”. Cada linha mostra o nome da empresa, a severidade (<em>Crítico</em>, <em>Atenção</em> ou <em>Info</em>), o tipo (<em>WAHA</em>, <em>LGPD</em>, <em>IA Budget</em> ou <em>Overflow</em>) e a mensagem; clicar leva ao destino. São listados os 10 primeiros, com “+N alertas adicionais” no rodapé.</p>
+<p>É a tela que abre quando você entra na Administração da instalação. Responde duas perguntas: <em>“falta configurar alguma coisa?”</em> e <em>“alguma empresa da minha instalação está com problema agora?”</em>. O cabeçalho diz: “Mostra, num lugar só, o que pede atenção em todas as empresas desta instalação e o que ainda falta configurar.”, “Quando usar: Ao entrar, para saber se está tudo em ordem e por onde começar.” e “Os números se atualizam sozinhos a cada 30 segundos.”.</p>
+<p>Os números também se atualizam na hora quando chega um alerta novo (aparece um aviso amarelo: “Novo aviso: número com problema”, “Novo aviso: pedido de LGPD perto do prazo”, “Novo aviso: empresa perto do teto de IA” ou “Novo aviso: fila de espera cheia”).</p>
+
+<h2 id="checklist">Sua instalação está pronta?</h2>
+<p>O primeiro cartão é um checklist do que a instalação precisa (ou pode) ter configurado. Ele lê o mesmo estado que a tela <a href="#admin-sistema">Recursos opcionais</a> mostra, então as duas nunca discordam. Os itens, nesta ordem:</p>
 <table class="tabela">
-  <thead><tr><th>Tipo</th><th>Mensagem</th><th>Severidade</th><th>Leva a</th></tr></thead>
+  <thead><tr><th>Item</th><th>Peso</th><th>O que diz</th><th>Leva a</th></tr></thead>
   <tbody>
-    <tr><td>WAHA</td><td>“Sessão WAHA com suspeita de banimento” / “Sessão desconectada inesperadamente”</td><td>Crítico / Atenção</td><td>Saúde da empresa</td></tr>
-    <tr><td>LGPD</td><td>“Requisição LGPD vencida em DD/MM” / “Prazo LGPD expira em DD/MM”</td><td>Crítico / Atenção</td><td><a href="#admin-audit--lgpd">LGPD</a></td></tr>
-    <tr><td>IA Budget</td><td>“Budget IA N% do teto (gasto acumulado)”, com aviso extra se a empresa escolheu parar a IA no limite; empresa com o limite em “Não aplicado” conta no cartão <em>Budgets IA</em>, mas não gera linha na lista</td><td>Atenção</td><td>Saúde da empresa</td></tr>
-    <tr><td>Overflow</td><td>“N conversas pendentes sem atendimento” (acima de 50 numa empresa)</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td><strong>E-mail</strong></td><td>Obrigatório</td><td>“Sem ele não sai convite de equipe, recuperação de senha nem entrega de dados da LGPD.”</td><td><a href="#admin-cadastro--email">E-mail</a></td></tr>
+    <tr><td><strong>Marca própria</strong></td><td>Opcional</td><td>“O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.” Conta como pronto quando a instalação mostra uma marca diferente da do produto.</td><td><a href="#admin-marca">Marca</a></td></tr>
+    <tr><td><strong>Quem pode criar conta</strong></td><td>Opcional</td><td>“Cadastro aberto, só por convite ou com aprovação.” Sempre há um modo em vigor, então este item normalmente já aparece como pronto: o convite é para <em>revisar</em> a escolha.</td><td><a href="#admin-cadastro">Quem pode criar conta</a></td></tr>
+    <tr><td><strong>API Oficial da Meta</strong></td><td>Opcional</td><td>“Permite conectar números pela API oficial do WhatsApp.”</td><td><a href="#admin-google--meta">API Oficial (Meta)</a></td></tr>
+    <tr><td><strong>Google Agenda</strong></td><td>Opcional</td><td>“Cada pessoa conecta a própria agenda do Google na Agenda.”</td><td><a href="#admin-google">Google Agenda</a></td></tr>
   </tbody>
 </table>
-<aside class="nota atencao"><strong>Dois cuidados ao ler.</strong><p>(1) “Budgets IA” usa o gasto <em>acumulado desde a instalação</em>, que não zera todo mês; pode divergir do número “do mês” da aba Saúde de uma empresa. (2) “LGPD em Risco” usa uma janela larga (5 dias) e conta também os pedidos já vencidos, bem diferente do “Crítico (menos de 24 h)” da tela <a href="#admin-audit--lgpd">LGPD</a> do painel.</p></aside>
-<p>O Dashboard só lê; não há botões nem formulários. O número de “Tenants Ativos” e os nomes dos alertas são dados reais de todas as empresas (por isso nas capturas deste manual aparecem a empresa de demonstração e uma de exemplo).</p>
+<ul>
+  <li>Cada linha mostra o nome, o selo <strong>Obrigatório</strong> ou <strong>Opcional</strong>, a frase acima e o estado: <strong>Pronto</strong>, <strong>Falta</strong> ou <strong>Não consegui ler agora</strong> (quando o sistema não conseguiu conferir aquele item naquele momento — não quer dizer que falta). O botão ao lado é <span class="ui">Configurar</span> quando falta e <span class="ui">Revisar</span> quando já está pronto; os dois abrem a tela daquele item.</li>
+  <li>O resumo no alto do cartão diz uma de três coisas: “Falta configurar o essencial para a instalação funcionar inteira.”, “O essencial está pronto. O que falta é opcional — ligue quando precisar.” ou “Tudo configurado.”. Enquanto faltar algo, ao lado aparece a contagem (“2 falta”, por exemplo).</li>
+  <li><strong>Aberto ou recolhido.</strong> Enquanto o e-mail (o único obrigatório) não estiver configurado, o cartão fica aberto. Com o essencial pronto, ele aparece <em>recolhido</em> numa linha só; clique nele (ou use <kbd>Enter</kbd>) para abrir a lista de novo.</li>
+  <li>O checklist só lê: ele nunca muda nada sozinho. Nenhum segredo aparece aqui, só “pronto” ou “falta” por item.</li>
+</ul>
+
+<h2 id="numeros">Os cinco números</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
+<figure class="print">
+  <img src="img/admin-dashboard.png" alt="Painel da administração com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">
+  <figcaption>O Painel (organização de demonstração; print anterior à reorganização, sem o checklist e com os nomes antigos dos cartões — a legenda já usa os nomes atuais).</figcaption>
+</figure>
+<ol class="legenda">
+  <li><strong>Atualização.</strong> No cabeçalho: “Os números se atualizam sozinhos a cada 30 segundos.”</li>
+  <li><strong>Empresas ativas.</strong> Quantas empresas estão com status ativo. Leva a <a href="#admin-tenants">Empresas</a>.</li>
+  <li><strong>Esperando resposta há mais de 10 min.</strong> Conversas esperando resposta há mais de 10 minutos. Leva a <a href="#admin-usage--inbox">Conversas de todas as empresas</a>.</li>
+  <li><strong>Números com problema.</strong> Números de WhatsApp com suspeita de banimento, desconexão inesperada ou desconectados nas últimas 24 horas. Leva à lista de alertas logo abaixo, que diz de qual empresa é cada número.</li>
+  <li><strong>Pedidos de LGPD perto do prazo.</strong> Pedidos de titulares ainda abertos cujo prazo vence em até 5 dias — inclui os já vencidos. Leva a <a href="#admin-audit--lgpd">Pedidos de LGPD</a>.</li>
+  <li><strong>Empresas perto do teto de IA.</strong> Empresas cujo gasto <em>acumulado</em> de IA já passou de 80% do teto. Leva a <a href="#admin-usage">Uso e custo</a>.</li>
+</ol>
+<p>Cada cartão é um link inteiro (com “Abrir” no rodapé) e traz uma frase que muda conforme o número:</p>
+<table class="tabela">
+  <thead><tr><th>Cartão</th><th>Quando está em dia</th><th>Quando pede ação</th></tr></thead>
+  <tbody>
+    <tr><td>Empresas ativas</td><td>“Empresas usando esta instalação agora.”</td><td>Com zero: “Nenhuma empresa ativa ainda — cadastre a primeira.”</td></tr>
+    <tr><td>Esperando resposta há mais de 10 min</td><td>“Nenhuma conversa esperando — tudo em dia.”</td><td>“Há clientes sem resposta. Abra as conversas para ver em qual empresa.”</td></tr>
+    <tr><td>Números com problema</td><td>“Todos os números de WhatsApp estão funcionando.”</td><td>“Algum número caiu ou foi bloqueado. Veja nos alertas abaixo qual empresa.”</td></tr>
+    <tr><td>Pedidos de LGPD perto do prazo</td><td>“Nenhum pedido de LGPD perto do prazo.”</td><td>“Responda antes que o prazo legal vença.”</td></tr>
+    <tr><td>Empresas perto do teto de IA</td><td>“Nenhuma empresa passou de 80% do teto de gasto com IA.”</td><td>“O gasto acumulado com IA passou de 80% do teto. Confira o uso dessas empresas.”</td></tr>
+  </tbody>
+</table>
+<p>Quando pede ação, o cartão fica <strong>amarelo</strong>; o de LGPD fica <strong>vermelho</strong>, porque é prazo da lei.</p>
+
+<h2 id="alertas">Alertas ativos</h2>
+<p>Abaixo dos cartões fica <strong>“Alertas ativos”</strong> (na captura, 1 alerta). Sem alertas aparece “Nenhum alerta crítico no momento. Tudo certo!”. Cada linha mostra o nome da empresa, a gravidade (<em>Crítico</em>, <em>Atenção</em> ou <em>Info</em>), o tipo (<em>Número com problema</em>, <em>LGPD</em>, <em>Teto de IA</em> ou <em>Fila de espera</em>) e a mensagem; clicar leva ao destino. São listados os 10 primeiros, com “+N alertas adicionais” no rodapé.</p>
+<table class="tabela">
+  <thead><tr><th>Tipo</th><th>Mensagem</th><th>Gravidade</th><th>Leva a</th></tr></thead>
+  <tbody>
+    <tr><td>Número com problema</td><td>“Número com suspeita de bloqueio pelo WhatsApp” / “Número desconectado sem aviso” (seguido do motivo, quando o sistema o recebe)</td><td>Crítico / Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td>LGPD</td><td>“Requisição LGPD vencida em DD/MM” / “Prazo LGPD expira em DD/MM”</td><td>Crítico / Atenção</td><td><a href="#admin-audit--lgpd">Pedidos de LGPD</a></td></tr>
+    <tr><td>Teto de IA</td><td>“Gasto com IA em N% do teto (acumulado)”, com o complemento “a empresa escolheu parar a IA no limite” quando é o caso; empresa com o limite em “Não aplicado” conta no cartão <em>Empresas perto do teto de IA</em>, mas não gera linha na lista</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td>Fila de espera</td><td>“N conversas pendentes sem atendimento” (acima de 50 numa empresa)</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+  </tbody>
+</table>
+<aside class="nota atencao"><strong>Dois cuidados ao ler.</strong><p>(1) “Empresas perto do teto de IA” usa o gasto <em>acumulado desde a instalação</em>, que não zera todo mês; pode divergir do número “do mês” da aba Saúde de uma empresa. (2) “Pedidos de LGPD perto do prazo” usa uma janela larga (5 dias) e conta também os pedidos já vencidos, bem diferente do “Crítico (menos de 24 h)” da tela <a href="#admin-audit--lgpd">Pedidos de LGPD</a>.</p></aside>
+<p>O Painel só lê: não há formulários, e os botões só levam a outras telas. O número de empresas ativas e os nomes dos alertas são dados reais de todas as empresas (por isso nas capturas deste manual aparecem a empresa de demonstração e uma de exemplo).</p>

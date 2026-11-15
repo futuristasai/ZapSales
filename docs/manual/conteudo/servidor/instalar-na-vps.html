@@ -30,7 +30,7 @@
 <tr><td><em>Senha do administrador (mínimo 8 caracteres; Enter = gerar uma forte)</em></td><td>A senha da sua conta. Ela não aparece enquanto você digita (é de propósito), e o kit pede duas vezes para conferir. Enter sem digitar nada gera uma senha forte. Esta pergunta só aparece na <strong>primeira</strong> instalação.</td></tr>
 </tbody>
 </table>
-<aside class="nota atencao"><strong>Escolha a senha com cuidado.</strong><p>Segundo o guia de instalação do projeto, o sistema ainda não tem uma tela para trocar a senha, e o “esqueci a senha” só funciona depois que o envio de e-mail estiver configurado (veja <a href="#admin-cadastro">Cadastro e e-mail da instalação</a>). Guarde a senha num cofre de senhas.</p></aside>
+<aside class="nota atencao"><strong>Escolha a senha com cuidado.</strong><p>Segundo o guia de instalação do projeto, o sistema ainda não tem uma tela para trocar a senha, e o “esqueci a senha” só funciona depois que o envio de e-mail estiver configurado (veja <a href="#admin-cadastro--email">E-mail da instalação</a>). Guarde a senha num cofre de senhas.</p></aside>
 <p>Pronto: daqui em diante o kit trabalha sozinho e mostra cada etapa com um ▶ verde. A única outra coisa que ele pede é, na etapa <em>Licença</em>, o e-mail e o código da sua compra (veja <a href="#instalar-na-vps--licenca">A licença</a>); Enter deixa para ativar depois.</p>
 
 <h2 id="espera">O que acontece enquanto você espera</h2>
@@ -60,7 +60,7 @@
 <p>O endereço, o e-mail e a senha ficam num arquivo que só o <code>root</code> lê. Para ver:</p>
 <p><code>sudo cat /etc/zapsales/primeiro-acesso</code></p>
 <p>Abra o endereço no navegador e entre com o e-mail e a senha. Guarde a senha num cofre (Bitwarden, 1Password, o do navegador) e apague o arquivo: <code>sudo rm /etc/zapsales/primeiro-acesso</code>.</p>
-<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a> (Configurar › Conexões), convidar a <a href="#equipe">equipe</a> (Configurar › Empresa › Equipe) e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro">Admin › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
+<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a> (Configurar › Conexões), convidar a <a href="#equipe">equipe</a> (Configurar › Empresa › Equipe) e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro--email">Administração da instalação › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
 
 <h2 id="conferir">Conferir que está no ar</h2>
 <p>Depois de qualquer instalação ou atualização, o domínio tem de <strong>redirecionar para o login</strong> (o código HTTP 307), e não dar “não encontrado” (404). Para conferir, no terminal:</p>

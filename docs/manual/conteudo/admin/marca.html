@@ -1,10 +1,12 @@
-<!--meta {"id":"admin-marca","grupo":"admin","titulo":"Marca da instalação","ordem":6,"resumo":"O nome, a cor, o logo e o ícone que o sistema mostra para todo mundo que usa a instalação (white-label do servidor).","palavras":["marca","white label","nome do sistema","cor","logo","ícone","favicon","instalação","admin"],"onde":"Modo administrador › Marca (/admin/marca)","quem":"Administrador da plataforma; salvar exige escopo full e a verificação em dia","rotas":[]} -->
+<!--meta {"id":"admin-marca","grupo":"admin","titulo":"Marca da instalação","ordem":6,"resumo":"O nome, a cor, o logo e o ícone que o sistema mostra para todo mundo que usa a instalação (white-label do servidor).","palavras":["marca","marca própria","white label","nome do sistema","cor","logo","ícone","favicon","instalação","admin"],"onde":"Administração da instalação › Configurar a instalação › Marca (/admin/marca)","quem":"Administrador da plataforma; salvar exige escopo full e a verificação em dia","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>Troca o <strong>nome</strong>, a <strong>cor</strong> e o <strong>logo</strong> do sistema para <em>todos</em> que usam esta instalação. A marca <em>de cada empresa</em> é outra tela (<a href="#marca">Marca</a>, em Configurar › Empresa › A empresa) e tem prioridade sobre esta.</p>
+<p>Troca o <strong>nome</strong>, a <strong>cor</strong> e o <strong>logo</strong> do sistema para <em>todos</em> que usam esta instalação. A marca <em>de cada empresa</em> é outra tela (<a href="#marca">Marca</a>, em Configurar › Empresa › A empresa) e tem prioridade sobre esta. No menu o item se chama <strong>Marca</strong>; o cabeçalho diz “Define o nome, a cor de destaque, o logo e o ícone da aba que o sistema mostra.” e “Quando usar: Ao instalar, ou quando você revende o sistema com a sua própria marca.”.</p>
+<p>No <a href="#admin-dashboard--checklist">checklist do Painel</a> e em <a href="#admin-sistema--comportamento">Recursos opcionais</a>, esta escolha aparece como <strong>Marca própria</strong>: “Pronto”/“Configurado” quando a instalação mostra uma marca diferente da do produto.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-marca.png" alt="Tela Marca do painel com nome do sistema, cor, logo, ícone e o bloco Como está agora, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Marca do painel, sem nenhuma marca definida.</figcaption>
+  <img src="img/admin-marca.png" alt="Tela Marca da administração com nome do sistema, cor, logo, ícone e o bloco Como está agora, numerada de 1 a 6" loading="lazy">
+  <figcaption>A tela Marca, sem nenhuma marca definida (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome do sistema.</strong> Até 120 caracteres; vazio volta ao padrão. Aparece no título da aba, no topo das telas, nos e-mails (para empresas sem nome próprio), no aplicativo de verificação em duas etapas e no arquivo de códigos de recuperação. <em>Ainda não chega</em> às telas de entrada e cadastro nem às da configuração inicial: elas continuam com o nome do arquivo de instalação do servidor até a próxima atualização.</li>

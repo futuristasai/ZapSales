@@ -1,10 +1,11 @@
-<!--meta {"id":"admin-sistema","grupo":"admin","titulo":"Recursos opcionais da instalação","ordem":9,"resumo":"A central única onde o dono liga e desliga o que é opcional na instalação inteira (módulos e comportamento) e vê o que depende do servidor.","palavras":["recursos opcionais","módulos","banco de dados externo","fluxos de atendimento","propostas","empresas e pessoas","comportamento","proteção de gasto de ia","assinatura","divulgação de pagamento","conferência de promessa","depende do servidor","sistema"],"onde":"Modo administrador › Recursos opcionais (/admin/sistema)","quem":"Administrador da plataforma; mexer nos interruptores exige escopo full e a verificação em dia","rotas":[]} -->
+<!--meta {"id":"admin-sistema","grupo":"admin","titulo":"Recursos opcionais da instalação","ordem":9,"resumo":"A central única onde o dono liga e desliga o que é opcional na instalação inteira: os módulos (inclusive instalar módulos com tabela própria, como Honorários), o comportamento e o que depende do servidor.","palavras":["recursos opcionais","módulos","instalar módulo","honorários","banco de dados externo","fluxos de atendimento","propostas","empresas e pessoas","comportamento","marca própria","quem pode criar conta","proteção de gasto de ia","assinatura","divulgação de pagamento","conferência de promessa","depende do servidor","sistema"],"onde":"Administração da instalação › Configurar a instalação › Recursos opcionais (/admin/sistema)","quem":"Administrador da plataforma; mexer nos interruptores e instalar módulo exige escopo full e a verificação em dia","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
-<p>É a versão do dono para a tela <a href="#recursos-opcionais">Recursos opcionais</a> da empresa: <strong>tudo o que se liga e desliga nesta instalação, num lugar só</strong>. Vale para todas as empresas hospedadas aqui e <strong>salva na hora</strong> (um clique; se falhar, o interruptor volta e diz “Não deu para salvar. Tente de novo em instantes.”). Reversível com um clique.</p>
+<p>É a versão do dono para a tela <a href="#recursos-opcionais">Recursos opcionais</a> da empresa: <strong>tudo o que se liga e desliga nesta instalação, num lugar só</strong>. O cabeçalho diz “Junta tudo o que se liga e desliga nesta instalação: os módulos, o comportamento e o que depende do servidor.” e “Quando usar: Para instalar um módulo, ou quando um recurso não aparece para as empresas.”. Vale para todas as empresas hospedadas aqui. Os interruptores <strong>salvam na hora</strong> (um clique; se falhar, o interruptor volta e diz “Não deu para salvar. Tente de novo em instantes.”) e se desfazem com outro clique — a exceção é instalar um módulo com tabela própria, que não se desfaz (veja abaixo).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-sistema.png" alt="Tela Recursos opcionais do painel com os blocos Módulos, Comportamento e Depende do servidor, numerada de 1 a 5" loading="lazy">
-  <figcaption>A tela Recursos opcionais do painel.</figcaption>
+  <img src="img/admin-sistema.png" alt="Tela Recursos opcionais da administração com os blocos Módulos, Comportamento e Depende do servidor, numerada de 1 a 5" loading="lazy">
+  <figcaption>A tela Recursos opcionais (print anterior à reorganização: o cabeçalho mudou, o Honorários ainda aparece como linha com “Ajustar” e as linhas de Comportamento ainda dizem “Veja na tela dele”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Módulos.</strong> O primeiro bloco.</li>
@@ -15,6 +16,8 @@
 </ol>
 
 <h2 id="modulos">Módulos</h2>
+<p>O bloco tem duas partes: os módulos que se ligam por interruptor e, embaixo, os módulos com <strong>tabela própria</strong>, que se instalam. Quem abre o endereço antigo <code>/admin/modulos</code> (de favoritos ou mensagens antigas) cai direto aqui.</p>
+<h3 id="interruptores">Módulos que se ligam por interruptor</h3>
 <p>Quatro interruptores, <strong>todos desligados por padrão</strong>:</p>
 <table class="tabela">
   <thead><tr><th>Módulo</th><th>O que liga</th><th>Tela</th></tr></thead>
@@ -25,21 +28,42 @@
     <tr><td><strong>Empresas e pessoas (venda para empresas)</strong></td><td>Cadastro de Empresas por CNPJ (dados públicos da BrasilAPI — consultar um CNPJ manda o número para a BrasilAPI), Pessoas e importação CSV/Excel.</td><td><a href="#empresas">Empresas</a></td></tr>
   </tbody>
 </table>
-<p>Desligado, a tela, o item de menu e as ferramentas do agente <em>somem</em> para todas as empresas. Embaixo, uma linha para cada módulo que não é de interruptor — hoje o <a href="#honorarios">Honorários</a> — com o botão <span class="ui">Ajustar</span>, que leva a <a href="#admin-extensoes--modulos">Módulos</a>. Cada mudança fica na auditoria (<code>platform.modulo_updated</code>, com de/para).</p>
+<p>Desligado, a tela, o item de menu e as ferramentas do agente <em>somem</em> para todas as empresas. Cada mudança fica na auditoria (<code>platform.modulo_updated</code>, com de/para).</p>
+
+<h3 id="instalar">Módulos com tabela própria (instalar)</h3>
+<p>Antes estes módulos tinham uma tela própria, “Módulos”, no menu; hoje são instalados aqui. Diferente dos interruptores, um módulo deste tipo cria <strong>tabelas próprias no banco</strong> — quem não instala não carrega essas tabelas. Hoje existe um único:</p>
+<ul>
+  <li><strong>Honorários (advocacia).</strong> “Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.” Veja <a href="#honorarios">Honorários</a>.</li>
+</ul>
+<ol class="passos">
+  <li>Leia o aviso embaixo da descrição do cartão: “Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.”</li>
+  <li>Clique em <span class="ui">Instalar</span> (o botão mostra “Instalando…” enquanto trabalha).</li>
+  <li>Pronto: o cartão ganha o selo <em>Instalado</em> (verde), o botão some e, no lugar do aviso, aparece “Instalado em &lt;data&gt;”. Se um dia o módulo for suspenso, o selo vira <em>Suspenso</em> (vermelho), com o motivo.</li>
+</ol>
+<aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente (repetir não duplica nada), e fica na auditoria (<code>modulo.instalado</code>). <strong>Não há botão para desinstalar nem suspender</strong>; o que for registrado no módulo continua guardado. Depois de instalado, cada empresa vê a porta do módulo. Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.” Se a lista de módulos não puder ser lida, o bloco mostra “Não consegui ler os módulos com tabela própria agora. Recarregue a página.” e o resto da tela continua funcionando.</p></aside>
 
 <h2 id="comportamento">Comportamento</h2>
 <p>Quatro controles que são gravados juntos:</p>
 <ul>
   <li><strong>Proteção de gasto de IA</strong> — o que acontece quando o gasto passa do teto que a <em>empresa</em> escolheu: “Respeita o teto de cada empresa” (padrão), “Só avisa, nunca para a IA” ou “Desligada”. Não liga a proteção de ninguém: <em>só pode afrouxá-la</em>.</li>
-  <li><strong>Exigir assinatura nas entregas do canal</strong> — interruptor desligado por padrão. Ligado, toda entrega de webhook precisa vir assinada com o segredo da sessão. <strong>Ligar sem que o servidor de canal assine corta a entrada de mensagens.</strong></li>
+  <li><strong>Exigir assinatura nas entregas do canal</strong> — interruptor desligado por padrão. Ligado, toda entrega de webhook (o aviso automático que o servidor do WhatsApp manda ao sistema a cada mensagem) precisa vir assinada com o segredo da sessão. <strong>Ligar sem que o servidor de canal assine corta a entrada de mensagens.</strong></li>
   <li><strong>Divulgação de pagamento no atendimento</strong> — “Injetar” (padrão) acrescenta o texto de divulgação à primeira mensagem; “Vetar” bloqueia o envio sem ele e devolve ao modelo a razão para reescrever.</li>
   <li><strong>Conferência de promessa antes de enviar</strong> — ligado por padrão: cada envio passa por uma conferência de modelo para não prometer o que a empresa não cumpre. Custa <em>uma chamada de modelo por envio</em>.</li>
 </ul>
-<p>Depois vêm duas linhas com o botão <span class="ui">Ajustar</span> e o selo “Veja na tela dele”: <strong>Quem pode criar conta</strong> (→ <a href="#admin-cadastro">Cadastro</a>) e <strong>Destinos internos</strong> (→ <a href="#admin-destinos">Destinos internos</a>). Quem cuida do servidor pode declarar um valor no arquivo de ambiente, mas ele <em>só responde até a primeira leitura do banco</em>: a partir daí, manda o que está nesta tela. Auditoria: <code>platform.comportamento_updated</code>.</p>
+<p>Depois vêm três linhas com o botão <span class="ui">Ajustar</span>, que leva à tela de cada uma:</p>
+<table class="tabela">
+  <thead><tr><th>Linha</th><th>Selo</th><th>Leva a</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Marca própria</strong> — “O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.”</td><td><em>Configurado</em> quando a instalação mostra uma marca diferente da do produto; senão <em>Não configurado</em></td><td><a href="#admin-marca">Marca</a></td></tr>
+    <tr><td><strong>Quem pode criar conta</strong> — “Cadastro aberto, só por convite ou com aprovação.”</td><td><em>Configurado</em> (sempre há um modo em vigor)</td><td><a href="#admin-cadastro">Quem pode criar conta</a></td></tr>
+    <tr><td><strong>Destinos internos</strong> — “Libera endereços da rede interna, como um modelo de IA rodando na própria máquina.”</td><td>“Veja na tela dele” (o estado só aparece na própria tela)</td><td><a href="#admin-destinos">Destinos internos</a></td></tr>
+  </tbody>
+</table>
+<p>O estado de Marca própria e de Quem pode criar conta é o mesmo que o <a href="#admin-dashboard--checklist">checklist do Painel</a> mostra. Quem cuida do servidor pode declarar um valor de comportamento no arquivo de ambiente, mas ele <em>só responde até a primeira leitura do banco</em>: a partir daí, manda o que está nesta tela. Auditoria: <code>platform.comportamento_updated</code>.</p>
 
 <h2 id="servidor">Depende do servidor</h2>
 <p>“Só leitura. Estes dependem de credencial ou do arquivo de ambiente do servidor. Nenhum valor de segredo aparece aqui.” Cada linha mostra o selo <em>Configurado</em>, <em>Não configurado</em> ou <em>Não dá para ver daqui</em> e, quando existe tela, o botão <span class="ui">Ajustar</span>:</p>
 <ul>
-  <li><strong>E-mail</strong> (→ <a href="#admin-cadastro--email">E-mail</a>) e <strong>Google Agenda</strong> (→ <a href="#admin-google">Google Agenda</a>) e <strong>API Oficial da Meta</strong> (→ <a href="#admin-google--meta">API Oficial</a>).</li>
+  <li><strong>E-mail</strong> (→ <a href="#admin-cadastro--email">E-mail</a>), <strong>Google Agenda</strong> (→ <a href="#admin-google">Google Agenda</a>) e <strong>API Oficial da Meta</strong> (→ <a href="#admin-google--meta">API Oficial (Meta)</a>). Estes três também aparecem no checklist do Painel.</li>
   <li><strong>Chamada de voz pelo WhatsApp</strong> (variáveis do serviço de chamadas e o perfil de voz), <strong>Telefonia por SIP</strong> (perfil de telefonia e Asterisk; “Não dá para ver daqui”), <strong>Google Ads</strong> (três variáveis <code>GOOGLE_ADS_*</code>), <strong>Notificação com a aba fechada</strong> (o par de chaves VAPID) e <strong>Transcrição de áudio por outro serviço</strong>.</li>
 </ul>
