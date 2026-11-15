@@ -84,7 +84,13 @@ export function TenantAgentClient({ id }: TenantAgentClientProps) {
               <dl className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
                 <div>
                   <dt className="tracking-wider text-muted-foreground uppercase">{t("Tipo")}</dt>
-                  <dd className="mt-1">{agente.kind}</dd>
+                  <dd className="mt-1">
+                    {agente.kind === "mcp_agent"
+                      ? t("Agente com ferramentas (MCP)")
+                      : agente.kind === "rag_bot"
+                        ? t("Atendente com base de conhecimento")
+                        : agente.kind}
+                  </dd>
                 </div>
                 <div>
                   <dt className="tracking-wider text-muted-foreground uppercase">

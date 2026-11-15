@@ -11,18 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CaretLeft } from "@/lib/ui/icons";
 import { useAdminAuditEntry } from "@/hooks/useAdminAuditEntry";
 import { useT } from "@/hooks/i18n/useT";
+import { ROTULO_DA_SITUACAO } from "@/lib/admin/status-da-empresa";
 import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** A situação da empresa em palavras (o banco guarda `active`, `suspended`, `redacted`). */
-const STATUS_DA_EMPRESA: Record<string, string> = {
-  active: "Ativo",
-  suspended: "Suspenso",
-  redacted: "Redigido",
-};
 
 function maskEmail(email: string | null | undefined): string {
   if (!email) return "—";
@@ -183,7 +177,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
               <div className="space-y-1 text-sm">
                 <Row label={t("Nome")} value={tenant.display_name} />
                 <Row label="Slug" value={tenant.slug} mono />
-                <Row label={t("Status")} value={t(STATUS_DA_EMPRESA[tenant.status] ?? tenant.status)} />
+                <Row label={t("Status")} value={t(ROTULO_DA_SITUACAO[tenant.status] ?? tenant.status)} />
               </div>
               <Button asChild variant="outline" size="sm" className="mt-2">
                 <Link href={`/admin/tenants/${tenant.id}`}>{t("Ver empresa")}</Link>

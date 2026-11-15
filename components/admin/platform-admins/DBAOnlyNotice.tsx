@@ -23,7 +23,8 @@ export function DBAOnlyNotice() {
           {t("). Esta página só mostra quem é: de propósito, ela não tem botão de mudança.")}
         </p>
         <p className="pt-1">
-          {/* O manual é estático (`/manual`), fora do roteador do Next: `<a>`, não `<Link>`. */}
+          {/* O manual é servido por uma rota própria (`app/manual/[[...arquivo]]`) como HTML
+              inteiro, não uma tela do app: `<a>` com recarga, não `<Link>`. */}
           <a
             href={`${ENDERECO_DO_MANUAL}#admin-visao--conceder`}
             target="_blank"

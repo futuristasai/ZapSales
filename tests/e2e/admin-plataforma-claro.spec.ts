@@ -276,10 +276,17 @@ test("em inglês, o menu, o cabeçalho, a aba e a gaveta saem do catálogo tradu
     }
     await page.screenshot({ path: evidencia("ingles-celular-gaveta.png") });
   } finally {
+    // `locale: null` é como o GoTrue apaga a chave (ele MESCLA o user_metadata). Uma falha
+    // aqui não pode esconder a do teste: vira anotação, e a próxima spec do dono a vê.
     const { error } = await db.auth.admin.updateUserById(dono.id, {
       user_metadata: { ...dono.user_metadata, locale: localeAntes },
     });
-    if (error) throw error;
+    if (error) {
+      test.info().annotations.push({
+        type: "aviso",
+        description: `não devolveu o idioma do dono: ${error.message}`,
+      });
+    }
   }
 });
 

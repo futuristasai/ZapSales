@@ -4858,9 +4858,6 @@ export const DICIONARIO: Traducoes = {
   "Resolução": { es: "Resolución" },
   "Resolvido em": { es: "Resuelto el" },
   "Resolver incidente": { es: "Resolver incidente" },
-  "Descreva como o incidente foi resolvido. Esta ação é registrada no audit log e não pode ser desfeita.": {
-    es: "Describe cómo se resolvió el incidente. Esta acción queda registrada en el registro de auditoría y no se puede deshacer.",
-  },
   "Nota de resolução": { es: "Nota de resolución" },
   "mín. 10 caracteres": { es: "mín. 10 caracteres" },
   "Descreva a causa raiz e as ações tomadas para resolver o incidente...": {
@@ -16058,6 +16055,16 @@ export const DICIONARIO: Traducoes = {
   "Tokens de IA por dia": {"es": "Tokens de IA por día"},
   "Chamadas à IA": {"es": "Llamadas a la IA"},
   "Custo da IA (US$)": {"es": "Costo de la IA (US$)"},
+  "Descreva como o incidente foi resolvido. Esta ação fica no registro de ações e não pode ser desfeita.": {"es": "Describe cómo se resolvió el incidente. Esta acción queda en el registro de acciones y no se puede deshacer."},
+  "Código do contato": {"es": "Código del contacto"},
+  "Código do cliente no sistema de origem": {"es": "Código del cliente en el sistema de origen"},
+  "Um contato": {"es": "Un contacto"},
+  "A empresa inteira": {"es": "La empresa entera"},
+  "Registrado à mão": {"es": "Registrado a mano"},
+  "Pela API": {"es": "Por la API"},
+  "Pelo suporte": {"es": "Por el soporte"},
+  "Agente com ferramentas (MCP)": {"es": "Agente con herramientas (MCP)"},
+  "Atendente com base de conhecimento": {"es": "Asistente con base de conocimiento"},
 };
 
 /**

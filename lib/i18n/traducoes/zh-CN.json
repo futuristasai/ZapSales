@@ -1822,7 +1822,6 @@
   "Resolução": "解决方案",
   "Resolvido em": "解决于",
   "Resolver incidente": "解决事件",
-  "Descreva como o incidente foi resolvido. Esta ação é registrada no audit log e não pode ser desfeita.": "描述事件的解决方式。此操作将记录在审计日志中，且无法撤销。",
   "Nota de resolução": "解决备注",
   "mín. 10 caracteres": "最少 10 个字符",
   "Descreva a causa raiz e as ações tomadas para resolver o incidente...": "描述根本原因以及为解决事件所采取的措施……",
@@ -5580,5 +5579,15 @@
   "Custo da IA por dia (US$)": "每日 AI 成本（美元）",
   "Tokens de IA por dia": "每日 AI 令牌数",
   "Chamadas à IA": "AI 调用次数",
-  "Custo da IA (US$)": "AI 成本（美元）"
+  "Custo da IA (US$)": "AI 成本（美元）",
+  "Descreva como o incidente foi resolvido. Esta ação fica no registro de ações e não pode ser desfeita.": "请描述事件是如何解决的。此操作会记录在操作记录中，且无法撤销。",
+  "Código do contato": "联系人代码",
+  "Código do cliente no sistema de origem": "来源系统中的客户代码",
+  "Um contato": "单个联系人",
+  "A empresa inteira": "整个公司",
+  "Registrado à mão": "手动登记",
+  "Pela API": "通过 API",
+  "Pelo suporte": "通过支持团队",
+  "Agente com ferramentas (MCP)": "带工具的智能体（MCP）",
+  "Atendente com base de conhecimento": "带知识库的助手"
 }

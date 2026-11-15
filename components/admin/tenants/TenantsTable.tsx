@@ -16,32 +16,19 @@ import {
 import { Buildings } from "@/lib/ui/icons";
 import type { AdminTenantRow } from "@/hooks/useAdminTenants";
 import { useT } from "@/hooks/i18n/useT";
+import { ROTULO_DA_SITUACAO, SELO_DA_SITUACAO } from "@/lib/admin/status-da-empresa";
 
 // ---------------------------------------------------------------------------
 // Status badge
 // ---------------------------------------------------------------------------
-
-const STATUS_VARIANTS: Record<string, "success" | "info" | "warning" | "error" | "neutral"> = {
-  active: "success",
-  onboarding: "info",
-  suspended: "warning",
-  redacted: "error",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  active: "Ativo",
-  onboarding: "Onboarding",
-  suspended: "Suspenso",
-  redacted: "Redigido",
-};
 
 function StatusBadge({ status, onboardedAt }: { status: string; onboardedAt: string | null }) {
   const t = useT();
   // 'onboarding' não existe no banco — é derivado: ativo sem onboarding concluído.
   const effective = status === "active" && !onboardedAt ? "onboarding" : status;
   return (
-    <Badge variant={STATUS_VARIANTS[effective] ?? "neutral"}>
-      {t(STATUS_LABELS[effective] ?? effective)}
+    <Badge variant={SELO_DA_SITUACAO[effective] ?? "neutral"}>
+      {t(ROTULO_DA_SITUACAO[effective] ?? effective)}
     </Badge>
   );
 }

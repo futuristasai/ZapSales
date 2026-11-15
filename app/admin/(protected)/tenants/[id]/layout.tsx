@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ROTULO_DA_SITUACAO, SELO_DA_SITUACAO } from "@/lib/admin/status-da-empresa";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requirePlatformAdmin } from "@/lib/auth/requirePlatformAdmin";
@@ -16,20 +17,6 @@ export const generateMetadata = metadadosDaTelaDoAdmin("/admin/tenants", "empres
 // ---------------------------------------------------------------------------
 // Status badge helpers (same palette as TenantsTable)
 // ---------------------------------------------------------------------------
-
-const STATUS_VARIANTS: Record<string, "success" | "info" | "warning" | "error" | "neutral"> = {
-  active: "success",
-  onboarding: "info",
-  suspended: "warning",
-  redacted: "error",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  active: "Ativo",
-  onboarding: "Onboarding",
-  suspended: "Suspenso",
-  redacted: "Redigido",
-};
 
 // ---------------------------------------------------------------------------
 // Sub-nav tabs definition
@@ -99,8 +86,8 @@ export default async function TenantDetailLayout({ children, params }: TenantLay
             </code>
           )}
           {org?.status && (
-            <Badge variant={STATUS_VARIANTS[org.status] ?? "neutral"}>
-              {traduzir(STATUS_LABELS[org.status] ?? org.status, idioma)}
+            <Badge variant={SELO_DA_SITUACAO[org.status] ?? "neutral"}>
+              {traduzir(ROTULO_DA_SITUACAO[org.status] ?? org.status, idioma)}
             </Badge>
           )}
         </div>

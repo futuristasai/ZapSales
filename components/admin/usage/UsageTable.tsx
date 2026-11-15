@@ -40,7 +40,7 @@ function exportCSV(tenants: UsageTenantRow[], range: UsageRange): void {
     "conversas",
     "invocacoes_ai",
     "tokens",
-    "custo_reais",
+    "custo_ia_dolares",
   ];
 
   const rows = tenants.map((t) => [

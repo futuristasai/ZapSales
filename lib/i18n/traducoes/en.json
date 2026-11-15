@@ -3062,7 +3062,6 @@
   "Resolução": "Resolution",
   "Resolvido em": "Resolved on",
   "Resolver incidente": "Resolve incident",
-  "Descreva como o incidente foi resolvido. Esta ação é registrada no audit log e não pode ser desfeita.": "Describe how the incident was resolved. This action is recorded in the audit log and cannot be undone.",
   "Nota de resolução": "Resolution note",
   "mín. 10 caracteres": "min. 10 characters",
   "Descreva a causa raiz e as ações tomadas para resolver o incidente...": "Describe the root cause and the actions taken to resolve the incident...",
@@ -10950,5 +10949,15 @@
   "Custo da IA por dia (US$)": "AI cost per day (US$)",
   "Tokens de IA por dia": "AI tokens per day",
   "Chamadas à IA": "AI calls",
-  "Custo da IA (US$)": "AI cost (US$)"
+  "Custo da IA (US$)": "AI cost (US$)",
+  "Descreva como o incidente foi resolvido. Esta ação fica no registro de ações e não pode ser desfeita.": "Describe how the incident was resolved. This action is kept in the action log and cannot be undone.",
+  "Código do contato": "Contact code",
+  "Código do cliente no sistema de origem": "Customer code in the source system",
+  "Um contato": "One contact",
+  "A empresa inteira": "The whole company",
+  "Registrado à mão": "Entered by hand",
+  "Pela API": "Through the API",
+  "Pelo suporte": "Through support",
+  "Agente com ferramentas (MCP)": "Agent with tools (MCP)",
+  "Atendente com base de conhecimento": "Assistant with a knowledge base"
 }
