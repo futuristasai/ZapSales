@@ -36,12 +36,14 @@ interface Props {
   initialSources: SourceRow[];
   initialChave: EstadoDaChave;
   agentes: AgenteQueUsa[];
+  /** Abre a janela de adicionar já na chegada (`?novo=1`, vindo do editor do agente). */
+  abrirNovo?: boolean;
 }
 
-export function AcervoClient({ initialSources, initialChave, agentes }: Props) {
+export function AcervoClient({ initialSources, initialChave, agentes, abrirNovo = false }: Props) {
   const t = useT();
   const qc = useQueryClient();
-  const [novoAberto, setNovoAberto] = useState(false);
+  const [novoAberto, setNovoAberto] = useState(abrirNovo);
 
   const { data: sources } = useKnowledgeSources({ initialData: initialSources });
   const { data: chave } = useEstadoDaChave(initialChave);

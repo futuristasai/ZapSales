@@ -31,11 +31,45 @@ import { useT } from "@/hooks/i18n/useT";
  *     Arquivado E marcado agora APARECE, com selo e com o desmarcar a um clique;
  *     arquivado e NÃO marcado continua fora, e não conta como material do
  *     assistente em nenhum aviso.
+ *  5. **Deixa o caminho para o acervo sempre à vista.** No editor esta é a parte
+ *     "Cérebro do agente": a que mais muda a resposta. O link para cadastrar
+ *     material aparecia só no estado vazio ou num aviso — quem tinha um material
+ *     e queria o segundo não achava por onde. "Adicionar material" e "Abrir o
+ *     acervo" ficam no topo da lista, e cada material é uma linha inteira
+ *     clicável, com o tipo e se ele já foi preparado.
  */
 import * as React from "react";
 import Link from "next/link";
 
+import type { Icon } from "@phosphor-icons/react";
+
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { canonizarTipoDeFonte, rotuloDoTipo, type TipoDeFonteId } from "@/lib/ai/rag/tipos-de-fonte";
+import {
+  ArrowSquareOut,
+  Brain,
+  ChatsCircle,
+  Check,
+  FileText,
+  Globe,
+  Plus,
+  Question,
+  Storefront,
+  Warning,
+} from "@/lib/ui/icons";
+import { cn } from "@/lib/utils";
+
+/** Onde o material se cadastra. `?novo=1` já abre a janela de adicionar. */
+const ACERVO = "/app/ai/knowledge/sources";
+
+const ICONE_DO_TIPO: Record<TipoDeFonteId, Icon> = {
+  faq: Question,
+  documento: FileText,
+  conversas: ChatsCircle,
+  catalogo: Storefront,
+  site: Globe,
+};
 
 export interface MaterialDoAcervo {
   id: string;
@@ -60,6 +94,15 @@ interface Props {
   disabled?: boolean;
   /** A seção do editor já dá título e introdução; aqui eles sairiam repetidos. */
   semTitulo?: boolean;
+  /**
+   * Chamado quando a pessoa VOLTA a esta aba depois de abrir o acervo em outra.
+   *
+   * O acervo abre em aba nova de propósito: no mesmo lugar, quem estava no meio de
+   * uma edição perderia o que não salvou. A volta é o momento de buscar a lista de
+   * novo — o editor passa `router.refresh()`, e o material recém-criado aparece
+   * aqui sem recarregar a página nem perder o formulário.
+   */
+  onVoltouDoAcervo?: () => void;
 }
 
 export function BasesDoAgente({
@@ -68,9 +111,26 @@ export function BasesDoAgente({
   onChange,
   disabled = false,
   semTitulo = false,
+  onVoltouDoAcervo,
 }: Props) {
   const t = useT();
   const marcados = new Set(value);
+  const abriuOAcervo = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!onVoltouDoAcervo) return;
+    function aoVoltar(): void {
+      if (document.visibilityState !== "visible" || !abriuOAcervo.current) return;
+      abriuOAcervo.current = false;
+      onVoltouDoAcervo?.();
+    }
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => document.removeEventListener("visibilitychange", aoVoltar);
+  }, [onVoltouDoAcervo]);
+
+  function marcarIdaAoAcervo(): void {
+    abriuOAcervo.current = true;
+  }
 
   function alternar(id: string, marcado: boolean): void {
     const proximo = new Set(marcados);
@@ -91,14 +151,51 @@ export function BasesDoAgente({
   const arquivadosMarcados = visiveis.filter((m) => m.is_active === false);
   const semPreparo = ativos.filter((m) => marcados.has(m.id) && (m.chunks_count ?? 0) === 0);
   const acervoTodoDeFora = ativos.length > 0 && value.length === 0;
+  const ligados = ativos.filter((m) => marcados.has(m.id)).length;
 
   function desmarcarArquivados(): void {
     const arquivados = new Set(arquivadosMarcados.map((m) => m.id));
     onChange(value.filter((id) => !arquivados.has(id)));
   }
 
+  /** "Adicionar" e "Abrir o acervo": sempre à vista, não só quando algo falta. */
+  function acoesDoAcervo(principal: boolean) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <Button asChild>
+          <Link
+            href={`${ACERVO}?novo=1`}
+            target="_blank"
+            rel="noopener"
+            onClick={marcarIdaAoAcervo}
+            data-testid="cerebro-adicionar-material"
+          >
+            <Plus size={16} weight="bold" aria-hidden />
+            {principal ? t("Adicionar o primeiro material") : t("Adicionar material")}
+            <span className="sr-only"> ({t("abre em outra aba")})</span>
+          </Link>
+        </Button>
+        {principal ? null : (
+          <Button asChild variant="outline">
+            <Link
+              href={ACERVO}
+              target="_blank"
+              rel="noopener"
+              onClick={marcarIdaAoAcervo}
+              data-testid="cerebro-abrir-acervo"
+            >
+              {t("Abrir o acervo")}
+              <ArrowSquareOut size={15} aria-hidden />
+              <span className="sr-only"> ({t("abre em outra aba")})</span>
+            </Link>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {semTitulo ? null : (
         <div>
           <h3 className="text-sm font-semibold">{t("O que ele consulta antes de responder")}</h3>
@@ -111,57 +208,129 @@ export function BasesDoAgente({
       )}
 
       {visiveis.length === 0 ? (
-        <p className="text-xs text-muted-foreground" data-testid="agente-sem-acervo">
-          {t("Você ainda não cadastrou nenhum material.")}{" "}
-          <Link
-            href="/app/ai/knowledge/sources"
-            className="font-medium text-foreground underline underline-offset-4"
+        <div
+          className="flex flex-col items-start gap-4 rounded-lg border border-dashed border-ia/35 px-5 py-6 sm:flex-row sm:items-center"
+          data-testid="agente-sem-acervo"
+        >
+          <span
+            aria-hidden
+            className="flex size-12 shrink-0 items-center justify-center rounded-full bg-ia-fundo text-ia"
           >
-            {t("Comece pelo que ele mais vai precisar")}
-          </Link>{" "}
-          {t("— as perguntas que se repetem, e a política que você mais explica.")}
-        </p>
-      ) : (
-        <div className="space-y-2" data-testid="agente-bases">
-          {visiveis.map((m) => (
-            <div key={m.id} className="flex items-center gap-2">
-              {/* `input` nativo, como o ToolPicker e o FunisDoAgente ao lado: o
-                  repo não tem componente de checkbox, e introduzir um só para
-                  esta seção criaria duas aparências para o mesmo controle na
-                  MESMA página. */}
-              <input
-                id={`base-${m.id}`}
-                data-testid={`base-${m.id}`}
-                type="checkbox"
-                className="h-4 w-4 shrink-0 rounded-md border-border accent-primary"
-                checked={marcados.has(m.id)}
-                onChange={(e) => alternar(m.id, e.target.checked)}
-                disabled={disabled}
-                aria-label={m.name}
-              />
-              <Label htmlFor={`base-${m.id}`} className="text-sm font-normal">
-                {m.name}
-                {/* Singular e plural viram CHAVES separadas em vez de um sufixo
-                    concatenado: em português o plural de "trecho" é +s, em
-                    espanhol "fragmento"/"fragmentos" muda a palavra inteira, e
-                    um `${…}s` no fim não tem como dizer isso. */}
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {(m.chunks_count ?? 0) > 0
-                    ? `${m.chunks_count} ${m.chunks_count === 1 ? t("trecho") : t("trechos")}`
-                    : t("ainda não preparado")}
-                </span>
-                {m.is_active === false ? (
-                  <span
-                    data-testid={`base-${m.id}-arquivado`}
-                    className="ml-2 text-xs font-medium text-warning-fg"
-                  >
-                    {t("arquivado no acervo")}
-                  </span>
-                ) : null}
-              </Label>
-            </div>
-          ))}
+            <Brain size={26} weight="duotone" />
+          </span>
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="text-sm font-semibold">{t("Você ainda não cadastrou nenhum material.")}</p>
+            <p className="max-w-[60ch] text-sm text-muted-foreground">
+              {t("Comece pelo que ele mais vai precisar")}{" "}
+              {t("— as perguntas que se repetem, e a política que você mais explica.")}
+            </p>
+          </div>
+          {acoesDoAcervo(true)}
         </div>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm" data-testid="cerebro-contagem">
+              <span className="font-semibold tabular-nums">{ligados}</span>{" "}
+              {t("de")} <span className="tabular-nums">{ativos.length}</span>{" "}
+              {ativos.length === 1
+                ? t("material do acervo ligado a este agente")
+                : t("materiais do acervo ligados a este agente")}
+            </p>
+            {acoesDoAcervo(false)}
+          </div>
+
+          <div className="space-y-2" data-testid="agente-bases">
+            {visiveis.map((m) => {
+              const marcado = marcados.has(m.id);
+              const tipo = canonizarTipoDeFonte(m.source_type);
+              const IconeDoTipo = tipo ? ICONE_DO_TIPO[tipo] : FileText;
+              const preparado = (m.chunks_count ?? 0) > 0;
+              const arquivado = m.is_active === false;
+              const detalhe = [
+                // O tipo some quando ele É o nome ("Conversas anteriores" é as duas coisas).
+                tipo && t(rotuloDoTipo(tipo)) !== m.name ? t(rotuloDoTipo(tipo)) : null,
+                preparado
+                  ? `${m.chunks_count} ${m.chunks_count === 1 ? t("trecho") : t("trechos")}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+              return (
+                <div
+                  key={m.id}
+                  data-marcado={marcado ? "sim" : "nao"}
+                  className={cn(
+                    "relative flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border px-3 py-2.5 transition-colors",
+                    marcado
+                      ? "border-ia/40 bg-ia-fundo"
+                      : "border-border hover:border-foreground/30 hover:bg-surface-elevated/50",
+                    disabled ? "opacity-60" : "",
+                  )}
+                >
+                  {/* `input` nativo, como o ToolPicker e o FunisDoAgente ao lado: o
+                      repo não tem componente de checkbox, e introduzir um só para
+                      esta seção criaria duas aparências para o mesmo controle na
+                      MESMA página. A linha inteira é clicável pelo rótulo esticado. */}
+                  <input
+                    id={`base-${m.id}`}
+                    data-testid={`base-${m.id}`}
+                    type="checkbox"
+                    className="relative z-10 size-4 shrink-0 rounded-md border-border accent-primary"
+                    checked={marcado}
+                    onChange={(e) => alternar(m.id, e.target.checked)}
+                    disabled={disabled}
+                    aria-label={m.name}
+                  />
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                      marcado ? "bg-surface text-ia" : "bg-surface-elevated text-muted-foreground",
+                    )}
+                  >
+                    <IconeDoTipo size={18} weight="duotone" />
+                  </span>
+                  <Label
+                    htmlFor={`base-${m.id}`}
+                    className={cn(
+                      "min-w-0 flex-1 basis-40 font-normal after:absolute after:inset-0 after:rounded-lg after:content-['']",
+                      disabled ? "" : "cursor-pointer",
+                    )}
+                  >
+                    <span className="block truncate text-sm font-medium">{m.name}</span>
+                    {/* Singular e plural viram CHAVES separadas em vez de um sufixo
+                        concatenado: em português o plural de "trecho" é +s, em
+                        espanhol "fragmento"/"fragmentos" muda a palavra inteira, e
+                        um `${…}s` no fim não tem como dizer isso. */}
+                    {detalhe ? (
+                      <span className="block truncate text-xs text-muted-foreground">{detalhe}</span>
+                    ) : null}
+                  </Label>
+                  {arquivado ? (
+                    <span
+                      data-testid={`base-${m.id}-arquivado`}
+                      className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-warning-bg px-2 py-0.5 text-xs font-medium text-warning-fg"
+                    >
+                      <Warning size={12} weight="bold" aria-hidden />
+                      {t("arquivado no acervo")}
+                    </span>
+                  ) : !preparado ? (
+                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-warning-bg px-2 py-0.5 text-xs font-medium text-warning-fg">
+                      <Warning size={12} weight="bold" aria-hidden />
+                      {t("ainda não preparado")}
+                    </span>
+                  ) : marcado ? (
+                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ia">
+                      <Check size={12} weight="bold" aria-hidden />
+                      {t("Ele lê")}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {value.length === 0 && visiveis.length > 0 ? (
@@ -173,11 +342,17 @@ export function BasesDoAgente({
       ) : null}
 
       {acervoTodoDeFora ? (
-        <p data-testid="agente-acervo-de-fora" className="text-xs text-warning-fg">
-          {t("Você tem")} {ativos.length} {ativos.length === 1 ? t("material") : t("materiais")}{" "}
-          {t(
-            "no acervo e este assistente não lê nenhum. Ele vai responder de improviso sobre assuntos que já estão escritos.",
-          )}
+        <p
+          data-testid="agente-acervo-de-fora"
+          className="flex items-start gap-1.5 text-sm text-warning-fg"
+        >
+          <Warning size={16} weight="bold" aria-hidden className="mt-0.5 shrink-0" />
+          <span>
+            {t("Você tem")} {ativos.length} {ativos.length === 1 ? t("material") : t("materiais")}{" "}
+            {t(
+              "no acervo e este assistente não lê nenhum. Ele vai responder de improviso sobre assuntos que já estão escritos.",
+            )}
+          </span>
         </p>
       ) : null}
 
@@ -206,7 +381,10 @@ export function BasesDoAgente({
             ? `"${semPreparo[0]?.name}" ${t("está marcado mas ainda não foi preparado — o agente não vai achar nada nele.")}`
             : `${semPreparo.length} ${t("materiais marcados ainda não foram preparados — o agente não vai achar nada neles.")}`}{" "}
           <Link
-            href="/app/ai/knowledge/sources"
+            href={ACERVO}
+            target="_blank"
+            rel="noopener"
+            onClick={marcarIdaAoAcervo}
             className="font-medium text-foreground underline underline-offset-4"
           >
             {t("Ver o acervo")}

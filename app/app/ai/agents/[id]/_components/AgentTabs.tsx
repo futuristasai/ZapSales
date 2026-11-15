@@ -59,7 +59,7 @@ const ABAS: ReadonlyArray<{ id: Aba; nome: string; Icone: typeof ChatsCircle; fr
     id: "configuration",
     nome: "Configuração",
     Icone: SlidersHorizontal,
-    frase: "Como ele fala, o que sabe e o que pode fazer. Mudanças ficam num rascunho até você publicar.",
+    frase: "Quem ele é, o que ele sabe (o cérebro), como fala e o que pode fazer. Mudanças ficam num rascunho até você publicar.",
   },
   {
     id: "test",

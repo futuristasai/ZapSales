@@ -10857,5 +10857,16 @@
   "em voo ficaram de fora: já têm retorno marcado. Para incluí-las, escolha o cartão Em voo.": "in flight were left out: they already have a follow-up scheduled. To include them, pick the In flight card.",
   "negócio(s) sem cliente ligado ficaram de fora.": "deal(s) with no customer linked were left out.",
   "pessoa em": "person in",
-  "pessoas em": "people in"
+  "pessoas em": "people in",
+  "Cérebro do agente": "Agent's brain",
+  "O material do seu negócio que ele lê antes de cada resposta — preços, horários, regras, perguntas frequentes. Com ele, o agente responde com o que está escrito e cita de onde tirou; sem ele, improvisa.": "Your business material it reads before every answer — prices, hours, rules, frequently asked questions. With it, the agent answers with what is written and cites where it came from; without it, it improvises.",
+  "Adicionar o primeiro material": "Add the first material",
+  "abre em outra aba": "opens in a new tab",
+  "Abrir o acervo": "Open the library",
+  "material do acervo ligado a este agente": "library material connected to this agent",
+  "materiais do acervo ligados a este agente": "library materials connected to this agent",
+  "Ele lê": "It reads this",
+  "Alimentar o cérebro do agente": "Feed the agent's brain",
+  "O cérebro está vazio: sem preços e regras por escrito, ele improvisa. Ligue ao menos um material.": "The brain is empty: without written prices and rules, it improvises. Connect at least one material.",
+  "Quem ele é, o que ele sabe (o cérebro), como fala e o que pode fazer. Mudanças ficam num rascunho até você publicar.": "Who it is, what it knows (the brain), how it talks and what it can do. Changes stay in a draft until you publish."
 }

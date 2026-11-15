@@ -16007,6 +16007,17 @@ export const DICIONARIO: Traducoes = {
   "negócio(s) sem cliente ligado ficaram de fora.": { es: "negocio(s) sin cliente vinculado quedaron fuera." },
   "pessoa em": { es: "persona en" },
   "pessoas em": { es: "personas en" },
+  "Cérebro do agente": { es: "Cerebro del agente" },
+  "O material do seu negócio que ele lê antes de cada resposta — preços, horários, regras, perguntas frequentes. Com ele, o agente responde com o que está escrito e cita de onde tirou; sem ele, improvisa.": { es: "El material de tu negocio que lee antes de cada respuesta — precios, horarios, reglas, preguntas frecuentes. Con él, el agente responde con lo que está escrito y cita de dónde lo sacó; sin él, improvisa." },
+  "Adicionar o primeiro material": { es: "Agregar el primer material" },
+  "abre em outra aba": { es: "se abre en otra pestaña" },
+  "Abrir o acervo": { es: "Abrir el acervo" },
+  "material do acervo ligado a este agente": { es: "material del acervo conectado a este agente" },
+  "materiais do acervo ligados a este agente": { es: "materiales del acervo conectados a este agente" },
+  "Ele lê": { es: "Lo lee" },
+  "Alimentar o cérebro do agente": { es: "Alimentar el cerebro del agente" },
+  "O cérebro está vazio: sem preços e regras por escrito, ele improvisa. Ligue ao menos um material.": { es: "El cerebro está vacío: sin precios ni reglas por escrito, improvisa. Conecta al menos un material." },
+  "Quem ele é, o que ele sabe (o cérebro), como fala e o que pode fazer. Mudanças ficam num rascunho até você publicar.": { es: "Quién es, qué sabe (el cerebro), cómo habla y qué puede hacer. Los cambios quedan en un borrador hasta que publiques." },
 };
 
 /**

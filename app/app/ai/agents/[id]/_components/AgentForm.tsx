@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import { TokenCounter } from "@/lib/ui/TokenCounter";
 import {
-  BookOpen,
   Brain,
   ChatsCircle,
   HandCoins,
@@ -42,6 +41,7 @@ import {
   PaperPlaneTilt,
   PuzzlePiece,
   ShieldCheck,
+  SlidersHorizontal,
   Smiley,
   TreeStructure,
   WhatsappLogo,
@@ -557,22 +557,34 @@ type IdDaSecao =
 
 /**
  * As partes da conversa com o cliente, NA ORDEM EM QUE SE PENSA nelas: quem ele
- * é, como fala, o que sabe, o que faz, onde atende, quando chama alguém, e só
- * no fim a parte técnica (modelo, chave, limites) — que o leigo pode nem abrir.
+ * é, o que ele sabe, como fala, o que faz, onde atende, quando chama alguém, e
+ * só no fim a parte técnica (modelo, chave, limites) — que o leigo pode nem abrir.
  * Antes eram 14 cartões em duas colunas, com "Freios de segurança" em tokens
  * antes da personalidade.
+ *
+ * O "Cérebro do agente" (o material que ele consulta) vem logo depois do nome, e
+ * não mais em quarto: é a parte que mais muda a qualidade da resposta — sem ela o
+ * agente improvisa —, e escondida no meio da página ela era a que o dono menos
+ * achava. O ícone de cada parte é o MESMO no índice e no cabeçalho, para o olho
+ * ligar um ao outro sem ler.
  */
-const SECOES: ReadonlyArray<{ id: IdDaSecao; indice: string }> = [
-  { id: "quem", indice: "Quem é" },
-  { id: "personalidade", indice: "Personalidade" },
-  { id: "respostas", indice: "Jeito de responder" },
-  { id: "conhecimento", indice: "O que ele sabe" },
-  { id: "capacidades", indice: "O que ele faz" },
-  { id: "onde", indice: "Onde e quando atende" },
-  { id: "pessoas", indice: "Passar para uma pessoa" },
-  { id: "vendas", indice: "Propostas e retornos" },
-  { id: "inteligencia", indice: "Inteligência e limites" },
+const SECOES: ReadonlyArray<{ id: IdDaSecao; indice: string; Icone: Icon }> = [
+  { id: "quem", indice: "Quem é", Icone: IdentificationCard },
+  { id: "conhecimento", indice: "Cérebro do agente", Icone: Brain },
+  { id: "personalidade", indice: "Personalidade", Icone: Smiley },
+  { id: "respostas", indice: "Jeito de responder", Icone: ChatsCircle },
+  { id: "capacidades", indice: "O que ele faz", Icone: PuzzlePiece },
+  { id: "onde", indice: "Onde e quando atende", Icone: WhatsappLogo },
+  { id: "pessoas", indice: "Passar para uma pessoa", Icone: PassagemParaHumano },
+  { id: "vendas", indice: "Propostas e retornos", Icone: HandCoins },
+  { id: "inteligencia", indice: "Inteligência e limites", Icone: SlidersHorizontal },
 ];
+
+/** O ícone da parte, lido da lista acima — o cabeçalho e o índice não podem divergir. */
+const ICONE_DA_SECAO = Object.fromEntries(SECOES.map((s) => [s.id, s.Icone])) as Record<
+  IdDaSecao,
+  Icon
+>;
 
 /** Em que seção mora cada campo que a validação pode acusar — o índice marca onde corrigir. */
 const SECAO_DO_CAMPO: Record<string, IdDaSecao> = {
@@ -605,41 +617,78 @@ const SECAO_DO_CAMPO: Record<string, IdDaSecao> = {
  * Uma parte do formulário: o que ela é e, numa frase, o que muda para o cliente
  * quando se mexe nela. É um painel só — o que vem dentro se separa por filete
  * (`Subsecao`), nunca por outro cartão.
+ *
+ * O cabeçalho é uma FAIXA de tom próprio, com o ícone na cor da IA e o título um
+ * degrau acima do texto dos campos: quem rola nove partes precisa saber, sem ler o
+ * corpo, onde uma termina e a outra começa e qual está editando. `subtitulo` é a
+ * pergunta que a parte responde, quando o título é um nome ("Cérebro do agente")
+ * e não uma pergunta. `destaque` é só para a parte que mais pesa na resposta.
  */
 function SecaoDoAgente({
   id,
-  Icone,
   titulo,
+  subtitulo,
   explicacao,
   estado,
+  destaque = false,
   children,
 }: {
   id: IdDaSecao;
-  Icone: Icon;
   titulo: string;
+  subtitulo?: string;
   explicacao: string;
   /** Pronto / Revisar / Opcional (o guia do editor); sem ele, o cabeçalho não leva selo. */
   estado?: EstadoDaSecao;
+  destaque?: boolean;
   children: React.ReactNode;
 }) {
+  const Icone = ICONE_DA_SECAO[id];
   return (
     <section
       id={`secao-${id}`}
       data-secao={id}
+      data-destaque={destaque ? "sim" : undefined}
       aria-labelledby={`titulo-secao-${id}`}
-      className="scroll-mt-40 overflow-hidden rounded-xl border border-border bg-surface shadow-xs"
+      className={cn(
+        "scroll-mt-40 overflow-hidden rounded-xl border bg-surface shadow-xs",
+        destaque ? "aura-ia" : "border-border",
+      )}
     >
-      <header className="flex items-start gap-3 border-b border-border px-5 py-4">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-foreground">
-          <Icone size={18} weight="duotone" aria-hidden />
+      {/* No celular o texto ocupa a largura toda, embaixo do ícone; o selo acompanha o
+          título e desce para a linha dele quando não cabe ao lado. */}
+      <header
+        className={cn(
+          "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 border-b px-5 py-4 sm:items-start",
+          destaque ? "border-ia/20 bg-ia-fundo" : "border-border bg-surface-elevated/50",
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "row-span-1 flex shrink-0 items-center justify-center rounded-xl sm:row-span-2",
+            destaque
+              ? "size-11 bg-surface text-ia shadow-sm ring-1 ring-ia/30 sm:size-12"
+              : "size-10 bg-ia-fundo text-ia",
+          )}
+        >
+          <Icone size={destaque ? 26 : 22} weight="duotone" />
         </span>
-        <div className="min-w-0 space-y-0.5">
-          <h2 id={`titulo-secao-${id}`} className="text-base leading-tight font-semibold tracking-tight">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <h2
+            id={`titulo-secao-${id}`}
+            className={cn(
+              "leading-tight font-semibold tracking-tight text-balance",
+              destaque ? "text-xl" : "text-lg",
+            )}
+          >
             {titulo}
           </h2>
+          {estado ? <SeloDaSecao estado={estado} /> : null}
+        </div>
+        <div className="col-span-2 min-w-0 space-y-1 sm:col-span-1 sm:col-start-2">
+          {subtitulo ? <p className="text-sm font-medium text-ia">{subtitulo}</p> : null}
           <p className="max-w-[65ch] text-sm text-muted-foreground">{explicacao}</p>
         </div>
-        {estado ? <SeloDaSecao estado={estado} className="ml-auto" /> : null}
       </header>
       <div className="space-y-5 p-5">{children}</div>
     </section>
@@ -719,6 +768,12 @@ export function AgentForm(props: Props) {
   function irPara(p: Papel) {
     setPapel(p);
   }
+
+  /**
+   * O acervo abre em outra aba (quem edita não perde o que não salvou). Na volta, a
+   * página busca os materiais de novo; o formulário é estado local e fica como estava.
+   */
+  const buscarAcervoDeNovo = React.useCallback(() => router.refresh(), [router]);
 
   function rolarPara(id: IdDaSecao) {
     const reduzir = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -1261,41 +1316,56 @@ export function AgentForm(props: Props) {
                     </span>
                   </button>
                   {id === "conversa" && ativo ? (
-                    <ol className="mt-1 mb-2 hidden space-y-0.5 border-l border-border pl-2 ml-5 lg:block">
-                      {SECOES.map((secao) => (
-                        <li key={secao.id}>
-                          <a
-                            href={`#secao-${secao.id}`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              rolarPara(secao.id);
-                            }}
-                            aria-current={secaoVisivel === secao.id ? "location" : undefined}
-                            className={cn(
-                              "block rounded-md px-2 py-1.5 transition-colors",
-                              secaoVisivel === secao.id
-                                ? "bg-ia-fundo text-foreground"
-                                : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground",
-                            )}
-                          >
-                            <span className="flex items-center justify-between gap-2 text-sm">
-                              <span className="flex min-w-0 items-center gap-1.5">
-                                <MarcaDaSecao estado={estadoDaSecao[secao.id]} />
-                                <span className="truncate">{t(secao.indice)}</span>
+                    <ol className="mt-1 mb-2 ml-3 hidden space-y-0.5 border-l border-border pl-2 lg:block">
+                      {SECOES.map((secao) => {
+                        const atual = secaoVisivel === secao.id;
+                        const IconeDoIndice = secao.Icone;
+                        return (
+                          <li key={secao.id}>
+                            <a
+                              href={`#secao-${secao.id}`}
+                              data-testid={`indice-${secao.id}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                rolarPara(secao.id);
+                              }}
+                              aria-current={atual ? "location" : undefined}
+                              className={cn(
+                                "flex items-start gap-2 rounded-md px-2 py-1.5 transition-colors",
+                                atual
+                                  ? "bg-ia-fundo text-foreground"
+                                  : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground",
+                              )}
+                            >
+                              <IconeDoIndice
+                                size={16}
+                                weight={atual ? "fill" : "duotone"}
+                                aria-hidden
+                                className={cn("mt-0.5 shrink-0", atual ? "text-ia" : "")}
+                              />
+                              <span className="min-w-0 flex-1">
+                                <span className="flex items-center justify-between gap-2 text-sm">
+                                  <span className={cn("truncate", atual ? "font-medium" : "")}>
+                                    {t(secao.indice)}
+                                  </span>
+                                  <span className="flex shrink-0 items-center gap-1">
+                                    {errosPorSecao[secao.id] ? (
+                                      <span
+                                        className="size-2 rounded-full bg-error"
+                                        title={t("Há um campo a corrigir nesta parte.")}
+                                      />
+                                    ) : null}
+                                    <MarcaDaSecao estado={estadoDaSecao[secao.id]} />
+                                  </span>
+                                </span>
+                                <span className="block truncate text-xs text-muted-foreground">
+                                  {resumoDaSecao[secao.id]}
+                                </span>
                               </span>
-                              {errosPorSecao[secao.id] ? (
-                                <span
-                                  className="size-2 shrink-0 rounded-full bg-error"
-                                  title={t("Há um campo a corrigir nesta parte.")}
-                                />
-                              ) : null}
-                            </span>
-                            <span className="block truncate text-xs text-muted-foreground">
-                              {resumoDaSecao[secao.id]}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
+                            </a>
+                          </li>
+                        );
+                      })}
                     </ol>
                   ) : null}
                 </li>
@@ -1375,7 +1445,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="quem"
               estado={estadoDaSecao.quem}
-              Icone={IdentificationCard}
               titulo={t("Quem é este agente")}
               explicacao={t("Como a sua equipe reconhece este agente nas listas e em Conversas. O cliente não vê esta parte.")}
             >
@@ -1442,9 +1511,33 @@ export function AgentForm(props: Props) {
             </SecaoDoAgente>
 
             <SecaoDoAgente
+              id="conhecimento"
+              destaque
+              estado={estadoDaSecao.conhecimento}
+              titulo={t("Cérebro do agente")}
+              subtitulo={t("O que ele consulta antes de responder")}
+              explicacao={t("O material do seu negócio que ele lê antes de cada resposta — preços, horários, regras, perguntas frequentes. Com ele, o agente responde com o que está escrito e cita de onde tirou; sem ele, improvisa.")}
+            >
+              {form.knowledge_source_ids.length === 0 ? (
+                <FaixaRecomendada testId="recomendado-conhecimento">
+                  {t(
+                    "ligue ao menos um material, como a tabela de preços, os horários e as regras da casa. Motivo: sem material o agente improvisa, e é assim que nasce a resposta errada.",
+                  )}
+                </FaixaRecomendada>
+              ) : null}
+              <BasesDoAgente
+                semTitulo
+                materiais={materiais}
+                value={form.knowledge_source_ids}
+                onChange={(ids) => patch({ knowledge_source_ids: ids })}
+                onVoltouDoAcervo={buscarAcervoDeNovo}
+                disabled={disabled}
+              />
+            </SecaoDoAgente>
+
+            <SecaoDoAgente
               id="personalidade"
               estado={estadoDaSecao.personalidade}
-              Icone={Smiley}
               titulo={t("Como ele se apresenta")}
               explicacao={t("Muda o jeito como ele fala com o seu cliente: quem ele diz ser, o tom e sobre o que aceita conversar.")}
             >
@@ -1579,7 +1672,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="respostas"
               estado={estadoDaSecao.respostas}
-              Icone={ChatsCircle}
               titulo={t("Jeito de responder")}
               explicacao={t("O formato das mensagens que chegam ao cliente: um texto único ou várias mensagens curtas, e se ele também responde em áudio.")}
             >
@@ -1663,32 +1755,8 @@ export function AgentForm(props: Props) {
             </SecaoDoAgente>
 
             <SecaoDoAgente
-              id="conhecimento"
-              estado={estadoDaSecao.conhecimento}
-              Icone={BookOpen}
-              titulo={t("O que ele consulta antes de responder")}
-              explicacao={t("Marque o material do seu negócio que este assistente pode ler. Ele procura ali antes de responder, em vez de improvisar — e cita de onde tirou.")}
-            >
-              {form.knowledge_source_ids.length === 0 ? (
-                <FaixaRecomendada testId="recomendado-conhecimento">
-                  {t(
-                    "ligue ao menos um material, como a tabela de preços, os horários e as regras da casa. Motivo: sem material o agente improvisa, e é assim que nasce a resposta errada.",
-                  )}
-                </FaixaRecomendada>
-              ) : null}
-              <BasesDoAgente
-                semTitulo
-                materiais={materiais}
-                value={form.knowledge_source_ids}
-                onChange={(ids) => patch({ knowledge_source_ids: ids })}
-                disabled={disabled}
-              />
-            </SecaoDoAgente>
-
-            <SecaoDoAgente
               id="capacidades"
               estado={estadoDaSecao.capacidades}
-              Icone={PuzzlePiece}
               titulo={t("O que o agente pode fazer")}
               explicacao={t("Ligue por jornada de trabalho. O agente só consegue fazer o que estiver ligado aqui — e o que estiver ligado, ele fará sozinho durante o atendimento.")}
             >
@@ -1709,7 +1777,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="onde"
               estado={estadoDaSecao.onde}
-              Icone={WhatsappLogo}
               titulo={t("Onde e quando ele atende")}
               explicacao={t("Por qual número de WhatsApp ele responde e em que situações ele entra na conversa sozinho.")}
             >
@@ -1800,7 +1867,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="pessoas"
               estado={estadoDaSecao.pessoas}
-              Icone={PassagemParaHumano}
               titulo={t("Passar para uma pessoa")}
               explicacao={t("Quando ele chama alguém da equipe, e como vocês assumem ou devolvem a conversa.")}
             >
@@ -1861,7 +1927,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="vendas"
               estado={estadoDaSecao.vendas}
-              Icone={HandCoins}
               titulo={t("Propostas e retornos")}
               explicacao={t("Se ele pode montar um orçamento quando o cliente pede, e se volta a procurar quem parou de responder.")}
             >
@@ -1940,7 +2005,6 @@ export function AgentForm(props: Props) {
             <SecaoDoAgente
               id="inteligencia"
               estado={estadoDaSecao.inteligencia}
-              Icone={Brain}
               titulo={t("Inteligência e limites")}
               explicacao={t("Qual inteligência artificial escreve as respostas, com qual chave, e até onde ele pode ir em cada atendimento. Se não sabe o que mudar aqui, deixe como está.")}
             >
