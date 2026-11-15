@@ -21,6 +21,7 @@ import {
 import { CaretLeft } from "@/lib/ui/icons";
 import { useAdminUser } from "@/hooks/useAdminUser";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -124,6 +125,8 @@ export function UserDetailClient({ id }: UserDetailClientProps) {
         </Link>
       </div>
 
+      <ContextoDaSubpagina href="/admin/users" />
+
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">
@@ -192,8 +195,8 @@ export function UserDetailClient({ id }: UserDetailClientProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead className="w-[100px]">Role</TableHead>
+                  <TableHead>{t("Empresa")}</TableHead>
+                  <TableHead className="w-[100px]">{t("Papel")}</TableHead>
                   <TableHead className="w-[140px]">{t("Aceito em")}</TableHead>
                   <TableHead className="w-[100px]">{t("Status")}</TableHead>
                 </TableRow>
@@ -241,7 +244,7 @@ export function UserDetailClient({ id }: UserDetailClientProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">
-            {t("Audit recente")} ({recent_audit.length}{recent_audit.length === 50 ? "+" : ""})
+            {t("Ações recentes")} ({recent_audit.length}{recent_audit.length === 50 ? "+" : ""})
           </CardTitle>
         </CardHeader>
         <CardContent>

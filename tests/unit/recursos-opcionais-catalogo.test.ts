@@ -70,7 +70,9 @@ describe("o catálogo de recursos opcionais não deixa recurso de fora", () => {
   it("todo 'Ajustar' leva a uma tela que existe", () => {
     const mortos = RECURSOS_OPCIONAIS.flatMap((r) => (r.href ? [r.href] : [])).filter(
       (href) => {
-        const [raiz, ...resto] = href.replace(/^\//, "").split("/");
+        // A âncora (`/admin/sistema#modulos`, issue #308) aponta um bloco da MESMA tela:
+        // quem decide se o link está vivo é o caminho, sem o fragmento.
+        const [raiz, ...resto] = href.replace(/#.*$/, "").replace(/^\//, "").split("/");
         const dir =
           raiz === "admin"
             ? path.join(process.cwd(), "app", "admin", "(protected)", ...resto)

@@ -7,8 +7,10 @@ import { tagDeIdioma } from "@/lib/i18n/datas";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Extensões da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/extensoes");
 export const dynamic = "force-dynamic";
 
 /**
@@ -52,7 +54,10 @@ export default async function Page() {
 
   const db = createAdminClient();
   const [catalogos, instalacoes, vinculos] = await Promise.all([
-    db.from("extension_catalogs").select("id,origin,revision,digest,admitted_at").order("admitted_at", { ascending: false }),
+    db
+      .from("extension_catalogs")
+      .select("id,origin,revision,digest,admitted_at")
+      .order("admitted_at", { ascending: false }),
     // Remoção aqui é soft delete: a linha fica, com `removed_at` preenchido. Sem
     // este filtro a tela chamaria de "instalada" uma extensão que o operador já
     // removeu — e contaria os vínculos dela junto. A irmã de produção
@@ -82,14 +87,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6" data-testid="tela-extensoes-da-instalacao">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Extensões da instalação")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-text-muted">
-          {t(
-            "O que este servidor conhece, de onde veio e quem está usando. Instalar e configurar continua sendo feito dentro de cada empresa.",
-          )}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/extensoes" />
 
       <Card className="p-5">
         <h2 className="text-base font-semibold">{t("De onde vêm as extensões")}</h2>
@@ -133,7 +131,11 @@ export default async function Page() {
             (instalacoes.data ?? []).map((e) => {
               const uso = porInstalacao.get(e.id) ?? { ligadas: 0, total: 0 };
               return (
-                <div key={e.id} data-testid={`extensao-${e.publisher}-${e.name}`} className="text-sm">
+                <div
+                  key={e.id}
+                  data-testid={`extensao-${e.publisher}-${e.name}`}
+                  className="text-sm"
+                >
                   <p className="font-medium">
                     {e.publisher}/{e.name}{" "}
                     <span className="font-normal text-text-muted">v{e.version}</span>

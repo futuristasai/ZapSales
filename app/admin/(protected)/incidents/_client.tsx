@@ -19,6 +19,7 @@ import {
   type IncidentSeverity,
 } from "@/hooks/useAdminIncidents";
 import { useT } from "@/hooks/i18n/useT";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 const STATUS_OPTIONS: { value: IncidentStatus; label: string }[] = [
   { value: "open", label: "Abertos" },
@@ -47,24 +48,20 @@ export function IncidentsClient() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("Incidentes")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isLoading
-              ? t("Carregando...")
-              : `${total} ${total !== 1 ? t("incidentes") : t("incidente")}${hasNextPage ? "+" : ""}`}
-          </p>
-        </div>
-      </div>
+      <CabecalhoDaPlataforma
+        href="/admin/incidents"
+        complemento={
+          isLoading
+            ? t("Carregando...")
+            : `${total} ${total !== 1 ? t("incidentes") : t("incidente")}${hasNextPage ? "+" : ""}`
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select
           value={filters.status ?? "open"}
-          onValueChange={(v) =>
-            setFilters((f) => ({ ...f, status: v as IncidentStatus }))
-          }
+          onValueChange={(v) => setFilters((f) => ({ ...f, status: v as IncidentStatus }))}
         >
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder={t("Status")} />

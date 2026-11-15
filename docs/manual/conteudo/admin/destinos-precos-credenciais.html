@@ -1,10 +1,11 @@
-<!--meta {"id":"admin-destinos","grupo":"admin","titulo":"Destinos internos, Preços da Meta e Credenciais","ordem":10,"resumo":"Três telas de configuração global: liberar endereços da rede interna do servidor, manter a tabela de preços da Meta e a cotação do dólar, e ver o estado das credenciais-chave do servidor.","palavras":["destinos internos","rede interna","cidr","preços da meta","cotação do dólar","tabela de preços","marketing","utilidade","autenticação","atendimento","credenciais","configuração da instalação","dpo","e-mail de suporte","segredos"],"onde":"Modo administrador › Destinos internos, Preços da Meta e Credenciais (/admin/destinos-internos, /admin/precos-da-meta, /admin/configuracao)","quem":"Administrador da plataforma; salvar exige escopo full e a verificação em dia","rotas":[]} -->
+<!--meta {"id":"admin-destinos","grupo":"admin","titulo":"Destinos internos, Preços da Meta e Credenciais","ordem":10,"resumo":"Três telas de configuração global: liberar endereços da rede interna do servidor, manter a tabela de preços da Meta e a cotação do dólar, e ver o estado das credenciais-chave do servidor.","palavras":["destinos internos","rede interna","cidr","preços da meta","cotação do dólar","tabela de preços","marketing","utilidade","autenticação","atendimento","credenciais","configuração da instalação","dpo","e-mail de suporte","segredos"],"onde":"Administração da instalação › Integrações › Destinos internos e Preços da Meta; Configurar a instalação › Credenciais (/admin/destinos-internos, /admin/precos-da-meta, /admin/configuracao)","quem":"Administrador da plataforma; salvar exige escopo full e a verificação em dia","rotas":[]} -->
 
 <h2 id="destinos">Destinos internos</h2>
-<p>Por padrão, o servidor <em>recusa</em> falar com endereços da própria rede interna (como <code>10.0.0.5</code> ou <code>192.168.1.20</code>) por segurança. Aqui você libera um endereço específico — por exemplo, um modelo de IA rodando na própria VPS.</p>
+<p>Por padrão, o servidor <em>recusa</em> falar com endereços da própria rede interna (como <code>10.0.0.5</code> ou <code>192.168.1.20</code>) por segurança. Aqui você libera um endereço específico — por exemplo, um modelo de IA rodando na própria VPS. O cabeçalho diz “Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.” e “Quando usar: Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-destinos-internos.png" alt="Tela Destinos internos com o cartão Endereços liberados e o campo Um endereço por linha, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Destinos internos, com a lista vazia.</figcaption>
+  <figcaption>A tela Destinos internos, com a lista vazia (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereços liberados.</strong> O endereço continua precisando ser <code>https</code> em produção e só vale para o que a <em>instalação</em> configura. O endereço que uma <em>empresa</em> escolhe no painel dela segue sem poder apontar para dentro.</li>
@@ -14,10 +15,11 @@
 <aside class="nota atencao"><strong>Cada endereço é uma porta.</strong><p>“Cada endereço aqui é uma porta que este servidor passa a poder abrir para dentro da própria rede, levando junto a chave da instalação. Declare o endereço do serviço que você mesmo colocou lá — nunca uma faixa inteira por conveniência.” Quando a lista ainda vem do arquivo do servidor, uma nota avisa que, ao salvar, o arquivo deixa de ser consultado. Auditoria: <code>platform.internal_destinations_updated</code>.</p></aside>
 
 <h2 id="precos">Preços da Meta</h2>
-<p>Quanto a Meta cobra por mensagem, por país de quem recebe e por categoria. É a base da <strong>estimativa antes do disparo</strong>, do custo de cada mensagem e do <strong>teto de gasto</strong> das campanhas oficiais.</p>
+<p>Quanto a Meta cobra por mensagem, por país de quem recebe e por categoria. É a base da <strong>estimativa antes do disparo</strong>, do custo de cada mensagem e do <strong>teto de gasto</strong> das campanhas oficiais. O cabeçalho diz “Mantém a tabela de preço por país e categoria de mensagem, base da estimativa e do teto de gasto das campanhas.” e “Quando usar: Quando a Meta muda os preços ou o dólar varia muito.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-precos-meta.png" alt="Tela Preços da Meta com a tabela de preços por país e o cartão Cotação do dólar, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Preços da Meta.</figcaption>
+  <figcaption>A tela Preços da Meta (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Tabela de preços.</strong> Preço de uma mensagem, em reais, para quem recebe naquele país.</li>
@@ -34,11 +36,12 @@
   <li>Se o formulário tiver país com mais ou menos de duas letras, prefixo não numérico ou moeda inválida, a mensagem é “Confira os campos: país com duas letras (BR), prefixo só com números (55) e moeda com três letras (BRL).”. Erros: “Preço que não entendi em &lt;país&gt; · &lt;categoria&gt;”, “O mesmo país aparece duas vezes. Deixe uma linha por país.”, “A cotação precisa ser um número maior que zero, ou ficar em branco.”. Auditoria: <code>platform.meta_pricing_updated</code>.</li>
 </ul>
 
-<h2 id="credenciais">Credenciais (“Configuração da instalação”)</h2>
-<p>No menu o item se chama <strong>Credenciais</strong>, mas o título da página é “Configuração da instalação”: mostra o estado das configurações-chave do servidor e deixa trocar, sem SSH, as <em>poucas</em> que podem ser trocadas pela tela.</p>
+<h2 id="credenciais">Credenciais</h2>
+<p>Mostra o estado das configurações-chave do servidor e deixa trocar, sem SSH (o acesso ao servidor pelo terminal), as <em>poucas</em> que podem ser trocadas pela tela. O título da tela é o mesmo do menu, <strong>Credenciais</strong> (antes ela se chamava “Configuração da instalação”). O cabeçalho diz “Guarda as chaves e os dados de contato da instalação, o que antes só se trocava pelo terminal.” e “Quando usar: Quando uma chave vence, muda de dono ou precisa ser trocada por segurança.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-configuracao.png" alt="Tela Configuração da instalação com os grupos E-mail, Segurança e privacidade, WhatsApp, Banco de dados e outros, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram trocados por “abcd”).</figcaption>
+  <img src="img/admin-configuracao.png" alt="Tela Credenciais com os grupos E-mail, Segurança e privacidade, WhatsApp, Banco de dados e outros, numerada de 1 a 7" loading="lazy">
+  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram trocados por “abcd”; print anterior à reorganização, com o título antigo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>E-mail.</strong> “Sem isto o sistema não envia convite para a equipe nem recuperação de senha.” O serviço de envio fica na tela <a href="#admin-cadastro--email">E-mail</a>.</li>

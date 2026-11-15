@@ -153,6 +153,18 @@
   --color-humano-fundo: rgba(13, 116, 128, 0.12);
   --color-funil: #b86e00;
   --color-funil-fundo: rgba(194, 122, 0, 0.14);
+
+  /* Tons dos grupos da área de administração da instalação (/admin, issue #308).
+     Cada grupo do menu tem UM tom, que aparece só no ícone. Fora do violeta da
+     marca (que segue no item ativo) e das cores de estado (verde/âmbar/vermelho
+     dizem "deu certo / atenção / erro" — um ícone de menu não diz nada disso).
+     Contraste de pelo menos 4,5:1 sobre a superfície e o fundo, acima dos 3:1 que ícone
+     pede — medido em tests/unit/tons-dos-grupos-do-admin.test.ts. */
+  --color-grupo-visao: #3554c7;
+  --color-grupo-pessoas: #0b6f7f;
+  --color-grupo-protecao: #ad2d73;
+  --color-grupo-instalacao: #4a5578;
+  --color-grupo-integracoes: #a8470d;
   --color-acao: #c6f432;
   --color-acao-fg: #151a2e;
   --color-acao-hover: #b5e61f;
@@ -315,6 +327,18 @@
   --color-humano-fundo: rgba(13, 116, 128, 0.12);
   --color-funil: #b86e00;
   --color-funil-fundo: rgba(194, 122, 0, 0.14);
+
+  /* Tons dos grupos da área de administração da instalação (/admin, issue #308).
+     Cada grupo do menu tem UM tom, que aparece só no ícone. Fora do violeta da
+     marca (que segue no item ativo) e das cores de estado (verde/âmbar/vermelho
+     dizem "deu certo / atenção / erro" — um ícone de menu não diz nada disso).
+     Contraste de pelo menos 4,5:1 sobre a superfície e o fundo, acima dos 3:1 que ícone
+     pede — medido em tests/unit/tons-dos-grupos-do-admin.test.ts. */
+  --color-grupo-visao: #3554c7;
+  --color-grupo-pessoas: #0b6f7f;
+  --color-grupo-protecao: #ad2d73;
+  --color-grupo-instalacao: #4a5578;
+  --color-grupo-integracoes: #a8470d;
   --color-acao: #c6f432;
   --color-acao-fg: #151a2e;
   --color-acao-hover: #b5e61f;
@@ -431,6 +455,13 @@
   --color-humano-fundo: rgba(46, 197, 211, 0.16);
   --color-funil: #f5a524;
   --color-funil-fundo: rgba(245, 165, 36, 0.16);
+
+  /* Tons dos grupos do /admin (issue #308) — desenhados para o fundo escuro. */
+  --color-grupo-visao: #8aa4ff;
+  --color-grupo-pessoas: #45cfe0;
+  --color-grupo-protecao: #f27bb8;
+  --color-grupo-instalacao: #aab3cf;
+  --color-grupo-integracoes: #ff9a66;
   --color-acao: #c6f432;
   --color-acao-fg: #151a2e;
   --color-acao-hover: #d4f75c;
@@ -530,6 +561,13 @@
   --color-humano-fundo: var(--color-humano-fundo);
   --color-funil: var(--color-funil);
   --color-funil-fundo: var(--color-funil-fundo);
+
+  /* Tons dos grupos do /admin (issue #308) */
+  --color-grupo-visao: var(--color-grupo-visao);
+  --color-grupo-pessoas: var(--color-grupo-pessoas);
+  --color-grupo-protecao: var(--color-grupo-protecao);
+  --color-grupo-instalacao: var(--color-grupo-instalacao);
+  --color-grupo-integracoes: var(--color-grupo-integracoes);
   --color-acao: var(--color-acao);
   --color-acao-fg: var(--color-acao-fg);
   --color-acao-hover: var(--color-acao-hover);

@@ -380,17 +380,17 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
     <details class="grupo" data-grupo="admin">
       <summary>Painel do dono do servidor</summary>
       <ul>
-        <li><a href="#admin-visao" data-pagina="admin-visao">O painel do dono do servidor (visão geral)</a></li>
-        <li><a href="#admin-dashboard" data-pagina="admin-dashboard">Dashboard</a></li>
-        <li><a href="#admin-tenants" data-pagina="admin-tenants">Tenants (empresas)</a></li>
-        <li><a href="#admin-audit" data-pagina="admin-audit">Audit, LGPD e Incidentes (todas as empresas)</a></li>
-        <li><a href="#admin-usage" data-pagina="admin-usage">Usage, Users, Platform Admins e Inbox</a></li>
+        <li><a href="#admin-visao" data-pagina="admin-visao">Administração da instalação (visão geral)</a></li>
+        <li><a href="#admin-dashboard" data-pagina="admin-dashboard">Painel</a></li>
+        <li><a href="#admin-tenants" data-pagina="admin-tenants">Empresas</a></li>
+        <li><a href="#admin-audit" data-pagina="admin-audit">Registro de ações, Pedidos de LGPD e Incidentes</a></li>
+        <li><a href="#admin-usage" data-pagina="admin-usage">Uso e custo, Usuários, Administradores da plataforma e Conversas de todas as empresas</a></li>
         <li><a href="#admin-marca" data-pagina="admin-marca">Marca da instalação</a></li>
         <li><a href="#admin-google" data-pagina="admin-google">Google Agenda e API Oficial (Meta)</a></li>
-        <li><a href="#admin-cadastro" data-pagina="admin-cadastro">Cadastro e E-mail da instalação</a></li>
+        <li><a href="#admin-cadastro" data-pagina="admin-cadastro">Quem pode criar conta e E-mail</a></li>
         <li><a href="#admin-sistema" data-pagina="admin-sistema">Recursos opcionais da instalação</a></li>
         <li><a href="#admin-destinos" data-pagina="admin-destinos">Destinos internos, Preços da Meta e Credenciais</a></li>
-        <li><a href="#admin-extensoes" data-pagina="admin-extensoes">Extensões e Módulos da instalação</a></li>
+        <li><a href="#admin-extensoes" data-pagina="admin-extensoes">Extensões da instalação (e onde instalar módulos)</a></li>
       </ul>
     </details>
   </nav>
@@ -734,7 +734,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Sino: Central de avisos.</strong> Leva à tela <span class="ui">Alertas</span>: o que a IA encontrou e precisa de uma decisão sua. Um número aparece no sino quando há avisos em aberto (99+ quando passam de 99). Se a empresa escondeu a tela Alertas do menu, o sino também some.</li>
   <li><strong>Idioma.</strong> Troca o idioma do sistema para você: português, espanhol ou inglês (o chinês ainda está em construção e não aparece na lista).</li>
   <li><strong>Tema.</strong> Alterna entre claro, escuro e o que o seu computador estiver usando. Atalho: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (no Mac, <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>).</li>
-  <li><strong>Menu do usuário.</strong> Seu nome e e-mail, e a opção <span class="ui">Sair</span>. Quem é dono do servidor vê também <span class="ui">Modo administrador</span>, que leva ao painel de configuração da instalação.</li>
+  <li><strong>Menu do usuário.</strong> Seu nome e e-mail, e a opção <span class="ui">Sair</span>. Quem é dono do servidor vê também <span class="ui">Modo administrador</span>, que leva à <a href="#admin-visao">Administração da instalação</a>.</li>
 </ol>
 <figure class="print estreita">
   <img src="img/topo-menu-usuario.png" alt="Menu do usuário aberto mostrando o nome, o e-mail e a opção Sair" loading="lazy">
@@ -895,7 +895,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <tbody>
     <tr><td>A instalação parou com um ✖ vermelho</td><td>Rodar o comando de novo é seguro. As mensagens mais comuns (DNS, certificado, memória, portas) estão em <a href="#instalar-na-vps--problemas">Se algo der errado</a>, na página de instalação.</td></tr>
     <tr><td>O número aparece “Parado” ou “Caiu”, ou uma faixa vermelha avisa que o WhatsApp está desconectado</td><td><a href="#conexoes--reconectar">Reconectar</a> primeiro; só use “Gerar novo QR” se o modo suave falhar, porque ele desloga o aparelho.</td></tr>
-    <tr><td>O convite não chegou por e-mail</td><td>A instalação não tem e-mail configurado ou o envio falhou. Use <span class="ui">Copiar link</span> em <a href="#equipe--convites">Convites enviados</a>, e veja <a href="#admin-cadastro">Cadastro e e-mail da instalação</a> para ligar o envio.</td></tr>
+    <tr><td>O convite não chegou por e-mail</td><td>A instalação não tem e-mail configurado ou o envio falhou. Use <span class="ui">Copiar link</span> em <a href="#equipe--convites">Convites enviados</a>, e veja <a href="#admin-cadastro--email">E-mail da instalação</a> para ligar o envio.</td></tr>
     <tr><td>Os clientes escrevem e ninguém responde</td><td>Confira a faixa <em>Quem recebe agora</em> em <a href="#distribuicao--quem-recebe-agora">Revezamento da equipe</a> (ninguém com plantão deixa o cliente na fila) e o modo de teste do número em <a href="#conexoes--ia">Acesso da IA</a>.</td></tr>
     <tr><td>O agente não responde ou deu erro de chave</td><td>Abra o <a href="#execucoes--erros">Histórico do agente</a>: cada falha vem com “o que fazer” (chave recusada, saldo, modelo inexistente).</td></tr>
   </tbody>
@@ -3169,7 +3169,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="empresas--visao-geral">Para que serve</h2>
 <p>Em <strong>Empresas</strong> você guarda as empresas que atende: razão social, nome fantasia, CNPJ e cidade. A partir do CNPJ, o sistema <strong>busca na internet os dados públicos</strong> da empresa e preenche o resto sozinho. Cada empresa fica ligada às <a href="#pessoas">pessoas</a> que decidem dentro dela.</p>
-<aside class="nota atencao"><strong>É um módulo opcional, desligado por padrão.</strong><p>Empresas, <a href="#pessoas">Pessoas</a> e <a href="#importacoes">Importações</a> só existem quando o administrador da <em>instalação</em> liga o módulo “Empresas e pessoas (venda para empresas)” em <em>Admin › Sistema</em>. Desligado, as telas, o menu e a busca somem e quem digita o endereço vê “página não encontrada”. Os dados não são apagados. Se você não vê “Empresas” em <span class="ui">Vender › Cadastro de empresas</span>, o módulo está desligado.</p></aside>
+<aside class="nota atencao"><strong>É um módulo opcional, desligado por padrão.</strong><p>Empresas, <a href="#pessoas">Pessoas</a> e <a href="#importacoes">Importações</a> só existem quando o administrador da <em>instalação</em> liga o módulo “Empresas e pessoas (venda para empresas)” em <em>Administração da instalação › Recursos opcionais</em>. Desligado, as telas, o menu e a busca somem e quem digita o endereço vê “página não encontrada”. Os dados não são apagados. Se você não vê “Empresas” em <span class="ui">Vender › Cadastro de empresas</span>, o módulo está desligado.</p></aside>
 <aside class="nota atencao"><strong>Consultar um CNPJ manda o número para fora do sistema.</strong><p>O enriquecimento consulta a <strong>BrasilAPI</strong> (serviço público e gratuito, <code>brasilapi.com.br</code>). O CNPJ sai do seu servidor para essa consulta. Não gasta crédito do ZapSales nem manda mensagem a cliente.</p></aside>
 
 <figure class="print">
@@ -3351,7 +3351,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="propostas--visao-geral">Para que serve</h2>
 <p>As <strong>Propostas</strong> montam uma proposta comercial para um negócio do funil — itens, valores, textos do documento —, geram um <strong>PDF com a marca da empresa</strong>, enviam esse PDF ao cliente <strong>pelo WhatsApp</strong> e registram se foi aceita ou recusada. A IA também pode <em>rascunhar</em> propostas, que ficam esperando a sua revisão.</p>
-<aside class="nota atencao"><strong>Precisa de duas chaves ligadas.</strong><p>(1) O administrador da <em>instalação</em> liga o módulo “Propostas” em <em>Admin › Sistema</em>; (2) o administrador da <em>empresa</em> liga “Ligar propostas comerciais para esta organização” em <a href="#propostas-config">Padrões de proposta</a> (<span class="ui">Configurar › Vender › O que você vende</span>). Faltando qualquer uma, as telas, o menu e a busca somem (“página não encontrada”). Os dados não são apagados.</p></aside>
+<aside class="nota atencao"><strong>Precisa de duas chaves ligadas.</strong><p>(1) O administrador da <em>instalação</em> liga o módulo “Propostas” em <em>Administração da instalação › Recursos opcionais</em>; (2) o administrador da <em>empresa</em> liga “Ligar propostas comerciais para esta organização” em <a href="#propostas-config">Padrões de proposta</a> (<span class="ui">Configurar › Vender › O que você vende</span>). Faltando qualquer uma, as telas, o menu e a busca somem (“página não encontrada”). Os dados não são apagados.</p></aside>
 <aside class="nota perigo"><strong>Enviar ao cliente manda uma mensagem real e não tem volta.</strong><p>O PDF vai como documento no WhatsApp do cliente. Só o botão <span class="ui">Enviar ao cliente</span> envia. Todo o resto — criar, editar, gerar com o assistente, <em>Ver como o cliente recebe</em> — não manda nada.</p></aside>
 
 <h2 id="propostas--lista">A lista de propostas</h2>
@@ -4844,7 +4844,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="fluxos-de-atendimento--visao-geral">Para que serve</h2>
 <p>Um <strong>fluxo de atendimento</strong> é um <em>roteiro de perguntas</em> que a IA segue durante a conversa: ela pergunta uma coisa por vez, entende a resposta e <strong>guarda o dado na ficha do cliente</strong> (cidade, CPF, interesse…). Serve para cadastro, triagem, agendamento — qualquer conversa em que você precisa coletar dados em ordem. O que o cliente já respondeu <strong>não é perguntado de novo</strong>, em nenhum roteiro.</p>
-<aside class="nota atencao"><strong>É um módulo opcional, desligado por padrão.</strong><p>O administrador da <em>instalação</em> precisa ligar “Fluxos de atendimento” em <em>Admin › Sistema</em>. Desligado, a tela some (“página não encontrada”) e a entrada desaparece do menu (a gaveta Agente) e da página de área “Agente de IA”. Quem publica um roteiro com o módulo desligado é recusado.</p></aside>
+<aside class="nota atencao"><strong>É um módulo opcional, desligado por padrão.</strong><p>O administrador da <em>instalação</em> precisa ligar “Fluxos de atendimento” em <em>Administração da instalação › Recursos opcionais</em>. Desligado, a tela some (“página não encontrada”) e a entrada desaparece do menu (a gaveta Agente) e da página de área “Agente de IA”. Quem publica um roteiro com o módulo desligado é recusado.</p></aside>
 <aside class="nota atencao"><strong>Publicado, o roteiro conduz conversas reais e gasta IA.</strong><p>A IA faz as perguntas no WhatsApp e lê e valida cada resposta. Ele é diferente de um <a href="#followups">follow-up</a>: aqui o roteiro <em>acontece durante a conversa</em>, e não é uma retomada depois do silêncio.</p></aside>
 
 <h2 id="fluxos-de-atendimento--lista">A lista</h2>
@@ -6321,7 +6321,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="honorarios--visao-geral">Para que serve</h2>
 <p>Para escritórios de advocacia (ou qualquer negócio que cobra “por caso”): guarda <strong>como cada caso é cobrado</strong> — valor fixo, percentual sobre o êxito ou os dois — e o <strong>calendário de parcelas</strong>. Ao marcar uma parcela como paga, o dinheiro entra no caixa e aparece no <a href="#faturamento">Faturamento</a>.</p>
-<aside class="nota atencao"><strong>É um módulo opcional, instalado pelo administrador da instalação.</strong><p>Quem administra a instalação (um administrador da <em>plataforma</em>) o instala em <em>Admin › Módulos</em> (“Honorários (advocacia)” — botão <span class="ui">Instalar</span>). A instalação vale para <strong>todas</strong> as organizações. Desligado, a porta some do menu, da página de área Análise e da busca para todo papel. Se você abrir o endereço mesmo assim, a página mostra: “O módulo de honorários não está instalado nesta instalação. Peça ao administrador para instalar em Configurações da instalação › Módulos.” (o caminho real é <em>Admin › Módulos</em>).</p></aside>
+<aside class="nota atencao"><strong>É um módulo opcional, instalado pelo administrador da instalação.</strong><p>Quem administra a instalação (um administrador da <em>plataforma</em>) o instala em <em>Administração da instalação › Recursos opcionais</em>, no bloco <em>Módulos</em> (cartão “Honorários (advocacia)” — botão <span class="ui">Instalar</span>; veja <a href="#admin-sistema--modulos">Recursos opcionais da instalação</a>). A instalação vale para <strong>todas</strong> as organizações. Desligado, a porta some do menu, da página de área Análise e da busca para todo papel. Se você abrir o endereço mesmo assim, a página mostra: “O módulo de honorários não está instalado nesta instalação. Peça ao administrador para instalar em Administração da instalação › Recursos opcionais › Módulos.”</p></aside>
 
 <h2 id="honorarios--tela">O que a tela tem</h2>
 <ul>
@@ -7398,7 +7398,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <dl class="ficha"><dt>Onde fica</dt><dd>Configurar › Vender › O que você vende › Padrões de proposta (clique em Vender na faixa à esquerda; só com o módulo Propostas ligado na instalação)</dd><dt>Quem pode usar</dt><dd>Todos abrem e leem. Salvar: Gerente ou acima.</dd><dt>Endereço</dt><dd><code>/app/settings/tenant/proposals</code></dd></dl>
   <div class="conteudo-pagina">
 <h2 id="propostas-config--visao-geral">Para que serve</h2>
-<p>Aqui a empresa <strong>liga</strong> as <a href="#propostas">propostas comerciais</a> e define os padrões de validade e de condições. É a segunda das duas chaves: a primeira é o módulo “Propostas”, que o administrador da <em>instalação</em> liga em <em>Admin › Sistema</em>. Sem o módulo, esta tela também some (“página não encontrada”).</p>
+<p>Aqui a empresa <strong>liga</strong> as <a href="#propostas">propostas comerciais</a> e define os padrões de validade e de condições. É a segunda das duas chaves: a primeira é o módulo “Propostas”, que o administrador da <em>instalação</em> liga em <em>Administração da instalação › Recursos opcionais</em>. Sem o módulo, esta tela também some (“página não encontrada”).</p>
 
 <figure class="print">
   <img src="img/propostas-config.png" alt="Configuração de propostas com o interruptor de ligar, a validade padrão, as condições padrão e o aviso no WhatsApp, numerada de 1 a 6" loading="lazy">
@@ -8558,7 +8558,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <tr><td><em>Senha do administrador (mínimo 8 caracteres; Enter = gerar uma forte)</em></td><td>A senha da sua conta. Ela não aparece enquanto você digita (é de propósito), e o kit pede duas vezes para conferir. Enter sem digitar nada gera uma senha forte. Esta pergunta só aparece na <strong>primeira</strong> instalação.</td></tr>
 </tbody>
 </table>
-<aside class="nota atencao"><strong>Escolha a senha com cuidado.</strong><p>Segundo o guia de instalação do projeto, o sistema ainda não tem uma tela para trocar a senha, e o “esqueci a senha” só funciona depois que o envio de e-mail estiver configurado (veja <a href="#admin-cadastro">Cadastro e e-mail da instalação</a>). Guarde a senha num cofre de senhas.</p></aside>
+<aside class="nota atencao"><strong>Escolha a senha com cuidado.</strong><p>Segundo o guia de instalação do projeto, o sistema ainda não tem uma tela para trocar a senha, e o “esqueci a senha” só funciona depois que o envio de e-mail estiver configurado (veja <a href="#admin-cadastro--email">E-mail da instalação</a>). Guarde a senha num cofre de senhas.</p></aside>
 <p>Pronto: daqui em diante o kit trabalha sozinho e mostra cada etapa com um ▶ verde. A única outra coisa que ele pede é, na etapa <em>Licença</em>, o e-mail e o código da sua compra (veja <a href="#instalar-na-vps--licenca">A licença</a>); Enter deixa para ativar depois.</p>
 
 <h2 id="instalar-na-vps--espera">O que acontece enquanto você espera</h2>
@@ -8588,7 +8588,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>O endereço, o e-mail e a senha ficam num arquivo que só o <code>root</code> lê. Para ver:</p>
 <p><code>sudo cat /etc/zapsales/primeiro-acesso</code></p>
 <p>Abra o endereço no navegador e entre com o e-mail e a senha. Guarde a senha num cofre (Bitwarden, 1Password, o do navegador) e apague o arquivo: <code>sudo rm /etc/zapsales/primeiro-acesso</code>.</p>
-<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a> (Configurar › Conexões), convidar a <a href="#equipe">equipe</a> (Configurar › Empresa › Equipe) e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro">Admin › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
+<p>O que fazer em seguida, dentro do sistema: terminar os <a href="#onboarding">Primeiros passos</a>, conectar um número de WhatsApp em <a href="#conexoes">Conexões</a> (Configurar › Conexões), convidar a <a href="#equipe">equipe</a> (Configurar › Empresa › Equipe) e, se quiser e-mails de convite saindo sozinhos, configurar o envio em <a href="#admin-cadastro--email">Administração da instalação › E-mail</a> (sem isso, o convite mostra o link para você mandar à pessoa).</p>
 
 <h2 id="instalar-na-vps--conferir">Conferir que está no ar</h2>
 <p>Depois de qualquer instalação ou atualização, o domínio tem de <strong>redirecionar para o login</strong> (o código HTTP 307), e não dar “não encontrado” (404). Para conferir, no terminal:</p>
@@ -8711,16 +8711,16 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="admin-visao" data-titulo="O painel do dono do servidor (visão geral)" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="O que é o “Modo administrador”, quem entra, como é a moldura do painel, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso." data-palavras="admin painel modo administrador modo plataforma platform admin super admin dono do servidor instalação cross-tenant tenant mfa somente leitura dba acesso negado forbidden" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › O painel do dono do servidor (visão geral)</p>
-  <h1>O painel do dono do servidor (visão geral)</h1>
-  <p class="lede">O que é o “Modo administrador”, quem entra, como é a moldura do painel, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso.</p>
+<article class="pagina" id="admin-visao" data-titulo="Administração da instalação (visão geral)" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="O que é a Administração da instalação (aberta pelo “Modo administrador”), quem entra, como são a faixa do topo, o menu em cinco grupos e o cabeçalho de cada tela, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso." data-palavras="admin administração da instalação painel modo administrador modo plataforma admin plataforma platform admin super admin dono do servidor instalação cross-tenant tenant empresas mfa somente leitura dba acesso negado forbidden" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Administração da instalação (visão geral)</p>
+  <h1>Administração da instalação (visão geral)</h1>
+  <p class="lede">O que é a Administração da instalação (aberta pelo “Modo administrador”), quem entra, como são a faixa do topo, o menu em cinco grupos e o cabeçalho de cada tela, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso.</p>
   <dl class="ficha"><dt>Onde fica</dt><dd>Menu do usuário (avatar) › Modo administrador — endereço /admin</dd><dt>Quem pode usar</dt><dd>Só o dono do servidor (administrador da plataforma). Quem não é vê “Acesso negado”.</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-visao--visao-geral">O que é</h2>
-<p>O <strong>painel do dono do servidor</strong> (chamado “Modo administrador”, “Admin Plataforma” ou, na faixa do topo, <strong>“MODO PLATAFORMA — operação cross-tenant”</strong>) é a área de quem <em>instalou e mantém</em> o ZapSales. Em vez de mostrar uma empresa, mostra <strong>todas as empresas hospedadas na instalação</strong> (no jargão do painel, cada empresa é um “tenant”) e tem as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, cadastro, Google, Meta, módulos.</p>
+<p>A <strong>Administração da instalação</strong> é a área de quem <em>instalou e mantém</em> o ZapSales. Você entra nela pelo item “Modo administrador” do menu do usuário, e a faixa do topo diz <strong>“Administração da instalação — o que você muda aqui vale para todas as empresas”</strong>. Em vez de mostrar uma empresa, ela mostra <strong>todas as empresas hospedadas na instalação</strong> e reúne as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, quem pode criar conta, Google, Meta, módulos.</p>
 <aside class="nota atencao"><strong>Só para quem opera o servidor.</strong><p>Um cliente que usa o ZapSales dentro da própria empresa <em>nunca</em> vê esta área, nem como Administrador da empresa. Administrador da empresa e “administrador da plataforma” são coisas diferentes: o primeiro manda <em>numa</em> empresa; o segundo manda na <em>instalação</em>.</p></aside>
-<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens.</p></aside>
+<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. <strong>Vários prints são anteriores à reorganização da área</strong> e ainda mostram nomes antigos, como “Tenants”, “Dashboard” e a faixa “MODO PLATAFORMA”; o texto já descreve os nomes atuais, e esses prints serão refeitos.</p></aside>
 
 <h2 id="admin-visao--entrar">Como se chega</h2>
 <figure class="print media">
@@ -8728,130 +8728,214 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <figcaption>O item “Modo administrador” no menu do usuário.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Modo administrador — “Configurar este servidor”.</strong> Só aparece para quem é administrador da plataforma. Leva a <code>/admin</code>, que abre o <a href="#admin-dashboard">Dashboard</a>.</li>
+  <li><strong>Modo administrador — “Configurar este servidor”.</strong> Só aparece para quem é administrador da plataforma. Leva a <code>/admin</code>, que abre o <a href="#admin-dashboard">Painel</a>.</li>
 </ol>
-<p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Dentro do painel, o rodapé do menu tem <span class="ui">Voltar pra app</span> e a faixa amarela do topo tem <span class="ui">Sair pra app pessoal</span>.</p>
+<p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Para voltar ao sistema da sua empresa há o link <span class="ui">Voltar para a sua empresa</span> em dois lugares: na faixa do topo e no rodapé do menu.</p>
 
-<h2 id="admin-visao--moldura">A moldura do painel</h2>
+<h2 id="admin-visao--moldura">A moldura da área</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-menu.png" alt="Painel administrativo com a faixa MODO PLATAFORMA no topo e o menu lateral, numerado de 1 a 7" loading="lazy">
-  <figcaption>A moldura do painel: faixa do topo e menu lateral.</figcaption>
+  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, numerada de 1 a 7" loading="lazy">
+  <figcaption>A moldura da área: faixa do topo e menu lateral (print anterior à reorganização; a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>MODO PLATAFORMA.</strong> Faixa amarela fixa: lembrete visual de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
-  <li><strong>Sair pra app pessoal.</strong> Volta ao <code>/app</code>.</li>
-  <li><strong>Dashboard.</strong></li>
-  <li><strong>Tenants.</strong></li>
-  <li><strong>Marca.</strong></li>
-  <li><strong>Módulos.</strong> O último item.</li>
-  <li><strong>Voltar pra app</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
+  <li><strong>Administração da instalação.</strong> Faixa amarela fixa no topo, com o ícone de um servidor e a frase “— o que você muda aqui vale para todas as empresas” (em telas estreitas a frase some e fica só o título). É um lembrete de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
+  <li><strong>Voltar para a sua empresa.</strong> Volta ao <code>/app</code>, o sistema da sua empresa.</li>
+  <li><strong>Painel.</strong> A primeira tela, no grupo <em>Visão geral</em>.</li>
+  <li><strong>Empresas.</strong> No grupo <em>Empresas e pessoas</em>.</li>
+  <li><strong>Marca.</strong> No grupo <em>Configurar a instalação</em>.</li>
+  <li><strong>O último item do menu.</strong> O print ainda mostra “Módulos”, que <em>não existe mais</em> no menu: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>. Hoje o último item é <span class="ui">Destinos internos</span>.</li>
+  <li><strong>Voltar para a sua empresa</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
 </ol>
-<p>O menu lateral, na ordem: <a href="#admin-dashboard">Dashboard</a>, <a href="#admin-usage--inbox">Inbox</a>, <a href="#admin-tenants">Tenants</a>, <a href="#admin-audit">Audit</a>, <a href="#admin-audit--lgpd">LGPD</a>, <a href="#admin-audit--incidentes">Incidents</a>, <a href="#admin-usage">Usage</a>, <a href="#admin-usage--users">Users</a>, <a href="#admin-usage--platform-admins">Platform Admins</a>, <a href="#admin-marca">Marca</a>, <a href="#admin-google">Google Agenda</a>, <a href="#admin-google--meta">API Oficial (Meta)</a>, <a href="#admin-cadastro">Cadastro</a>, <a href="#admin-cadastro--email">E-mail</a>, <a href="#admin-sistema">Recursos opcionais</a>, <a href="#admin-destinos">Destinos internos</a>, <a href="#admin-destinos--precos">Preços da Meta</a>, <a href="#admin-destinos--credenciais">Credenciais</a>, <a href="#admin-extensoes">Extensões</a> e <a href="#admin-extensoes--modulos">Módulos</a>. Em telas pequenas o menu vira uma gaveta (botão hambúrguer, “Abrir menu de navegação”). Os rótulos “Dashboard”, “Inbox”, “Tenants”, “Audit”, “Incidents”, “Usage”, “Users” e “Platform Admins” são mantidos em inglês.</p>
+<p>No alto do menu fica o nome do sistema e, embaixo dele, “Administração da instalação”. Os itens estão separados em <strong>cinco grupos</strong>, nesta ordem:</p>
+<table class="tabela">
+  <thead><tr><th>Grupo</th><th>Itens</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Visão geral</strong></td><td><a href="#admin-dashboard">Painel</a></td></tr>
+    <tr><td><strong>Empresas e pessoas</strong></td><td><a href="#admin-tenants">Empresas</a>, <a href="#admin-usage--users">Usuários</a>, <a href="#admin-usage--platform-admins">Administradores da plataforma</a> e <a href="#admin-usage--inbox">Conversas de todas as empresas</a></td></tr>
+    <tr><td><strong>Acompanhar e proteger</strong></td><td><a href="#admin-audit">Registro de ações</a>, <a href="#admin-audit--lgpd">Pedidos de LGPD</a>, <a href="#admin-audit--incidentes">Incidentes</a> e <a href="#admin-usage">Uso e custo</a></td></tr>
+    <tr><td><strong>Configurar a instalação</strong></td><td><a href="#admin-marca">Marca</a>, <a href="#admin-cadastro">Quem pode criar conta</a>, <a href="#admin-cadastro--email">E-mail</a>, <a href="#admin-destinos--credenciais">Credenciais</a>, <a href="#admin-sistema">Recursos opcionais</a> e <a href="#admin-extensoes">Extensões</a></td></tr>
+    <tr><td><strong>Integrações</strong></td><td><a href="#admin-google--meta">API Oficial (Meta)</a>, <a href="#admin-destinos--precos">Preços da Meta</a>, <a href="#admin-google">Google Agenda</a> e <a href="#admin-destinos">Destinos internos</a></td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Dica de cada item.</strong> No computador, ao passar o mouse sobre um item do menu (ou chegar nele com a tecla <kbd>Tab</kbd>), aparece uma frase curta dizendo para que ele serve — por exemplo, em Empresas: “As empresas que usam esta instalação: criar, suspender e reativar.”.</li>
+  <li><strong>Celular e telas pequenas.</strong> O menu vira uma gaveta (botão de três tracinhos, “Abrir menu de navegação”). Ali não existe “passar o mouse”, então a gaveta não mostra dicas: a mesma ajuda aparece, sempre visível, no cabeçalho de cada tela (veja abaixo).</li>
+  <li>Nas telas internas (a ficha de uma empresa, o detalhe de um pedido), o menu continua marcando o item de onde você veio.</li>
+  <li>O título da aba do navegador segue o padrão “&lt;nome da tela&gt; · Administração” (por exemplo, “Empresas · Administração”), no idioma de quem abre. Nas subpáginas ele começa pelo que se está vendo: “Detalhe do incidente · Incidentes · Administração”.</li>
+</ul>
+
+<h3 id="admin-visao--cabecalho">O cabeçalho de cada tela</h3>
+<p>Toda tela que tem item no menu começa do mesmo jeito: o ícone do item, o <strong>nome do grupo</strong> em letras pequenas (por exemplo, “Empresas e pessoas”), o <strong>título</strong> (igual ao nome no menu), uma linha que diz <strong>para que a tela serve</strong> e uma linha que começa com <strong>“Quando usar:”</strong>. Algumas telas acrescentam embaixo uma contagem (“12 empresas”, “50 eventos+”) e, à direita, o botão principal (como <span class="ui">Nova empresa</span>). As linhas de cada tela:</p>
+<table class="tabela">
+  <thead><tr><th>Tela</th><th>Para que serve</th><th>Quando usar</th></tr></thead>
+  <tbody>
+    <tr><td>Painel</td><td>Mostra, num lugar só, o que pede atenção em todas as empresas desta instalação e o que ainda falta configurar.</td><td>Ao entrar, para saber se está tudo em ordem e por onde começar.</td></tr>
+    <tr><td>Empresas</td><td>Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.</td><td>Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.</td></tr>
+    <tr><td>Usuários</td><td>Lista quem entra no sistema, em qual empresa e com qual papel.</td><td>Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.</td></tr>
+    <tr><td>Administradores da plataforma</td><td>Mostra quem administra a instalação inteira, acima de todas as empresas.</td><td>Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.</td></tr>
+    <tr><td>Conversas de todas as empresas</td><td>Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.</td><td>Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.</td></tr>
+    <tr><td>Registro de ações</td><td>Guarda cada alteração feita no sistema, com a pessoa, a data e o que mudou.</td><td>Para descobrir quem mudou alguma coisa ou provar o que aconteceu.</td></tr>
+    <tr><td>Pedidos de LGPD</td><td>Acompanha os pedidos dos donos dos dados (cópia, correção, anonimização) em todas as empresas, e o prazo legal de cada um.</td><td>Toda semana, para nenhum pedido passar do prazo que a lei dá.</td></tr>
+    <tr><td>Incidentes</td><td>Lista as falhas que o sistema detectou, com a gravidade e o andamento de cada uma.</td><td>Quando algo parou de funcionar, ou para fechar um problema que já foi resolvido.</td></tr>
+    <tr><td>Uso e custo</td><td>Mostra o consumo de cada empresa e quanto a inteligência artificial custou.</td><td>Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.</td></tr>
+    <tr><td>Marca</td><td>Define o nome, a cor de destaque, o logo e o ícone da aba que o sistema mostra.</td><td>Ao instalar, ou quando você revende o sistema com a sua própria marca.</td></tr>
+    <tr><td>Quem pode criar conta</td><td>Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.</td><td>Ao abrir a instalação para clientes novos, ou para fechá-la de novo.</td></tr>
+    <tr><td>E-mail</td><td>Configura o servidor de e-mail próprio ou o serviço externo que manda os e-mails de todas as empresas.</td><td>Logo depois de instalar: sem e-mail não sai convite de equipe nem recuperação de senha.</td></tr>
+    <tr><td>Credenciais</td><td>Guarda as chaves e os dados de contato da instalação, o que antes só se trocava pelo terminal.</td><td>Quando uma chave vence, muda de dono ou precisa ser trocada por segurança.</td></tr>
+    <tr><td>Recursos opcionais</td><td>Junta tudo o que se liga e desliga nesta instalação: os módulos, o comportamento e o que depende do servidor.</td><td>Para instalar um módulo, ou quando um recurso não aparece para as empresas.</td></tr>
+    <tr><td>Extensões</td><td>Mostra as extensões que este servidor conhece, de onde vieram e quem está usando.</td><td>Para saber o que está instalado. Ativar e configurar continua dentro de cada empresa.</td></tr>
+    <tr><td>API Oficial (Meta)</td><td>Guarda a chave secreta e o código de conferência do app da Meta, que valem para todas as empresas.</td><td>Antes de alguma empresa conectar um número pela API oficial ou fazer disparo em massa.</td></tr>
+    <tr><td>Preços da Meta</td><td>Mantém a tabela de preço por país e categoria de mensagem, base da estimativa e do teto de gasto das campanhas.</td><td>Quando a Meta muda os preços ou o dólar varia muito.</td></tr>
+    <tr><td>Google Agenda</td><td>Guarda os dados do app do Google que liga a agenda de cada atendente aos compromissos do sistema.</td><td>Quando as empresas quiserem ver os compromissos do sistema na agenda do Google.</td></tr>
+    <tr><td>Destinos internos</td><td>Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.</td><td>Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.</td></tr>
+  </tbody>
+</table>
+<p><strong>Nas subpáginas</strong> (o detalhe de uma empresa, de um incidente, de um pedido de LGPD, de um usuário, de uma ação do registro, e “Nova empresa”) o título é o do próprio registro — o nome da empresa, o tipo do incidente. Acima dele aparece uma linha com o ícone da tela-mãe, o caminho “grupo › tela” (clicar no nome da tela volta para a lista) e a frase de para que essa tela serve.</p>
+<aside class="nota dica"><strong>Os endereços antigos continuam valendo.</strong><p>Só os nomes mudaram: os endereços das telas são os mesmos de antes (<code>/admin/tenants</code>, <code>/admin/audit</code>, <code>/admin/usage</code>…), então favoritos antigos funcionam. O antigo <code>/admin/modulos</code> leva direto ao bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>.</p></aside>
 
 <h2 id="admin-visao--acesso">Quem pode abrir e quem pode alterar</h2>
 <ul>
   <li><strong>Abrir (ler):</strong> qualquer administrador da plataforma <em>ativo</em>. Sem login, vai para a tela de entrada; sem ser administrador (ou revogado), vai para <a href="#admin-acesso-negado">Acesso negado</a>; se a linha dele exige verificação em duas etapas e a sessão não a provou, vai para a verificação.</li>
-  <li><strong>Alterar (escrever):</strong> exige o escopo <code>full</code> <em>e</em> a verificação em duas etapas em dia (quem <em>tem</em> o fator precisa tê-lo provado na sessão). O escopo <code>support_readonly</code> abre o painel inteiro, mas <strong>toda gravação é recusada</strong> (“Seu acesso à administração da plataforma é somente leitura.”) — útil para demonstrar sem risco.</li>
-  <li>Telas de configuração (Marca, Google, Meta, Cadastro, E-mail, Recursos opcionais, Destinos internos, Preços da Meta, Credenciais, Extensões, Módulos) respondem <strong>“página não encontrada”</strong> para quem não é administrador da plataforma: para os demais, elas simplesmente não existem.</li>
-  <li>Toda leitura também deixa rastro: abrir listas e telas do painel grava ações como <code>platform_admin.tenants_listed</code> na tela <a href="#auditoria">Quem mexeu em quê</a> (“Auditoria”), marcadas como feitas “como administrador da plataforma”.</li>
+  <li><strong>Alterar (escrever):</strong> exige o escopo <code>full</code> <em>e</em> a verificação em duas etapas em dia (quem <em>tem</em> o fator precisa tê-lo provado na sessão). O escopo <code>support_readonly</code> abre a área inteira, mas <strong>toda gravação é recusada</strong> (“Seu acesso à administração da plataforma é somente leitura.”) — útil para demonstrar sem risco.</li>
+  <li>Telas de configuração (Marca, Quem pode criar conta, E-mail, Credenciais, Recursos opcionais, Extensões, API Oficial, Preços da Meta, Google Agenda, Destinos internos) respondem <strong>“página não encontrada”</strong> para quem não é administrador da plataforma: para os demais, elas simplesmente não existem.</li>
+  <li>Toda leitura também deixa rastro: abrir listas e telas da área grava ações como <code>platform_admin.tenants_listed</code> na tela <a href="#auditoria">Quem mexeu em quê</a> (“Auditoria”), marcadas como feitas “como administrador da plataforma”.</li>
 </ul>
 <figure class="print media">
   <img src="img/admin-acesso-negado.png" alt="Tela Acesso negado com os botões Início e Voltar para /app" loading="lazy">
   <figcaption>A tela de acesso negado (<code>/admin/forbidden</code>).</figcaption>
 </figure>
-<p id="admin-acesso-negado"><strong>Acesso negado.</strong> Mostra: “Esta área é restrita a administradores da plataforma com MFA ativo. Se você acredita que isso é um erro, contate o time de operações.” e os botões <span class="ui">Início</span> e <span class="ui">Voltar para /app</span>. O texto fala em “MFA ativo”, mas na instalação padrão a verificação em duas etapas <em>não</em> é exigida do dono; a mensagem é a mesma para quem simplesmente não é administrador.</p>
+<p id="admin-acesso-negado"><strong>Acesso negado.</strong> Mostra: “Esta área é restrita a administradores da plataforma com MFA ativo. Se você acredita que isso é um erro, contate o time de operações.” e os botões <span class="ui">Início</span> e <span class="ui">Voltar para /app</span>. O texto fala em “MFA ativo” (MFA é a verificação em duas etapas), mas na instalação padrão ela <em>não</em> é exigida do dono; a mensagem é a mesma para quem simplesmente não é administrador. A aba do navegador diz “Acesso negado · Administração”.</p>
 
 <h2 id="admin-visao--conceder">Como virar (e deixar de ser) administrador da plataforma</h2>
-<p>Não existe tela nem API para conceder ou retirar esse poder — é de propósito (“somente via DBA + dupla confirmação”). Quem tem acesso ao banco de dados faz uma inclusão na tabela <code>platform_admins</code> (com <code>user_id</code>, <code>granted_by</code>, <code>reason</code>, <code>scope</code> = <code>full</code> ou <code>support_readonly</code> e <code>mfa_required</code>) e, para retirar, preenche <code>revoked_at</code> (nada é apagado). Veja também a tela <a href="#admin-usage--platform-admins">Platform Admins</a>, que só lista.</p>
+<p>Não existe tela nem API para conceder ou retirar esse poder — é de propósito (“somente via DBA + dupla confirmação”; DBA é quem cuida do banco de dados). Quem tem acesso ao banco faz uma inclusão na tabela <code>platform_admins</code> (com <code>user_id</code>, <code>granted_by</code>, <code>reason</code>, <code>scope</code> = <code>full</code> ou <code>support_readonly</code> e <code>mfa_required</code>) e, para retirar, preenche <code>revoked_at</code> (nada é apagado). Veja também a tela <a href="#admin-usage--platform-admins">Administradores da plataforma</a>, que só lista.</p>
 
 <h2 id="admin-visao--alcance">O que cada tela alcança</h2>
 <table class="tabela">
   <thead><tr><th>Efeito</th><th>Telas</th></tr></thead>
   <tbody>
-    <tr><td><strong>Só leitura</strong></td><td>Dashboard, Inbox, Audit, LGPD, Usage, Users, Platform Admins, Extensões e as abas Saúde e Agente da ficha do tenant.</td></tr>
-    <tr><td><strong>Vale para <em>todas</em> as empresas</strong></td><td>Marca, Google Agenda, API Oficial (Meta), Cadastro, E-mail, Recursos opcionais, Destinos internos, Preços da Meta, Credenciais e Módulos.</td></tr>
-    <tr><td><strong>Afeta <em>uma</em> empresa</strong></td><td>Novo tenant, Suspender/Reativar, Acompanhar organização e Resolver incidente.</td></tr>
+    <tr><td><strong>Só leitura</strong></td><td>Painel, Conversas de todas as empresas, Registro de ações, Pedidos de LGPD, Uso e custo, Usuários, Administradores da plataforma, Extensões e as abas Saúde e Agente da ficha da empresa.</td></tr>
+    <tr><td><strong>Vale para <em>todas</em> as empresas</strong></td><td>Marca, Quem pode criar conta, E-mail, Credenciais, Recursos opcionais (inclusive instalar módulo), API Oficial (Meta), Preços da Meta, Google Agenda e Destinos internos.</td></tr>
+    <tr><td><strong>Afeta <em>uma</em> empresa</strong></td><td>Nova empresa, Suspender empresa/Reativar empresa, Acompanhar organização e Resolver incidente.</td></tr>
   </tbody>
 </table>
 <h3 id="admin-visao--dados-reais">Telas que mostram dados de clientes</h3>
-<p>Todo o painel usa um acesso que ignora o isolamento por empresa. Por isso <strong>Dashboard, Inbox (mensagens reais), Tenants, Audit, LGPD, Incidents, Usage, Users, Platform Admins e Cadastro (pedidos)</strong> expõem dados reais de clientes e funcionários: não tire prints deles sem esconder o que é pessoal. As telas de configuração não têm dados de clientes, mas mostram os <em>4 últimos caracteres</em> de segredos, remetentes e endereços.</p>
+<p>Toda a área usa um acesso que ignora o isolamento por empresa. Por isso <strong>Painel, Conversas de todas as empresas (mensagens reais), Empresas, Registro de ações, Pedidos de LGPD, Incidentes, Uso e custo, Usuários, Administradores da plataforma e Quem pode criar conta (pedidos)</strong> expõem dados reais de clientes e funcionários: não tire prints deles sem esconder o que é pessoal. As telas de configuração não têm dados de clientes, mas mostram os <em>4 últimos caracteres</em> de segredos, remetentes e endereços.</p>
 <h3 id="admin-visao--irreversiveis">Ações difíceis de desfazer</h3>
 <ul>
   <li><strong>Resolver incidente:</strong> não há reabrir.</li>
   <li><strong>Recusar pedido de cadastro:</strong> é final para aquela conta.</li>
   <li><strong>Suspender empresa:</strong> reversível, mas mensagens na fila e tarefas agendadas são <em>descartadas</em> e não voltam.</li>
-  <li><strong>Instalar módulo:</strong> cria tabelas no banco; a tela não desinstala.</li>
+  <li><strong>Instalar módulo</strong> (Recursos opcionais › Módulos): cria tabelas no banco e não se desinstala.</li>
   <li><strong>Salvar a tabela de Preços da Meta:</strong> apaga do banco as linhas que você tirou.</li>
   <li><strong>Trocar a credencial do Google ou o token da Meta:</strong> derruba as conexões existentes.</li>
 </ul>
-<h3 id="admin-visao--estado-limpo">Como o painel fica numa instalação nova</h3>
-<p>Dashboard com “Tenants Ativos 1”, zeros e “Nenhum alerta crítico no momento. Tudo certo!”; Tenants com 1 linha (“Onboarding” até a empresa concluir os primeiros passos); Users com 1 pessoa; Platform Admins com 1 linha (escopo <code>full</code>); Extensões vazias; Módulos com o cartão “Honorários (advocacia)” e o botão “Instalar”; Preços da Meta já com o Brasil; Cadastro em modo aberto.</p>
+<h3 id="admin-visao--estado-limpo">Como a área fica numa instalação nova</h3>
+<p>Painel com o cartão “Sua instalação está pronta?” <em>aberto</em> enquanto o e-mail não estiver configurado, “Empresas ativas” em 1, os outros números em zero e “Nenhum alerta crítico no momento. Tudo certo!”; Empresas com 1 linha (“Onboarding” até a empresa concluir os primeiros passos); Usuários com 1 pessoa; Administradores da plataforma com 1 linha (escopo <code>full</code>); Extensões vazias; Recursos opcionais com o cartão “Honorários (advocacia)” e o botão “Instalar” no bloco Módulos; Preços da Meta já com o Brasil; Quem pode criar conta em modo aberto.</p>
   </div>
 </article>
 
-<article class="pagina" id="admin-dashboard" data-titulo="Dashboard" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A visão de relance de todas as empresas da instalação: quantas estão ativas e o que está pegando fogo (WhatsApp caído, prazo de LGPD, estouro de orçamento de IA, filas paradas)." data-palavras="dashboard painel kpi alertas tenants ativos pendentes waha lgpd em risco budgets ia cross-tenant" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Dashboard</p>
-  <h1>Dashboard</h1>
-  <p class="lede">A visão de relance de todas as empresas da instalação: quantas estão ativas e o que está pegando fogo (WhatsApp caído, prazo de LGPD, estouro de orçamento de IA, filas paradas).</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Dashboard (/admin/dashboard)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma (só leitura)</dd></dl>
+<article class="pagina" id="admin-dashboard" data-titulo="Painel" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A primeira tela da Administração da instalação: o checklist “Sua instalação está pronta?” e, de relance, o que pede atenção em todas as empresas (número de WhatsApp com problema, prazo de LGPD, teto de IA, clientes esperando resposta)." data-palavras="painel dashboard checklist sua instalação está pronta kpi indicadores alertas empresas ativas tenants ativos esperando resposta pendentes números com problema waha pedidos de lgpd lgpd em risco teto de ia budgets ia cross-tenant" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Painel</p>
+  <h1>Painel</h1>
+  <p class="lede">A primeira tela da Administração da instalação: o checklist “Sua instalação está pronta?” e, de relance, o que pede atenção em todas as empresas (número de WhatsApp com problema, prazo de LGPD, teto de IA, clientes esperando resposta).</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Visão geral › Painel (/admin/dashboard)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma (só leitura)</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-dashboard--visao-geral">Para que serve</h2>
-<p>Responde, de relance: <em>“alguma empresa da minha instalação está com problema agora?”</em>. Atualiza sozinho <strong>a cada 30 segundos</strong> e também em tempo real quando chega um alerta novo (aparece um aviso amarelo “Novo Alerta WAHA”, “Novo Prazo LGPD”, “Novo Budget IA” ou “Novo Overflow de conversas”).</p>
-<figure class="print">
-  <img src="img/admin-dashboard.png" alt="Dashboard do painel com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">
-  <figcaption>O Dashboard (organização de demonstração).</figcaption>
-</figure>
-<ol class="legenda">
-  <li><strong>Subtítulo.</strong> “Visão cross-tenant — atualiza a cada 30 segundos.”</li>
-  <li><strong>Tenants Ativos.</strong> Quantas empresas estão com status ativo.</li>
-  <li><strong>Pendentes &gt;10min.</strong> Conversas esperando resposta há mais de 10 minutos (amarelo se &gt; 0).</li>
-  <li><strong>Alertas WAHA.</strong> Números de WhatsApp com problema: suspeita de banimento, desconexão inesperada ou desconectados nas últimas 24 horas (amarelo se &gt; 0). “WAHA” é o nome do programa que conecta o WhatsApp.</li>
-  <li><strong>LGPD em Risco.</strong> Pedidos de titulares ainda abertos cujo prazo vence em até 5 dias — inclui os já vencidos (vermelho se &gt; 0).</li>
-  <li><strong>Budgets IA.</strong> Empresas cujo gasto <em>acumulado</em> de IA já passou de 80% do teto (amarelo se &gt; 0).</li>
-</ol>
-<p>Abaixo dos cartões fica <strong>“Alertas ativos”</strong> (na captura, 1 alerta). Sem alertas aparece “Nenhum alerta crítico no momento. Tudo certo!”. Cada linha mostra o nome da empresa, a severidade (<em>Crítico</em>, <em>Atenção</em> ou <em>Info</em>), o tipo (<em>WAHA</em>, <em>LGPD</em>, <em>IA Budget</em> ou <em>Overflow</em>) e a mensagem; clicar leva ao destino. São listados os 10 primeiros, com “+N alertas adicionais” no rodapé.</p>
+<p>É a tela que abre quando você entra na Administração da instalação. Responde duas perguntas: <em>“falta configurar alguma coisa?”</em> e <em>“alguma empresa da minha instalação está com problema agora?”</em>. O cabeçalho diz: “Mostra, num lugar só, o que pede atenção em todas as empresas desta instalação e o que ainda falta configurar.”, “Quando usar: Ao entrar, para saber se está tudo em ordem e por onde começar.” e “Os números se atualizam sozinhos a cada 30 segundos.”.</p>
+<p>Os números também se atualizam na hora quando chega um alerta novo (aparece um aviso amarelo: “Novo aviso: número com problema”, “Novo aviso: pedido de LGPD perto do prazo”, “Novo aviso: empresa perto do teto de IA” ou “Novo aviso: fila de espera cheia”).</p>
+
+<h2 id="admin-dashboard--checklist">Sua instalação está pronta?</h2>
+<p>O primeiro cartão é um checklist do que a instalação precisa (ou pode) ter configurado. Ele lê o mesmo estado que a tela <a href="#admin-sistema">Recursos opcionais</a> mostra, então as duas nunca discordam. Os itens, nesta ordem:</p>
 <table class="tabela">
-  <thead><tr><th>Tipo</th><th>Mensagem</th><th>Severidade</th><th>Leva a</th></tr></thead>
+  <thead><tr><th>Item</th><th>Peso</th><th>O que diz</th><th>Leva a</th></tr></thead>
   <tbody>
-    <tr><td>WAHA</td><td>“Sessão WAHA com suspeita de banimento” / “Sessão desconectada inesperadamente”</td><td>Crítico / Atenção</td><td>Saúde da empresa</td></tr>
-    <tr><td>LGPD</td><td>“Requisição LGPD vencida em DD/MM” / “Prazo LGPD expira em DD/MM”</td><td>Crítico / Atenção</td><td><a href="#admin-audit--lgpd">LGPD</a></td></tr>
-    <tr><td>IA Budget</td><td>“Budget IA N% do teto (gasto acumulado)”, com aviso extra se a empresa escolheu parar a IA no limite; empresa com o limite em “Não aplicado” conta no cartão <em>Budgets IA</em>, mas não gera linha na lista</td><td>Atenção</td><td>Saúde da empresa</td></tr>
-    <tr><td>Overflow</td><td>“N conversas pendentes sem atendimento” (acima de 50 numa empresa)</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td><strong>E-mail</strong></td><td>Obrigatório</td><td>“Sem ele não sai convite de equipe, recuperação de senha nem entrega de dados da LGPD.”</td><td><a href="#admin-cadastro--email">E-mail</a></td></tr>
+    <tr><td><strong>Marca própria</strong></td><td>Opcional</td><td>“O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.” Conta como pronto quando a instalação mostra uma marca diferente da do produto.</td><td><a href="#admin-marca">Marca</a></td></tr>
+    <tr><td><strong>Quem pode criar conta</strong></td><td>Opcional</td><td>“Cadastro aberto, só por convite ou com aprovação.” Sempre há um modo em vigor, então este item normalmente já aparece como pronto: o convite é para <em>revisar</em> a escolha.</td><td><a href="#admin-cadastro">Quem pode criar conta</a></td></tr>
+    <tr><td><strong>API Oficial da Meta</strong></td><td>Opcional</td><td>“Permite conectar números pela API oficial do WhatsApp.”</td><td><a href="#admin-google--meta">API Oficial (Meta)</a></td></tr>
+    <tr><td><strong>Google Agenda</strong></td><td>Opcional</td><td>“Cada pessoa conecta a própria agenda do Google na Agenda.”</td><td><a href="#admin-google">Google Agenda</a></td></tr>
   </tbody>
 </table>
-<aside class="nota atencao"><strong>Dois cuidados ao ler.</strong><p>(1) “Budgets IA” usa o gasto <em>acumulado desde a instalação</em>, que não zera todo mês; pode divergir do número “do mês” da aba Saúde de uma empresa. (2) “LGPD em Risco” usa uma janela larga (5 dias) e conta também os pedidos já vencidos, bem diferente do “Crítico (menos de 24 h)” da tela <a href="#admin-audit--lgpd">LGPD</a> do painel.</p></aside>
-<p>O Dashboard só lê; não há botões nem formulários. O número de “Tenants Ativos” e os nomes dos alertas são dados reais de todas as empresas (por isso nas capturas deste manual aparecem a empresa de demonstração e uma de exemplo).</p>
+<ul>
+  <li>Cada linha mostra o nome, o selo <strong>Obrigatório</strong> ou <strong>Opcional</strong>, a frase acima e o estado: <strong>Pronto</strong>, <strong>Falta</strong> ou <strong>Não consegui ler agora</strong> (quando o sistema não conseguiu conferir aquele item naquele momento — não quer dizer que falta). O botão ao lado é <span class="ui">Configurar</span> quando falta e <span class="ui">Revisar</span> quando já está pronto; os dois abrem a tela daquele item.</li>
+  <li>O resumo no alto do cartão diz uma de três coisas: “Falta configurar o essencial para a instalação funcionar inteira.”, “O essencial está pronto. O que falta é opcional — ligue quando precisar.” ou “Tudo configurado.”. Enquanto faltar algo, ao lado aparece a contagem (“2 falta”, por exemplo).</li>
+  <li><strong>Aberto ou recolhido.</strong> Enquanto o e-mail (o único obrigatório) não estiver configurado, o cartão fica aberto. Com o essencial pronto, ele aparece <em>recolhido</em> numa linha só; clique nele (ou use <kbd>Enter</kbd>) para abrir a lista de novo.</li>
+  <li>O checklist só lê: ele nunca muda nada sozinho. Nenhum segredo aparece aqui, só “pronto” ou “falta” por item.</li>
+</ul>
+
+<h2 id="admin-dashboard--numeros">Os cinco números</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
+<figure class="print">
+  <img src="img/admin-dashboard.png" alt="Painel da administração com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">
+  <figcaption>O Painel (organização de demonstração; print anterior à reorganização, sem o checklist e com os nomes antigos dos cartões — a legenda já usa os nomes atuais).</figcaption>
+</figure>
+<ol class="legenda">
+  <li><strong>Atualização.</strong> No cabeçalho: “Os números se atualizam sozinhos a cada 30 segundos.”</li>
+  <li><strong>Empresas ativas.</strong> Quantas empresas estão com status ativo. Leva a <a href="#admin-tenants">Empresas</a>.</li>
+  <li><strong>Esperando resposta há mais de 10 min.</strong> Conversas esperando resposta há mais de 10 minutos. Leva a <a href="#admin-usage--inbox">Conversas de todas as empresas</a>.</li>
+  <li><strong>Números com problema.</strong> Números de WhatsApp com suspeita de banimento, desconexão inesperada ou desconectados nas últimas 24 horas. Leva à lista de alertas logo abaixo, que diz de qual empresa é cada número.</li>
+  <li><strong>Pedidos de LGPD perto do prazo.</strong> Pedidos de titulares ainda abertos cujo prazo vence em até 5 dias — inclui os já vencidos. Leva a <a href="#admin-audit--lgpd">Pedidos de LGPD</a>.</li>
+  <li><strong>Empresas perto do teto de IA.</strong> Empresas cujo gasto <em>acumulado</em> de IA já passou de 80% do teto. Leva a <a href="#admin-usage">Uso e custo</a>.</li>
+</ol>
+<p>Cada cartão é um link inteiro (com “Abrir” no rodapé) e traz uma frase que muda conforme o número:</p>
+<table class="tabela">
+  <thead><tr><th>Cartão</th><th>Quando está em dia</th><th>Quando pede ação</th></tr></thead>
+  <tbody>
+    <tr><td>Empresas ativas</td><td>“Empresas usando esta instalação agora.”</td><td>Com zero: “Nenhuma empresa ativa ainda — cadastre a primeira.”</td></tr>
+    <tr><td>Esperando resposta há mais de 10 min</td><td>“Nenhuma conversa esperando — tudo em dia.”</td><td>“Há clientes sem resposta. Abra as conversas para ver em qual empresa.”</td></tr>
+    <tr><td>Números com problema</td><td>“Todos os números de WhatsApp estão funcionando.”</td><td>“Algum número caiu ou foi bloqueado. Veja nos alertas abaixo qual empresa.”</td></tr>
+    <tr><td>Pedidos de LGPD perto do prazo</td><td>“Nenhum pedido de LGPD perto do prazo.”</td><td>“Responda antes que o prazo legal vença.”</td></tr>
+    <tr><td>Empresas perto do teto de IA</td><td>“Nenhuma empresa passou de 80% do teto de gasto com IA.”</td><td>“O gasto acumulado com IA passou de 80% do teto. Confira o uso dessas empresas.”</td></tr>
+  </tbody>
+</table>
+<p>Quando pede ação, o cartão fica <strong>amarelo</strong>; o de LGPD fica <strong>vermelho</strong>, porque é prazo da lei.</p>
+
+<h2 id="admin-dashboard--alertas">Alertas ativos</h2>
+<p>Abaixo dos cartões fica <strong>“Alertas ativos”</strong> (na captura, 1 alerta). Sem alertas aparece “Nenhum alerta crítico no momento. Tudo certo!”. Cada linha mostra o nome da empresa, a gravidade (<em>Crítico</em>, <em>Atenção</em> ou <em>Info</em>), o tipo (<em>Número com problema</em>, <em>LGPD</em>, <em>Teto de IA</em> ou <em>Fila de espera</em>) e a mensagem; clicar leva ao destino. São listados os 10 primeiros, com “+N alertas adicionais” no rodapé.</p>
+<table class="tabela">
+  <thead><tr><th>Tipo</th><th>Mensagem</th><th>Gravidade</th><th>Leva a</th></tr></thead>
+  <tbody>
+    <tr><td>Número com problema</td><td>“Número com suspeita de bloqueio pelo WhatsApp” / “Número desconectado sem aviso” (seguido do motivo, quando o sistema o recebe)</td><td>Crítico / Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td>LGPD</td><td>“Requisição LGPD vencida em DD/MM” / “Prazo LGPD expira em DD/MM”</td><td>Crítico / Atenção</td><td><a href="#admin-audit--lgpd">Pedidos de LGPD</a></td></tr>
+    <tr><td>Teto de IA</td><td>“Gasto com IA em N% do teto (acumulado)”, com o complemento “a empresa escolheu parar a IA no limite” quando é o caso; empresa com o limite em “Não aplicado” conta no cartão <em>Empresas perto do teto de IA</em>, mas não gera linha na lista</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+    <tr><td>Fila de espera</td><td>“N conversas pendentes sem atendimento” (acima de 50 numa empresa)</td><td>Atenção</td><td>Saúde da empresa</td></tr>
+  </tbody>
+</table>
+<aside class="nota atencao"><strong>Dois cuidados ao ler.</strong><p>(1) “Empresas perto do teto de IA” usa o gasto <em>acumulado desde a instalação</em>, que não zera todo mês; pode divergir do número “do mês” da aba Saúde de uma empresa. (2) “Pedidos de LGPD perto do prazo” usa uma janela larga (5 dias) e conta também os pedidos já vencidos, bem diferente do “Crítico (menos de 24 h)” da tela <a href="#admin-audit--lgpd">Pedidos de LGPD</a>.</p></aside>
+<p>O Painel só lê: não há formulários, e os botões só levam a outras telas. O número de empresas ativas e os nomes dos alertas são dados reais de todas as empresas (por isso nas capturas deste manual aparecem a empresa de demonstração e uma de exemplo).</p>
   </div>
 </article>
 
-<article class="pagina" id="admin-tenants" data-titulo="Tenants (empresas)" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A lista de todas as empresas hospedadas na instalação, o cadastro de uma empresa nova e a ficha de cada uma (visão geral, saúde, agente), com suspender, reativar e acompanhar." data-palavras="tenants empresas organizações novo tenant ficha saúde agente suspender reativar acompanhar suporte impersonate cnpj slug" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Tenants (empresas)</p>
-  <h1>Tenants (empresas)</h1>
+<article class="pagina" id="admin-tenants" data-titulo="Empresas" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A lista de todas as empresas hospedadas na instalação, o cadastro de uma empresa nova e a ficha de cada uma (visão geral, saúde, agente), com suspender, reativar e acompanhar." data-palavras="empresas tenants organizações nova empresa novo tenant ficha saúde agente suspender empresa reativar empresa acompanhar suporte impersonate cnpj slug" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Empresas</p>
+  <h1>Empresas</h1>
   <p class="lede">A lista de todas as empresas hospedadas na instalação, o cadastro de uma empresa nova e a ficha de cada uma (visão geral, saúde, agente), com suspender, reativar e acompanhar.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Tenants (/admin/tenants)</dd><dt>Quem pode usar</dt><dd>Ver: administrador da plataforma. Criar, suspender, reativar e acompanhar: escopo full com a verificação em dia.</dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Empresas e pessoas › Empresas (/admin/tenants)</dd><dt>Quem pode usar</dt><dd>Ver: administrador da plataforma. Criar, suspender, reativar e acompanhar: escopo full com a verificação em dia.</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-tenants--lista">A lista de empresas</h2>
-<p>“Tenant” é o jargão do painel para <strong>empresa cliente</strong> (organização). A lista mostra todas as hospedadas nesta instalação, das mais recentes para as mais antigas.</p>
+<p>A lista mostra todas as <strong>empresas clientes</strong> (organizações) hospedadas nesta instalação, das mais recentes para as mais antigas. (Antes esta tela se chamava “Tenants”, o jargão técnico para empresa cliente; o endereço continua <code>/admin/tenants</code>.) O cabeçalho diz “Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.” e “Quando usar: Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.”, seguido da contagem (“12 empresas”).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-tenants.png" alt="Lista de tenants com o botão Novo tenant, filtros e colunas Slug, Nome, CNPJ, Status, Users, Conversas, numerada de 1 a 8" loading="lazy">
-  <figcaption>A lista de tenants (nomes trocados por exemplos).</figcaption>
+  <img src="img/admin-tenants.png" alt="Lista de empresas com o botão de criar, filtros e colunas Slug, Nome, CNPJ, Status, Usuários, Conversas, numerada de 1 a 8" loading="lazy">
+  <figcaption>A lista de empresas (nomes trocados por exemplos; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Novo tenant.</strong> Abre o cadastro de uma empresa.</li>
+  <li><strong>Nova empresa.</strong> Abre o cadastro de uma empresa.</li>
   <li><strong>Busca.</strong> “Buscar por nome, slug ou CNPJ…”, parcial e sem diferenciar maiúsculas (aplica após 0,3 s).</li>
   <li><strong>Status.</strong> “Todos os status”, “Ativo”, “Onboarding”, “Suspenso” e “Redigido”. <em>Onboarding</em> é calculado: empresa ativa que ainda não concluiu os <a href="#onboarding">primeiros passos</a>. <em>Redigido</em> quer dizer que os dados foram anonimizados por LGPD.</li>
   <li><strong>Slug.</strong> O apelido curto da empresa, em letra de máquina.</li>
   <li><strong>CNPJ.</strong> Aparece <em>truncado</em> na lista; completo só na ficha.</li>
   <li><strong>Status.</strong> O selo: Ativo (verde), Onboarding (azul), Suspenso (amarelo), Redigido (vermelho).</li>
-  <li><strong>Users.</strong> Pessoas vinculadas (e, ao lado, o número de conversas).</li>
+  <li><strong>Usuários.</strong> Pessoas vinculadas (e, ao lado, o número de conversas).</li>
   <li><strong>Ver.</strong> Abre a ficha.</li>
 </ol>
-<p>Entre o <em>Conversas</em> e o <span class="ui">Ver</span> há ainda a coluna <em>Criado em</em> (a data de criação da empresa). 30 por página; <span class="ui">Carregar mais</span> traz o resto. Sem resultado: “Nenhum tenant encontrado — Ajuste os filtros ou crie um novo tenant.”. A consulta é auditada (<code>platform_admin.tenants_listed</code>).</p>
+<p>Entre o <em>Conversas</em> e o <span class="ui">Ver</span> há ainda a coluna <em>Criado em</em> (a data de criação da empresa). 30 por página; <span class="ui">Carregar mais</span> traz o resto. Sem resultado: “Nenhuma empresa encontrada — Ajuste os filtros ou cadastre uma nova empresa.”. A consulta é auditada (<code>platform_admin.tenants_listed</code>).</p>
 
-<h2 id="admin-tenants--novo">Novo tenant</h2>
+<h2 id="admin-tenants--novo">Nova empresa</h2>
 <figure class="print">
-  <img src="img/admin-novo-tenant.png" alt="Formulário Nova organização com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
-  <figcaption>O formulário “Nova organização” (com um nome de exemplo digitado e nada enviado).</figcaption>
+  <img src="img/admin-novo-tenant.png" alt="Formulário Nova empresa com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
+  <figcaption>O formulário “Nova empresa” (com um nome de exemplo digitado e nada enviado).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome de exibição.</strong> Obrigatório, 2 a 120 caracteres (“Loja da Maria”). Ao digitar, o slug é gerado sozinho.</li>
@@ -8861,45 +8945,48 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Plano.</strong> Standard (padrão), Pro ou Enterprise — hoje só um rótulo informativo (não confirmado se libera ou limita algo).</li>
   <li><strong>E-mail do responsável.</strong> Obrigatório. A pessoa que vai administrar a empresa.</li>
   <li><strong>Interface.</strong> O mesmo editor de áreas visíveis do responsável (padrão: completa; deve restar ao menos uma área).</li>
-  <li><strong>Criar organização.</strong> “Criando…”. Ao lado fica o botão <span class="ui">Cancelar</span>, que volta à tela anterior. O botão de criar fica desabilitado se o editor de interface ficar sem nenhuma área visível para o administrador.</li>
+  <li><strong>Criar organização.</strong> “Criando…”; ao terminar, o aviso “Empresa criada!”. Ao lado fica o botão <span class="ui">Cancelar</span>, que volta à tela anterior. O botão de criar fica desabilitado se o editor de interface ficar sem nenhuma área visível para o administrador.</li>
 </ol>
 <ul>
   <li><strong>Você entra como Administrador da empresa nova.</strong> Quando o responsável é outra pessoa, o seu vínculo é “provisório” até a passagem de bastão.</li>
   <li>Se o e-mail do responsável é <em>outro</em>, o sistema gera um <strong>convite de administrador</strong> (válido por tempo limitado) e tenta enviar por e-mail; sem e-mail configurado, a tela mostra o <em>Link do convite</em> com o botão <span class="ui">Copiar convite</span> (“O envio por e-mail não foi confirmado. Copie o link e compartilhe com o responsável.”); quando o envio deu certo a tela diz “Convite enviado por e-mail.” e, nos dois casos, mostra o link e “Válido até <em>data e hora</em>”, com a dica “Se o convite vencer, abra Equipe na organização para gerar outro.”. Se o e-mail é o seu, não há convite.</li>
   <li>Termina em “Organização criada — Você já é administrador de &lt;nome&gt;.” com os botões <span class="ui">Voltar ao aplicativo</span> e <span class="ui">Ver organização</span>.</li>
-  <li>É idempotente (repetir o mesmo envio não duplica) e fica na auditoria como <code>tenant.created_by_platform_admin</code>. <strong>Não existe botão de apagar empresa</strong> no painel: só suspender (ou redigir por LGPD). A empresa nova nasce <em>ativa</em> mas aparece como “Onboarding” até o responsável concluir os primeiros passos.</li>
+  <li>É idempotente (repetir o mesmo envio não duplica) e fica na auditoria como <code>tenant.created_by_platform_admin</code>. <strong>Não existe botão de apagar empresa</strong> na administração: só suspender (ou anonimizar por LGPD). A empresa nova nasce <em>ativa</em> mas aparece como “Onboarding” até o responsável concluir os primeiros passos.</li>
   <li>Esta tela <em>não foi enviada</em> nas capturas.</li>
 </ul>
 
 <h2 id="admin-tenants--ficha">A ficha da empresa</h2>
-<p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Tenants</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
+<p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Empresas</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-geral.png" alt="Ficha de uma empresa com informações, volumes, integrações, compliance e os botões de ação, numerada de 1 a 7" loading="lazy">
   <figcaption>A aba Visão Geral da ficha.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Tenants.</strong> Link de volta à lista.</li>
+  <li><strong>Empresas.</strong> Link de volta à lista (no print ainda aparece “Tenants”).</li>
   <li><strong>Abas.</strong> Visão Geral, Saúde (marcada) e Agente.</li>
   <li><strong>Informações.</strong> Plano, razão social, CNPJ (completo), “Onboarding concluído” (data e hora), “Criado em” e, se houver, “Suspenso em”.</li>
   <li><strong>Volumes.</strong> Totais da empresa: Usuários, Conversas, Mensagens, Leads e Pedidos. Em “Integrações”: quantas sessões de WhatsApp existem (de qualquer status).</li>
   <li><strong>Compliance &amp; IA.</strong> “Solicitações LGPD pendentes” (destaque se &gt; 0) e “Invocações IA (30d)”.</li>
   <li><strong>Acompanhar organização.</strong> Veja abaixo. Ele fica no cartão “Ações”, ao lado das informações.</li>
-  <li><strong>Suspender tenant.</strong> Vermelho; só se a empresa está ativa. Se está suspensa aparece <span class="ui">Reativar tenant</span>; se redigida, só “Tenant redigido — ações de gestão não disponíveis.”.</li>
+  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa (no print ainda aparece “Suspender tenant”). Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
 </ol>
 <h3 id="admin-tenants--saude">Aba Saúde</h3>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões WAHA, Orçamento IA e Audit Lag, numerada de 1 a 4" loading="lazy">
+  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões Números conectados, Orçamento IA e Atraso do registro de ações, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Status de Saúde.</strong></li>
-  <li><strong>WAHA.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
+  <li><strong>Números conectados.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
   <li><strong>Orçamento IA.</strong> “N% usado”, consumido, orçamento (ou “Ilimitado”) e o limite (“Não aplicado”, “Só avisa” ou “Para a IA no limite”). Aqui o gasto é o <em>do mês</em>. A partir de 80% é Atenção; 100% só é Crítico quando a empresa escolheu parar a IA.</li>
-  <li><strong>Audit Lag.</strong> Tempo desde o último evento de auditoria da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
+  <li><strong>Atraso do registro de ações.</strong> Tempo desde a última ação registrada da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
 </ol>
-<p>O cartão <em>Audit Lag</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
-<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Audit Lag” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
+<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
+<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Atraso do registro de ações” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="admin-tenants--agente">Aba Agente</h3>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-tenant-agente.png" alt="Aba Agente com a lista dos agentes de IA da empresa, a versão publicada e a data" loading="lazy">
   <figcaption>A aba Agente: dois agentes da empresa de demonstração.</figcaption>
@@ -8907,18 +8994,20 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>Lista os agentes de IA da empresa, só para leitura: nome, “Ativo/Inativo”, <em>Tipo</em>, <em>Versão publicada</em> (<code>vN · provedor · modelo</code> ou “Nenhum agente publicado”) e <em>Publicado em</em>. Vazio: “Nenhum agente publicado”.</p>
 
 <h2 id="admin-tenants--suspender">Suspender e reativar</h2>
-<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Tenant suspenso” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
+<p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Empresa suspensa” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-suspender.png" alt="Janela Suspender tenant com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
-  <figcaption>A janela “Suspender tenant” (cancelada nesta captura).</figcaption>
+  <img src="img/admin-suspender.png" alt="Janela Suspender empresa com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
+  <figcaption>A janela “Suspender empresa” (cancelada nesta captura; o print ainda traz o título antigo, “Suspender tenant”).</figcaption>
 </figure>
 <ul>
-  <li><strong>Suspender:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo.</li>
-  <li><strong>Reativar:</strong> restabelece o acesso (“Motivo da reativação”, 10 a 500). Só reativa a suspensão <em>administrativa</em>; se foi por falta de pagamento, a resposta é “Esta suspensão é por falta de pagamento. Use Dar prazo ou Tornar isenta.”. Abre um item “org_reativada” na Central da empresa. As mensagens e tarefas descartadas <strong>não voltam</strong>.</li>
+  <li><strong>Suspender empresa:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo. Ao terminar, o aviso “Empresa suspensa com sucesso”.</li>
+  <li><strong>Reativar empresa:</strong> “A reativação devolve o acesso das pessoas desta empresa. Informe o motivo, que fica guardado no Registro de ações.” (“Motivo da reativação”, 10 a 500 caracteres; aviso final “Empresa reativada”). Só reativa a suspensão <em>administrativa</em>; se foi por falta de pagamento, a resposta é “Esta suspensão é por falta de pagamento. Use Dar prazo ou Tornar isenta.”. Abre um item “org_reativada” na Central da empresa. As mensagens e tarefas descartadas <strong>não voltam</strong>.</li>
   <li>Exigem escopo <code>full</code> e verificação em dia. Se outra operação está em andamento: “Outra operação está em andamento para esta empresa. Tente de novo em instantes.”.</li>
 </ul>
 
 <h2 id="admin-tenants--acompanhar">Acompanhar organização (suporte temporário)</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-acompanhar.png" alt="Janela Iniciar acompanhamento com a caixa Somente leitura e o botão Confirmar e entrar" loading="lazy">
   <figcaption>A janela “Iniciar acompanhamento?”.</figcaption>
@@ -8935,116 +9024,124 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <ul>
   <li>Só empresas <em>ativas</em> podem ser acompanhadas (suspensa ou redigida, não). Não passa pelo onboarding e não pode aceitar convites durante a sessão.</li>
   <li><strong>Como termina:</strong> pelo botão; pelo tempo (1 hora — o navegador vai sozinho a <a href="#entrada-avisos">“Encerre o acompanhamento para continuar”</a>); ou se você perder a autoridade (administrador revogado, sessão encerrada, verificação perdida, empresa deixou de estar ativa).</li>
-  <li>Fica na auditoria (<code>platform_admin.impersonate_started</code> e <code>…_ended</code>) e toda ação feita é gravada como feita “pelo administrador da plataforma”. Não manda e-mail nem avisa a empresa (<em>não confirmado fora do código lido</em>). É o <strong>único caminho do painel para responder como atendente</strong> (o <a href="#admin-usage--inbox">Inbox do painel</a> é só leitura).</li>
+  <li>Fica na auditoria (<code>platform_admin.impersonate_started</code> e <code>…_ended</code>) e toda ação feita é gravada como feita “pelo administrador da plataforma”. Não manda e-mail nem avisa a empresa (<em>não confirmado fora do código lido</em>). É o <strong>único caminho da administração para responder como atendente</strong> (a tela <a href="#admin-usage--inbox">Conversas de todas as empresas</a> é só leitura).</li>
   <li>Erros comuns: “Administração da plataforma necessária.”, “Confirme a verificação em duas etapas.”, “Encerre o acompanhamento atual primeiro.”, “Acompanhamento não configurado nesta instalação.” (falta o segredo de acompanhamento no servidor).</li>
 </ul>
   </div>
 </article>
 
-<article class="pagina" id="admin-audit" data-titulo="Audit, LGPD e Incidentes (todas as empresas)" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="As três telas de rastro e conformidade do painel: o diário de auditoria de todas as empresas, os pedidos de LGPD de todas as empresas e o registro de incidentes operacionais." data-palavras="audit auditoria log lgpd incidentes incidents cross-tenant prazo sla resolver incidente request id" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Audit, LGPD e Incidentes (todas as empresas)</p>
-  <h1>Audit, LGPD e Incidentes (todas as empresas)</h1>
-  <p class="lede">As três telas de rastro e conformidade do painel: o diário de auditoria de todas as empresas, os pedidos de LGPD de todas as empresas e o registro de incidentes operacionais.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Audit, LGPD e Incidents (/admin/audit, /admin/lgpd, /admin/incidents)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma. Resolver incidente: escopo full com a verificação em dia.</dd></dl>
+<article class="pagina" id="admin-audit" data-titulo="Registro de ações, Pedidos de LGPD e Incidentes" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="As três telas de rastro e conformidade da administração: o registro de ações de todas as empresas, os pedidos de LGPD de todas as empresas e o registro de incidentes operacionais." data-palavras="registro de ações audit audit log auditoria log pedidos de lgpd lgpd incidentes incidents cross-tenant prazo sla resolver incidente request id" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Registro de ações, Pedidos de LGPD e Incidentes</p>
+  <h1>Registro de ações, Pedidos de LGPD e Incidentes</h1>
+  <p class="lede">As três telas de rastro e conformidade da administração: o registro de ações de todas as empresas, os pedidos de LGPD de todas as empresas e o registro de incidentes operacionais.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Acompanhar e proteger › Registro de ações, Pedidos de LGPD e Incidentes (/admin/audit, /admin/lgpd, /admin/incidents)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma. Resolver incidente: escopo full com a verificação em dia.</dd></dl>
   <div class="conteudo-pagina">
-<h2 id="admin-audit--audit">Audit Log (todas as empresas)</h2>
-<p>É o mesmo diário da tela <a href="#auditoria">Quem mexeu em quê</a> (que se abre com o título “Auditoria”) de cada empresa, mas <strong>de todas as empresas juntas</strong>, para quem opera o servidor. Só leitura; a tabela não aceita edição nem exclusão (retenção padrão de 5 anos, piso de 90 dias, limpa por rotina diária).</p>
+<h2 id="admin-audit--audit">Registro de ações (todas as empresas)</h2>
+<p>Antes chamada “Audit Log”. É o mesmo diário da tela <a href="#auditoria">Quem mexeu em quê</a> (que se abre com o título “Auditoria”) de cada empresa, mas <strong>de todas as empresas juntas</strong>, para quem opera o servidor. Só leitura; a tabela não aceita edição nem exclusão (retenção padrão de 5 anos, piso de 90 dias, limpa por rotina diária). O cabeçalho diz “Guarda cada alteração feita no sistema, com a pessoa, a data e o que mudou.” e “Quando usar: Para descobrir quem mudou alguma coisa ou provar o que aconteceu.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-audit.png" alt="Audit Log do painel com os filtros e a tabela de eventos, numerada de 1 a 7" loading="lazy">
-  <figcaption>O Audit Log do painel (mostra só as linhas da empresa de demonstração).</figcaption>
+  <img src="img/admin-audit.png" alt="Registro de ações com os filtros e a tabela de eventos, numerado de 1 a 7" loading="lazy">
+  <figcaption>O Registro de ações (mostra só as linhas da empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Audit Log.</strong> Subtítulo “N evento(s)” (com “+” se há mais).</li>
-  <li><strong>Tenants.</strong> Botão com multisseleção das empresas (busca, “Limpar seleção”).</li>
-  <li><strong>Actions.</strong> Multisseleção do vocabulário de códigos de ação (o rótulo é o próprio código; digitar <code>lgpd.</code> recorta a família).</li>
-  <li><strong>Actor (user ID).</strong> Campo de texto: só aceita o UUID do usuário (aplica após 0,4 s). Ao lado, as datas “De” e “Até” e o botão <span class="ui">Limpar</span>.</li>
-  <li><strong>Action.</strong> O código da ação, em letra de máquina.</li>
-  <li><strong>Actor.</strong> Veja a armadilha abaixo.</li>
+  <li><strong>Registro de ações.</strong> Embaixo do cabeçalho, a contagem “N evento(s)” (com “+” se há mais).</li>
+  <li><strong>Empresas.</strong> Botão com multisseleção das empresas (busca, “Limpar seleção”).</li>
+  <li><strong>Ações.</strong> Multisseleção do vocabulário de códigos de ação (o rótulo é o próprio código; digitar <code>lgpd.</code> recorta a família).</li>
+  <li><strong>Quem fez (código da pessoa).</strong> Campo de texto: só aceita o código interno do usuário, aquele identificador longo de letras e números (UUID), e não o nome nem o e-mail (aplica após 0,4 s). Ao lado, as datas “De” e “Até” e o botão <span class="ui">Limpar</span>.</li>
+  <li><strong>Ação.</strong> A coluna com o código da ação, em letra de máquina.</li>
+  <li><strong>Quem fez.</strong> A coluna de quem fez; veja a armadilha abaixo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Action</em>, <em>Tenant</em> (selo com o slug), <em>Actor</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver entradas do audit log.”). <strong>Armadilha:</strong> a coluna Actor mostra o UUID inteiro, não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
+<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Ação</em>, <em>Empresa</em> (num selo com o slug), <em>Quem fez</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver entradas do audit log.”). <strong>Armadilha:</strong> a coluna de quem fez mostra o código inteiro (UUID), não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-audit-detalhe.png" alt="Detalhe de uma entrada de auditoria com metadata, request ID, ator, tenant e recurso, numerado de 1 a 4" loading="lazy">
   <figcaption>O detalhe de uma entrada.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Metadata.</strong> O JSON bruto do que mudou (nunca contém segredos).</li>
-  <li><strong>Request ID.</strong> Com Resource Type, Resource ID, “Bypassed RLS” (Sim/Não), Actor IP e User Agent.</li>
-  <li><strong>Actor.</strong> User ID e e-mail <em>mascarado</em> (<code>m****@dominio</code>).</li>
-  <li><strong>Tenant.</strong> Nome, slug, status e o botão <span class="ui">Ver tenant</span>. O selo amarelo <strong>Platform Admin</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Audit Log</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
+  <li><strong>Código da requisição.</strong> Com Tipo do recurso, Código do recurso, “Feita por cima do isolamento entre empresas” (Sim/Não — Sim quando a gravação usou o acesso do servidor que enxerga todas as empresas), Endereço IP de quem fez e Navegador de quem fez.</li>
+  <li><strong>Quem fez.</strong> Código da pessoa e e-mail <em>mascarado</em> (<code>m****@dominio</code>).</li>
+  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
 </ol>
-<p>A própria consulta deste painel é auditada (por isso, na captura, as últimas linhas são as aberturas de ficha e de saúde).</p>
+<p>A própria consulta desta tela é auditada (por isso, na captura, as últimas linhas são as aberturas de ficha e de saúde).</p>
 
-<h2 id="admin-audit--lgpd">LGPD — Cross-tenant</h2>
-<p>Acompanha os pedidos de titulares de <em>todas</em> as empresas e mostra quais estão perto de estourar o prazo legal. <strong>Somente leitura</strong>: a aprovação é feita pelo Administrador <em>dentro</em> da empresa, na tela <a href="#lgpd">LGPD</a>.</p>
+<h2 id="admin-audit--lgpd">Pedidos de LGPD (todas as empresas)</h2>
+<p>Antes chamada “LGPD — Cross-tenant”. Acompanha os pedidos de titulares de <em>todas</em> as empresas e mostra quais estão perto de estourar o prazo legal. <strong>Somente leitura</strong>: a aprovação é feita pelo Administrador <em>dentro</em> da empresa, na tela <a href="#lgpd">LGPD</a>. O cabeçalho diz “Acompanha os pedidos dos donos dos dados (cópia, correção, anonimização) em todas as empresas, e o prazo legal de cada um.” e “Quando usar: Toda semana, para nenhum pedido passar do prazo que a lei dá.”, com a contagem “N solicitação(ões)”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-lgpd.png" alt="Tela LGPD Cross-tenant com os três filtros e a tabela de pedidos, numerada de 2 a 8" loading="lazy">
-  <figcaption>A tela LGPD do painel (dados fictícios da empresa de demonstração).</figcaption>
+  <img src="img/admin-lgpd.png" alt="Tela Pedidos de LGPD com os três filtros e a tabela de pedidos, numerada de 2 a 8" loading="lazy">
+  <figcaption>A tela Pedidos de LGPD (dados fictícios da empresa de demonstração; print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
   <li style="counter-set:leg 1"><strong>Status.</strong> Todos, Recebido, Processando, Revisão, Concluído ou Falhou.</li>
-  <li><strong>Tipo.</strong> Anonimização cliente, Solicitação de dados ou Anonimização tenant.</li>
+  <li><strong>Tipo.</strong> Anonimização cliente, Solicitação de dados ou Anonimização da empresa.</li>
   <li><strong>Risco.</strong> Vencido, Crítico (&lt;24h), Alerta (&gt;50%) ou OK.</li>
-  <li><strong>Tenant.</strong> A empresa do pedido.</li>
+  <li><strong>Empresa.</strong> A coluna da empresa do pedido.</li>
   <li><strong>Vence em.</strong> “3d restantes”, “vence hoje” ou “Nd em atraso”.</li>
   <li><strong>Risco.</strong> O selo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Tenant, Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (cabeçalho com status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — aprovação é feita pelo operador no contexto do tenant.”.</p>
+<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Tenant (a empresa), Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (no alto, o link <span class="ui">Pedidos de LGPD</span> volta à lista; o cabeçalho traz status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.”.</p>
 
 <h2 id="admin-audit--incidentes">Incidentes</h2>
+<p>O cabeçalho diz “Lista as falhas que o sistema detectou, com a gravidade e o andamento de cada uma.” e “Quando usar: Quando algo parou de funcionar, ou para fechar um problema que já foi resolvido.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-incidentes.png" alt="Tela Incidentes vazia com os filtros Status e Severidade, numerada de 1 a 4" loading="lazy">
   <figcaption>A tela de Incidentes, vazia (o estado normal).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Incidentes.</strong> Subtítulo “N incidente(s)”.</li>
+  <li><strong>Incidentes.</strong> Embaixo do cabeçalho, a contagem “N incidente(s)”.</li>
   <li><strong>Status.</strong> Abertos (padrão), Reconhecidos ou Resolvidos.</li>
   <li><strong>Severidade.</strong> Todas, Crítico, Atenção ou Info.</li>
   <li><strong>Nenhum incidente encontrado.</strong></li>
 </ol>
-<p>Quando há filtro de severidade ativo, aparece também o botão <span class="ui">Limpar filtros</span>; havendo mais de uma página, <span class="ui">Carregar mais</span>. Colunas: <em>Quando</em>, <em>Tipo</em>, <em>Tenant</em> (o nome da empresa),<em> Severidade</em>, <em>Status</em> (Aberto, Reconhecido, Resolvido) e <em>Ver</em>. O detalhe mostra o payload (JSON), a trilha de auditoria e, se resolvido, a nota de resolução. O botão <span class="ui">Resolver incidente</span> abre uma janela que pede a <strong>Nota de resolução</strong> (10 a 1000 caracteres: “Descreva a causa raiz e as ações tomadas…”) e avisa que “Esta ação é registrada no audit log e não pode ser desfeita.”. O botão de confirmar se chama <span class="ui">Confirmar resolução</span> e só habilita com 10 caracteres ou mais (abaixo disso aparece “Mínimo de 10 caracteres (n/10)”); o botão <span class="ui">Resolver incidente</span> some quando o incidente já está resolvido. Marca o incidente como resolvido (<code>incident.resolved</code>); <strong>não há como reabrir</strong>.</p>
+<p>Quando há filtro de severidade ativo, aparece também o botão <span class="ui">Limpar filtros</span>; havendo mais de uma página, <span class="ui">Carregar mais</span>. Colunas: <em>Quando</em>, <em>Tipo</em>, <em>Empresa</em> (o nome da empresa), <em>Severidade</em>, <em>Status</em> (Aberto, Reconhecido, Resolvido) e <em>Ver</em>. O detalhe (no alto, o link <span class="ui">Incidentes</span> volta à lista) mostra o payload (os dados técnicos do incidente, em JSON), a trilha de auditoria e, se resolvido, a nota de resolução. O botão <span class="ui">Resolver incidente</span> abre uma janela que pede a <strong>Nota de resolução</strong> (10 a 1000 caracteres: “Descreva a causa raiz e as ações tomadas…”) e avisa que “Esta ação é registrada no audit log e não pode ser desfeita.” (o audit log é o Registro de ações). O botão de confirmar se chama <span class="ui">Confirmar resolução</span> e só habilita com 10 caracteres ou mais (abaixo disso aparece “Mínimo de 10 caracteres (n/10)”); o botão <span class="ui">Resolver incidente</span> some quando o incidente já está resolvido. Marca o incidente como resolvido (<code>incident.resolved</code>); <strong>não há como reabrir</strong>.</p>
 <aside class="nota atencao"><strong>Estado real desta tela.</strong><p>Não existe a ação “Reconhecer” (o status “Reconhecido” só aparece no filtro e no selo) e, no código lido, nada <em>cria</em> incidentes — só leitura e resolução. Numa instalação nova a lista tende a ficar vazia; não confirmado se algum processo externo insere linhas.</p></aside>
   </div>
 </article>
 
-<article class="pagina" id="admin-usage" data-titulo="Usage, Users, Platform Admins e Inbox" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="Quatro telas de leitura do painel: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e o espiar de conversas de qualquer empresa." data-palavras="usage uso custo ia tokens exportar csv users usuários platform admins inbox conversas somente leitura dba" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Usage, Users, Platform Admins e Inbox</p>
-  <h1>Usage, Users, Platform Admins e Inbox</h1>
-  <p class="lede">Quatro telas de leitura do painel: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e o espiar de conversas de qualquer empresa.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Usage, Users, Platform Admins e Inbox (/admin/usage, /admin/users, /admin/platform-admins, /admin/inbox)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma (só leitura)</dd></dl>
+<article class="pagina" id="admin-usage" data-titulo="Uso e custo, Usuários, Administradores da plataforma e Conversas de todas as empresas" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="Quatro telas de leitura da administração: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e a leitura das conversas de qualquer empresa." data-palavras="uso e custo usage uso custo ia tokens exportar csv usuários users administradores da plataforma platform admins conversas de todas as empresas inbox conversas somente leitura dba" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Uso e custo, Usuários, Administradores da plataforma e Conversas de todas as empresas</p>
+  <h1>Uso e custo, Usuários, Administradores da plataforma e Conversas de todas as empresas</h1>
+  <p class="lede">Quatro telas de leitura da administração: o consumo e o custo de IA por empresa, as pessoas de todas as empresas, quem é administrador da plataforma e a leitura das conversas de qualquer empresa.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Acompanhar e proteger › Uso e custo; Empresas e pessoas › Usuários, Administradores da plataforma e Conversas de todas as empresas (/admin/usage, /admin/users, /admin/platform-admins, /admin/inbox)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma (só leitura)</dd></dl>
   <div class="conteudo-pagina">
-<h2 id="admin-usage--usage">Usage — Uso &amp; Custo</h2>
-<p>Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
+<h2 id="admin-usage--usage">Uso e custo</h2>
+<p>Antes chamada “Usage” e “Uso &amp; Custo”. Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-usage.png" alt="Tela Uso e Custo com o seletor de período, os gráficos e a tabela Uso por tenant, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Uso &amp; Custo (só a empresa de demonstração).</figcaption>
+  <img src="img/admin-usage.png" alt="Tela Uso e custo com o seletor de período, os gráficos e a tabela Uso por empresa, numerada de 1 a 6" loading="lazy">
+  <figcaption>A tela Uso e custo (só a empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Título.</strong> “Consumo de mensagens, conversas e AI por tenant”.</li>
+  <li><strong>Cabeçalho.</strong> “Mostra o consumo de cada empresa e quanto a inteligência artificial custou.” e “Quando usar: Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.”.</li>
   <li><strong>Período.</strong> “Últimos 30 dias” (padrão), “Últimos 7 dias” ou “Últimos 90 dias”.</li>
   <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo AI / dia” e “AI Tokens / dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
-  <li><strong>Uso por tenant.</strong> A tabela: Tenant, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor).</li>
+  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
   <li><strong>Custo AI.</strong> A última coluna.</li>
   <li><strong>Exportar CSV.</strong> Baixa <code>usage-&lt;periodo&gt;.csv</code> com os dados de <em>todas</em> as empresas (gerado no navegador).</li>
 </ol>
 <aside class="nota atencao"><strong>A moeda é dólar, mesmo onde está escrito “R$”.</strong><p>Os valores vêm do custo registrado em dólar; a tabela mostra “US$”, mas o título do gráfico diz “(R$)” e a coluna do CSV se chama <code>custo_reais</code> sem converter. Trate o custo como <em>dólares</em>.</p></aside>
 
-<h2 id="admin-usage--users">Users — Usuários</h2>
+<h2 id="admin-usage--users">Usuários</h2>
+<p>Antes chamada “Users”. O cabeçalho diz “Lista quem entra no sistema, em qual empresa e com qual papel.” e “Quando usar: Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.”, com a contagem “N usuário(s)”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-users.png" alt="Lista de usuários do painel com busca, filtros de tenant e role e as colunas Email, Nome, Tenant, Role, Último acesso e Status, numerada de 1 a 7" loading="lazy">
-  <figcaption>A lista de usuários (só a empresa de demonstração).</figcaption>
+  <img src="img/admin-users.png" alt="Lista de usuários com busca, filtros de empresa e papel e as colunas da tabela, numerada de 1 a 7" loading="lazy">
+  <figcaption>A lista de usuários (só a empresa de demonstração; print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Busca.</strong> “Buscar por email ou nome…”.</li>
-  <li><strong>Tenant.</strong> “Todos os tenants” ou uma empresa.</li>
-  <li><strong>Role.</strong> “Todos os roles”, Admin, Manager, Agente ou Viewer.</li>
-  <li><strong>Role</strong> (coluna). Selo colorido por papel.</li>
+  <li><strong>Empresa.</strong> “Todas as empresas” ou uma empresa.</li>
+  <li><strong>Papel.</strong> O papel na empresa: “Todos os papéis”, Admin, Manager, Agente ou Viewer.</li>
+  <li><strong>Papel</strong> (coluna). Selo colorido por papel.</li>
   <li><strong>Último acesso.</strong> Relativo.</li>
   <li><strong>Status.</strong> <em>Ativo</em> ou <em>Revogado</em> (vínculo retirado).</li>
   <li><strong>Ver.</strong></li>
 </ol>
-<p>É <strong>uma linha por vínculo</strong> entre pessoa e empresa (quem trabalha em duas empresas aparece duas vezes). 30 por página (com <span class="ui">Carregar mais</span>); com os filtros sem resultado a tela sugere “Ajuste os filtros para refinar a busca.”. O detalhe mostra o cartão “Informações do usuário” (e-mail confirmado, último acesso, criado em, <em>MFA</em> Ativo/Inativo, telefone), “Memberships” (empresa, papel, aceito em, status) e “Audit recente” (últimas 50 ações). <strong>Não há</strong> ação de redefinir senha, banir, revogar ou apagar usuário aqui.</p>
+<p>As colunas da tabela são E-mail, Nome, Empresa, Papel, Último acesso e Status. É <strong>uma linha por vínculo</strong> entre pessoa e empresa (quem trabalha em duas empresas aparece duas vezes). 30 por página (com <span class="ui">Carregar mais</span>); com os filtros sem resultado a tela sugere “Ajuste os filtros para refinar a busca.”. O detalhe mostra o cartão “Informações do usuário” (e-mail confirmado, último acesso, criado em, <em>MFA</em> Ativo/Inativo, telefone), “Memberships” (empresa, papel, aceito em, status) e “Audit recente” (últimas 50 ações). <strong>Não há</strong> ação de redefinir senha, banir, revogar ou apagar usuário aqui.</p>
 
 <figure class="print media">
   <img src="img/admin-user-detalhe.png" alt="Detalhe de um usuário com informações, memberships e a auditoria recente, numerado de 1 a 3" loading="lazy">
@@ -9053,32 +9150,35 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <ol class="legenda">
   <li><strong>Informações do usuário.</strong> E-mail confirmado, último acesso, criado em e MFA.</li>
   <li><strong>Memberships.</strong> As empresas a que a pessoa pertence, com papel e status.</li>
-  <li><strong>Audit recente.</strong> As últimas ações da pessoa (inclusive as aberturas de tela do próprio painel).</li>
+  <li><strong>Ações recentes.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
 </ol>
 
-<h2 id="admin-usage--platform-admins">Platform Admins</h2>
+<h2 id="admin-usage--platform-admins">Administradores da plataforma</h2>
+<p>Antes chamada “Platform Admins”. O cabeçalho diz “Mostra quem administra a instalação inteira, acima de todas as empresas.” e “Quando usar: Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-platform-admins.png" alt="Tela Platform Admins com o aviso de que o gerenciamento é restrito ao DBA e a tabela de administradores, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Platform Admins.</figcaption>
+  <img src="img/admin-platform-admins.png" alt="Tela Administradores da plataforma com o aviso de que só se muda direto no banco de dados e a tabela de administradores, numerada de 1 a 4" loading="lazy">
+  <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>“Gerenciamento de Platform Admins é restrito ao DBA”.</strong> Adicionar, remover ou alterar é feito exclusivamente por SQL pelo DBA, com nota na auditoria. A página é informativa e não tem nenhum botão de alteração.</li>
+  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Incluir, tirar ou mudar alguém é feito só por comando direto no banco de dados (por quem cuida do servidor), com uma nota no registro de ações. A página só mostra quem é: de propósito, ela não tem botão de mudança. Com a lista vazia, a tela diz “Nenhum administrador da plataforma encontrado”.</li>
   <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
   <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>
 </ol>
 <p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Scope</em>, <em>MFA</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. Há um link “Ver runbook →” que aponta para um arquivo que não existe no aplicativo (provavelmente um link quebrado). Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
 
-<h2 id="admin-usage--inbox">Inbox (leitura)</h2>
-<p>Permite <em>espiar</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador.</p>
+<h2 id="admin-usage--inbox">Conversas de todas as empresas (leitura)</h2>
+<p>Antes chamada “Inbox”. Permite <em>ler</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador. Enquanto nenhuma conversa está aberta, a área da direita mostra o cabeçalho da tela: “Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.” e “Quando usar: Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-inbox.png" alt="Inbox do painel com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
-  <figcaption>O Inbox do painel (só conversas da empresa de demonstração).</figcaption>
+  <img src="img/admin-inbox.png" alt="Conversas de todas as empresas com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
+  <figcaption>A tela Conversas de todas as empresas (só conversas da empresa de demonstração; print anterior à reorganização, sem o cabeçalho).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Buscar mensagem…</strong> Busca só na <em>prévia da última mensagem</em>, não em todo o histórico.</li>
   <li><strong>Status.</strong> “Todos”, “Pendente”, “Aberto” ou “Resolvido”.</li>
-  <li><strong>Selecione uma conversa.</strong> “Modo somente-leitura. Para responder como atendente, abra a organização e use “Acompanhar organização”.”</li>
+  <li><strong>Selecione uma conversa para visualizar.</strong> “Modo somente-leitura. Para responder como atendente, abra a organização e use “Acompanhar organização”.”</li>
 </ol>
 <ul>
   <li>Cada item mostra o contato (ou o telefone, ou “Sem nome”), a hora, o selo da empresa, a prévia e o contador de não lidas. Atualiza em tempo real; a lista traz o botão <span class="ui">Carregar mais</span> e, sem resultado, “Nenhuma conversa encontrada.”.</li>
@@ -9090,17 +9190,19 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="admin-marca" data-titulo="Marca da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="O nome, a cor, o logo e o ícone que o sistema mostra para todo mundo que usa a instalação (white-label do servidor)." data-palavras="marca white label nome do sistema cor logo ícone favicon instalação admin" hidden>
+<article class="pagina" id="admin-marca" data-titulo="Marca da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="O nome, a cor, o logo e o ícone que o sistema mostra para todo mundo que usa a instalação (white-label do servidor)." data-palavras="marca marca própria white label nome do sistema cor logo ícone favicon instalação admin" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Marca da instalação</p>
   <h1>Marca da instalação</h1>
   <p class="lede">O nome, a cor, o logo e o ícone que o sistema mostra para todo mundo que usa a instalação (white-label do servidor).</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Marca (/admin/marca)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Configurar a instalação › Marca (/admin/marca)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-marca--visao-geral">Para que serve</h2>
-<p>Troca o <strong>nome</strong>, a <strong>cor</strong> e o <strong>logo</strong> do sistema para <em>todos</em> que usam esta instalação. A marca <em>de cada empresa</em> é outra tela (<a href="#marca">Marca</a>, em Configurar › Empresa › A empresa) e tem prioridade sobre esta.</p>
+<p>Troca o <strong>nome</strong>, a <strong>cor</strong> e o <strong>logo</strong> do sistema para <em>todos</em> que usam esta instalação. A marca <em>de cada empresa</em> é outra tela (<a href="#marca">Marca</a>, em Configurar › Empresa › A empresa) e tem prioridade sobre esta. No menu o item se chama <strong>Marca</strong>; o cabeçalho diz “Define o nome, a cor de destaque, o logo e o ícone da aba que o sistema mostra.” e “Quando usar: Ao instalar, ou quando você revende o sistema com a sua própria marca.”.</p>
+<p>No <a href="#admin-dashboard--checklist">checklist do Painel</a> e em <a href="#admin-sistema--comportamento">Recursos opcionais</a>, esta escolha aparece como <strong>Marca própria</strong>: “Pronto”/“Configurado” quando a instalação mostra uma marca diferente da do produto.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-marca.png" alt="Tela Marca do painel com nome do sistema, cor, logo, ícone e o bloco Como está agora, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Marca do painel, sem nenhuma marca definida.</figcaption>
+  <img src="img/admin-marca.png" alt="Tela Marca da administração com nome do sistema, cor, logo, ícone e o bloco Como está agora, numerada de 1 a 6" loading="lazy">
+  <figcaption>A tela Marca, sem nenhuma marca definida (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome do sistema.</strong> Até 120 caracteres; vazio volta ao padrão. Aparece no título da aba, no topo das telas, nos e-mails (para empresas sem nome próprio), no aplicativo de verificação em duas etapas e no arquivo de códigos de recuperação. <em>Ainda não chega</em> às telas de entrada e cadastro nem às da configuração inicial: elas continuam com o nome do arquivo de instalação do servidor até a próxima atualização.</li>
@@ -9123,13 +9225,14 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Google Agenda e API Oficial (Meta)</p>
   <h1>Google Agenda e API Oficial (Meta)</h1>
   <p class="lede">As credenciais de aplicativo que valem para a instalação inteira: o app do Google que deixa cada atendente conectar a própria agenda, e o app da Meta que confere as mensagens dos números oficiais e liga o “Conectar com Facebook”.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Google Agenda e API Oficial (Meta) (/admin/google, /admin/meta)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Integrações › Google Agenda e API Oficial (Meta) (/admin/google, /admin/meta)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
   <div class="conteudo-pagina">
-<h2 id="admin-google--google">Google Agenda desta instalação</h2>
-<p>Com estas duas informações, quem atende consegue conectar a agenda pessoal do Google e ver os compromissos do CRM lá. Valem para a <strong>instalação inteira</strong>; cada pessoa conecta a própria conta depois, em <a href="#agenda">Compromissos</a>.</p>
+<h2 id="admin-google--google">Google Agenda</h2>
+<p>Com estas duas informações, quem atende consegue conectar a agenda pessoal do Google e ver os compromissos do CRM lá. Valem para a <strong>instalação inteira</strong>; cada pessoa conecta a própria conta depois, em <a href="#agenda">Compromissos</a>. O cabeçalho diz “Guarda os dados do app do Google que liga a agenda de cada atendente aos compromissos do sistema.” e “Quando usar: Quando as empresas quiserem ver os compromissos do sistema na agenda do Google.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item é opcional.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-google.png" alt="Tela Google Agenda da instalação com o endereço de retorno, o ID do cliente e a chave secreta, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Google Agenda, ainda não configurada.</figcaption>
+  <figcaption>A tela Google Agenda, ainda não configurada (print anterior à reorganização: o título antigo era “Google Agenda desta instalação”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereço de retorno.</strong> Somente leitura, montado a partir do endereço público da instalação. “Cole exatamente isto em ‘URIs de redirecionamento autorizados’, na tela de credenciais do Google Cloud.”</li>
@@ -9144,11 +9247,12 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li>Outra coisa: o botão “Entrar com Google” da tela de login depende da configuração de login do servidor, não desta tela.</li>
 </ul>
 
-<h2 id="admin-google--meta">API Oficial da Meta desta instalação</h2>
-<p>É com estas informações que o sistema confere que cada mensagem recebida pelo número oficial veio mesmo da Meta. Valem para a instalação inteira; cada empresa conecta o próprio número depois, em <a href="#conexoes">Conexões</a>.</p>
+<h2 id="admin-google--meta">API Oficial (Meta)</h2>
+<p>É com estas informações que o sistema confere que cada mensagem recebida pelo número oficial veio mesmo da Meta. Valem para a instalação inteira; cada empresa conecta o próprio número depois, em <a href="#conexoes">Conexões</a>. O cabeçalho diz “Guarda a chave secreta e o código de conferência do app da Meta, que valem para todas as empresas.” e “Quando usar: Antes de alguma empresa conectar um número pela API oficial ou fazer disparo em massa.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item (“API Oficial da Meta”) é opcional.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-meta.png" alt="Tela API Oficial da Meta com a chave secreta, o token de verificação e o cartão Conectar com Facebook, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela API Oficial (Meta), ainda não configurada.</figcaption>
+  <figcaption>A tela API Oficial (Meta), ainda não configurada (print anterior à reorganização: o título antigo era “API Oficial da Meta desta instalação”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Chave secreta do aplicativo.</strong> Fica no painel da Meta, em Configurações do app › Básico (32 caracteres). Guardada cifrada. “Nunca configurado por aqui.” enquanto vazia. O botão <span class="ui">Salvar</span> só habilita com pelo menos 16 caracteres digitados; com uma chave já salva, o campo mostra “(já cadastrada)” e a dica “Deixe em branco para mantê-la, ou digite uma nova para substituir.”.</li>
@@ -9168,20 +9272,21 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="admin-cadastro" data-titulo="Cadastro e E-mail da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="Quem pode criar conta nesta instalação (aberto, só por convite ou com aprovação) e por onde o sistema envia e-mail (servidor próprio ou serviço externo)." data-palavras="cadastro signup convite aprovação pedidos modo de cadastro e-mail smtp resend remetente servidor de e-mail testar conexão" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Cadastro e E-mail da instalação</p>
-  <h1>Cadastro e E-mail da instalação</h1>
+<article class="pagina" id="admin-cadastro" data-titulo="Quem pode criar conta e E-mail" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="Quem pode criar conta nesta instalação (aberto, só por convite ou com aprovação) e por onde o sistema envia e-mail (servidor próprio ou serviço externo)." data-palavras="quem pode criar conta cadastro signup convite aprovação pedidos modo de cadastro e-mail smtp resend remetente servidor de e-mail testar conexão" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Quem pode criar conta e E-mail</p>
+  <h1>Quem pode criar conta e E-mail</h1>
   <p class="lede">Quem pode criar conta nesta instalação (aberto, só por convite ou com aprovação) e por onde o sistema envia e-mail (servidor próprio ou serviço externo).</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Cadastro e E-mail (/admin/cadastro, /admin/email)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar e testar exigem escopo full e a verificação em dia</dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Configurar a instalação › Quem pode criar conta e E-mail (/admin/cadastro, /admin/email)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar e testar exigem escopo full e a verificação em dia</dd></dl>
   <div class="conteudo-pagina">
-<h2 id="admin-cadastro--cadastro">Cadastro — quem pode criar conta</h2>
-<p>Decide quem consegue criar uma conta nesta instalação. Vale para a instalação inteira; quem já tem conta continua entrando normalmente.</p>
+<h2 id="admin-cadastro--cadastro">Quem pode criar conta</h2>
+<p>Antes o item do menu se chamava “Cadastro”. Decide quem consegue criar uma conta nesta instalação. Vale para a instalação inteira; quem já tem conta continua entrando normalmente. O cabeçalho diz “Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.” e “Quando usar: Ao abrir a instalação para clientes novos, ou para fechá-la de novo.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-cadastro.png" alt="Tela Cadastro com o aviso de troca de modo e os interruptores Cadastro apenas por convite e Cadastro com aprovação, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Cadastro, no modo aberto (o padrão).</figcaption>
+  <img src="img/admin-cadastro.png" alt="Tela Quem pode criar conta com o aviso de troca de modo e os interruptores Cadastro apenas por convite e Cadastro com aprovação, numerada de 1 a 3" loading="lazy">
+  <figcaption>A tela Quem pode criar conta, no modo aberto (o padrão; print anterior à reorganização, com o título antigo “Cadastro”).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Quem pode criar conta.</strong> O cartão dos modos.</li>
+  <li><strong>Quem pode criar conta.</strong> O cartão dos modos (tem o mesmo nome da tela).</li>
   <li><strong>Cadastro apenas por convite.</strong> Ligado, só entra quem recebeu convite; quem abrir a tela de cadastro sem convite vê um aviso e vai ao login. Desligado: “qualquer pessoa pode criar uma conta e abrir a própria empresa. É como o sistema sempre funcionou.”</li>
   <li><strong>Cadastro com aprovação.</strong> Ligado, quem cria conta sem convite <em>pede</em> a empresa, e ela só é criada quando você aprova nesta tela. Fica desabilitado enquanto “apenas por convite” estiver ligado.</li>
 </ol>
@@ -9191,16 +9296,19 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Aviso amarelo “A troca de modo ainda não chegou ao servidor.”</strong> Aparece quando o modo gravado diverge do estado do servidor de login. O CRM já segue o modo novo, mas o servidor de login continua com o anterior; a tela só avisa (na captura, o texto para instalações com Supabase separado: ligar “Allow new users to sign up” em Authentication → Sign In / Up, ou <code>DISABLE_SIGNUP=false</code>; na VPS do kit, rodar o comando de atualização que a tela mostra: <code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>). O aviso só aparece quando dá para perguntar ao servidor de login e ele está com outro valor.</li>
   <li><strong>Pedidos aguardando aprovação</strong> (só no modo com aprovação): lista com o nome da empresa pedida e o e-mail, e os botões <span class="ui">Recusar</span> e <span class="ui">Aprovar</span>. Aprovar cria a empresa e torna quem pediu administrador dela; <strong>recusar é final</strong> para aquela conta. Vazio: “Nenhum pedido aguardando.”. Não há envio de e-mail ao solicitante nesta ação.</li>
   <li>Auditoria: <code>platform.signup_mode_updated</code>, <code>registration.approved</code>, <code>registration.rejected</code>. A tela que o visitante vê é a <a href="#entrada-acesso">de cadastro</a>.</li>
+  <li>No <a href="#admin-dashboard--checklist">checklist do Painel</a> e em <a href="#admin-sistema--comportamento">Recursos opcionais</a>, este item normalmente aparece como pronto (“Configurado”): sempre há um modo em vigor, e o convite é só para revisar a escolha.</li>
 </ul>
 
-<h2 id="admin-cadastro--email">E-mail — servidor de e-mail da instalação</h2>
-<p>Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo: o e-mail passa a sair pelo <strong>seu próprio servidor</strong> (SMTP).</p>
+<h2 id="admin-cadastro--email">E-mail</h2>
+<p>Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo: o e-mail passa a sair pelo <strong>seu próprio servidor</strong> (SMTP, o protocolo de envio de e-mail). O cabeçalho diz “Configura o servidor de e-mail próprio ou o serviço externo que manda os e-mails de todas as empresas.” e “Quando usar: Logo depois de instalar: sem e-mail não sai convite de equipe nem recuperação de senha.”.</p>
+<aside class="nota atencao"><strong>É o único item obrigatório.</strong><p>No <a href="#admin-dashboard--checklist">checklist do Painel</a>, o E-mail é marcado como <em>Obrigatório</em>, e o cartão “Sua instalação está pronta?” fica aberto até ele ser configurado.</p></aside>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-email.png" alt="Tela E-mail com os campos do servidor SMTP, os botões Testar conexão e Salvar e o cartão Serviço externo de envio, numerada de 1 a 8" loading="lazy">
-  <figcaption>A tela E-mail, sem nenhum caminho configurado.</figcaption>
+  <figcaption>A tela E-mail, sem nenhum caminho configurado (print anterior à reorganização: o título antigo era “Servidor de e-mail desta instalação”).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Servidor de e-mail desta instalação.</strong> O estado aparece na faixa: “Em uso: o e-mail está saindo por este servidor.”, “O e-mail desta instalação já sai por um serviço externo…” ou, como na captura, “Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.”</li>
+  <li><strong>Estado do envio.</strong> O estado aparece na faixa: “Em uso: o e-mail está saindo por este servidor.”, “O e-mail desta instalação já sai por um serviço externo…” ou, como na captura, “Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.”</li>
   <li><strong>Endereço do servidor.</strong> Só o endereço (normalmente <code>smtp.seudominio.com</code>), sem <code>smtp://</code> na frente e sem a porta.</li>
   <li><strong>Porta.</strong> De 1 a 65535 (587 é o comum).</li>
   <li><strong>Segurança.</strong> “STARTTLS (normalmente a porta 587)”, “TLS/SSL (normalmente a porta 465)” ou “Sem criptografia”.</li>
@@ -9219,17 +9327,18 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="admin-sistema" data-titulo="Recursos opcionais da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A central única onde o dono liga e desliga o que é opcional na instalação inteira (módulos e comportamento) e vê o que depende do servidor." data-palavras="recursos opcionais módulos banco de dados externo fluxos de atendimento propostas empresas e pessoas comportamento proteção de gasto de ia assinatura divulgação de pagamento conferência de promessa depende do servidor sistema" hidden>
+<article class="pagina" id="admin-sistema" data-titulo="Recursos opcionais da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="A central única onde o dono liga e desliga o que é opcional na instalação inteira: os módulos (inclusive instalar módulos com tabela própria, como Honorários), o comportamento e o que depende do servidor." data-palavras="recursos opcionais módulos instalar módulo honorários banco de dados externo fluxos de atendimento propostas empresas e pessoas comportamento marca própria quem pode criar conta proteção de gasto de ia assinatura divulgação de pagamento conferência de promessa depende do servidor sistema" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Recursos opcionais da instalação</p>
   <h1>Recursos opcionais da instalação</h1>
-  <p class="lede">A central única onde o dono liga e desliga o que é opcional na instalação inteira (módulos e comportamento) e vê o que depende do servidor.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Recursos opcionais (/admin/sistema)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; mexer nos interruptores exige escopo full e a verificação em dia</dd></dl>
+  <p class="lede">A central única onde o dono liga e desliga o que é opcional na instalação inteira: os módulos (inclusive instalar módulos com tabela própria, como Honorários), o comportamento e o que depende do servidor.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Configurar a instalação › Recursos opcionais (/admin/sistema)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; mexer nos interruptores e instalar módulo exige escopo full e a verificação em dia</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-sistema--visao-geral">Para que serve</h2>
-<p>É a versão do dono para a tela <a href="#recursos-opcionais">Recursos opcionais</a> da empresa: <strong>tudo o que se liga e desliga nesta instalação, num lugar só</strong>. Vale para todas as empresas hospedadas aqui e <strong>salva na hora</strong> (um clique; se falhar, o interruptor volta e diz “Não deu para salvar. Tente de novo em instantes.”). Reversível com um clique.</p>
+<p>É a versão do dono para a tela <a href="#recursos-opcionais">Recursos opcionais</a> da empresa: <strong>tudo o que se liga e desliga nesta instalação, num lugar só</strong>. O cabeçalho diz “Junta tudo o que se liga e desliga nesta instalação: os módulos, o comportamento e o que depende do servidor.” e “Quando usar: Para instalar um módulo, ou quando um recurso não aparece para as empresas.”. Vale para todas as empresas hospedadas aqui. Os interruptores <strong>salvam na hora</strong> (um clique; se falhar, o interruptor volta e diz “Não deu para salvar. Tente de novo em instantes.”) e se desfazem com outro clique — a exceção é instalar um módulo com tabela própria, que não se desfaz (veja abaixo).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-sistema.png" alt="Tela Recursos opcionais do painel com os blocos Módulos, Comportamento e Depende do servidor, numerada de 1 a 5" loading="lazy">
-  <figcaption>A tela Recursos opcionais do painel.</figcaption>
+  <img src="img/admin-sistema.png" alt="Tela Recursos opcionais da administração com os blocos Módulos, Comportamento e Depende do servidor, numerada de 1 a 5" loading="lazy">
+  <figcaption>A tela Recursos opcionais (print anterior à reorganização: o cabeçalho mudou, o Honorários ainda aparece como linha com “Ajustar” e as linhas de Comportamento ainda dizem “Veja na tela dele”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Módulos.</strong> O primeiro bloco.</li>
@@ -9240,6 +9349,8 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ol>
 
 <h2 id="admin-sistema--modulos">Módulos</h2>
+<p>O bloco tem duas partes: os módulos que se ligam por interruptor e, embaixo, os módulos com <strong>tabela própria</strong>, que se instalam. Quem abre o endereço antigo <code>/admin/modulos</code> (de favoritos ou mensagens antigas) cai direto aqui.</p>
+<h3 id="admin-sistema--interruptores">Módulos que se ligam por interruptor</h3>
 <p>Quatro interruptores, <strong>todos desligados por padrão</strong>:</p>
 <table class="tabela">
   <thead><tr><th>Módulo</th><th>O que liga</th><th>Tela</th></tr></thead>
@@ -9250,22 +9361,43 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
     <tr><td><strong>Empresas e pessoas (venda para empresas)</strong></td><td>Cadastro de Empresas por CNPJ (dados públicos da BrasilAPI — consultar um CNPJ manda o número para a BrasilAPI), Pessoas e importação CSV/Excel.</td><td><a href="#empresas">Empresas</a></td></tr>
   </tbody>
 </table>
-<p>Desligado, a tela, o item de menu e as ferramentas do agente <em>somem</em> para todas as empresas. Embaixo, uma linha para cada módulo que não é de interruptor — hoje o <a href="#honorarios">Honorários</a> — com o botão <span class="ui">Ajustar</span>, que leva a <a href="#admin-extensoes--modulos">Módulos</a>. Cada mudança fica na auditoria (<code>platform.modulo_updated</code>, com de/para).</p>
+<p>Desligado, a tela, o item de menu e as ferramentas do agente <em>somem</em> para todas as empresas. Cada mudança fica na auditoria (<code>platform.modulo_updated</code>, com de/para).</p>
+
+<h3 id="admin-sistema--instalar">Módulos com tabela própria (instalar)</h3>
+<p>Antes estes módulos tinham uma tela própria, “Módulos”, no menu; hoje são instalados aqui. Diferente dos interruptores, um módulo deste tipo cria <strong>tabelas próprias no banco</strong> — quem não instala não carrega essas tabelas. Hoje existe um único:</p>
+<ul>
+  <li><strong>Honorários (advocacia).</strong> “Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.” Veja <a href="#honorarios">Honorários</a>.</li>
+</ul>
+<ol class="passos">
+  <li>Leia o aviso embaixo da descrição do cartão: “Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.”</li>
+  <li>Clique em <span class="ui">Instalar</span> (o botão mostra “Instalando…” enquanto trabalha).</li>
+  <li>Pronto: o cartão ganha o selo <em>Instalado</em> (verde), o botão some e, no lugar do aviso, aparece “Instalado em &lt;data&gt;”. Se um dia o módulo for suspenso, o selo vira <em>Suspenso</em> (vermelho), com o motivo.</li>
+</ol>
+<aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente (repetir não duplica nada), e fica na auditoria (<code>modulo.instalado</code>). <strong>Não há botão para desinstalar nem suspender</strong>; o que for registrado no módulo continua guardado. Depois de instalado, cada empresa vê a porta do módulo. Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.” Se a lista de módulos não puder ser lida, o bloco mostra “Não consegui ler os módulos com tabela própria agora. Recarregue a página.” e o resto da tela continua funcionando.</p></aside>
 
 <h2 id="admin-sistema--comportamento">Comportamento</h2>
 <p>Quatro controles que são gravados juntos:</p>
 <ul>
   <li><strong>Proteção de gasto de IA</strong> — o que acontece quando o gasto passa do teto que a <em>empresa</em> escolheu: “Respeita o teto de cada empresa” (padrão), “Só avisa, nunca para a IA” ou “Desligada”. Não liga a proteção de ninguém: <em>só pode afrouxá-la</em>.</li>
-  <li><strong>Exigir assinatura nas entregas do canal</strong> — interruptor desligado por padrão. Ligado, toda entrega de webhook precisa vir assinada com o segredo da sessão. <strong>Ligar sem que o servidor de canal assine corta a entrada de mensagens.</strong></li>
+  <li><strong>Exigir assinatura nas entregas do canal</strong> — interruptor desligado por padrão. Ligado, toda entrega de webhook (o aviso automático que o servidor do WhatsApp manda ao sistema a cada mensagem) precisa vir assinada com o segredo da sessão. <strong>Ligar sem que o servidor de canal assine corta a entrada de mensagens.</strong></li>
   <li><strong>Divulgação de pagamento no atendimento</strong> — “Injetar” (padrão) acrescenta o texto de divulgação à primeira mensagem; “Vetar” bloqueia o envio sem ele e devolve ao modelo a razão para reescrever.</li>
   <li><strong>Conferência de promessa antes de enviar</strong> — ligado por padrão: cada envio passa por uma conferência de modelo para não prometer o que a empresa não cumpre. Custa <em>uma chamada de modelo por envio</em>.</li>
 </ul>
-<p>Depois vêm duas linhas com o botão <span class="ui">Ajustar</span> e o selo “Veja na tela dele”: <strong>Quem pode criar conta</strong> (→ <a href="#admin-cadastro">Cadastro</a>) e <strong>Destinos internos</strong> (→ <a href="#admin-destinos">Destinos internos</a>). Quem cuida do servidor pode declarar um valor no arquivo de ambiente, mas ele <em>só responde até a primeira leitura do banco</em>: a partir daí, manda o que está nesta tela. Auditoria: <code>platform.comportamento_updated</code>.</p>
+<p>Depois vêm três linhas com o botão <span class="ui">Ajustar</span>, que leva à tela de cada uma:</p>
+<table class="tabela">
+  <thead><tr><th>Linha</th><th>Selo</th><th>Leva a</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Marca própria</strong> — “O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.”</td><td><em>Configurado</em> quando a instalação mostra uma marca diferente da do produto; senão <em>Não configurado</em></td><td><a href="#admin-marca">Marca</a></td></tr>
+    <tr><td><strong>Quem pode criar conta</strong> — “Cadastro aberto, só por convite ou com aprovação.”</td><td><em>Configurado</em> (sempre há um modo em vigor)</td><td><a href="#admin-cadastro">Quem pode criar conta</a></td></tr>
+    <tr><td><strong>Destinos internos</strong> — “Libera endereços da rede interna, como um modelo de IA rodando na própria máquina.”</td><td>“Veja na tela dele” (o estado só aparece na própria tela)</td><td><a href="#admin-destinos">Destinos internos</a></td></tr>
+  </tbody>
+</table>
+<p>O estado de Marca própria e de Quem pode criar conta é o mesmo que o <a href="#admin-dashboard--checklist">checklist do Painel</a> mostra. Quem cuida do servidor pode declarar um valor de comportamento no arquivo de ambiente, mas ele <em>só responde até a primeira leitura do banco</em>: a partir daí, manda o que está nesta tela. Auditoria: <code>platform.comportamento_updated</code>.</p>
 
 <h2 id="admin-sistema--servidor">Depende do servidor</h2>
 <p>“Só leitura. Estes dependem de credencial ou do arquivo de ambiente do servidor. Nenhum valor de segredo aparece aqui.” Cada linha mostra o selo <em>Configurado</em>, <em>Não configurado</em> ou <em>Não dá para ver daqui</em> e, quando existe tela, o botão <span class="ui">Ajustar</span>:</p>
 <ul>
-  <li><strong>E-mail</strong> (→ <a href="#admin-cadastro--email">E-mail</a>) e <strong>Google Agenda</strong> (→ <a href="#admin-google">Google Agenda</a>) e <strong>API Oficial da Meta</strong> (→ <a href="#admin-google--meta">API Oficial</a>).</li>
+  <li><strong>E-mail</strong> (→ <a href="#admin-cadastro--email">E-mail</a>), <strong>Google Agenda</strong> (→ <a href="#admin-google">Google Agenda</a>) e <strong>API Oficial da Meta</strong> (→ <a href="#admin-google--meta">API Oficial (Meta)</a>). Estes três também aparecem no checklist do Painel.</li>
   <li><strong>Chamada de voz pelo WhatsApp</strong> (variáveis do serviço de chamadas e o perfil de voz), <strong>Telefonia por SIP</strong> (perfil de telefonia e Asterisk; “Não dá para ver daqui”), <strong>Google Ads</strong> (três variáveis <code>GOOGLE_ADS_*</code>), <strong>Notificação com a aba fechada</strong> (o par de chaves VAPID) e <strong>Transcrição de áudio por outro serviço</strong>.</li>
 </ul>
   </div>
@@ -9275,13 +9407,14 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Destinos internos, Preços da Meta e Credenciais</p>
   <h1>Destinos internos, Preços da Meta e Credenciais</h1>
   <p class="lede">Três telas de configuração global: liberar endereços da rede interna do servidor, manter a tabela de preços da Meta e a cotação do dólar, e ver o estado das credenciais-chave do servidor.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Destinos internos, Preços da Meta e Credenciais (/admin/destinos-internos, /admin/precos-da-meta, /admin/configuracao)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Integrações › Destinos internos e Preços da Meta; Configurar a instalação › Credenciais (/admin/destinos-internos, /admin/precos-da-meta, /admin/configuracao)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma; salvar exige escopo full e a verificação em dia</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-destinos--destinos">Destinos internos</h2>
-<p>Por padrão, o servidor <em>recusa</em> falar com endereços da própria rede interna (como <code>10.0.0.5</code> ou <code>192.168.1.20</code>) por segurança. Aqui você libera um endereço específico — por exemplo, um modelo de IA rodando na própria VPS.</p>
+<p>Por padrão, o servidor <em>recusa</em> falar com endereços da própria rede interna (como <code>10.0.0.5</code> ou <code>192.168.1.20</code>) por segurança. Aqui você libera um endereço específico — por exemplo, um modelo de IA rodando na própria VPS. O cabeçalho diz “Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.” e “Quando usar: Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-destinos-internos.png" alt="Tela Destinos internos com o cartão Endereços liberados e o campo Um endereço por linha, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Destinos internos, com a lista vazia.</figcaption>
+  <figcaption>A tela Destinos internos, com a lista vazia (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereços liberados.</strong> O endereço continua precisando ser <code>https</code> em produção e só vale para o que a <em>instalação</em> configura. O endereço que uma <em>empresa</em> escolhe no painel dela segue sem poder apontar para dentro.</li>
@@ -9291,10 +9424,11 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Cada endereço é uma porta.</strong><p>“Cada endereço aqui é uma porta que este servidor passa a poder abrir para dentro da própria rede, levando junto a chave da instalação. Declare o endereço do serviço que você mesmo colocou lá — nunca uma faixa inteira por conveniência.” Quando a lista ainda vem do arquivo do servidor, uma nota avisa que, ao salvar, o arquivo deixa de ser consultado. Auditoria: <code>platform.internal_destinations_updated</code>.</p></aside>
 
 <h2 id="admin-destinos--precos">Preços da Meta</h2>
-<p>Quanto a Meta cobra por mensagem, por país de quem recebe e por categoria. É a base da <strong>estimativa antes do disparo</strong>, do custo de cada mensagem e do <strong>teto de gasto</strong> das campanhas oficiais.</p>
+<p>Quanto a Meta cobra por mensagem, por país de quem recebe e por categoria. É a base da <strong>estimativa antes do disparo</strong>, do custo de cada mensagem e do <strong>teto de gasto</strong> das campanhas oficiais. O cabeçalho diz “Mantém a tabela de preço por país e categoria de mensagem, base da estimativa e do teto de gasto das campanhas.” e “Quando usar: Quando a Meta muda os preços ou o dólar varia muito.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-precos-meta.png" alt="Tela Preços da Meta com a tabela de preços por país e o cartão Cotação do dólar, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Preços da Meta.</figcaption>
+  <figcaption>A tela Preços da Meta (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Tabela de preços.</strong> Preço de uma mensagem, em reais, para quem recebe naquele país.</li>
@@ -9311,11 +9445,12 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li>Se o formulário tiver país com mais ou menos de duas letras, prefixo não numérico ou moeda inválida, a mensagem é “Confira os campos: país com duas letras (BR), prefixo só com números (55) e moeda com três letras (BRL).”. Erros: “Preço que não entendi em &lt;país&gt; · &lt;categoria&gt;”, “O mesmo país aparece duas vezes. Deixe uma linha por país.”, “A cotação precisa ser um número maior que zero, ou ficar em branco.”. Auditoria: <code>platform.meta_pricing_updated</code>.</li>
 </ul>
 
-<h2 id="admin-destinos--credenciais">Credenciais (“Configuração da instalação”)</h2>
-<p>No menu o item se chama <strong>Credenciais</strong>, mas o título da página é “Configuração da instalação”: mostra o estado das configurações-chave do servidor e deixa trocar, sem SSH, as <em>poucas</em> que podem ser trocadas pela tela.</p>
+<h2 id="admin-destinos--credenciais">Credenciais</h2>
+<p>Mostra o estado das configurações-chave do servidor e deixa trocar, sem SSH (o acesso ao servidor pelo terminal), as <em>poucas</em> que podem ser trocadas pela tela. O título da tela é o mesmo do menu, <strong>Credenciais</strong> (antes ela se chamava “Configuração da instalação”). O cabeçalho diz “Guarda as chaves e os dados de contato da instalação, o que antes só se trocava pelo terminal.” e “Quando usar: Quando uma chave vence, muda de dono ou precisa ser trocada por segurança.”.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-configuracao.png" alt="Tela Configuração da instalação com os grupos E-mail, Segurança e privacidade, WhatsApp, Banco de dados e outros, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram trocados por “abcd”).</figcaption>
+  <img src="img/admin-configuracao.png" alt="Tela Credenciais com os grupos E-mail, Segurança e privacidade, WhatsApp, Banco de dados e outros, numerada de 1 a 7" loading="lazy">
+  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram trocados por “abcd”; print anterior à reorganização, com o título antigo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>E-mail.</strong> “Sem isto o sistema não envia convite para a equipe nem recuperação de senha.” O serviço de envio fica na tela <a href="#admin-cadastro--email">E-mail</a>.</li>
@@ -9334,17 +9469,18 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="admin-extensoes" data-titulo="Extensões e Módulos da instalação" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="De onde vêm as extensões aceitas pelo servidor e quem as usa, e a instalação de módulos oficiais com tabelas próprias (hoje, Honorários)." data-palavras="extensões catálogo admitido módulos honorários advocacia instalar tabelas próprias instalação" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Extensões e Módulos da instalação</p>
-  <h1>Extensões e Módulos da instalação</h1>
-  <p class="lede">De onde vêm as extensões aceitas pelo servidor e quem as usa, e a instalação de módulos oficiais com tabelas próprias (hoje, Honorários).</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Modo administrador › Extensões e Módulos (/admin/extensoes, /admin/modulos)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma. Instalar módulo exige escopo full e a verificação em dia.</dd></dl>
+<article class="pagina" id="admin-extensoes" data-titulo="Extensões da instalação (e onde instalar módulos)" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="De onde vêm as extensões aceitas pelo servidor e quem as usa. A instalação de módulos oficiais com tabelas próprias (hoje, Honorários) saiu daqui e mora no bloco Módulos de Recursos opcionais." data-palavras="extensões catálogo admitido módulos instalar módulo honorários advocacia instalar tabelas próprias instalação" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Extensões da instalação (e onde instalar módulos)</p>
+  <h1>Extensões da instalação (e onde instalar módulos)</h1>
+  <p class="lede">De onde vêm as extensões aceitas pelo servidor e quem as usa. A instalação de módulos oficiais com tabelas próprias (hoje, Honorários) saiu daqui e mora no bloco Módulos de Recursos opcionais.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração da instalação › Configurar a instalação › Extensões (/admin/extensoes); módulos em Recursos opcionais (/admin/sistema#modulos)</dd><dt>Quem pode usar</dt><dd>Administrador da plataforma. Instalar módulo exige escopo full e a verificação em dia.</dd></dl>
   <div class="conteudo-pagina">
 <h2 id="admin-extensoes--extensoes">Extensões da instalação</h2>
-<p>Mostra o que este servidor <em>conhece</em>, de onde veio e <em>quem está usando</em>. É só leitura: “Instalar e configurar continua sendo feito dentro de cada empresa” (veja <a href="#extensoes">Extensões</a>, onde o dono do servidor admite catálogos e instala pacotes).</p>
+<p>Mostra o que este servidor <em>conhece</em>, de onde veio e <em>quem está usando</em>. O cabeçalho diz “Mostra as extensões que este servidor conhece, de onde vieram e quem está usando.” e “Quando usar: Para saber o que está instalado. Ativar e configurar continua dentro de cada empresa.”. É só leitura (veja <a href="#extensoes">Extensões</a>, onde o dono do servidor admite catálogos e instala pacotes).</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-extensoes.png" alt="Tela Extensões da instalação com os cartões De onde vêm as extensões e Instaladas neste servidor, vazios, numerada de 1 a 2" loading="lazy">
-  <figcaption>A tela Extensões da instalação, sem nada admitido ainda.</figcaption>
+  <figcaption>A tela Extensões, sem nada admitido ainda (print anterior à reorganização: o cabeçalho mudou).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>De onde vêm as extensões.</strong> O catálogo admitido neste servidor (a origem que o instalador aceita), com “Revisão N · admitido em &lt;data&gt; · impressão digital &lt;12 caracteres&gt;”. Vazio: “Nenhum catálogo admitido ainda — enquanto não houver, não há extensão para instalar.”</li>
@@ -9352,20 +9488,21 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ol>
 <p>O rodapé tem o link “Extensões da empresa →” (para <code>/app/extensions</code>).</p>
 
-<h2 id="admin-extensoes--modulos">Módulos da instalação</h2>
-<p>Instala módulos oficiais que criam <strong>tabelas próprias no banco</strong> — quem não instala não carrega essas tabelas. Instalar aqui vale para todas as empresas. Hoje existe um único módulo.</p>
+<h2 id="admin-extensoes--modulos">Módulos com tabela própria: agora em Recursos opcionais</h2>
+<p>Até a reorganização da área, o menu tinha um item <strong>Módulos</strong>, com uma tela só para instalar módulos oficiais que criam <strong>tabelas próprias no banco</strong> (hoje, só o <a href="#honorarios">Honorários (advocacia)</a>). Esse item <strong>não existe mais</strong>: instalar um módulo passou a ser feito no bloco <strong>Módulos</strong> da tela <a href="#admin-sistema--instalar">Recursos opcionais</a>, ao lado dos módulos que se ligam por interruptor. O endereço antigo <code>/admin/modulos</code> continua funcionando e leva direto a esse bloco.</p>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-modulos.png" alt="Tela Módulos da instalação com o cartão Honorários (advocacia) e o botão Instalar, numerada de 1 a 2" loading="lazy">
-  <figcaption>A tela Módulos da instalação.</figcaption>
+  <img src="img/admin-modulos.png" alt="Antiga tela Módulos da instalação com o cartão Honorários (advocacia) e o botão Instalar, numerada de 1 a 2" loading="lazy">
+  <figcaption>A antiga tela Módulos da instalação. O mesmo cartão agora aparece no bloco Módulos de Recursos opcionais, com um aviso antes do botão.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Honorários (advocacia).</strong> “Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.” Mostra o selo <em>Instalado</em> (verde) ou <em>Suspenso</em> (vermelho, com o motivo).</li>
-  <li><strong>Instalar.</strong> “Instalando…”. Só aparece se o módulo ainda não foi instalado.</li>
+  <li><strong>Honorários (advocacia).</strong> “Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.” Mostra o selo <em>Instalado</em> (verde) ou <em>Suspenso</em> (vermelho, com o motivo); depois de instalado, também “Instalado em &lt;data&gt;”.</li>
+  <li><strong>Instalar.</strong> “Instalando…”. Só aparece se o módulo ainda não foi instalado. Antes dele, o cartão avisa: “Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.”</li>
 </ol>
-<aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Cria as tabelas do módulo no banco compartilhado (um banco só, esquema <code>public</code>), de forma idempotente, e fica na auditoria (<code>modulo.instalado</code>). <strong>A tela não desinstala nem suspende</strong>; considere a ação irreversível pela interface. Depois de instalado, cada empresa vê a porta do módulo (veja <a href="#honorarios">Honorários</a>). <em>Esta instalação não foi acionada nas capturas.</em> Se a instalação falhar, a mensagem do servidor aparece em vermelho acima do cartão. Quem não é o dono do servidor recebe: “Só o administrador da instalação pode gerenciar os pacotes disponíveis.”</p></aside>
+<aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Instalar vale para todas as empresas, cria as tabelas no banco e não se desfaz pela tela. O passo a passo e os cuidados estão em <a href="#admin-sistema--instalar">Recursos opcionais › Módulos com tabela própria</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 13 de novembro de 2026 a partir do código na revisão <code>1d08d5d4</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>da27c276</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

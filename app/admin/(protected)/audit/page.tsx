@@ -1,8 +1,7 @@
 import { AuditClient } from "./_client";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = {
-  title: "Audit Log — Admin",
-};
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/audit");
 
 export default function AdminAuditPage() {
   return <AuditClient />;

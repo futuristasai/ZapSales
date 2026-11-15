@@ -8,11 +8,12 @@ import { camadaDaInstalacao, camadaDoAmbiente, resolverMarca } from "@/lib/brand
 import { env } from "@/lib/env";
 import { tagDeIdioma } from "@/lib/i18n/datas";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
-import { traduzir } from "@/lib/i18n/dicionario";
 
 import { FormularioDaMarca } from "./_form";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Marca da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/marca");
 export const dynamic = "force-dynamic";
 
 /**
@@ -64,10 +65,7 @@ export default async function Page() {
   // A MESMA pilha do `app/layout.tsx` — banco acima, arquivo de instalação
   // embaixo. Montar outra aqui faria a tela relatar uma precedência que o
   // produto não usa, que é a pior mentira possível numa tela de diagnóstico.
-  const marca = resolverMarca(
-    [camadaDaInstalacao(linha), camadaDoAmbiente(env)],
-    REGUA_DO_PRODUTO,
-  );
+  const marca = resolverMarca([camadaDaInstalacao(linha), camadaDoAmbiente(env)], REGUA_DO_PRODUTO);
 
   // O que apareceria SEM o arquivo subido — a MESMA pilha com `logo_path`
   // zerado, e não uma leitura solta de `APP_LOGO_URL`. É assim que a prévia
@@ -81,15 +79,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{traduzir("Marca", idioma)}</h1>
-        <p className="mt-1 text-sm text-text-muted">
-          {traduzir(
-            "O nome e a cor que este sistema mostra para todo mundo que usa esta instalação.",
-            idioma,
-          )}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/marca" />
 
       <FormularioDaMarca
         gravada={{

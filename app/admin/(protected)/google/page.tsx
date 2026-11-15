@@ -1,14 +1,19 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 
-import { configuracaoDoAmbiente, enderecoDeRetorno, origemLocalDosCabecalhos } from "@/lib/agenda/google/config";
+import {
+  configuracaoDoAmbiente,
+  enderecoDeRetorno,
+  origemLocalDosCabecalhos,
+} from "@/lib/agenda/google/config";
 import { loadAuthUser } from "@/lib/auth/server";
 import { tagDeIdioma } from "@/lib/i18n/datas";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import { FormularioDoGoogle } from "./_form";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Google Agenda da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/google");
 export const dynamic = "force-dynamic";
 
 /**
@@ -59,9 +64,11 @@ export default async function Page() {
     .eq("id", 1)
     .maybeSingle();
 
-  const linha = data as
-    | { client_id: string | null; client_secret_encrypted: string | null; updated_at: string | null }
-    | null;
+  const linha = data as {
+    client_id: string | null;
+    client_secret_encrypted: string | null;
+    updated_at: string | null;
+  } | null;
 
   // O que o `.env` traz, para a tela poder dizer de ONDE vem o que está em
   // vigor. Sem isso, quem tem o par no `.env` e abre esta tela vazia conclui que

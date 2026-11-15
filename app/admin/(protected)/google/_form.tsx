@@ -1,7 +1,10 @@
 "use client";
 
 import { useT } from "@/hooks/i18n/useT";
-import { MENSAGEM_DA_RECUSA_DE_ESCRITA, ehRecusaDeEscrita } from "@/lib/auth/recusa-de-escrita-de-admin";
+import {
+  MENSAGEM_DA_RECUSA_DE_ESCRITA,
+  ehRecusaDeEscrita,
+} from "@/lib/auth/recusa-de-escrita-de-admin";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -12,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 interface Props {
   readonly clientIdSalvo: string | null;
@@ -50,12 +54,7 @@ export function FormularioDoGoogle({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Google Agenda desta instalação")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("Com estas duas informações, quem atende consegue conectar a agenda pessoal do Google e ver os compromissos do CRM lá. Elas valem para a instalação inteira — cada pessoa conecta a conta dela depois, sozinha.")}
-        </p>
-      </header>
+      <CabecalhoDaPlataforma href="/admin/google" />
 
       <Card className="flex flex-col gap-4 p-4">
         <div className="flex flex-col gap-1.5">
@@ -68,8 +67,8 @@ export function FormularioDoGoogle({
           */}
           <Input id="redirect" readOnly value={enderecoDeRetorno} data-testid="google-redirect" />
           <p className="text-xs text-muted-foreground">
-            Cole exatamente isto em &ldquo;URIs de redirecionamento autorizados&rdquo;, na tela
-            de credenciais do Google Cloud.
+            Cole exatamente isto em &ldquo;URIs de redirecionamento autorizados&rdquo;, na tela de
+            credenciais do Google Cloud.
           </p>
         </div>
 
@@ -97,7 +96,9 @@ export function FormularioDoGoogle({
           />
           <p className="text-xs text-muted-foreground">
             {temSegredoSalvo
-              ? t("Já existe uma chave cadastrada. Deixe em branco para mantê-la, ou digite uma nova para substituir.")
+              ? t(
+                  "Já existe uma chave cadastrada. Deixe em branco para mantê-la, ou digite uma nova para substituir.",
+                )
               : t("Ela é guardada cifrada e nunca volta a aparecer nesta tela.")}
           </p>
         </div>
@@ -113,7 +114,9 @@ export function FormularioDoGoogle({
             data-testid="google-tem-no-ambiente"
             className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground"
           >
-            {t("Esta instalação já tem as credenciais no arquivo de configuração do servidor. O que você salvar aqui passa a valer no lugar delas; apagar o que está aqui faz o sistema voltar a usar as do arquivo.")}
+            {t(
+              "Esta instalação já tem as credenciais no arquivo de configuração do servidor. O que você salvar aqui passa a valer no lugar delas; apagar o que está aqui faz o sistema voltar a usar as do arquivo.",
+            )}
           </p>
         ) : null}
 
@@ -125,13 +128,19 @@ export function FormularioDoGoogle({
             passe do cron e exige reconexão manual. É comportamento do Google, e
             silencioso se a tela não avisar.
           */}
-          <strong className="font-semibold text-text">{t("Ao trocar uma credencial já em uso:")}</strong>{" "}
-          {t("quem já conectou a agenda vai precisar conectar de novo. O Google invalida as autorizações antigas quando o aplicativo muda — não há como evitar, e ninguém perde compromisso por isso.")}
+          <strong className="font-semibold text-text">
+            {t("Ao trocar uma credencial já em uso:")}
+          </strong>{" "}
+          {t(
+            "quem já conectou a agenda vai precisar conectar de novo. O Google invalida as autorizações antigas quando o aplicativo muda — não há como evitar, e ninguém perde compromisso por isso.",
+          )}
         </p>
 
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs text-muted-foreground">
-            {atualizadoEm ? `Última alteração em ${atualizadoEm}.` : t("Nunca configurado por aqui.")}
+            {atualizadoEm
+              ? `Última alteração em ${atualizadoEm}.`
+              : t("Nunca configurado por aqui.")}
           </span>
           <Button
             data-testid="google-salvar"
@@ -146,7 +155,11 @@ export function FormularioDoGoogle({
                   ...(clientSecret.trim() ? { client_secret: clientSecret.trim() } : {}),
                 });
                 if (!r.ok) {
-                  toast.error(t(ehRecusaDeEscrita(r.error) ? MENSAGEM_DA_RECUSA_DE_ESCRITA[r.error] : r.error));
+                  toast.error(
+                    t(
+                      ehRecusaDeEscrita(r.error) ? MENSAGEM_DA_RECUSA_DE_ESCRITA[r.error] : r.error,
+                    ),
+                  );
                   return;
                 }
                 toast.success(t("Credenciais do Google salvas."));

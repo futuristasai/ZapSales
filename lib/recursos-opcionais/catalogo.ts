@@ -75,8 +75,17 @@ export interface RecursoOpcional {
   capacidade?: CapacidadeDaOrganizacao;
   /** Só `servidor`: o que fazer, em uma linha. */
   comoLigar?: string;
+  /**
+   * Entra no checklist "Sua instalação está pronta?" do Painel (issue #308), com o
+   * peso dele. O checklist não tem lista própria: é este campo, e o estado é o mesmo
+   * `estadoDoRecurso` desta tela — as duas nunca discordam. Ver `checklist.ts`.
+   */
+  checklist?: { nivel: NivelNoChecklist; ordem: number };
   ler?: (f: FontesDeEstado) => EstadoDoRecurso;
 }
+
+/** O peso de um item no checklist do Painel: sem o obrigatório a instalação não funciona inteira. */
+export type NivelNoChecklist = "obrigatorio" | "opcional";
 
 function objeto(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
@@ -136,10 +145,11 @@ const MODULOS: RecursoOpcional[] = MODULOS_OPCIONAIS.map((modulo) => ({
   nivel: "instalacao" as const,
   padrao: "desligado" as const,
   quemDecide: "dono_do_servidor" as const,
-  // Módulo por chave liga em /admin/sistema; módulo de tabela (ADR-0002) se instala em /admin/modulos.
+  // Módulo por chave liga em /admin/sistema; módulo de tabela (ADR-0002) se instala no bloco
+  // Módulos da mesma tela (issue #308 — era /admin/modulos, hoje só redirecionamento).
   href: (MODULOS_OPCIONAIS_POR_FLAG as readonly ModuloOpcional[]).includes(modulo)
     ? "/admin/sistema"
-    : "/admin/modulos",
+    : "/admin/sistema#modulos",
   modulo,
   ler: (f: FontesDeEstado): EstadoDoRecurso =>
     f.modulos === null ? "nao_lido" : f.modulos.includes(modulo) ? "ligado" : "desligado",
@@ -183,6 +193,18 @@ const DA_INSTALACAO: RecursoOpcional[] = [
     href: "/admin/sistema",
   },
   {
+    id: "marca",
+    nome: "Marca própria",
+    oQueFaz: "O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.",
+    nivel: "instalacao",
+    padrao: "desligado",
+    quemDecide: "dono_do_servidor",
+    href: "/admin/marca",
+    // Ligado = a instalação mostra uma marca que não é a do produto (`detectarServidor`).
+    ler: peloServidor("marca"),
+    checklist: { nivel: "opcional", ordem: 2 },
+  },
+  {
     id: "cadastro",
     nome: "Quem pode criar conta",
     oQueFaz: "Cadastro aberto, só por convite ou com aprovação.",
@@ -190,6 +212,11 @@ const DA_INSTALACAO: RecursoOpcional[] = [
     padrao: "ligado",
     quemDecide: "dono_do_servidor",
     href: "/admin/cadastro",
+    // "Configurado" = alguém já GRAVOU uma decisão na tela, qualquer que seja (aberto é
+    // escolha válida). Sem isso vale o padrão de instalação nova, cadastro aberto
+    // (`padraoDaInstalacao`), que ninguém escolheu — ver "cadastro" em `detectarServidor`.
+    ler: peloServidor("cadastro"),
+    checklist: { nivel: "opcional", ordem: 3 },
   },
   {
     id: "destinos_internos",
@@ -213,6 +240,8 @@ const DO_SERVIDOR: RecursoOpcional[] = [
     href: "/admin/email",
     comoLigar: "Cadastre o servidor de e-mail ou o serviço externo na tela de E-mail.",
     ler: peloServidor("email"),
+    // O único obrigatório: sem e-mail não sai convite de equipe nem recuperação de senha.
+    checklist: { nivel: "obrigatorio", ordem: 1 },
   },
   {
     id: "google_agenda",
@@ -224,6 +253,7 @@ const DO_SERVIDOR: RecursoOpcional[] = [
     href: "/admin/google",
     comoLigar: "Cadastre o app do Google na tela Google Agenda.",
     ler: peloServidor("google_agenda"),
+    checklist: { nivel: "opcional", ordem: 5 },
   },
   {
     id: "meta",
@@ -235,6 +265,7 @@ const DO_SERVIDOR: RecursoOpcional[] = [
     href: "/admin/meta",
     comoLigar: "Cadastre o app da Meta na tela API Oficial (Meta).",
     ler: peloServidor("meta"),
+    checklist: { nivel: "opcional", ordem: 4 },
   },
   {
     id: "voz_whatsapp",

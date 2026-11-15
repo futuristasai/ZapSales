@@ -24,10 +24,7 @@ import { useT } from "@/hooks/i18n/useT";
 // Role badge
 // ---------------------------------------------------------------------------
 
-const ROLE_VARIANTS: Record<
-  string,
-  "success" | "info" | "warning" | "error" | "neutral"
-> = {
+const ROLE_VARIANTS: Record<string, "success" | "info" | "warning" | "error" | "neutral"> = {
   admin: "error",
   manager: "warning",
   agent: "info",
@@ -43,11 +40,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 function RoleBadge({ role }: { role: string }) {
   const t = useT();
-  return (
-    <Badge variant={ROLE_VARIANTS[role] ?? "neutral"}>
-      {t(ROLE_LABELS[role] ?? role)}
-    </Badge>
-  );
+  return <Badge variant={ROLE_VARIANTS[role] ?? "neutral"}>{t(ROLE_LABELS[role] ?? role)}</Badge>;
 }
 
 // ---------------------------------------------------------------------------
@@ -77,11 +70,17 @@ export function UsersTableAdminSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            {["Email", t("Nome"), "Tenant", "Role", t("Último acesso"), t("Status"), ""].map(
-              (h) => (
-                <TableHead key={h}>{h}</TableHead>
-              ),
-            )}
+            {[
+              t("E-mail"),
+              t("Nome"),
+              t("Empresa"),
+              t("Papel"),
+              t("Último acesso"),
+              t("Status"),
+              "",
+            ].map((h) => (
+              <TableHead key={h}>{h}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -137,10 +136,10 @@ export function UsersTableAdmin({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
+              <TableHead>{t("E-mail")}</TableHead>
               <TableHead className="w-[160px]">{t("Nome")}</TableHead>
-              <TableHead className="w-[160px]">Tenant</TableHead>
-              <TableHead className="w-[100px]">Role</TableHead>
+              <TableHead className="w-[160px]">{t("Empresa")}</TableHead>
+              <TableHead className="w-[100px]">{t("Papel")}</TableHead>
               <TableHead className="w-[160px]">{t("Último acesso")}</TableHead>
               <TableHead className="w-[100px]">{t("Status")}</TableHead>
               <TableHead className="w-[60px]" />
@@ -149,9 +148,7 @@ export function UsersTableAdmin({
           <TableBody>
             {data.map((row) => (
               <TableRow key={`${row.user_id}:${row.organization_id}`}>
-                <TableCell className="font-mono text-xs">
-                  {row.email ?? "—"}
-                </TableCell>
+                <TableCell className="font-mono text-xs">{row.email ?? "—"}</TableCell>
                 <TableCell className="font-medium">
                   {row.full_name ?? <span className="text-muted-foreground">—</span>}
                 </TableCell>
@@ -192,12 +189,7 @@ export function UsersTableAdmin({
 
       {hasNextPage && (
         <div className="flex justify-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-          >
+          <Button variant="outline" size="sm" onClick={onLoadMore} disabled={isFetchingNextPage}>
             {isFetchingNextPage ? t("Carregando...") : t("Carregar mais")}
           </Button>
         </div>

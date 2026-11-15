@@ -1,9 +1,9 @@
-<!--meta {"id":"admin-visao","grupo":"admin","titulo":"O painel do dono do servidor (visão geral)","ordem":1,"resumo":"O que é o “Modo administrador”, quem entra, como é a moldura do painel, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso.","palavras":["admin","painel","modo administrador","modo plataforma","platform admin","super admin","dono do servidor","instalação","cross-tenant","tenant","mfa","somente leitura","dba","acesso negado","forbidden"],"onde":"Menu do usuário (avatar) › Modo administrador — endereço /admin","quem":"Só o dono do servidor (administrador da plataforma). Quem não é vê “Acesso negado”.","rotas":[]} -->
+<!--meta {"id":"admin-visao","grupo":"admin","titulo":"Administração da instalação (visão geral)","ordem":1,"resumo":"O que é a Administração da instalação (aberta pelo “Modo administrador”), quem entra, como são a faixa do topo, o menu em cinco grupos e o cabeçalho de cada tela, o que vale para todas as empresas, quais telas mostram dados reais e como conceder ou retirar esse acesso.","palavras":["admin","administração da instalação","painel","modo administrador","modo plataforma","admin plataforma","platform admin","super admin","dono do servidor","instalação","cross-tenant","tenant","empresas","mfa","somente leitura","dba","acesso negado","forbidden"],"onde":"Menu do usuário (avatar) › Modo administrador — endereço /admin","quem":"Só o dono do servidor (administrador da plataforma). Quem não é vê “Acesso negado”.","rotas":[]} -->
 
 <h2 id="visao-geral">O que é</h2>
-<p>O <strong>painel do dono do servidor</strong> (chamado “Modo administrador”, “Admin Plataforma” ou, na faixa do topo, <strong>“MODO PLATAFORMA — operação cross-tenant”</strong>) é a área de quem <em>instalou e mantém</em> o ZapSales. Em vez de mostrar uma empresa, mostra <strong>todas as empresas hospedadas na instalação</strong> (no jargão do painel, cada empresa é um “tenant”) e tem as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, cadastro, Google, Meta, módulos.</p>
+<p>A <strong>Administração da instalação</strong> é a área de quem <em>instalou e mantém</em> o ZapSales. Você entra nela pelo item “Modo administrador” do menu do usuário, e a faixa do topo diz <strong>“Administração da instalação — o que você muda aqui vale para todas as empresas”</strong>. Em vez de mostrar uma empresa, ela mostra <strong>todas as empresas hospedadas na instalação</strong> e reúne as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, quem pode criar conta, Google, Meta, módulos.</p>
 <aside class="nota atencao"><strong>Só para quem opera o servidor.</strong><p>Um cliente que usa o ZapSales dentro da própria empresa <em>nunca</em> vê esta área, nem como Administrador da empresa. Administrador da empresa e “administrador da plataforma” são coisas diferentes: o primeiro manda <em>numa</em> empresa; o segundo manda na <em>instalação</em>.</p></aside>
-<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens.</p></aside>
+<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. <strong>Vários prints são anteriores à reorganização da área</strong> e ainda mostram nomes antigos, como “Tenants”, “Dashboard” e a faixa “MODO PLATAFORMA”; o texto já descreve os nomes atuais, e esses prints serão refeitos.</p></aside>
 
 <h2 id="entrar">Como se chega</h2>
 <figure class="print media">
@@ -11,61 +11,107 @@
   <figcaption>O item “Modo administrador” no menu do usuário.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Modo administrador — “Configurar este servidor”.</strong> Só aparece para quem é administrador da plataforma. Leva a <code>/admin</code>, que abre o <a href="#admin-dashboard">Dashboard</a>.</li>
+  <li><strong>Modo administrador — “Configurar este servidor”.</strong> Só aparece para quem é administrador da plataforma. Leva a <code>/admin</code>, que abre o <a href="#admin-dashboard">Painel</a>.</li>
 </ol>
-<p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Dentro do painel, o rodapé do menu tem <span class="ui">Voltar pra app</span> e a faixa amarela do topo tem <span class="ui">Sair pra app pessoal</span>.</p>
+<p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Para voltar ao sistema da sua empresa há o link <span class="ui">Voltar para a sua empresa</span> em dois lugares: na faixa do topo e no rodapé do menu.</p>
 
-<h2 id="moldura">A moldura do painel</h2>
+<h2 id="moldura">A moldura da área</h2>
+<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-menu.png" alt="Painel administrativo com a faixa MODO PLATAFORMA no topo e o menu lateral, numerado de 1 a 7" loading="lazy">
-  <figcaption>A moldura do painel: faixa do topo e menu lateral.</figcaption>
+  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, numerada de 1 a 7" loading="lazy">
+  <figcaption>A moldura da área: faixa do topo e menu lateral (print anterior à reorganização; a legenda já usa os nomes atuais).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>MODO PLATAFORMA.</strong> Faixa amarela fixa: lembrete visual de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
-  <li><strong>Sair pra app pessoal.</strong> Volta ao <code>/app</code>.</li>
-  <li><strong>Dashboard.</strong></li>
-  <li><strong>Tenants.</strong></li>
-  <li><strong>Marca.</strong></li>
-  <li><strong>Módulos.</strong> O último item.</li>
-  <li><strong>Voltar pra app</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
+  <li><strong>Administração da instalação.</strong> Faixa amarela fixa no topo, com o ícone de um servidor e a frase “— o que você muda aqui vale para todas as empresas” (em telas estreitas a frase some e fica só o título). É um lembrete de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
+  <li><strong>Voltar para a sua empresa.</strong> Volta ao <code>/app</code>, o sistema da sua empresa.</li>
+  <li><strong>Painel.</strong> A primeira tela, no grupo <em>Visão geral</em>.</li>
+  <li><strong>Empresas.</strong> No grupo <em>Empresas e pessoas</em>.</li>
+  <li><strong>Marca.</strong> No grupo <em>Configurar a instalação</em>.</li>
+  <li><strong>O último item do menu.</strong> O print ainda mostra “Módulos”, que <em>não existe mais</em> no menu: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>. Hoje o último item é <span class="ui">Destinos internos</span>.</li>
+  <li><strong>Voltar para a sua empresa</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
 </ol>
-<p>O menu lateral, na ordem: <a href="#admin-dashboard">Dashboard</a>, <a href="#admin-usage--inbox">Inbox</a>, <a href="#admin-tenants">Tenants</a>, <a href="#admin-audit">Audit</a>, <a href="#admin-audit--lgpd">LGPD</a>, <a href="#admin-audit--incidentes">Incidents</a>, <a href="#admin-usage">Usage</a>, <a href="#admin-usage--users">Users</a>, <a href="#admin-usage--platform-admins">Platform Admins</a>, <a href="#admin-marca">Marca</a>, <a href="#admin-google">Google Agenda</a>, <a href="#admin-google--meta">API Oficial (Meta)</a>, <a href="#admin-cadastro">Cadastro</a>, <a href="#admin-cadastro--email">E-mail</a>, <a href="#admin-sistema">Recursos opcionais</a>, <a href="#admin-destinos">Destinos internos</a>, <a href="#admin-destinos--precos">Preços da Meta</a>, <a href="#admin-destinos--credenciais">Credenciais</a>, <a href="#admin-extensoes">Extensões</a> e <a href="#admin-extensoes--modulos">Módulos</a>. Em telas pequenas o menu vira uma gaveta (botão hambúrguer, “Abrir menu de navegação”). Os rótulos “Dashboard”, “Inbox”, “Tenants”, “Audit”, “Incidents”, “Usage”, “Users” e “Platform Admins” são mantidos em inglês.</p>
+<p>No alto do menu fica o nome do sistema e, embaixo dele, “Administração da instalação”. Os itens estão separados em <strong>cinco grupos</strong>, nesta ordem:</p>
+<table class="tabela">
+  <thead><tr><th>Grupo</th><th>Itens</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Visão geral</strong></td><td><a href="#admin-dashboard">Painel</a></td></tr>
+    <tr><td><strong>Empresas e pessoas</strong></td><td><a href="#admin-tenants">Empresas</a>, <a href="#admin-usage--users">Usuários</a>, <a href="#admin-usage--platform-admins">Administradores da plataforma</a> e <a href="#admin-usage--inbox">Conversas de todas as empresas</a></td></tr>
+    <tr><td><strong>Acompanhar e proteger</strong></td><td><a href="#admin-audit">Registro de ações</a>, <a href="#admin-audit--lgpd">Pedidos de LGPD</a>, <a href="#admin-audit--incidentes">Incidentes</a> e <a href="#admin-usage">Uso e custo</a></td></tr>
+    <tr><td><strong>Configurar a instalação</strong></td><td><a href="#admin-marca">Marca</a>, <a href="#admin-cadastro">Quem pode criar conta</a>, <a href="#admin-cadastro--email">E-mail</a>, <a href="#admin-destinos--credenciais">Credenciais</a>, <a href="#admin-sistema">Recursos opcionais</a> e <a href="#admin-extensoes">Extensões</a></td></tr>
+    <tr><td><strong>Integrações</strong></td><td><a href="#admin-google--meta">API Oficial (Meta)</a>, <a href="#admin-destinos--precos">Preços da Meta</a>, <a href="#admin-google">Google Agenda</a> e <a href="#admin-destinos">Destinos internos</a></td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Dica de cada item.</strong> No computador, ao passar o mouse sobre um item do menu (ou chegar nele com a tecla <kbd>Tab</kbd>), aparece uma frase curta dizendo para que ele serve — por exemplo, em Empresas: “As empresas que usam esta instalação: criar, suspender e reativar.”.</li>
+  <li><strong>Celular e telas pequenas.</strong> O menu vira uma gaveta (botão de três tracinhos, “Abrir menu de navegação”). Ali não existe “passar o mouse”, então a gaveta não mostra dicas: a mesma ajuda aparece, sempre visível, no cabeçalho de cada tela (veja abaixo).</li>
+  <li>Nas telas internas (a ficha de uma empresa, o detalhe de um pedido), o menu continua marcando o item de onde você veio.</li>
+  <li>O título da aba do navegador segue o padrão “&lt;nome da tela&gt; · Administração” (por exemplo, “Empresas · Administração”), no idioma de quem abre. Nas subpáginas ele começa pelo que se está vendo: “Detalhe do incidente · Incidentes · Administração”.</li>
+</ul>
+
+<h3 id="cabecalho">O cabeçalho de cada tela</h3>
+<p>Toda tela que tem item no menu começa do mesmo jeito: o ícone do item, o <strong>nome do grupo</strong> em letras pequenas (por exemplo, “Empresas e pessoas”), o <strong>título</strong> (igual ao nome no menu), uma linha que diz <strong>para que a tela serve</strong> e uma linha que começa com <strong>“Quando usar:”</strong>. Algumas telas acrescentam embaixo uma contagem (“12 empresas”, “50 eventos+”) e, à direita, o botão principal (como <span class="ui">Nova empresa</span>). As linhas de cada tela:</p>
+<table class="tabela">
+  <thead><tr><th>Tela</th><th>Para que serve</th><th>Quando usar</th></tr></thead>
+  <tbody>
+    <tr><td>Painel</td><td>Mostra, num lugar só, o que pede atenção em todas as empresas desta instalação e o que ainda falta configurar.</td><td>Ao entrar, para saber se está tudo em ordem e por onde começar.</td></tr>
+    <tr><td>Empresas</td><td>Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.</td><td>Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.</td></tr>
+    <tr><td>Usuários</td><td>Lista quem entra no sistema, em qual empresa e com qual papel.</td><td>Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.</td></tr>
+    <tr><td>Administradores da plataforma</td><td>Mostra quem administra a instalação inteira, acima de todas as empresas.</td><td>Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.</td></tr>
+    <tr><td>Conversas de todas as empresas</td><td>Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.</td><td>Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.</td></tr>
+    <tr><td>Registro de ações</td><td>Guarda cada alteração feita no sistema, com a pessoa, a data e o que mudou.</td><td>Para descobrir quem mudou alguma coisa ou provar o que aconteceu.</td></tr>
+    <tr><td>Pedidos de LGPD</td><td>Acompanha os pedidos dos donos dos dados (cópia, correção, anonimização) em todas as empresas, e o prazo legal de cada um.</td><td>Toda semana, para nenhum pedido passar do prazo que a lei dá.</td></tr>
+    <tr><td>Incidentes</td><td>Lista as falhas que o sistema detectou, com a gravidade e o andamento de cada uma.</td><td>Quando algo parou de funcionar, ou para fechar um problema que já foi resolvido.</td></tr>
+    <tr><td>Uso e custo</td><td>Mostra o consumo de cada empresa e quanto a inteligência artificial custou.</td><td>Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.</td></tr>
+    <tr><td>Marca</td><td>Define o nome, a cor de destaque, o logo e o ícone da aba que o sistema mostra.</td><td>Ao instalar, ou quando você revende o sistema com a sua própria marca.</td></tr>
+    <tr><td>Quem pode criar conta</td><td>Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.</td><td>Ao abrir a instalação para clientes novos, ou para fechá-la de novo.</td></tr>
+    <tr><td>E-mail</td><td>Configura o servidor de e-mail próprio ou o serviço externo que manda os e-mails de todas as empresas.</td><td>Logo depois de instalar: sem e-mail não sai convite de equipe nem recuperação de senha.</td></tr>
+    <tr><td>Credenciais</td><td>Guarda as chaves e os dados de contato da instalação, o que antes só se trocava pelo terminal.</td><td>Quando uma chave vence, muda de dono ou precisa ser trocada por segurança.</td></tr>
+    <tr><td>Recursos opcionais</td><td>Junta tudo o que se liga e desliga nesta instalação: os módulos, o comportamento e o que depende do servidor.</td><td>Para instalar um módulo, ou quando um recurso não aparece para as empresas.</td></tr>
+    <tr><td>Extensões</td><td>Mostra as extensões que este servidor conhece, de onde vieram e quem está usando.</td><td>Para saber o que está instalado. Ativar e configurar continua dentro de cada empresa.</td></tr>
+    <tr><td>API Oficial (Meta)</td><td>Guarda a chave secreta e o código de conferência do app da Meta, que valem para todas as empresas.</td><td>Antes de alguma empresa conectar um número pela API oficial ou fazer disparo em massa.</td></tr>
+    <tr><td>Preços da Meta</td><td>Mantém a tabela de preço por país e categoria de mensagem, base da estimativa e do teto de gasto das campanhas.</td><td>Quando a Meta muda os preços ou o dólar varia muito.</td></tr>
+    <tr><td>Google Agenda</td><td>Guarda os dados do app do Google que liga a agenda de cada atendente aos compromissos do sistema.</td><td>Quando as empresas quiserem ver os compromissos do sistema na agenda do Google.</td></tr>
+    <tr><td>Destinos internos</td><td>Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.</td><td>Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.</td></tr>
+  </tbody>
+</table>
+<p><strong>Nas subpáginas</strong> (o detalhe de uma empresa, de um incidente, de um pedido de LGPD, de um usuário, de uma ação do registro, e “Nova empresa”) o título é o do próprio registro — o nome da empresa, o tipo do incidente. Acima dele aparece uma linha com o ícone da tela-mãe, o caminho “grupo › tela” (clicar no nome da tela volta para a lista) e a frase de para que essa tela serve.</p>
+<aside class="nota dica"><strong>Os endereços antigos continuam valendo.</strong><p>Só os nomes mudaram: os endereços das telas são os mesmos de antes (<code>/admin/tenants</code>, <code>/admin/audit</code>, <code>/admin/usage</code>…), então favoritos antigos funcionam. O antigo <code>/admin/modulos</code> leva direto ao bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>.</p></aside>
 
 <h2 id="acesso">Quem pode abrir e quem pode alterar</h2>
 <ul>
   <li><strong>Abrir (ler):</strong> qualquer administrador da plataforma <em>ativo</em>. Sem login, vai para a tela de entrada; sem ser administrador (ou revogado), vai para <a href="#admin-acesso-negado">Acesso negado</a>; se a linha dele exige verificação em duas etapas e a sessão não a provou, vai para a verificação.</li>
-  <li><strong>Alterar (escrever):</strong> exige o escopo <code>full</code> <em>e</em> a verificação em duas etapas em dia (quem <em>tem</em> o fator precisa tê-lo provado na sessão). O escopo <code>support_readonly</code> abre o painel inteiro, mas <strong>toda gravação é recusada</strong> (“Seu acesso à administração da plataforma é somente leitura.”) — útil para demonstrar sem risco.</li>
-  <li>Telas de configuração (Marca, Google, Meta, Cadastro, E-mail, Recursos opcionais, Destinos internos, Preços da Meta, Credenciais, Extensões, Módulos) respondem <strong>“página não encontrada”</strong> para quem não é administrador da plataforma: para os demais, elas simplesmente não existem.</li>
-  <li>Toda leitura também deixa rastro: abrir listas e telas do painel grava ações como <code>platform_admin.tenants_listed</code> na tela <a href="#auditoria">Quem mexeu em quê</a> (“Auditoria”), marcadas como feitas “como administrador da plataforma”.</li>
+  <li><strong>Alterar (escrever):</strong> exige o escopo <code>full</code> <em>e</em> a verificação em duas etapas em dia (quem <em>tem</em> o fator precisa tê-lo provado na sessão). O escopo <code>support_readonly</code> abre a área inteira, mas <strong>toda gravação é recusada</strong> (“Seu acesso à administração da plataforma é somente leitura.”) — útil para demonstrar sem risco.</li>
+  <li>Telas de configuração (Marca, Quem pode criar conta, E-mail, Credenciais, Recursos opcionais, Extensões, API Oficial, Preços da Meta, Google Agenda, Destinos internos) respondem <strong>“página não encontrada”</strong> para quem não é administrador da plataforma: para os demais, elas simplesmente não existem.</li>
+  <li>Toda leitura também deixa rastro: abrir listas e telas da área grava ações como <code>platform_admin.tenants_listed</code> na tela <a href="#auditoria">Quem mexeu em quê</a> (“Auditoria”), marcadas como feitas “como administrador da plataforma”.</li>
 </ul>
 <figure class="print media">
   <img src="img/admin-acesso-negado.png" alt="Tela Acesso negado com os botões Início e Voltar para /app" loading="lazy">
   <figcaption>A tela de acesso negado (<code>/admin/forbidden</code>).</figcaption>
 </figure>
-<p id="admin-acesso-negado"><strong>Acesso negado.</strong> Mostra: “Esta área é restrita a administradores da plataforma com MFA ativo. Se você acredita que isso é um erro, contate o time de operações.” e os botões <span class="ui">Início</span> e <span class="ui">Voltar para /app</span>. O texto fala em “MFA ativo”, mas na instalação padrão a verificação em duas etapas <em>não</em> é exigida do dono; a mensagem é a mesma para quem simplesmente não é administrador.</p>
+<p id="admin-acesso-negado"><strong>Acesso negado.</strong> Mostra: “Esta área é restrita a administradores da plataforma com MFA ativo. Se você acredita que isso é um erro, contate o time de operações.” e os botões <span class="ui">Início</span> e <span class="ui">Voltar para /app</span>. O texto fala em “MFA ativo” (MFA é a verificação em duas etapas), mas na instalação padrão ela <em>não</em> é exigida do dono; a mensagem é a mesma para quem simplesmente não é administrador. A aba do navegador diz “Acesso negado · Administração”.</p>
 
 <h2 id="conceder">Como virar (e deixar de ser) administrador da plataforma</h2>
-<p>Não existe tela nem API para conceder ou retirar esse poder — é de propósito (“somente via DBA + dupla confirmação”). Quem tem acesso ao banco de dados faz uma inclusão na tabela <code>platform_admins</code> (com <code>user_id</code>, <code>granted_by</code>, <code>reason</code>, <code>scope</code> = <code>full</code> ou <code>support_readonly</code> e <code>mfa_required</code>) e, para retirar, preenche <code>revoked_at</code> (nada é apagado). Veja também a tela <a href="#admin-usage--platform-admins">Platform Admins</a>, que só lista.</p>
+<p>Não existe tela nem API para conceder ou retirar esse poder — é de propósito (“somente via DBA + dupla confirmação”; DBA é quem cuida do banco de dados). Quem tem acesso ao banco faz uma inclusão na tabela <code>platform_admins</code> (com <code>user_id</code>, <code>granted_by</code>, <code>reason</code>, <code>scope</code> = <code>full</code> ou <code>support_readonly</code> e <code>mfa_required</code>) e, para retirar, preenche <code>revoked_at</code> (nada é apagado). Veja também a tela <a href="#admin-usage--platform-admins">Administradores da plataforma</a>, que só lista.</p>
 
 <h2 id="alcance">O que cada tela alcança</h2>
 <table class="tabela">
   <thead><tr><th>Efeito</th><th>Telas</th></tr></thead>
   <tbody>
-    <tr><td><strong>Só leitura</strong></td><td>Dashboard, Inbox, Audit, LGPD, Usage, Users, Platform Admins, Extensões e as abas Saúde e Agente da ficha do tenant.</td></tr>
-    <tr><td><strong>Vale para <em>todas</em> as empresas</strong></td><td>Marca, Google Agenda, API Oficial (Meta), Cadastro, E-mail, Recursos opcionais, Destinos internos, Preços da Meta, Credenciais e Módulos.</td></tr>
-    <tr><td><strong>Afeta <em>uma</em> empresa</strong></td><td>Novo tenant, Suspender/Reativar, Acompanhar organização e Resolver incidente.</td></tr>
+    <tr><td><strong>Só leitura</strong></td><td>Painel, Conversas de todas as empresas, Registro de ações, Pedidos de LGPD, Uso e custo, Usuários, Administradores da plataforma, Extensões e as abas Saúde e Agente da ficha da empresa.</td></tr>
+    <tr><td><strong>Vale para <em>todas</em> as empresas</strong></td><td>Marca, Quem pode criar conta, E-mail, Credenciais, Recursos opcionais (inclusive instalar módulo), API Oficial (Meta), Preços da Meta, Google Agenda e Destinos internos.</td></tr>
+    <tr><td><strong>Afeta <em>uma</em> empresa</strong></td><td>Nova empresa, Suspender empresa/Reativar empresa, Acompanhar organização e Resolver incidente.</td></tr>
   </tbody>
 </table>
 <h3 id="dados-reais">Telas que mostram dados de clientes</h3>
-<p>Todo o painel usa um acesso que ignora o isolamento por empresa. Por isso <strong>Dashboard, Inbox (mensagens reais), Tenants, Audit, LGPD, Incidents, Usage, Users, Platform Admins e Cadastro (pedidos)</strong> expõem dados reais de clientes e funcionários: não tire prints deles sem esconder o que é pessoal. As telas de configuração não têm dados de clientes, mas mostram os <em>4 últimos caracteres</em> de segredos, remetentes e endereços.</p>
+<p>Toda a área usa um acesso que ignora o isolamento por empresa. Por isso <strong>Painel, Conversas de todas as empresas (mensagens reais), Empresas, Registro de ações, Pedidos de LGPD, Incidentes, Uso e custo, Usuários, Administradores da plataforma e Quem pode criar conta (pedidos)</strong> expõem dados reais de clientes e funcionários: não tire prints deles sem esconder o que é pessoal. As telas de configuração não têm dados de clientes, mas mostram os <em>4 últimos caracteres</em> de segredos, remetentes e endereços.</p>
 <h3 id="irreversiveis">Ações difíceis de desfazer</h3>
 <ul>
   <li><strong>Resolver incidente:</strong> não há reabrir.</li>
   <li><strong>Recusar pedido de cadastro:</strong> é final para aquela conta.</li>
   <li><strong>Suspender empresa:</strong> reversível, mas mensagens na fila e tarefas agendadas são <em>descartadas</em> e não voltam.</li>
-  <li><strong>Instalar módulo:</strong> cria tabelas no banco; a tela não desinstala.</li>
+  <li><strong>Instalar módulo</strong> (Recursos opcionais › Módulos): cria tabelas no banco e não se desinstala.</li>
   <li><strong>Salvar a tabela de Preços da Meta:</strong> apaga do banco as linhas que você tirou.</li>
   <li><strong>Trocar a credencial do Google ou o token da Meta:</strong> derruba as conexões existentes.</li>
 </ul>
-<h3 id="estado-limpo">Como o painel fica numa instalação nova</h3>
-<p>Dashboard com “Tenants Ativos 1”, zeros e “Nenhum alerta crítico no momento. Tudo certo!”; Tenants com 1 linha (“Onboarding” até a empresa concluir os primeiros passos); Users com 1 pessoa; Platform Admins com 1 linha (escopo <code>full</code>); Extensões vazias; Módulos com o cartão “Honorários (advocacia)” e o botão “Instalar”; Preços da Meta já com o Brasil; Cadastro em modo aberto.</p>
+<h3 id="estado-limpo">Como a área fica numa instalação nova</h3>
+<p>Painel com o cartão “Sua instalação está pronta?” <em>aberto</em> enquanto o e-mail não estiver configurado, “Empresas ativas” em 1, os outros números em zero e “Nenhum alerta crítico no momento. Tudo certo!”; Empresas com 1 linha (“Onboarding” até a empresa concluir os primeiros passos); Usuários com 1 pessoa; Administradores da plataforma com 1 linha (escopo <code>full</code>); Extensões vazias; Recursos opcionais com o cartão “Honorários (advocacia)” e o botão “Instalar” no bloco Módulos; Preços da Meta já com o Brasil; Quem pode criar conta em modo aberto.</p>

@@ -13,11 +13,13 @@ const KIND_ICONS: Record<AlertKind, ElementType> = {
   tenant_pending_overflow: Clock,
 };
 
+// Neutros e em português (issue #308): "WAHA", "IA Budget" e "Overflow" não diziam
+// nada a quem administra a instalação.
 const KIND_LABELS: Record<AlertKind, string> = {
-  waha_ban: "WAHA",
+  waha_ban: "Número com problema",
   lgpd_at_risk: "LGPD",
-  ai_budget: "IA Budget",
-  tenant_pending_overflow: "Overflow",
+  ai_budget: "Teto de IA",
+  tenant_pending_overflow: "Fila de espera",
 };
 
 interface AlertItemProps {

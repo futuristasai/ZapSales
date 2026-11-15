@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requestExtensionApi } from "@/components/extensions/api-client";
 import { useT } from "@/hooks/i18n/useT";
+import { useTagDeIdioma } from "@/hooks/i18n/useLocaleDeData";
 import { randomId } from "@/lib/random-id";
 
 interface ModuloCatalogo {
@@ -34,9 +35,16 @@ interface ListagemDeModulos {
  * servidor, e o único estado possível depois de instalar é "ativo" ou, numa atualização
  * futura que falhe, "suspenso" (D6). Por isso este componente não repete a máquina de estados
  * de `ExtensionsManager` (catálogo remoto, versões, reverter) — nada disso existe para módulo.
+ *
+ * Mora no bloco Módulos de Recursos opcionais (`/admin/sistema#modulos`) desde a issue #308:
+ * antes era uma tela própria, com um item inteiro do menu para um botão só. Por estar ao lado
+ * dos módulos que se ligam por interruptor, ele diz ANTES do clique o que este tipo de módulo
+ * tem de diferente — cria tabelas no banco, vale para todas as empresas e não se desinstala
+ * apagando dados — e, depois, quando foi instalado.
  */
 export function ModulosManager({ inicial }: { inicial: ListagemDeModulos }) {
   const t = useT();
+  const tag = useTagDeIdioma();
   const [estado, setEstado] = useState(inicial);
   const [instalando, setInstalando] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -87,6 +95,26 @@ export function ModulosManager({ inicial }: { inicial: ListagemDeModulos }) {
                   ) : null}
                 </div>
                 <p className="mt-1 max-w-xl text-sm text-text-muted">{t(modulo.descricao)}</p>
+                {instalado ? (
+                  <p className="mt-1 text-xs text-text-muted">
+                    {t("Instalado em")}{" "}
+                    {new Date(instalado.instalado_em).toLocaleDateString(tag, {
+                      // A linha é da INSTALAÇÃO: não há organização de onde tirar um fuso,
+                      // e o mesmo fixo das outras telas do /admin evita divergir na hidratação.
+                      timeZone: "America/Sao_Paulo",
+                      dateStyle: "short",
+                    })}
+                  </p>
+                ) : (
+                  <p
+                    className="mt-2 max-w-xl text-xs text-text-muted"
+                    data-testid={`aviso-${modulo.slug}`}
+                  >
+                    {t(
+                      "Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.",
+                    )}
+                  </p>
+                )}
                 {instalado?.motivo_suspensao ? (
                   <p className="mt-1 text-xs text-destructive">
                     {t("Suspenso")}: {instalado.motivo_suspensao}

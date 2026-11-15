@@ -20,11 +20,7 @@ interface TenantActionsProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function TenantActions({
-  organizationId,
-  status,
-  displayName,
-}: TenantActionsProps) {
+export function TenantActions({ organizationId, status, displayName }: TenantActionsProps) {
   const t = useT();
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
@@ -35,8 +31,8 @@ export function TenantActions({
 
   return (
     <>
-      <div className="rounded-lg border bg-card p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="space-y-4 rounded-lg border bg-card p-5">
+        <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
           {t("Ações")}
         </h2>
 
@@ -45,9 +41,7 @@ export function TenantActions({
           organizationId={organizationId}
           displayName={displayName}
           disabled={isRedacted}
-          disabledReason={
-            isRedacted ? t("Tenant redigido — ação não disponível") : undefined
-          }
+          disabledReason={isRedacted ? t("Empresa anonimizada — ação não disponível") : undefined}
         />
 
         {/* Suspend */}
@@ -56,9 +50,9 @@ export function TenantActions({
             className="w-full"
             variant="destructive"
             onClick={() => setSuspendOpen(true)}
-            aria-label={t("Suspender tenant")}
+            aria-label={t("Suspender empresa")}
           >
-            {t("Suspender tenant")}
+            {t("Suspender empresa")}
           </Button>
         )}
 
@@ -68,15 +62,15 @@ export function TenantActions({
             className="w-full"
             variant="outline"
             onClick={() => setReactivateOpen(true)}
-            aria-label={t("Reativar tenant")}
+            aria-label={t("Reativar empresa")}
           >
-            {t("Reativar tenant")}
+            {t("Reativar empresa")}
           </Button>
         )}
 
         {isRedacted && (
-          <p className="text-xs text-muted-foreground text-center py-2">
-            {t("Tenant redigido — ações de gestão não disponíveis.")}
+          <p className="py-2 text-center text-xs text-muted-foreground">
+            {t("Empresa anonimizada — as ações de gestão não estão disponíveis.")}
           </p>
         )}
       </div>

@@ -99,7 +99,7 @@ export function HealthGrid({ health }: HealthGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       <HealthCard
-        title="WAHA"
+        title={t("Números conectados")}
         status={waha.overall_status}
         icon={<WifiHigh size={18} aria-hidden />}
         primaryValue={wahaPrimary}
@@ -115,7 +115,7 @@ export function HealthGrid({ health }: HealthGridProps) {
       />
 
       <HealthCard
-        title="Audit Lag"
+        title={t("Atraso do registro de ações")}
         status={audit.status}
         icon={<ClipboardText size={18} aria-hidden />}
         primaryValue={auditPrimary}

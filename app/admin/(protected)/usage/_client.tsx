@@ -12,6 +12,7 @@ import { useAdminUsage, type UsageRange } from "@/hooks/useAdminUsage";
 import { UsageCharts } from "@/components/admin/usage/UsageCharts";
 import { UsageTable } from "@/components/admin/usage/UsageTable";
 import { useT } from "@/hooks/i18n/useT";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 const RANGE_OPTIONS: { value: UsageRange; label: string }[] = [
   { value: "7d", label: "Últimos 7 dias" },
@@ -30,28 +31,23 @@ export function UsageClient() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("Uso & Custo")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("Consumo de mensagens, conversas e AI por tenant")}
-          </p>
-        </div>
-
-        {/* Range selector */}
-        <Select value={range} onValueChange={(v) => setRange(v as UsageRange)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t("Período")} />
-          </SelectTrigger>
-          <SelectContent>
-            {RANGE_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {t(opt.label)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <CabecalhoDaPlataforma
+        href="/admin/usage"
+        acoes={
+          <Select value={range} onValueChange={(v) => setRange(v as UsageRange)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={t("Período")} />
+            </SelectTrigger>
+            <SelectContent>
+              {RANGE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {t(opt.label)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
+      />
 
       {/* Charts */}
       {isLoading ? (

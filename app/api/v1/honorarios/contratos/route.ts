@@ -2,7 +2,7 @@
  * CONTRATOS DE HONORÁRIOS — o modelo de cobrança do caso (fixo, êxito ou misto).
  *
  * Módulo opcional (ADR-0002): as tabelas só existem depois que o administrador da instalação
- * instala `honorarios` em `/admin/modulos`. Enquanto não instalado, o Postgres devolve 42P01
+ * instala `honorarios` em Recursos opcionais (`/admin/sistema#modulos`). Enquanto não instalado, o Postgres devolve 42P01
  * (tabela inexistente) — traduzido aqui para uma mensagem clara, nunca um 500 cru.
  *
  * ⚠️ CLIENT DE SESSÃO. A RLS da migration 0480 já exige `manager`+ para escrever; a rota cobra
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 
 const MODULO_NAO_INSTALADO =
   "O módulo de honorários não está instalado nesta instalação. Peça ao administrador para " +
-  "instalar em Configurações da instalação › Módulos.";
+  "instalar em Administração da instalação › Recursos opcionais › Módulos.";
 
 function moduloNaoInstalado(error: { code?: string } | null): boolean {
   return tabelaAusente(error);

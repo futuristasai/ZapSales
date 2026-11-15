@@ -3,13 +3,16 @@ import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRealtimeChannel } from "@/hooks/realtime/useRealtimeChannel";
+import { useT } from "@/hooks/i18n/useT";
 import type { AlertKind } from "@/app/api/v1/admin/dashboard/kpis/route";
 
+// Os mesmos nomes dos selos do Painel (issue #308): "WAHA", "Budget" e "Overflow" não
+// diziam nada a quem administra a instalação. A frase inteira é a chave de tradução.
 const KIND_LABELS: Record<AlertKind, string> = {
-  waha_ban: "Alerta WAHA",
-  lgpd_at_risk: "Prazo LGPD",
-  ai_budget: "Budget IA",
-  tenant_pending_overflow: "Overflow de conversas",
+  waha_ban: "Novo aviso: número com problema",
+  lgpd_at_risk: "Novo aviso: pedido de LGPD perto do prazo",
+  ai_budget: "Novo aviso: empresa perto do teto de IA",
+  tenant_pending_overflow: "Novo aviso: fila de espera cheia",
 };
 
 interface AlertBroadcast {
@@ -19,16 +22,16 @@ interface AlertBroadcast {
 
 export function useAlertsRealtime() {
   const qc = useQueryClient();
+  const t = useT();
 
   const onChange = useCallback(
     (payload: unknown) => {
       const data = (payload as { payload?: AlertBroadcast } | null)?.payload;
       const kind = data?.kind;
-      const label = kind ? (KIND_LABELS[kind] ?? kind) : "alerta";
-      toast.warning(`Novo ${label}`, { description: data?.message });
+      toast.warning(t((kind && KIND_LABELS[kind]) || "Novo aviso"), { description: data?.message });
       qc.invalidateQueries({ queryKey: ["admin", "dashboard", "kpis"] });
     },
-    [qc],
+    [qc, t],
   );
 
   // Pelo hook compartilhado, e não por `.channel()` cru: o cookie de sessão é

@@ -8,6 +8,10 @@ import { CaretLeft } from "@/lib/ui/icons";
 import { TabNav } from "./_tab-nav";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
+
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/tenants", "empresa");
 
 // ---------------------------------------------------------------------------
 // Status badge helpers (same palette as TenantsTable)
@@ -80,8 +84,10 @@ export default async function TenantDetailLayout({ children, params }: TenantLay
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <CaretLeft size={14} aria-hidden />
-        {traduzir("Tenants", idioma)}
+        {traduzir("Empresas", idioma)}
       </Link>
+
+      <ContextoDaSubpagina href="/admin/tenants" />
 
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

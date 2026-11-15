@@ -70,10 +70,15 @@ export function SuspendDialog({ open, onClose, organizationId }: SuspendDialogPr
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={(open) => { if (!open) handleClose(); }}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("Suspender tenant")}</AlertDialogTitle>
+          <AlertDialogTitle>{t("Suspender empresa")}</AlertDialogTitle>
           <AlertDialogDescription>
             {t(
               "A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.",
@@ -84,9 +89,7 @@ export function SuspendDialog({ open, onClose, organizationId }: SuspendDialogPr
         <div className="space-y-2 py-2">
           <Label htmlFor="suspend-reason">
             {t("Motivo da suspensão")}{" "}
-            <span className="text-muted-foreground text-xs font-normal">
-              ({reason.length}/500)
-            </span>
+            <span className="text-xs font-normal text-muted-foreground">({reason.length}/500)</span>
           </Label>
           <Textarea
             id="suspend-reason"

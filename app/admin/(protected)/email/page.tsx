@@ -8,8 +8,9 @@ import { estadoParaTela } from "@/lib/instalacao/config";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
 
 import { FormularioDeSmtp } from "./_form";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Servidor de e-mail da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/email");
 export const dynamic = "force-dynamic";
 
 /**

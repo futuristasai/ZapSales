@@ -13,6 +13,7 @@ import { useAdminLgpdRequest } from "@/hooks/useAdminLgpdRequest";
 import type { AdminLgpdStatus, AdminLgpdRequestType } from "@/hooks/useAdminLGPDRequests";
 import { diasAtePrazo, prazoEmBr, progressoDoPrazo } from "@/lib/lgpd/sla";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Inline SLA Timeline (simplified — no approve button, admin observe-only)
@@ -42,8 +43,7 @@ function SlaTimelineInline({ received_at, due_at, request_type }: SlaTimelinePro
 
   const daysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
 
-  const progressColor =
-    progress >= 1 ? "bg-error" : progress >= 0.75 ? "bg-warning" : "bg-success";
+  const progressColor = progress >= 1 ? "bg-error" : progress >= 0.75 ? "bg-warning" : "bg-success";
 
   const milestones =
     request_type === "data_request"
@@ -62,7 +62,9 @@ function SlaTimelineInline({ received_at, due_at, request_type }: SlaTimelinePro
     <div className="space-y-4">
       <div className="space-y-1">
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>D+{daysElapsed} ({t("hoje")})</span>
+          <span>
+            D+{daysElapsed} ({t("hoje")})
+          </span>
           <span>
             {diasRestantes > 0
               ? `${diasRestantes}d ${t("restantes")}`
@@ -85,22 +87,15 @@ function SlaTimelineInline({ received_at, due_at, request_type }: SlaTimelinePro
 
       <ol className="relative space-y-0">
         {milestones.map((m, idx) => {
-          const milestoneDate = new Date(
-            receivedAt.getTime() + m.day * 24 * 60 * 60 * 1000,
-          );
+          const milestoneDate = new Date(receivedAt.getTime() + m.day * 24 * 60 * 60 * 1000);
           const isPast = milestoneDate.getTime() < now.getTime();
           const isLast = idx === milestones.length - 1;
-          const dotColor = isPast
-            ? "bg-success border-success"
-            : "bg-muted border-border";
+          const dotColor = isPast ? "bg-success border-success" : "bg-muted border-border";
 
           return (
             <li key={m.day} className="flex gap-3">
               <div className="flex flex-col items-center">
-                <div
-                  className={`mt-0.5 h-3 w-3 rounded-full border-2 ${dotColor}`}
-                  aria-hidden
-                />
+                <div className={`mt-0.5 h-3 w-3 rounded-full border-2 ${dotColor}`} aria-hidden />
                 {!isLast && <div className="mt-1 h-8 w-px bg-border" aria-hidden />}
               </div>
               <div className={`pb-1 text-sm ${isLast ? "" : "pb-3"}`}>
@@ -152,14 +147,14 @@ function AuditTrailInline({ entries }: { entries: AuditEntry[] }) {
                 className="mt-1 h-2 w-2 rounded-full bg-border ring-2 ring-background"
                 aria-hidden
               />
-              {!isLast && (
-                <div className="mt-1 h-full min-h-[24px] w-px bg-border" aria-hidden />
-              )}
+              {!isLast && <div className="mt-1 h-full min-h-[24px] w-px bg-border" aria-hidden />}
             </div>
-            <div className={`pb-3 min-w-0 flex-1 ${isLast ? "pb-0" : ""}`}>
-              <p className="text-sm font-mono font-medium truncate">{entry.action}</p>
+            <div className={`min-w-0 flex-1 pb-3 ${isLast ? "pb-0" : ""}`}>
+              <p className="truncate font-mono text-sm font-medium">{entry.action}</p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: localeDaData })}
+                {format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss", {
+                  locale: localeDaData,
+                })}
                 {entry.actor_user_id && (
                   <span className="ml-2 opacity-60">
                     {t("por")} {entry.actor_user_id.slice(0, 8)}…
@@ -181,7 +176,7 @@ function AuditTrailInline({ entries }: { entries: AuditEntry[] }) {
 const TYPE_LABELS: Record<AdminLgpdRequestType, string> = {
   redact: "Anonimização cliente",
   data_request: "Solicitação de dados",
-  store_redact: "Anonimização tenant",
+  store_redact: "Anonimização da empresa",
 };
 
 const STATUS_LABELS: Record<AdminLgpdStatus, string> = {
@@ -192,16 +187,14 @@ const STATUS_LABELS: Record<AdminLgpdStatus, string> = {
   pending_review: "Revisão pendente",
 };
 
-const STATUS_VARIANT: Record<
-  AdminLgpdStatus,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  received: "secondary",
-  processing: "default",
-  completed: "outline",
-  failed: "destructive",
-  pending_review: "secondary",
-};
+const STATUS_VARIANT: Record<AdminLgpdStatus, "default" | "secondary" | "destructive" | "outline"> =
+  {
+    received: "secondary",
+    processing: "default",
+    completed: "outline",
+    failed: "destructive",
+    pending_review: "secondary",
+  };
 
 // ---------------------------------------------------------------------------
 // Row helper
@@ -210,8 +203,8 @@ const STATUS_VARIANT: Record<
 function Row({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className={`text-right truncate ${mono ? "font-mono text-xs" : ""}`}>{value}</span>
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className={`truncate text-right ${mono ? "font-mono text-xs" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -259,23 +252,20 @@ export function LgpdRequestAdminDetail({ id }: Props) {
     <div className="flex flex-col gap-6">
       {/* Back nav */}
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="-ml-2 gap-1 text-muted-foreground"
-        >
+        <Button variant="ghost" size="sm" asChild className="-ml-2 gap-1 text-muted-foreground">
           <Link href="/admin/lgpd">
             <CaretLeft size={14} aria-hidden />
-            {t("LGPD Cross-tenant")}
+            {t("Pedidos de LGPD")}
           </Link>
         </Button>
       </div>
 
+      <ContextoDaSubpagina href="/admin/lgpd" />
+
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight font-mono">#{shortId}</h1>
+          <h1 className="font-mono text-xl font-semibold tracking-tight">#{shortId}</h1>
           <Badge variant={STATUS_VARIANT[request.status] ?? "secondary"}>{statusLabel}</Badge>
           <Badge variant="outline">{typeLabel}</Badge>
           {request.emergency && <Badge variant="destructive">{t("Urgente")}</Badge>}
@@ -284,7 +274,9 @@ export function LgpdRequestAdminDetail({ id }: Props) {
 
         <p className="text-sm text-muted-foreground">
           {t("Recebido em")}{" "}
-          {format(new Date(request.received_at), `dd/MM/yyyy '${t("às")}' HH:mm`, { locale: localeDaData })}
+          {format(new Date(request.received_at), `dd/MM/yyyy '${t("às")}' HH:mm`, {
+            locale: localeDaData,
+          })}
           {request.due_at && (
             <>
               {" · "}
@@ -294,7 +286,7 @@ export function LgpdRequestAdminDetail({ id }: Props) {
         </p>
 
         <p className="text-xs text-muted-foreground italic">
-          {t("Somente leitura — aprovação é feita pelo operador no contexto do tenant.")}
+          {t("Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.")}
         </p>
       </div>
 
@@ -327,18 +319,19 @@ export function LgpdRequestAdminDetail({ id }: Props) {
             <Row label={t("ID completo")} value={request.id} mono />
             <Row label={t("Tipo")} value={typeLabel} />
             <Row label={t("Status")} value={statusLabel} />
-            <Row label={t("Origem")} value={(request as { source?: string | null }).source ?? "—"} />
+            <Row
+              label={t("Origem")}
+              value={(request as { source?: string | null }).source ?? "—"}
+            />
             <Row label={t("Escopo")} value={request.scope} />
             <Row label={t("Tentativas")} value={String(request.attempts)} />
             {tenant && (
               <>
-                <Row label="Tenant" value={tenant.display_name} />
+                <Row label={t("Empresa")} value={tenant.display_name} />
                 <Row label="Slug" value={tenant.slug} />
               </>
             )}
-            {request.contact_id && (
-              <Row label="Contact ID" value={request.contact_id} mono />
-            )}
+            {request.contact_id && <Row label="Contact ID" value={request.contact_id} mono />}
             {request.external_customer_id && (
               <Row label="External customer ID" value={request.external_customer_id} />
             )}
@@ -353,7 +346,7 @@ export function LgpdRequestAdminDetail({ id }: Props) {
             {request.error_message && (
               <div className="rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1">
                 <p className="text-xs text-muted-foreground">{t("Erro")}</p>
-                <p className="text-destructive text-xs">{request.error_message}</p>
+                <p className="text-xs text-destructive">{request.error_message}</p>
               </div>
             )}
           </CardContent>

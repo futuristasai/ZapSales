@@ -14,6 +14,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { googleEstaConfigurado } from "@/lib/agenda/google/config";
+import { marcaEhADoProduto } from "@/lib/branding";
+import { marcaDaInstalacao } from "@/lib/branding/instalacao";
+import { REGUA_DO_PRODUTO } from "@/lib/branding/regua-do-produto";
+import { camadaDaInstalacao, camadaDoAmbiente, resolverMarca } from "@/lib/branding/resolve";
 import { appDaMeta } from "@/lib/channels/meta/app";
 import { emailConfigurado } from "@/lib/email/roteador";
 import { env } from "@/lib/env";
@@ -21,6 +25,7 @@ import { modulosLigados } from "@/lib/instalacao/modulos";
 import { logger } from "@/lib/logger";
 import { vapidPronto } from "@/lib/notifications/vapid";
 import { googleAdsEstaConfigurado } from "@/lib/plataformas-de-anuncio/google/config";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getWacallsClient } from "@/lib/wacalls/client";
 
 import type { FontesDeEstado } from "./catalogo";
@@ -37,7 +42,13 @@ async function detectar(id: string, ler: () => boolean | Promise<boolean>): Prom
   }
 }
 
-/** O que o servidor tem configurado, por `id` do catálogo. */
+/**
+ * O que o servidor tem configurado, por `id` do catálogo.
+ *
+ * `marca` e `cadastro` (issue #308) moram no banco da instalação, e não no `.env`, mas a
+ * pergunta é a mesma — "isto está decidido nesta instalação?" — e o checklist do Painel
+ * e a tela de Recursos opcionais leem as duas daqui, pelo mesmo `peloServidor`.
+ */
 export async function detectarServidor(): Promise<Record<string, boolean | null>> {
   const pares = await Promise.all([
     detectar("email", emailConfigurado),
@@ -50,6 +61,15 @@ export async function detectarServidor(): Promise<Record<string, boolean | null>
     detectar("google_ads", () => googleAdsEstaConfigurado()),
     detectar("web_push", vapidPronto),
     detectar("transcricao", () => env.TRANSCRIPTION_BASE_URL.trim().length > 0),
+    // A MESMA resolução do layout raiz (`app/layout.tsx`): banco acima do `.env`.
+    detectar("marca", async () => {
+      const marca = resolverMarca(
+        [camadaDaInstalacao(await marcaDaInstalacao()), camadaDoAmbiente(env)],
+        REGUA_DO_PRODUTO,
+      );
+      return !marcaEhADoProduto(marca);
+    }),
+    detectar("cadastro", cadastroFoiDecidido),
   ]);
   return Object.fromEntries(pares);
 }
@@ -77,4 +97,21 @@ export async function fontesDaEmpresa(db: SupabaseClient, organizationId: string
     })(),
   ]);
   return { modulos, settings, servidor: {} };
+}
+
+/**
+ * Alguém já gravou "quem pode criar conta" nesta instalação? Há SEMPRE um modo em vigor
+ * (sem decisão vale o cadastro aberto), então "ler o modo" não responde. Responde o
+ * recibo que a tela grava ao salvar (`platform.signup_mode_updated`, em
+ * `app/actions/settings/updateSignupMode.ts`), pelo índice `idx_audit_action_time`.
+ * `platform_settings` não serve: a linha nasce também quando outra tela grava outra coluna.
+ */
+async function cadastroFoiDecidido(): Promise<boolean> {
+  const { data, error } = await createAdminClient()
+    .from("api_audit_log")
+    .select("id")
+    .eq("action", "platform.signup_mode_updated")
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return (data?.length ?? 0) > 0;
 }

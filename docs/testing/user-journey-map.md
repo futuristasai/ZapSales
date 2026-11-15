@@ -4028,3 +4028,24 @@ Pedido do dono: levar quem esfriou para um disparo em massa. Das quatro opções
 | 7 telas medidas (computador claro e escuro, celular): a janela cabe na tela, transbordo horizontal 0, nenhum erro de console | o desenho, medido por ferramenta | `docs/testing/evidencias/radar-resgatar-com-disparo/` |
 
 Não medido aqui: o envio em si (é o disparo de sempre, com as provas dele), e o resgate com mais de 500 negócios.
+
+## J55 — O dono da VPS entende a administração da instalação sozinho `[P0]` (2026-11-15, issue #308)
+
+**Origem:** conversa com o dono do produto. A área `/admin` tinha 21 itens soltos,
+metade em inglês ("Tenants", "Audit", "Usage"), nenhum explicando o que fazia, e um
+painel de cinco números que não se clicavam. É a primeira tela de quem acabou de
+instalar: se ele não entende, abandona.
+
+| Caso | Spec | Estado |
+|---|---|---|
+| Menu em cinco grupos com título; a dica de cada item abre no mouse **e** no foco do teclado; a 1280×900 o título do grupo gruda no topo ao rolar | `tests/e2e/admin-plataforma-claro.spec.ts` | CI (PARTE_6) |
+| Toda tela do catálogo abre com o cabeçalho padrão (título = nome do menu, para que serve, quando usar), marcada no menu (inclusive `/admin/tenants/new`) e com o nome na aba | idem | CI (PARTE_6) |
+| Painel: checklist "Sua instalação está pronta?" com os 5 itens (e-mail obrigatório, o resto opcional); o cartão de LGPD leva à lista; o "Configurar" do e-mail leva à tela de E-mail | idem | CI (PARTE_6) |
+| `/admin/modulos` leva ao bloco Módulos de Recursos opcionais; o Honorários se instala ali, com o aviso antes do clique | idem + `tests/e2e/honorarios-instalar-e-pagar.spec.ts` | CI |
+| Celular (390 px): a ajuda da tela está no topo, a gaveta mostra os mesmos grupos, sem rolagem lateral | `tests/e2e/admin-plataforma-claro.spec.ts` | CI (PARTE_6) |
+| Catálogo completo (rótulo, dica, ajuda e ícone únicos, sem jargão, porta para toda tela) e nos quatro idiomas | `tests/unit/admin-navegacao-completude.test.ts`, `tests/unit/i18n-catalogo-do-admin.test.ts` | unit |
+| O checklist lê o mesmo estado de Recursos opcionais (nenhuma segunda conta) | `tests/unit/checklist-da-instalacao.test.ts` | unit |
+
+**Não coberto pela tela:** o checklist com tudo configurado recolhido (o banco do e2e não
+tem Meta nem Google configurados — a regra está no unit); o contraste dos tons dos grupos
+no tema escuro foi conferido pelos valores dos tokens, não medido pela tela.

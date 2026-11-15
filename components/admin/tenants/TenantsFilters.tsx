@@ -57,12 +57,9 @@ export function TenantsFilters({ filters, onChange }: TenantsFiltersProps) {
         value={inputValue}
         onChange={(e) => handleSearch(e.target.value)}
         className="sm:w-80"
-        aria-label={t("Buscar tenants")}
+        aria-label={t("Buscar empresas")}
       />
-      <Select
-        value={filters.status ?? "all"}
-        onValueChange={handleStatus}
-      >
+      <Select value={filters.status ?? "all"} onValueChange={handleStatus}>
         <SelectTrigger className="sm:w-44" aria-label={t("Filtrar por status")}>
           <SelectValue placeholder={t("Status")} />
         </SelectTrigger>

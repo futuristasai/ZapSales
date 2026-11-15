@@ -5,7 +5,7 @@
  * Módulo opcional (ADR-0002): antes de instalado, toda leitura devolve 409
  * `module_not_installed`. A tela não trata isso como erro genérico — mostra o
  * mesmo texto que a rota manda (quem resolve é o administrador da instalação,
- * em Configurações da instalação › Módulos, não quem está nesta tela).
+ * em Administração da instalação › Recursos opcionais › Módulos, não quem está nesta tela).
  */
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";

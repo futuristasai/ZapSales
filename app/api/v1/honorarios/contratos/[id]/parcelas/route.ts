@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 
 const MODULO_NAO_INSTALADO =
   "O módulo de honorários não está instalado nesta instalação. Peça ao administrador para " +
-  "instalar em Configurações da instalação › Módulos.";
+  "instalar em Administração da instalação › Recursos opcionais › Módulos.";
 
 function moduloNaoInstalado(error: { code?: string } | null): boolean {
   return tabelaAusente(error);

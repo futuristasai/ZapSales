@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { LinhaDoRecurso } from "@/components/recursos-opcionais/LinhaDoRecurso";
 import { loadAuthUser } from "@/lib/auth/server";
 import { carregarComportamentoDaInstalacao } from "@/lib/instalacao/comportamento-servidor";
-import { MODULOS_OPCIONAIS_POR_FLAG, modulosLigados, type ModuloOpcional } from "@/lib/instalacao/modulos";
+import { modulosLigados } from "@/lib/instalacao/modulos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { traduzir } from "@/lib/i18n/dicionario";
 import {
@@ -14,9 +14,14 @@ import {
 } from "@/lib/recursos-opcionais/catalogo";
 import { detectarServidor } from "@/lib/recursos-opcionais/estado";
 
-import { FormularioDeComportamento, FormularioDeModulos } from "./_form";
+import { ModulosManager } from "@/components/modulos/ModulosManager";
+import { listarModulos } from "@/lib/modulos/service";
 
-export const metadata = { title: "Recursos opcionais" };
+import { FormularioDeComportamento, FormularioDeModulos } from "./_form";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
+
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/sistema");
 
 /** Para o que depende do servidor, a voz é "configurado", não "ligado". */
 const ROTULO_NO_SERVIDOR: Record<EstadoDoRecurso, string> = {
@@ -76,14 +81,12 @@ export default async function Page() {
   ]);
   const fontes = { modulos: ligados, settings: null, servidor };
 
-  // Os módulos que NÃO se ligam por interruptor aqui (módulo de tabela, ADR-0002)
-  // aparecem com o caminho de onde se instalam — saem do catálogo, sem lista escrita.
-  const modulosDeOutraTela = RECURSOS_OPCIONAIS.filter(
-    (r) =>
-      r.nivel === "instalacao" &&
-      r.modulo &&
-      !(MODULOS_OPCIONAIS_POR_FLAG as readonly ModuloOpcional[]).includes(r.modulo),
-  );
+  // Os módulos de TABELA (ADR-0002) se instalam aqui mesmo desde a issue #308 — era uma
+  // tela própria (`/admin/modulos`, hoje só redirecionamento) com um item de menu para um
+  // botão só. A leitura é a mesma do serviço de módulos, e a escrita continua sendo a de
+  // sempre (`/api/v1/modulos/instalar` → `fn_modulo_instalar`). Leitura que falha não
+  // derruba a tela: o bloco diz que não conseguiu ler, e o resto continua.
+  const modulosDeTabela = await listarModulos().catch(() => null);
   const outrasChaves = RECURSOS_OPCIONAIS.filter(
     (r) => r.nivel === "instalacao" && !r.modulo && r.href !== "/admin/sistema",
   );
@@ -91,37 +94,22 @@ export default async function Page() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{traduzir("Recursos opcionais", idioma)}</h1>
-        <p className="text-sm text-muted-foreground">
-          {traduzir(
-            "Tudo o que se liga e desliga nesta instalação, num lugar só. Vale para todas as empresas hospedadas aqui.",
-            idioma,
-          )}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/sistema" />
 
-      <section className="space-y-3" aria-labelledby="bloco-modulos">
+      <section id="modulos" className="scroll-mt-16 space-y-3" aria-labelledby="bloco-modulos">
         <h2 id="bloco-modulos" className="text-lg font-semibold">
           {traduzir("Módulos", idioma)}
         </h2>
         <FormularioDeModulos ligados={ligados} />
-        {modulosDeOutraTela.length > 0 && (
-          <ul className="space-y-3">
-            {modulosDeOutraTela.map((r) => {
-              const estado = estadoDoRecurso(r, fontes);
-              return (
-                <LinhaDoRecurso
-                  key={r.id}
-                  recurso={r}
-                  estado={estado}
-                  rotuloDoEstado={traduzir(ROTULO_DO_ESTADO[estado], idioma)}
-                  ajustar={r.href}
-                  idioma={idioma}
-                />
-              );
-            })}
-          </ul>
+        {modulosDeTabela ? (
+          <ModulosManager inicial={modulosDeTabela} />
+        ) : (
+          <p role="status" className="text-sm text-muted-foreground">
+            {traduzir(
+              "Não consegui ler os módulos com tabela própria agora. Recarregue a página.",
+              idioma,
+            )}
+          </p>
         )}
       </section>
 
@@ -131,16 +119,24 @@ export default async function Page() {
         </h2>
         <FormularioDeComportamento inicial={comportamento} />
         <ul className="space-y-3">
-          {outrasChaves.map((r) => (
-            <LinhaDoRecurso
-              key={r.id}
-              recurso={r}
-              estado="nao_verificado"
-              rotuloDoEstado={traduzir("Veja na tela dele", idioma)}
-              ajustar={r.href}
-              idioma={idioma}
-            />
-          ))}
+          {outrasChaves.map((r) => {
+            // Quem tem leitura (Marca, Quem pode criar conta — issue #308) mostra o estado
+            // de verdade, o MESMO que o checklist do Painel lê; o resto segue "veja na tela".
+            const estado = r.ler ? estadoDoRecurso(r, fontes) : "nao_verificado";
+            return (
+              <LinhaDoRecurso
+                key={r.id}
+                recurso={r}
+                estado={estado}
+                rotuloDoEstado={traduzir(
+                  r.ler ? ROTULO_NO_SERVIDOR[estado] : "Veja na tela dele",
+                  idioma,
+                )}
+                ajustar={r.href}
+                idioma={idioma}
+              />
+            );
+          })}
         </ul>
       </section>
 

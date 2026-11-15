@@ -86,10 +86,10 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
       <p className="text-sm font-medium text-muted-foreground">
-        {t("Nenhum platform admin encontrado")}
+        {t("Nenhum administrador da plataforma encontrado")}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {t("Platform admins são configurados exclusivamente via DBA.")}
+        {t("Quem administra a plataforma só se define direto no banco de dados.")}
       </p>
     </div>
   );

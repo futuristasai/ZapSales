@@ -13,6 +13,7 @@ import { useAdminIncident } from "@/hooks/useAdminIncident";
 import { ResolveIncidentDialog } from "@/components/admin/incidents/ResolveIncidentDialog";
 import type { IncidentSeverity, IncidentStatus } from "@/hooks/useAdminIncidents";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Badge helpers
@@ -96,6 +97,8 @@ export function IncidentDetailClient({ id }: IncidentDetailClientProps) {
         </Link>
       </div>
 
+      <ContextoDaSubpagina href="/admin/incidents" />
+
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0 space-y-2">
@@ -154,7 +157,7 @@ export function IncidentDetailClient({ id }: IncidentDetailClientProps) {
         {/* Audit timeline */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Audit Trail</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("Registro de ações")}</CardTitle>
           </CardHeader>
           <CardContent>
             {incident.audit_trail.length === 0 ? (

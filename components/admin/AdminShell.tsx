@@ -94,13 +94,15 @@ export function AdminShell({ userEmail, children }: AdminShellProps) {
               >
                 <List size={20} aria-hidden />
               </Button>
-              <span className="text-sm font-semibold tracking-tight">{t("Admin Plataforma")}</span>
+              <span className="text-sm font-semibold tracking-tight">
+                {t("Administração da instalação")}
+              </span>
             </header>
             {/* `overflow-x-hidden` como rede de segurança — mesmo motivo do
                 `AppShell` (ver comentário lá): se algo estourar a largura, a
                 PÁGINA não rola de lado; quem precisa de scroll horizontal é
                 o componente específico, contido nele mesmo. */}
-            <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">{children}</main>
+            <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">{children}</main>
           </div>
         </div>
       </div>
