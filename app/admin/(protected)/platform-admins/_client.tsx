@@ -25,7 +25,7 @@ export function PlatformAdminsClient() {
         <PlatformAdminsTableSkeleton />
       ) : isError ? (
         <div className="flex items-center justify-center rounded-lg border py-12 text-sm text-muted-foreground">
-          {t("Erro ao carregar platform admins. Tente recarregar.")}
+          {t("Não foi possível carregar os administradores da plataforma. Tente recarregar.")}
         </div>
       ) : (
         <PlatformAdminsTable data={data ?? []} />

@@ -2,10 +2,9 @@
 
 <h2 id="audit">Registro de ações (todas as empresas)</h2>
 <p>Antes chamada “Audit Log”. É o mesmo diário da tela <a href="#auditoria">Quem mexeu em quê</a> (que se abre com o título “Auditoria”) de cada empresa, mas <strong>de todas as empresas juntas</strong>, para quem opera o servidor. Só leitura; a tabela não aceita edição nem exclusão (retenção padrão de 5 anos, piso de 90 dias, limpa por rotina diária). O cabeçalho diz “Guarda cada alteração feita no sistema, com a pessoa, a data e o que mudou.” e “Quando usar: Para descobrir quem mudou alguma coisa ou provar o que aconteceu.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-audit.png" alt="Registro de ações com os filtros e a tabela de eventos, numerado de 1 a 7" loading="lazy">
-  <figcaption>O Registro de ações (mostra só as linhas da empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>O Registro de ações, filtrado pela empresa de demonstração.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Registro de ações.</strong> Embaixo do cabeçalho, a contagem “N evento(s)” (com “+” se há mais).</li>
@@ -16,29 +15,27 @@
   <li><strong>Quem fez.</strong> A coluna de quem fez; veja a armadilha abaixo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Ação</em>, <em>Empresa</em> (num selo com o slug), <em>Quem fez</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver entradas do audit log.”). <strong>Armadilha:</strong> a coluna de quem fez mostra o código inteiro (UUID), não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
+<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Ação</em>, <em>Empresa</em> (num selo com o slug), <em>Quem fez</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver as ações registradas.”). <strong>Armadilha:</strong> a coluna de quem fez mostra o código inteiro (UUID), não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
 <figure class="print">
-  <img src="img/admin-audit-detalhe.png" alt="Detalhe de uma entrada de auditoria com metadata, request ID, ator, tenant e recurso, numerado de 1 a 4" loading="lazy">
-  <figcaption>O detalhe de uma entrada.</figcaption>
+  <img src="img/admin-audit-detalhe.png" alt="Detalhe de uma ação registrada com os dados registrados, o código da requisição, quem fez e a empresa, numerado de 1 a 4" loading="lazy">
+  <figcaption>O detalhe de uma ação registrada.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Metadata.</strong> O JSON bruto do que mudou (nunca contém segredos).</li>
+  <li><strong>Dados registrados.</strong> O que a ação gravou, em formato técnico (JSON); nunca contém segredos.</li>
   <li><strong>Código da requisição.</strong> Com Tipo do recurso, Código do recurso, “Feita por cima do isolamento entre empresas” (Sim/Não — Sim quando a gravação usou o acesso do servidor que enxerga todas as empresas), Endereço IP de quem fez e Navegador de quem fez.</li>
   <li><strong>Quem fez.</strong> Código da pessoa e e-mail <em>mascarado</em> (<code>m****@dominio</code>).</li>
-  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
+  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Ação não encontrada no registro.”.</li>
 </ol>
 <p>A própria consulta desta tela é auditada (por isso, na captura, as últimas linhas são as aberturas de ficha e de saúde).</p>
 
 <h2 id="lgpd">Pedidos de LGPD (todas as empresas)</h2>
 <p>Antes chamada “LGPD — Cross-tenant”. Acompanha os pedidos de titulares de <em>todas</em> as empresas e mostra quais estão perto de estourar o prazo legal. <strong>Somente leitura</strong>: a aprovação é feita pelo Administrador <em>dentro</em> da empresa, na tela <a href="#lgpd">LGPD</a>. O cabeçalho diz “Acompanha os pedidos dos donos dos dados (cópia, correção, anonimização) em todas as empresas, e o prazo legal de cada um.” e “Quando usar: Toda semana, para nenhum pedido passar do prazo que a lei dá.”, com a contagem “N solicitação(ões)”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-lgpd.png" alt="Tela Pedidos de LGPD com os três filtros e a tabela de pedidos, numerada de 2 a 8" loading="lazy">
-  <figcaption>A tela Pedidos de LGPD (dados fictícios da empresa de demonstração; print anterior à reorganização).</figcaption>
+  <img src="img/admin-lgpd.png" alt="Tela Pedidos de LGPD com os três filtros e a tabela de pedidos, numerada de 1 a 7" loading="lazy">
+  <figcaption>A tela Pedidos de LGPD (pedidos fictícios da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
-  <li style="counter-set:leg 1"><strong>Status.</strong> Todos, Recebido, Processando, Revisão, Concluído ou Falhou.</li>
+  <li><strong>Status.</strong> Todos, Recebido, Processando, Revisão, Concluído ou Falhou.</li>
   <li><strong>Tipo.</strong> Anonimização cliente, Solicitação de dados ou Anonimização da empresa.</li>
   <li><strong>Risco.</strong> Vencido, Crítico (&lt;24h), Alerta (&gt;50%) ou OK.</li>
   <li><strong>Empresa.</strong> A coluna da empresa do pedido.</li>
@@ -46,11 +43,10 @@
   <li><strong>Risco.</strong> O selo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Tenant (a empresa), Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (no alto, o link <span class="ui">Pedidos de LGPD</span> volta à lista; o cabeçalho traz status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.”.</p>
+<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Empresa, Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (no alto, o link <span class="ui">Pedidos de LGPD</span> volta à lista; o cabeçalho traz status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.”.</p>
 
 <h2 id="incidentes">Incidentes</h2>
 <p>O cabeçalho diz “Lista as falhas que o sistema detectou, com a gravidade e o andamento de cada uma.” e “Quando usar: Quando algo parou de funcionar, ou para fechar um problema que já foi resolvido.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-incidentes.png" alt="Tela Incidentes vazia com os filtros Status e Severidade, numerada de 1 a 4" loading="lazy">
   <figcaption>A tela de Incidentes, vazia (o estado normal).</figcaption>

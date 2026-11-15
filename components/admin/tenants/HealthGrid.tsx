@@ -91,7 +91,7 @@ export function HealthGrid({ health }: HealthGridProps) {
   const auditDetails = [
     { label: t("Último evento"), value: formatDate(audit.last_at, tagDoIdioma) },
     {
-      label: "Lag",
+      label: t("Tempo sem registro"),
       value: audit.lag_seconds !== null ? formatLag(audit.lag_seconds) : "—",
     },
   ];

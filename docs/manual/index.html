@@ -8720,7 +8720,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <h2 id="admin-visao--visao-geral">O que é</h2>
 <p>A <strong>Administração da instalação</strong> é a área de quem <em>instalou e mantém</em> o ZapSales. Você entra nela pelo item “Modo administrador” do menu do usuário, e a faixa do topo diz <strong>“Administração da instalação — o que você muda aqui vale para todas as empresas”</strong>. Em vez de mostrar uma empresa, ela mostra <strong>todas as empresas hospedadas na instalação</strong> e reúne as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, quem pode criar conta, Google, Meta, módulos.</p>
 <aside class="nota atencao"><strong>Só para quem opera o servidor.</strong><p>Um cliente que usa o ZapSales dentro da própria empresa <em>nunca</em> vê esta área, nem como Administrador da empresa. Administrador da empresa e “administrador da plataforma” são coisas diferentes: o primeiro manda <em>numa</em> empresa; o segundo manda na <em>instalação</em>.</p></aside>
-<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. <strong>Vários prints são anteriores à reorganização da área</strong> e ainda mostram nomes antigos, como “Tenants”, “Dashboard” e a faixa “MODO PLATAFORMA”; o texto já descreve os nomes atuais, e esses prints serão refeitos.</p></aside>
+<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. Os prints foram refeitos depois da reorganização da área (novembro de 2026) e já mostram os nomes atuais.</p></aside>
 
 <h2 id="admin-visao--entrar">Como se chega</h2>
 <figure class="print media">
@@ -8733,10 +8733,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Para voltar ao sistema da sua empresa há o link <span class="ui">Voltar para a sua empresa</span> em dois lugares: na faixa do topo e no rodapé do menu.</p>
 
 <h2 id="admin-visao--moldura">A moldura da área</h2>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, numerada de 1 a 7" loading="lazy">
-  <figcaption>A moldura da área: faixa do topo e menu lateral (print anterior à reorganização; a legenda já usa os nomes atuais).</figcaption>
+  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, e a dica de um item, numerada de 1 a 7" loading="lazy">
+  <figcaption>A moldura da área: faixa do topo, menu lateral em cinco grupos e a dica de um item.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Administração da instalação.</strong> Faixa amarela fixa no topo, com o ícone de um servidor e a frase “— o que você muda aqui vale para todas as empresas” (em telas estreitas a frase some e fica só o título). É um lembrete de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
@@ -8744,7 +8743,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Painel.</strong> A primeira tela, no grupo <em>Visão geral</em>.</li>
   <li><strong>Empresas.</strong> No grupo <em>Empresas e pessoas</em>.</li>
   <li><strong>Marca.</strong> No grupo <em>Configurar a instalação</em>.</li>
-  <li><strong>O último item do menu.</strong> O print ainda mostra “Módulos”, que <em>não existe mais</em> no menu: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>. Hoje o último item é <span class="ui">Destinos internos</span>.</li>
+  <li><strong>A dica do item.</strong> Ao passar o mouse sobre um item, ou ao chegar nele pelo teclado (tecla Tab), aparece uma frase dizendo para que ele serve; no print, a de <span class="ui">Registro de ações</span>. O antigo item “Módulos” <em>não existe mais</em>: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>, e o último item é <span class="ui">Destinos internos</span>.</li>
   <li><strong>Voltar para a sua empresa</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
 </ol>
 <p>No alto do menu fica o nome do sistema e, embaixo dele, “Administração da instalação”. Os itens estão separados em <strong>cinco grupos</strong>, nesta ordem:</p>
@@ -8865,10 +8864,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ul>
 
 <h2 id="admin-dashboard--numeros">Os cinco números</h2>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-dashboard.png" alt="Painel da administração com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">
-  <figcaption>O Painel (organização de demonstração; print anterior à reorganização, sem o checklist e com os nomes antigos dos cartões — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>O Painel, com o checklist “Sua instalação está pronta?” recolhido e os cinco cartões.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Atualização.</strong> No cabeçalho: “Os números se atualizam sozinhos a cada 30 segundos.”</li>
@@ -8915,10 +8913,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-tenants--lista">A lista de empresas</h2>
 <p>A lista mostra todas as <strong>empresas clientes</strong> (organizações) hospedadas nesta instalação, das mais recentes para as mais antigas. (Antes esta tela se chamava “Tenants”, o jargão técnico para empresa cliente; o endereço continua <code>/admin/tenants</code>.) O cabeçalho diz “Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.” e “Quando usar: Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.”, seguido da contagem (“12 empresas”).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenants.png" alt="Lista de empresas com o botão de criar, filtros e colunas Slug, Nome, CNPJ, Status, Usuários, Conversas, numerada de 1 a 8" loading="lazy">
-  <figcaption>A lista de empresas (nomes trocados por exemplos; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>A lista de empresas.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nova empresa.</strong> Abre o cadastro de uma empresa.</li>
@@ -8957,22 +8954,20 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-tenants--ficha">A ficha da empresa</h2>
 <p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Empresas</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-geral.png" alt="Ficha de uma empresa com informações, volumes, integrações, compliance e os botões de ação, numerada de 1 a 7" loading="lazy">
   <figcaption>A aba Visão Geral da ficha.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Empresas.</strong> Link de volta à lista (no print ainda aparece “Tenants”).</li>
-  <li><strong>Abas.</strong> Visão Geral, Saúde (marcada) e Agente.</li>
+  <li><strong>Empresas.</strong> Link de volta à lista, acima do nome da empresa, com o grupo “Empresas e pessoas” e a ajuda da tela Empresas.</li>
+  <li><strong>Abas.</strong> Visão Geral (a aberta no print), Saúde e Agente.</li>
   <li><strong>Informações.</strong> Plano, razão social, CNPJ (completo), “Onboarding concluído” (data e hora), “Criado em” e, se houver, “Suspenso em”.</li>
   <li><strong>Volumes.</strong> Totais da empresa: Usuários, Conversas, Mensagens, Leads e Pedidos. Em “Integrações”: quantas sessões de WhatsApp existem (de qualquer status).</li>
   <li><strong>Compliance &amp; IA.</strong> “Solicitações LGPD pendentes” (destaque se &gt; 0) e “Invocações IA (30d)”.</li>
   <li><strong>Acompanhar organização.</strong> Veja abaixo. Ele fica no cartão “Ações”, ao lado das informações.</li>
-  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa (no print ainda aparece “Suspender tenant”). Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
+  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa. Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
 </ol>
 <h3 id="admin-tenants--saude">Aba Saúde</h3>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões Números conectados, Orçamento IA e Atraso do registro de ações, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
@@ -8983,10 +8978,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Orçamento IA.</strong> “N% usado”, consumido, orçamento (ou “Ilimitado”) e o limite (“Não aplicado”, “Só avisa” ou “Para a IA no limite”). Aqui o gasto é o <em>do mês</em>. A partir de 80% é Atenção; 100% só é Crítico quando a empresa escolheu parar a IA.</li>
   <li><strong>Atraso do registro de ações.</strong> Tempo desde a última ação registrada da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
 </ol>
-<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
+<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Tempo sem registro”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
 <p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Atraso do registro de ações” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="admin-tenants--agente">Aba Agente</h3>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-tenant-agente.png" alt="Aba Agente com a lista dos agentes de IA da empresa, a versão publicada e a data" loading="lazy">
   <figcaption>A aba Agente: dois agentes da empresa de demonstração.</figcaption>
@@ -8995,10 +8989,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-tenants--suspender">Suspender e reativar</h2>
 <p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Empresa suspensa” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-suspender.png" alt="Janela Suspender empresa com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
-  <figcaption>A janela “Suspender empresa” (cancelada nesta captura; o print ainda traz o título antigo, “Suspender tenant”).</figcaption>
+  <figcaption>A janela “Suspender empresa” (cancelada nesta captura).</figcaption>
 </figure>
 <ul>
   <li><strong>Suspender empresa:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo. Ao terminar, o aviso “Empresa suspensa com sucesso”.</li>
@@ -9007,7 +9000,6 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </ul>
 
 <h2 id="admin-tenants--acompanhar">Acompanhar organização (suporte temporário)</h2>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-acompanhar.png" alt="Janela Iniciar acompanhamento com a caixa Somente leitura e o botão Confirmar e entrar" loading="lazy">
   <figcaption>A janela “Iniciar acompanhamento?”.</figcaption>
@@ -9038,10 +9030,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-audit--audit">Registro de ações (todas as empresas)</h2>
 <p>Antes chamada “Audit Log”. É o mesmo diário da tela <a href="#auditoria">Quem mexeu em quê</a> (que se abre com o título “Auditoria”) de cada empresa, mas <strong>de todas as empresas juntas</strong>, para quem opera o servidor. Só leitura; a tabela não aceita edição nem exclusão (retenção padrão de 5 anos, piso de 90 dias, limpa por rotina diária). O cabeçalho diz “Guarda cada alteração feita no sistema, com a pessoa, a data e o que mudou.” e “Quando usar: Para descobrir quem mudou alguma coisa ou provar o que aconteceu.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-audit.png" alt="Registro de ações com os filtros e a tabela de eventos, numerado de 1 a 7" loading="lazy">
-  <figcaption>O Registro de ações (mostra só as linhas da empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>O Registro de ações, filtrado pela empresa de demonstração.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Registro de ações.</strong> Embaixo do cabeçalho, a contagem “N evento(s)” (com “+” se há mais).</li>
@@ -9052,29 +9043,27 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Quem fez.</strong> A coluna de quem fez; veja a armadilha abaixo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Ação</em>, <em>Empresa</em> (num selo com o slug), <em>Quem fez</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver entradas do audit log.”). <strong>Armadilha:</strong> a coluna de quem fez mostra o código inteiro (UUID), não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
+<p>As colunas são <em>Quando</em> (relativo, “há 3 horas”), <em>Ação</em>, <em>Empresa</em> (num selo com o slug), <em>Quem fez</em>, <em>Recurso</em> (tipo + 8 caracteres do id) e <em>Ver</em>. 50 por página, mais novos primeiro; havendo mais, aparece o botão <span class="ui">Carregar mais</span> no fim da lista. Vazio: “Nenhum evento encontrado” (“Ajuste os filtros para ver as ações registradas.”). <strong>Armadilha:</strong> a coluna de quem fez mostra o código inteiro (UUID), não o e-mail mascarado; só o detalhe mostra o e-mail mascarado.</p>
 <figure class="print">
-  <img src="img/admin-audit-detalhe.png" alt="Detalhe de uma entrada de auditoria com metadata, request ID, ator, tenant e recurso, numerado de 1 a 4" loading="lazy">
-  <figcaption>O detalhe de uma entrada.</figcaption>
+  <img src="img/admin-audit-detalhe.png" alt="Detalhe de uma ação registrada com os dados registrados, o código da requisição, quem fez e a empresa, numerado de 1 a 4" loading="lazy">
+  <figcaption>O detalhe de uma ação registrada.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Metadata.</strong> O JSON bruto do que mudou (nunca contém segredos).</li>
+  <li><strong>Dados registrados.</strong> O que a ação gravou, em formato técnico (JSON); nunca contém segredos.</li>
   <li><strong>Código da requisição.</strong> Com Tipo do recurso, Código do recurso, “Feita por cima do isolamento entre empresas” (Sim/Não — Sim quando a gravação usou o acesso do servidor que enxerga todas as empresas), Endereço IP de quem fez e Navegador de quem fez.</li>
   <li><strong>Quem fez.</strong> Código da pessoa e e-mail <em>mascarado</em> (<code>m****@dominio</code>).</li>
-  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
+  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Ação não encontrada no registro.”.</li>
 </ol>
 <p>A própria consulta desta tela é auditada (por isso, na captura, as últimas linhas são as aberturas de ficha e de saúde).</p>
 
 <h2 id="admin-audit--lgpd">Pedidos de LGPD (todas as empresas)</h2>
 <p>Antes chamada “LGPD — Cross-tenant”. Acompanha os pedidos de titulares de <em>todas</em> as empresas e mostra quais estão perto de estourar o prazo legal. <strong>Somente leitura</strong>: a aprovação é feita pelo Administrador <em>dentro</em> da empresa, na tela <a href="#lgpd">LGPD</a>. O cabeçalho diz “Acompanha os pedidos dos donos dos dados (cópia, correção, anonimização) em todas as empresas, e o prazo legal de cada um.” e “Quando usar: Toda semana, para nenhum pedido passar do prazo que a lei dá.”, com a contagem “N solicitação(ões)”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-lgpd.png" alt="Tela Pedidos de LGPD com os três filtros e a tabela de pedidos, numerada de 2 a 8" loading="lazy">
-  <figcaption>A tela Pedidos de LGPD (dados fictícios da empresa de demonstração; print anterior à reorganização).</figcaption>
+  <img src="img/admin-lgpd.png" alt="Tela Pedidos de LGPD com os três filtros e a tabela de pedidos, numerada de 1 a 7" loading="lazy">
+  <figcaption>A tela Pedidos de LGPD (pedidos fictícios da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
-  <li style="counter-set:leg 1"><strong>Status.</strong> Todos, Recebido, Processando, Revisão, Concluído ou Falhou.</li>
+  <li><strong>Status.</strong> Todos, Recebido, Processando, Revisão, Concluído ou Falhou.</li>
   <li><strong>Tipo.</strong> Anonimização cliente, Solicitação de dados ou Anonimização da empresa.</li>
   <li><strong>Risco.</strong> Vencido, Crítico (&lt;24h), Alerta (&gt;50%) ou OK.</li>
   <li><strong>Empresa.</strong> A coluna da empresa do pedido.</li>
@@ -9082,11 +9071,10 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Risco.</strong> O selo.</li>
   <li><strong>Ver.</strong> Abre o detalhe.</li>
 </ol>
-<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Tenant (a empresa), Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (no alto, o link <span class="ui">Pedidos de LGPD</span> volta à lista; o cabeçalho traz status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.”.</p>
+<p>Quando há pedido ativo vencido ou crítico, uma faixa vermelha avisa “N solicitação(ões) vencendo em menos de 24h ou já vencida(s) — ação imediata requerida.” com o link “Ver detalhes” (o filtro por esse link não é aplicado pela página). O filtro de risco age depois de buscar a página (50 itens), então pode mostrar menos itens que o esperado. O filtro de Status mostra “Revisão” para o pedido que aguarda aprovação, e a lista traz as colunas ID (<code>#</code> + 8 caracteres), Tipo, Empresa, Recebido em, Vence em, Risco, Status e Ver; quando um filtro está ativo aparece o selo “Limpar filtros ×”, e há <span class="ui">Carregar mais</span> a cada 50 pedidos. O detalhe (no alto, o link <span class="ui">Pedidos de LGPD</span> volta à lista; o cabeçalho traz status, tipo, selo “Urgente” quando o pedido é emergencial e a empresa) mostra a “Linha do tempo SLA” (marcos em D+0, D+5 e D+7 para pedido de dados; D+0, D+10 e D+15 para anonimização), os “Detalhes” (ID completo, tipo, status, origem, escopo, tentativas, empresa, contato, data de conclusão e o erro, se houve) e a “Trilha de auditoria”, com a nota “Somente leitura — quem aprova é a própria empresa, dentro do sistema dela.”.</p>
 
 <h2 id="admin-audit--incidentes">Incidentes</h2>
 <p>O cabeçalho diz “Lista as falhas que o sistema detectou, com a gravidade e o andamento de cada uma.” e “Quando usar: Quando algo parou de funcionar, ou para fechar um problema que já foi resolvido.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-incidentes.png" alt="Tela Incidentes vazia com os filtros Status e Severidade, numerada de 1 a 4" loading="lazy">
   <figcaption>A tela de Incidentes, vazia (o estado normal).</figcaption>
@@ -9110,27 +9098,25 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-usage--usage">Uso e custo</h2>
 <p>Antes chamada “Usage” e “Uso &amp; Custo”. Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-usage.png" alt="Tela Uso e custo com o seletor de período, os gráficos e a tabela Uso por empresa, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Uso e custo (só a empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>A tela Uso e custo (o print mostra só a linha da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Cabeçalho.</strong> “Mostra o consumo de cada empresa e quanto a inteligência artificial custou.” e “Quando usar: Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.”.</li>
   <li><strong>Período.</strong> “Últimos 30 dias” (padrão), “Últimos 7 dias” ou “Últimos 90 dias”.</li>
-  <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo AI / dia” e “AI Tokens / dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
-  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
-  <li><strong>Custo AI.</strong> A última coluna.</li>
+  <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo da IA por dia (US$)” e “Tokens de IA por dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
+  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Chamadas à IA, Tokens e Custo da IA (US$) (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
+  <li><strong>Custo da IA (US$).</strong> A última coluna, em dólar, porque é em dólar que os provedores de IA cobram.</li>
   <li><strong>Exportar CSV.</strong> Baixa <code>usage-&lt;periodo&gt;.csv</code> com os dados de <em>todas</em> as empresas (gerado no navegador).</li>
 </ol>
 <aside class="nota atencao"><strong>A moeda é dólar, mesmo onde está escrito “R$”.</strong><p>Os valores vêm do custo registrado em dólar; a tabela mostra “US$”, mas o título do gráfico diz “(R$)” e a coluna do CSV se chama <code>custo_reais</code> sem converter. Trate o custo como <em>dólares</em>.</p></aside>
 
 <h2 id="admin-usage--users">Usuários</h2>
 <p>Antes chamada “Users”. O cabeçalho diz “Lista quem entra no sistema, em qual empresa e com qual papel.” e “Quando usar: Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.”, com a contagem “N usuário(s)”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-users.png" alt="Lista de usuários com busca, filtros de empresa e papel e as colunas da tabela, numerada de 1 a 7" loading="lazy">
-  <figcaption>A lista de usuários (só a empresa de demonstração; print anterior à reorganização).</figcaption>
+  <figcaption>A lista de usuários (o e-mail do dono foi trocado por um de exemplo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Busca.</strong> “Buscar por email ou nome…”.</li>
@@ -9155,25 +9141,23 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-usage--platform-admins">Administradores da plataforma</h2>
 <p>Antes chamada “Platform Admins”. O cabeçalho diz “Mostra quem administra a instalação inteira, acima de todas as empresas.” e “Quando usar: Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-platform-admins.png" alt="Tela Administradores da plataforma com o aviso de que só se muda direto no banco de dados e a tabela de administradores, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
+  <figcaption>A tela Administradores da plataforma.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Incluir, tirar ou mudar alguém é feito só por comando direto no banco de dados (por quem cuida do servidor), com uma nota no registro de ações. A página só mostra quem é: de propósito, ela não tem botão de mudança. Com a lista vazia, a tela diz “Nenhum administrador da plataforma encontrado”.</li>
-  <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
-  <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
+  <li><strong>Tipo de acesso.</strong> <em>Acesso completo</em> ou <em>Só leitura (suporte)</em>.</li>
+  <li><strong>Exige duas etapas.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>
 </ol>
-<p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Scope</em>, <em>MFA</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. Há um link “Ver runbook →” que aponta para um arquivo que não existe no aplicativo (provavelmente um link quebrado). Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
+<p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Tipo de acesso</em>, <em>Exige duas etapas</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. O aviso do alto tem o link “Ver no manual como incluir ou tirar alguém →”, que abre este manual na seção certa. Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
 
 <h2 id="admin-usage--inbox">Conversas de todas as empresas (leitura)</h2>
 <p>Antes chamada “Inbox”. Permite <em>ler</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador. Enquanto nenhuma conversa está aberta, a área da direita mostra o cabeçalho da tela: “Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.” e “Quando usar: Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-inbox.png" alt="Conversas de todas as empresas com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Conversas de todas as empresas (só conversas da empresa de demonstração; print anterior à reorganização, sem o cabeçalho).</figcaption>
+  <figcaption>A tela Conversas de todas as empresas (o print mostra só as conversas da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Buscar mensagem…</strong> Busca só na <em>prévia da última mensagem</em>, não em todo o histórico.</li>
@@ -9199,10 +9183,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <h2 id="admin-marca--visao-geral">Para que serve</h2>
 <p>Troca o <strong>nome</strong>, a <strong>cor</strong> e o <strong>logo</strong> do sistema para <em>todos</em> que usam esta instalação. A marca <em>de cada empresa</em> é outra tela (<a href="#marca">Marca</a>, em Configurar › Empresa › A empresa) e tem prioridade sobre esta. No menu o item se chama <strong>Marca</strong>; o cabeçalho diz “Define o nome, a cor de destaque, o logo e o ícone da aba que o sistema mostra.” e “Quando usar: Ao instalar, ou quando você revende o sistema com a sua própria marca.”.</p>
 <p>No <a href="#admin-dashboard--checklist">checklist do Painel</a> e em <a href="#admin-sistema--comportamento">Recursos opcionais</a>, esta escolha aparece como <strong>Marca própria</strong>: “Pronto”/“Configurado” quando a instalação mostra uma marca diferente da do produto.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-marca.png" alt="Tela Marca da administração com nome do sistema, cor, logo, ícone e o bloco Como está agora, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Marca, sem nenhuma marca definida (print anterior à reorganização: o cabeçalho mudou).</figcaption>
+  <figcaption>A tela Marca, sem nenhuma marca definida.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome do sistema.</strong> Até 120 caracteres; vazio volta ao padrão. Aparece no título da aba, no topo das telas, nos e-mails (para empresas sem nome próprio), no aplicativo de verificação em duas etapas e no arquivo de códigos de recuperação. <em>Ainda não chega</em> às telas de entrada e cadastro nem às da configuração inicial: elas continuam com o nome do arquivo de instalação do servidor até a próxima atualização.</li>
@@ -9229,10 +9212,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-google--google">Google Agenda</h2>
 <p>Com estas duas informações, quem atende consegue conectar a agenda pessoal do Google e ver os compromissos do CRM lá. Valem para a <strong>instalação inteira</strong>; cada pessoa conecta a própria conta depois, em <a href="#agenda">Compromissos</a>. O cabeçalho diz “Guarda os dados do app do Google que liga a agenda de cada atendente aos compromissos do sistema.” e “Quando usar: Quando as empresas quiserem ver os compromissos do sistema na agenda do Google.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item é opcional.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-google.png" alt="Tela Google Agenda da instalação com o endereço de retorno, o ID do cliente e a chave secreta, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Google Agenda, ainda não configurada (print anterior à reorganização: o título antigo era “Google Agenda desta instalação”).</figcaption>
+  <figcaption>A tela Google Agenda, ainda não configurada (o endereço da instalação foi trocado por um de exemplo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereço de retorno.</strong> Somente leitura, montado a partir do endereço público da instalação. “Cole exatamente isto em ‘URIs de redirecionamento autorizados’, na tela de credenciais do Google Cloud.”</li>
@@ -9249,15 +9231,13 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-google--meta">API Oficial (Meta)</h2>
 <p>É com estas informações que o sistema confere que cada mensagem recebida pelo número oficial veio mesmo da Meta. Valem para a instalação inteira; cada empresa conecta o próprio número depois, em <a href="#conexoes">Conexões</a>. O cabeçalho diz “Guarda a chave secreta e o código de conferência do app da Meta, que valem para todas as empresas.” e “Quando usar: Antes de alguma empresa conectar um número pela API oficial ou fazer disparo em massa.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item (“API Oficial da Meta”) é opcional.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-meta.png" alt="Tela API Oficial da Meta com a chave secreta, o token de verificação e o cartão Conectar com Facebook, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela API Oficial (Meta), ainda não configurada (print anterior à reorganização: o título antigo era “API Oficial da Meta desta instalação”).</figcaption>
+  <img src="img/admin-meta.png" alt="Tela API Oficial da Meta com a chave secreta, o token de verificação e o cartão Conectar com Facebook, numerada de 1 a 5" loading="lazy">
+  <figcaption>A tela API Oficial (Meta), ainda não configurada.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Chave secreta do aplicativo.</strong> Fica no painel da Meta, em Configurações do app › Básico (32 caracteres). Guardada cifrada. “Nunca configurado por aqui.” enquanto vazia. O botão <span class="ui">Salvar</span> só habilita com pelo menos 16 caracteres digitados; com uma chave já salva, o campo mostra “(já cadastrada)” e a dica “Deixe em branco para mantê-la, ou digite uma nova para substituir.”.</li>
-  <li><strong>Token de verificação.</strong> Ainda não existe: “Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.”</li>
-  <li><strong>Gerar token / Gerar novo token.</strong> O botão só aparece depois que a chave secreta foi salva.</li>
+  <li><strong>Token de verificação.</strong> Ainda não existe: “Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.” Depois que a chave secreta é salva, aparece aqui o botão <span class="ui">Gerar token</span> (e, com um token já gerado, <span class="ui">Gerar novo token</span>).</li>
   <li><strong>Conectar com Facebook (Embedded Signup).</strong> “Desligado. Ligue só depois que o seu app for aprovado como Tech Provider pela Meta — antes disso o login da Meta não conclui.”</li>
   <li><strong>ID do app.</strong> Só números (Configurações do app › Básico).</li>
   <li><strong>ID da configuração de login.</strong> Em Facebook Login for Business › Configurações, na configuração do WhatsApp Embedded Signup.</li>
@@ -9280,10 +9260,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-cadastro--cadastro">Quem pode criar conta</h2>
 <p>Antes o item do menu se chamava “Cadastro”. Decide quem consegue criar uma conta nesta instalação. Vale para a instalação inteira; quem já tem conta continua entrando normalmente. O cabeçalho diz “Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.” e “Quando usar: Ao abrir a instalação para clientes novos, ou para fechá-la de novo.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-cadastro.png" alt="Tela Quem pode criar conta com o aviso de troca de modo e os interruptores Cadastro apenas por convite e Cadastro com aprovação, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Quem pode criar conta, no modo aberto (o padrão; print anterior à reorganização, com o título antigo “Cadastro”).</figcaption>
+  <figcaption>A tela Quem pode criar conta, no modo aberto (o padrão).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Quem pode criar conta.</strong> O cartão dos modos (tem o mesmo nome da tela).</li>
@@ -9302,10 +9281,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <h2 id="admin-cadastro--email">E-mail</h2>
 <p>Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo: o e-mail passa a sair pelo <strong>seu próprio servidor</strong> (SMTP, o protocolo de envio de e-mail). O cabeçalho diz “Configura o servidor de e-mail próprio ou o serviço externo que manda os e-mails de todas as empresas.” e “Quando usar: Logo depois de instalar: sem e-mail não sai convite de equipe nem recuperação de senha.”.</p>
 <aside class="nota atencao"><strong>É o único item obrigatório.</strong><p>No <a href="#admin-dashboard--checklist">checklist do Painel</a>, o E-mail é marcado como <em>Obrigatório</em>, e o cartão “Sua instalação está pronta?” fica aberto até ele ser configurado.</p></aside>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-email.png" alt="Tela E-mail com os campos do servidor SMTP, os botões Testar conexão e Salvar e o cartão Serviço externo de envio, numerada de 1 a 8" loading="lazy">
-  <figcaption>A tela E-mail, sem nenhum caminho configurado (print anterior à reorganização: o título antigo era “Servidor de e-mail desta instalação”).</figcaption>
+  <figcaption>A tela E-mail, sem nenhum caminho configurado.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Estado do envio.</strong> O estado aparece na faixa: “Em uso: o e-mail está saindo por este servidor.”, “O e-mail desta instalação já sai por um serviço externo…” ou, como na captura, “Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.”</li>
@@ -9335,10 +9313,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-sistema--visao-geral">Para que serve</h2>
 <p>É a versão do dono para a tela <a href="#recursos-opcionais">Recursos opcionais</a> da empresa: <strong>tudo o que se liga e desliga nesta instalação, num lugar só</strong>. O cabeçalho diz “Junta tudo o que se liga e desliga nesta instalação: os módulos, o comportamento e o que depende do servidor.” e “Quando usar: Para instalar um módulo, ou quando um recurso não aparece para as empresas.”. Vale para todas as empresas hospedadas aqui. Os interruptores <strong>salvam na hora</strong> (um clique; se falhar, o interruptor volta e diz “Não deu para salvar. Tente de novo em instantes.”) e se desfazem com outro clique — a exceção é instalar um módulo com tabela própria, que não se desfaz (veja abaixo).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-sistema.png" alt="Tela Recursos opcionais da administração com os blocos Módulos, Comportamento e Depende do servidor, numerada de 1 a 5" loading="lazy">
-  <figcaption>A tela Recursos opcionais (print anterior à reorganização: o cabeçalho mudou, o Honorários ainda aparece como linha com “Ajustar” e as linhas de Comportamento ainda dizem “Veja na tela dele”).</figcaption>
+  <figcaption>A tela Recursos opcionais inteira: Módulos (com o Honorários ainda não instalado), Comportamento e Depende do servidor.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Módulos.</strong> O primeiro bloco.</li>
@@ -9411,10 +9388,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-destinos--destinos">Destinos internos</h2>
 <p>Por padrão, o servidor <em>recusa</em> falar com endereços da própria rede interna (como <code>10.0.0.5</code> ou <code>192.168.1.20</code>) por segurança. Aqui você libera um endereço específico — por exemplo, um modelo de IA rodando na própria VPS. O cabeçalho diz “Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.” e “Quando usar: Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-destinos-internos.png" alt="Tela Destinos internos com o cartão Endereços liberados e o campo Um endereço por linha, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Destinos internos, com a lista vazia (print anterior à reorganização: o cabeçalho mudou).</figcaption>
+  <figcaption>A tela Destinos internos, com a lista vazia (o que aparece no campo é só o exemplo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereços liberados.</strong> O endereço continua precisando ser <code>https</code> em produção e só vale para o que a <em>instalação</em> configura. O endereço que uma <em>empresa</em> escolhe no painel dela segue sem poder apontar para dentro.</li>
@@ -9425,10 +9401,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-destinos--precos">Preços da Meta</h2>
 <p>Quanto a Meta cobra por mensagem, por país de quem recebe e por categoria. É a base da <strong>estimativa antes do disparo</strong>, do custo de cada mensagem e do <strong>teto de gasto</strong> das campanhas oficiais. O cabeçalho diz “Mantém a tabela de preço por país e categoria de mensagem, base da estimativa e do teto de gasto das campanhas.” e “Quando usar: Quando a Meta muda os preços ou o dólar varia muito.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-precos-meta.png" alt="Tela Preços da Meta com a tabela de preços por país e o cartão Cotação do dólar, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Preços da Meta (print anterior à reorganização: o cabeçalho mudou).</figcaption>
+  <figcaption>A tela Preços da Meta.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Tabela de preços.</strong> Preço de uma mensagem, em reais, para quem recebe naquele país.</li>
@@ -9447,10 +9422,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-destinos--credenciais">Credenciais</h2>
 <p>Mostra o estado das configurações-chave do servidor e deixa trocar, sem SSH (o acesso ao servidor pelo terminal), as <em>poucas</em> que podem ser trocadas pela tela. O título da tela é o mesmo do menu, <strong>Credenciais</strong> (antes ela se chamava “Configuração da instalação”). O cabeçalho diz “Guarda as chaves e os dados de contato da instalação, o que antes só se trocava pelo terminal.” e “Quando usar: Quando uma chave vence, muda de dono ou precisa ser trocada por segurança.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-configuracao.png" alt="Tela Credenciais com os grupos E-mail, Segurança e privacidade, WhatsApp, Banco de dados e outros, numerada de 1 a 7" loading="lazy">
-  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram trocados por “abcd”; print anterior à reorganização, com o título antigo).</figcaption>
+  <figcaption>A tela Credenciais (os últimos caracteres dos segredos foram escondidos no print).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>E-mail.</strong> “Sem isto o sistema não envia convite para a equipe nem recuperação de senha.” O serviço de envio fica na tela <a href="#admin-cadastro--email">E-mail</a>.</li>
@@ -9477,10 +9451,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <div class="conteudo-pagina">
 <h2 id="admin-extensoes--extensoes">Extensões da instalação</h2>
 <p>Mostra o que este servidor <em>conhece</em>, de onde veio e <em>quem está usando</em>. O cabeçalho diz “Mostra as extensões que este servidor conhece, de onde vieram e quem está usando.” e “Quando usar: Para saber o que está instalado. Ativar e configurar continua dentro de cada empresa.”. É só leitura (veja <a href="#extensoes">Extensões</a>, onde o dono do servidor admite catálogos e instala pacotes).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-extensoes.png" alt="Tela Extensões da instalação com os cartões De onde vêm as extensões e Instaladas neste servidor, vazios, numerada de 1 a 2" loading="lazy">
-  <figcaption>A tela Extensões, sem nada admitido ainda (print anterior à reorganização: o cabeçalho mudou).</figcaption>
+  <figcaption>A tela Extensões, sem nada admitido ainda.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>De onde vêm as extensões.</strong> O catálogo admitido neste servidor (a origem que o instalador aceita), com “Revisão N · admitido em &lt;data&gt; · impressão digital &lt;12 caracteres&gt;”. Vazio: “Nenhum catálogo admitido ainda — enquanto não houver, não há extensão para instalar.”</li>
@@ -9490,19 +9463,19 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-extensoes--modulos">Módulos com tabela própria: agora em Recursos opcionais</h2>
 <p>Até a reorganização da área, o menu tinha um item <strong>Módulos</strong>, com uma tela só para instalar módulos oficiais que criam <strong>tabelas próprias no banco</strong> (hoje, só o <a href="#honorarios">Honorários (advocacia)</a>). Esse item <strong>não existe mais</strong>: instalar um módulo passou a ser feito no bloco <strong>Módulos</strong> da tela <a href="#admin-sistema--instalar">Recursos opcionais</a>, ao lado dos módulos que se ligam por interruptor. O endereço antigo <code>/admin/modulos</code> continua funcionando e leva direto a esse bloco.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
-  <img src="img/admin-modulos.png" alt="Antiga tela Módulos da instalação com o cartão Honorários (advocacia) e o botão Instalar, numerada de 1 a 2" loading="lazy">
-  <figcaption>A antiga tela Módulos da instalação. O mesmo cartão agora aparece no bloco Módulos de Recursos opcionais, com um aviso antes do botão.</figcaption>
+  <img src="img/admin-modulos.png" alt="Cartão Honorários (advocacia) no bloco Módulos de Recursos opcionais, com o botão Instalar e o aviso, numerado de 1 a 3" loading="lazy">
+  <figcaption>O cartão do Honorários no bloco Módulos de Recursos opcionais, ainda não instalado.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Honorários (advocacia).</strong> “Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.” Mostra o selo <em>Instalado</em> (verde) ou <em>Suspenso</em> (vermelho, com o motivo); depois de instalado, também “Instalado em &lt;data&gt;”.</li>
-  <li><strong>Instalar.</strong> “Instalando…”. Só aparece se o módulo ainda não foi instalado. Antes dele, o cartão avisa: “Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.”</li>
+  <li><strong>Instalar.</strong> “Instalando…”. Só aparece se o módulo ainda não foi instalado.</li>
+  <li><strong>O aviso.</strong> “Instalar cria as tabelas deste módulo no banco e vale para todas as empresas desta instalação. Cada empresa decide depois se usa. Ele não se desinstala: o que for registrado nele continua guardado.”</li>
 </ol>
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Instalar vale para todas as empresas, cria as tabelas no banco e não se desfaz pela tela. O passo a passo e os cuidados estão em <a href="#admin-sistema--instalar">Recursos opcionais › Módulos com tabela própria</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>da27c276</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>7f183898</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

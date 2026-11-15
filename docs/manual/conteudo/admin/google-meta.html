@@ -2,10 +2,9 @@
 
 <h2 id="google">Google Agenda</h2>
 <p>Com estas duas informações, quem atende consegue conectar a agenda pessoal do Google e ver os compromissos do CRM lá. Valem para a <strong>instalação inteira</strong>; cada pessoa conecta a própria conta depois, em <a href="#agenda">Compromissos</a>. O cabeçalho diz “Guarda os dados do app do Google que liga a agenda de cada atendente aos compromissos do sistema.” e “Quando usar: Quando as empresas quiserem ver os compromissos do sistema na agenda do Google.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item é opcional.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-google.png" alt="Tela Google Agenda da instalação com o endereço de retorno, o ID do cliente e a chave secreta, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Google Agenda, ainda não configurada (print anterior à reorganização: o título antigo era “Google Agenda desta instalação”).</figcaption>
+  <figcaption>A tela Google Agenda, ainda não configurada (o endereço da instalação foi trocado por um de exemplo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Endereço de retorno.</strong> Somente leitura, montado a partir do endereço público da instalação. “Cole exatamente isto em ‘URIs de redirecionamento autorizados’, na tela de credenciais do Google Cloud.”</li>
@@ -22,15 +21,13 @@
 
 <h2 id="meta">API Oficial (Meta)</h2>
 <p>É com estas informações que o sistema confere que cada mensagem recebida pelo número oficial veio mesmo da Meta. Valem para a instalação inteira; cada empresa conecta o próprio número depois, em <a href="#conexoes">Conexões</a>. O cabeçalho diz “Guarda a chave secreta e o código de conferência do app da Meta, que valem para todas as empresas.” e “Quando usar: Antes de alguma empresa conectar um número pela API oficial ou fazer disparo em massa.”. No <a href="#admin-dashboard--checklist">checklist do Painel</a> este item (“API Oficial da Meta”) é opcional.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-meta.png" alt="Tela API Oficial da Meta com a chave secreta, o token de verificação e o cartão Conectar com Facebook, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela API Oficial (Meta), ainda não configurada (print anterior à reorganização: o título antigo era “API Oficial da Meta desta instalação”).</figcaption>
+  <img src="img/admin-meta.png" alt="Tela API Oficial da Meta com a chave secreta, o token de verificação e o cartão Conectar com Facebook, numerada de 1 a 5" loading="lazy">
+  <figcaption>A tela API Oficial (Meta), ainda não configurada.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Chave secreta do aplicativo.</strong> Fica no painel da Meta, em Configurações do app › Básico (32 caracteres). Guardada cifrada. “Nunca configurado por aqui.” enquanto vazia. O botão <span class="ui">Salvar</span> só habilita com pelo menos 16 caracteres digitados; com uma chave já salva, o campo mostra “(já cadastrada)” e a dica “Deixe em branco para mantê-la, ou digite uma nova para substituir.”.</li>
-  <li><strong>Token de verificação.</strong> Ainda não existe: “Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.”</li>
-  <li><strong>Gerar token / Gerar novo token.</strong> O botão só aparece depois que a chave secreta foi salva.</li>
+  <li><strong>Token de verificação.</strong> Ainda não existe: “Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.” Depois que a chave secreta é salva, aparece aqui o botão <span class="ui">Gerar token</span> (e, com um token já gerado, <span class="ui">Gerar novo token</span>).</li>
   <li><strong>Conectar com Facebook (Embedded Signup).</strong> “Desligado. Ligue só depois que o seu app for aprovado como Tech Provider pela Meta — antes disso o login da Meta não conclui.”</li>
   <li><strong>ID do app.</strong> Só números (Configurações do app › Básico).</li>
   <li><strong>ID da configuração de login.</strong> Em Facebook Login for Business › Configurações, na configuração do WhatsApp Embedded Signup.</li>

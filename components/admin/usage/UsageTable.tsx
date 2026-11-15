@@ -110,9 +110,9 @@ export function UsageTable({ tenants, range }: UsageTableProps) {
               <TableHead>{t("Agente")}</TableHead>
               <TableHead className="text-right">{t("Mensagens")}</TableHead>
               <TableHead className="text-right">{t("Conversas")}</TableHead>
-              <TableHead className="text-right">{t("Invoc. AI")}</TableHead>
+              <TableHead className="text-right">{t("Chamadas à IA")}</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
-              <TableHead className="text-right">{t("Custo AI")}</TableHead>
+              <TableHead className="text-right">{t("Custo da IA (US$)")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

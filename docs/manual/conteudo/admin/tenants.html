@@ -2,10 +2,9 @@
 
 <h2 id="lista">A lista de empresas</h2>
 <p>A lista mostra todas as <strong>empresas clientes</strong> (organizações) hospedadas nesta instalação, das mais recentes para as mais antigas. (Antes esta tela se chamava “Tenants”, o jargão técnico para empresa cliente; o endereço continua <code>/admin/tenants</code>.) O cabeçalho diz “Lista todas as empresas hospedadas neste servidor, com a situação de cada uma.” e “Quando usar: Para cadastrar uma empresa nova, ver como uma delas está ou suspender o acesso dela.”, seguido da contagem (“12 empresas”).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenants.png" alt="Lista de empresas com o botão de criar, filtros e colunas Slug, Nome, CNPJ, Status, Usuários, Conversas, numerada de 1 a 8" loading="lazy">
-  <figcaption>A lista de empresas (nomes trocados por exemplos; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>A lista de empresas.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nova empresa.</strong> Abre o cadastro de uma empresa.</li>
@@ -44,22 +43,20 @@
 
 <h2 id="ficha">A ficha da empresa</h2>
 <p>Clicar em <span class="ui">Ver</span> abre a ficha (no alto, o link <span class="ui">Empresas</span> volta à lista), com o nome, o slug, o selo de status (aqui sempre o status “cru”: nunca mostra “Onboarding”) e cinco abas: <strong>Visão Geral</strong>, <strong>Saúde</strong> e <strong>Agente</strong>, mais duas desativadas, <em>Equipe</em> e <em>Uso</em> (marcadas “em breve”).</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-geral.png" alt="Ficha de uma empresa com informações, volumes, integrações, compliance e os botões de ação, numerada de 1 a 7" loading="lazy">
   <figcaption>A aba Visão Geral da ficha.</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>Empresas.</strong> Link de volta à lista (no print ainda aparece “Tenants”).</li>
-  <li><strong>Abas.</strong> Visão Geral, Saúde (marcada) e Agente.</li>
+  <li><strong>Empresas.</strong> Link de volta à lista, acima do nome da empresa, com o grupo “Empresas e pessoas” e a ajuda da tela Empresas.</li>
+  <li><strong>Abas.</strong> Visão Geral (a aberta no print), Saúde e Agente.</li>
   <li><strong>Informações.</strong> Plano, razão social, CNPJ (completo), “Onboarding concluído” (data e hora), “Criado em” e, se houver, “Suspenso em”.</li>
   <li><strong>Volumes.</strong> Totais da empresa: Usuários, Conversas, Mensagens, Leads e Pedidos. Em “Integrações”: quantas sessões de WhatsApp existem (de qualquer status).</li>
   <li><strong>Compliance &amp; IA.</strong> “Solicitações LGPD pendentes” (destaque se &gt; 0) e “Invocações IA (30d)”.</li>
   <li><strong>Acompanhar organização.</strong> Veja abaixo. Ele fica no cartão “Ações”, ao lado das informações.</li>
-  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa (no print ainda aparece “Suspender tenant”). Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
+  <li><strong>Suspender empresa.</strong> Vermelho; só se a empresa está ativa. Se está suspensa aparece <span class="ui">Reativar empresa</span>; se os dados foram anonimizados por LGPD, só “Empresa anonimizada — as ações de gestão não estão disponíveis.”.</li>
 </ol>
 <h3 id="saude">Aba Saúde</h3>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões Números conectados, Orçamento IA e Atraso do registro de ações, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
@@ -70,10 +67,9 @@
   <li><strong>Orçamento IA.</strong> “N% usado”, consumido, orçamento (ou “Ilimitado”) e o limite (“Não aplicado”, “Só avisa” ou “Para a IA no limite”). Aqui o gasto é o <em>do mês</em>. A partir de 80% é Atenção; 100% só é Crítico quando a empresa escolheu parar a IA.</li>
   <li><strong>Atraso do registro de ações.</strong> Tempo desde a última ação registrada da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
 </ol>
-<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
+<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Tempo sem registro”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
 <p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Atraso do registro de ações” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="agente">Aba Agente</h3>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-tenant-agente.png" alt="Aba Agente com a lista dos agentes de IA da empresa, a versão publicada e a data" loading="lazy">
   <figcaption>A aba Agente: dois agentes da empresa de demonstração.</figcaption>
@@ -82,10 +78,9 @@
 
 <h2 id="suspender">Suspender e reativar</h2>
 <p>Com a empresa suspensa, a aba Visão Geral ganha no topo uma faixa amarela: “Empresa suspensa” seguido de há quanto tempo (“hoje”, “ontem”, “há 3 dias”, “há 2 semanas”…) e do <strong>motivo informado na suspensão</strong>. Se nenhum motivo foi gravado (por exemplo, numa suspensão antiga), a faixa diz “Sem razão registrada.”. O motivo também fica na auditoria.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-suspender.png" alt="Janela Suspender empresa com o campo do motivo e o botão Confirmar suspensão" loading="lazy">
-  <figcaption>A janela “Suspender empresa” (cancelada nesta captura; o print ainda traz o título antigo, “Suspender tenant”).</figcaption>
+  <figcaption>A janela “Suspender empresa” (cancelada nesta captura).</figcaption>
 </figure>
 <ul>
   <li><strong>Suspender empresa:</strong> “A empresa perde o acesso, e a IA, os envios e as automações dela param. Mensagens na fila e tarefas agendadas são descartadas e não saem ao reativar; os follow-ups em andamento retomam de onde pararam. As mensagens que chegarem continuam gravadas.” Exige o <strong>Motivo da suspensão</strong> (10 a 500 caracteres). Quem está dentro da empresa cai na tela <a href="#entrada-avisos">“Conta suspensa”</a>. Registra <code>tenant.suspended</code> com o motivo. Ao terminar, o aviso “Empresa suspensa com sucesso”.</li>
@@ -94,7 +89,6 @@
 </ul>
 
 <h2 id="acompanhar">Acompanhar organização (suporte temporário)</h2>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-acompanhar.png" alt="Janela Iniciar acompanhamento com a caixa Somente leitura e o botão Confirmar e entrar" loading="lazy">
   <figcaption>A janela “Iniciar acompanhamento?”.</figcaption>

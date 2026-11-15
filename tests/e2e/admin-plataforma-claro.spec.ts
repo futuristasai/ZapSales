@@ -21,10 +21,14 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
+import { createClient } from "@supabase/supabase-js";
+
 import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN } from "@/lib/admin/catalogo";
+import { traduzir } from "@/lib/i18n/dicionario";
 
 import { expect, test } from "./helpers/test";
 
+import { credenciaisSupabaseDeTeste } from "../../scripts/lib/env-de-teste";
 import { lerCreds, loginComoDono } from "./helpers/login-admin";
 import { afirmarDonoDoServidor } from "./utils/precondicao";
 
@@ -204,4 +208,100 @@ test("no celular, a gaveta mostra os mesmos grupos e a ajuda está no topo da te
   }));
   expect(larguras.pagina).toBeLessThanOrEqual(larguras.tela);
   await page.screenshot({ path: evidencia("celular-gaveta.png") });
+});
+
+/**
+ * Pt e MAIS UM idioma (issue #309): o menu, o cabeçalho, a aba e a gaveta do celular
+ * saem do catálogo traduzido. O idioma é o do próprio dono (`user_metadata.locale`,
+ * primeiro elo de `lib/auth/server.ts`), trocado pela service role e devolvido no fim —
+ * o Playwright roda com um worker só, então nenhuma outra spec vê o dono em inglês.
+ */
+test("em inglês, o menu, o cabeçalho, a aba e a gaveta saem do catálogo traduzido", async ({
+  page,
+}) => {
+  const c = credenciaisSupabaseDeTeste();
+  const db = createClient(c.url, c.serviceRole, { auth: { persistSession: false } });
+  const email = lerCreds().users.dono!.email;
+  let dono: { id: string; user_metadata: Record<string, unknown> } | undefined;
+  for (let pagina = 1; pagina <= 5 && !dono; pagina++) {
+    const { data, error } = await db.auth.admin.listUsers({ page: pagina, perPage: 200 });
+    if (error) throw error;
+    dono = data.users.find((u) => u.email === email);
+    if (data.users.length < 200) break;
+  }
+  if (!dono) throw new Error(`o dono ${email} não existe neste banco`);
+  const localeAntes = dono.user_metadata?.locale ?? null;
+
+  const en = (texto: string) => traduzir(texto, "en");
+  // Controle: se o catálogo não tivesse inglês, a spec passaria medindo português.
+  for (const grupo of GRUPOS_DO_ADMIN) expect(en(grupo.label)).not.toBe(grupo.label);
+
+  const trocar = await db.auth.admin.updateUserById(dono.id, {
+    user_metadata: { ...dono.user_metadata, locale: "en" },
+  });
+  if (trocar.error) throw trocar.error;
+  try {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await loginComoDono(page, lerCreds());
+    const item = CATALOGO_DO_ADMIN.find((i) => i.href === "/admin/audit")!;
+    const menu = page.getByRole("navigation", { name: en("Navegação da administração") });
+    // O usuário repassado pelo proxy vale até 30 s (`lib/auth/sessao-repassada.ts`):
+    // recarrega até o idioma novo chegar, como em central-avisos-destino.spec.ts.
+    await expect(async () => {
+      await page.goto(item.href);
+      await expect(menu.getByRole("heading", { name: en(GRUPOS_DO_ADMIN[0]!.label) })).toBeVisible({
+        timeout: 3_000,
+      });
+    }).toPass({ timeout: 60_000 });
+
+    for (const grupo of GRUPOS_DO_ADMIN) {
+      await expect(menu.getByRole("heading", { name: en(grupo.label), exact: true })).toBeVisible();
+      await expect(menu.getByRole("heading", { name: grupo.label, exact: true })).toHaveCount(0);
+    }
+    for (const i of CATALOGO_DO_ADMIN) {
+      await expect(menu.getByRole("link", { name: en(i.label), exact: true })).toBeVisible();
+    }
+    const cabecalho = page.getByTestId("cabecalho-da-plataforma").first();
+    await expect(cabecalho.getByRole("heading", { level: 1 })).toHaveText(en(item.label));
+    await expect(cabecalho).toContainText(en(item.paraQueServe));
+    await expect(cabecalho).toContainText(en(item.quandoUsar));
+    expect(await page.title()).toContain(en(item.label));
+    await page.screenshot({ path: evidencia("ingles-registro-de-acoes.png") });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: en("Abrir menu de navegação") }).click();
+    const gaveta = page.getByRole("dialog");
+    for (const grupo of GRUPOS_DO_ADMIN) {
+      await expect(gaveta.getByRole("heading", { name: en(grupo.label), exact: true })).toBeVisible();
+    }
+    await page.screenshot({ path: evidencia("ingles-celular-gaveta.png") });
+  } finally {
+    const { error } = await db.auth.admin.updateUserById(dono.id, {
+      user_metadata: { ...dono.user_metadata, locale: localeAntes },
+    });
+    if (error) throw error;
+  }
+});
+
+/**
+ * A coluna de conversas não estica a página (issue #309): medido na produção, com 30
+ * conversas a coluna passava de 1.900 px e o aviso "Selecione uma conversa" caía
+ * abaixo da dobra. A medida não depende de quantas conversas o banco tem: a lista
+ * cabe na janela e o aviso está à vista.
+ */
+test("Conversas de todas as empresas cabe na janela e mostra o aviso sem rolar", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await loginComoDono(page, lerCreds());
+  await page.goto("/admin/inbox");
+  const aviso = page.getByText("Selecione uma conversa para visualizar", { exact: true });
+  await expect(aviso).toBeInViewport();
+  const medida = await page.evaluate(() => ({
+    coluna: document.querySelector("main aside")!.getBoundingClientRect().bottom,
+    janela: window.innerHeight,
+    pagina: document.documentElement.scrollHeight,
+  }));
+  expect(medida.coluna).toBeLessThanOrEqual(medida.janela + 1);
+  expect(medida.pagina).toBeLessThanOrEqual(medida.janela + 1);
 });
