@@ -8581,9 +8581,6 @@ export const DICIONARIO: Traducoes = {
   },
   "Cadastro": { es: "Registro" },
   "Quem pode criar conta": { es: "Quién puede crear una cuenta" },
-  "Quem pode criar uma conta nesta instalação.": {
-    es: "Quién puede crear una cuenta en esta instalación.",
-  },
   "Vale para a instalação inteira, não para uma empresa só. Quem já tem conta continua entrando normalmente.": {
     es: "Se aplica a toda la instalación, no solo a una empresa. Quien ya tiene cuenta sigue entrando con normalidad.",
   },
@@ -11788,8 +11785,6 @@ export const DICIONARIO: Traducoes = {
   "Marcado como realizado.": { es: "Cita marcada como realizada." },
   "Marcado como falta — o horário volta a ficar livre.": { es: "Cita marcada como inasistencia. El horario vuelve a estar disponible." },
   "Mídia": { es: "Multimedia" },
-  "Tenant suspenso com sucesso": { es: "Tenant suspendido correctamente" },
-  "Tenant reativado com sucesso": { es: "Tenant reactivado correctamente" },
   "Nada mudou": { es: "Nada cambió" },
   "Seu acesso à administração da plataforma é somente leitura.": {
     es: "Su acceso a la administración de la plataforma es de solo lectura.",

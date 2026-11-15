@@ -106,12 +106,12 @@ test.describe("Painel de configuração da instalação", () => {
     test("a tela diz o que falta em vez de fingir que está pronto", async ({ page }) => {
       await page.goto("/admin/configuracao");
 
-      await expect(
-        page.getByRole("heading", { name: /configuração da instalação/i }),
-      ).toBeVisible();
+      // Issue #308: a tela se chama "Credenciais" no menu e no cabeçalho padrão.
+      await expect(page.getByRole("heading", { level: 1, name: "Credenciais" })).toBeVisible();
 
-      // O grupo de e-mail vem PRIMEIRO: é o que falta em toda instalação nova.
-      const primeiroGrupo = page.getByRole("heading", { level: 2 }).first();
+      // O grupo de e-mail vem PRIMEIRO: é o que falta em toda instalação nova. Dentro do
+      // `main`: o menu da administração tem os seus próprios títulos de grupo (h2).
+      const primeiroGrupo = page.getByRole("main").getByRole("heading", { level: 2 }).first();
       await expect(primeiroGrupo).toHaveText(/e-mail/i);
 
       // ⚠️ A CHAVE DO SERVIÇO EXTERNO NÃO MORA MAIS AQUI (DEC-009, opção A):

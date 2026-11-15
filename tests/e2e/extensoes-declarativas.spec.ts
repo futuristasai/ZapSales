@@ -1041,7 +1041,7 @@ test("pacote pós-build atravessa catálogo, tenants, guia e Tarefas com recuper
       .click();
     await auditPage.keyboard.press("Escape");
 
-    await auditPage.getByRole("button", { name: "Actions", exact: true }).click();
+    await auditPage.getByRole("button", { name: "Ações", exact: true }).click();
     await auditPage.getByPlaceholder("Buscar...").fill("extension.configured");
     await auditPage.getByRole("button", { name: "extension.configured", exact: true }).click();
     await auditPage.keyboard.press("Escape");

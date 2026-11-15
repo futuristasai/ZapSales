@@ -11,7 +11,7 @@ import {
   type ItemDoAdmin,
 } from "@/lib/admin/catalogo";
 import { SimboloDoProduto } from "@/components/branding/MarcaDoProduto";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { marcaEhADoProduto } from "@/lib/branding";
 import { useMarcaDaInstalacao } from "@/lib/branding/contexto";
 import { useT } from "@/hooks/i18n/useT";
@@ -64,73 +64,78 @@ export function AdminSidebar({ userEmail, variant = "desktop" }: AdminSidebarPro
   // Uma tela atual só, inclusive nas subpáginas (`/admin/tenants/<id>/health` → Empresas).
   const atual = itemAtualDoAdmin(pathname);
 
+  // Provider próprio: a barra não pode depender de quem a desenha para as dicas não
+  // quebrarem (a casca já tem um, mas o teste de hidratação e a gaveta a desenham sozinha).
+  // Provider aninhado é inofensivo no Radix.
   return (
-    <aside
-      className={cn(
-        "flex flex-col border-r bg-card",
-        isMobile
-          ? "h-full w-full"
-          : "sticky top-10 hidden h-[calc(100dvh-2.5rem)] w-64 shrink-0 lg:flex",
-      )}
-    >
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-        {/* O nome já está escrito ao lado — o símbolo é reforço, não legenda. */}
-        {marcaEhADoProduto(marca) && (
-          <SimboloDoProduto nome={marca.name} decorativo className="h-8 w-8" />
+    <TooltipProvider delayDuration={300}>
+      <aside
+        className={cn(
+          "flex flex-col border-r bg-card",
+          isMobile
+            ? "h-full w-full"
+            : "sticky top-10 hidden h-[calc(100dvh-2.5rem)] w-64 shrink-0 lg:flex",
         )}
-        <div className="flex flex-col">
-          <span className="text-xs tracking-wider text-muted-foreground uppercase">
-            {marca.name}
-          </span>
-          <span className="text-sm font-semibold tracking-tight">
-            {t("Administração da instalação")}
-          </span>
-        </div>
-      </div>
-      <nav
-        className="flex-1 overflow-y-auto px-2 pb-2"
-        aria-label={t("Navegação da administração")}
       >
-        {GRUPOS_DO_ADMIN.map((grupo) => {
-          const itens = CATALOGO_DO_ADMIN.filter((i) => i.grupo === grupo.id);
-          const idDoTitulo = `grupo-admin-${variant}-${grupo.id}`;
-          return (
-            <section key={grupo.id} aria-labelledby={idDoTitulo} data-grupo={grupo.id}>
-              <h2
-                id={idDoTitulo}
-                className="sticky top-0 z-10 bg-card px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
-              >
-                {t(grupo.label)}
-              </h2>
-              <ul className="space-y-px">
-                {itens.map((item) => (
-                  <li key={item.href}>
-                    <ItemDoMenu
-                      item={item}
-                      tom={grupo.tom}
-                      ativo={atual?.href === item.href}
-                      comDica={!isMobile}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })}
-      </nav>
-      <div className="shrink-0 space-y-1 border-t p-3">
-        <Link
-          href="/app"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
+          {/* O nome já está escrito ao lado — o símbolo é reforço, não legenda. */}
+          {marcaEhADoProduto(marca) && (
+            <SimboloDoProduto nome={marca.name} decorativo className="h-8 w-8" />
+          )}
+          <div className="flex flex-col">
+            <span className="text-xs tracking-wider text-muted-foreground uppercase">
+              {marca.name}
+            </span>
+            <span className="text-sm font-semibold tracking-tight">
+              {t("Administração da instalação")}
+            </span>
+          </div>
+        </div>
+        <nav
+          className="flex-1 overflow-y-auto px-2 pb-2"
+          aria-label={t("Navegação da administração")}
         >
-          <ArrowRight size={14} aria-hidden />
-          <span>{t("Voltar para a sua empresa")}</span>
-        </Link>
-        <p className="truncate px-2 text-xs text-muted-foreground" title={userEmail}>
-          {userEmail}
-        </p>
-      </div>
-    </aside>
+          {GRUPOS_DO_ADMIN.map((grupo) => {
+            const itens = CATALOGO_DO_ADMIN.filter((i) => i.grupo === grupo.id);
+            const idDoTitulo = `grupo-admin-${variant}-${grupo.id}`;
+            return (
+              <section key={grupo.id} aria-labelledby={idDoTitulo} data-grupo={grupo.id}>
+                <h2
+                  id={idDoTitulo}
+                  className="sticky top-0 z-10 bg-card px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+                >
+                  {t(grupo.label)}
+                </h2>
+                <ul className="space-y-px">
+                  {itens.map((item) => (
+                    <li key={item.href}>
+                      <ItemDoMenu
+                        item={item}
+                        tom={grupo.tom}
+                        ativo={atual?.href === item.href}
+                        comDica={!isMobile}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </nav>
+        <div className="shrink-0 space-y-1 border-t p-3">
+          <Link
+            href="/app"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+          >
+            <ArrowRight size={14} aria-hidden />
+            <span>{t("Voltar para a sua empresa")}</span>
+          </Link>
+          <p className="truncate px-2 text-xs text-muted-foreground" title={userEmail}>
+            {userEmail}
+          </p>
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }
 

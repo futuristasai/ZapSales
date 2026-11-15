@@ -69,7 +69,9 @@ const TITULO = "A troca de modo ainda não chegou ao servidor.";
 const FRASE_DA_ISSUE =
   /A troca só vale para o cadastro direto depois da próxima atualização do servidor/;
 const COMANDO = "curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash";
-const CHAVE_DO_ROTULO = "Quem pode criar uma conta nesta instalação.";
+// O "para que serve" do cabeçalho padrão (`lib/admin/catalogo.ts`, issue #308).
+const CHAVE_DO_ROTULO =
+  "Decide se qualquer pessoa pode criar uma conta, só quem foi convidado ou quem você aprovar.";
 
 /** Abre a tela e mostra que ela ABRIU — sem isto, "sem aviso" seria verde com a página fora. */
 async function abrirTela() {

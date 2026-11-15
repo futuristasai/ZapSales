@@ -156,7 +156,7 @@ describe("audit: a lista do painel é derivada do vocabulário", () => {
 
   it("o popover oferece EXATAMENTE o vocabulário, e a busca recorta a família", () => {
     render(<AuditFiltersAdmin filters={{}} onChange={() => {}} tenants={[]} />);
-    fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ações" }));
 
     const painel = screen.getByRole("dialog");
     const opcoes = () =>
