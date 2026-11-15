@@ -21,8 +21,8 @@
 
 <h2 id="novo">Nova empresa</h2>
 <figure class="print">
-  <img src="img/admin-novo-tenant.png" alt="Formulário Nova organização com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
-  <figcaption>O formulário “Nova organização” (com um nome de exemplo digitado e nada enviado).</figcaption>
+  <img src="img/admin-novo-tenant.png" alt="Formulário Nova empresa com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
+  <figcaption>O formulário “Nova empresa” (com um nome de exemplo digitado e nada enviado).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome de exibição.</strong> Obrigatório, 2 a 120 caracteres (“Loja da Maria”). Ao digitar, o slug é gerado sozinho.</li>
@@ -61,17 +61,17 @@
 <h3 id="saude">Aba Saúde</h3>
 <!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões WAHA, Orçamento IA e Audit Lag, numerada de 1 a 4" loading="lazy">
+  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões Números conectados, Orçamento IA e Atraso do registro de ações, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Status de Saúde.</strong></li>
-  <li><strong>WAHA.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
+  <li><strong>Números conectados.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
   <li><strong>Orçamento IA.</strong> “N% usado”, consumido, orçamento (ou “Ilimitado”) e o limite (“Não aplicado”, “Só avisa” ou “Para a IA no limite”). Aqui o gasto é o <em>do mês</em>. A partir de 80% é Atenção; 100% só é Crítico quando a empresa escolheu parar a IA.</li>
-  <li><strong>Audit Lag.</strong> Tempo desde o último evento de auditoria da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
+  <li><strong>Atraso do registro de ações.</strong> Tempo desde a última ação registrada da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
 </ol>
-<p>O cartão <em>Audit Lag</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
-<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Audit Lag” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
+<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
+<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Atraso do registro de ações” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="agente">Aba Agente</h3>
 <!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">

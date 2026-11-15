@@ -14,7 +14,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { googleEstaConfigurado } from "@/lib/agenda/google/config";
-import { modoDeCadastro } from "@/lib/auth/politica-de-cadastro";
 import { marcaEhADoProduto } from "@/lib/branding";
 import { marcaDaInstalacao } from "@/lib/branding/instalacao";
 import { REGUA_DO_PRODUTO } from "@/lib/branding/regua-do-produto";
@@ -26,14 +25,12 @@ import { modulosLigados } from "@/lib/instalacao/modulos";
 import { logger } from "@/lib/logger";
 import { vapidPronto } from "@/lib/notifications/vapid";
 import { googleAdsEstaConfigurado } from "@/lib/plataformas-de-anuncio/google/config";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getWacallsClient } from "@/lib/wacalls/client";
 
 import type { FontesDeEstado } from "./catalogo";
 
-async function detectar(
-  id: string,
-  ler: () => boolean | Promise<boolean>,
-): Promise<[string, boolean | null]> {
+async function detectar(id: string, ler: () => boolean | Promise<boolean>): Promise<[string, boolean | null]> {
   try {
     return [id, await ler()];
   } catch (erro) {
@@ -72,17 +69,13 @@ export async function detectarServidor(): Promise<Record<string, boolean | null>
       );
       return !marcaEhADoProduto(marca);
     }),
-    // Há sempre um modo em vigor; ler o modo é a prova de que a decisão existe.
-    detectar("cadastro", async () => Boolean(await modoDeCadastro())),
+    detectar("cadastro", cadastroFoiDecidido),
   ]);
   return Object.fromEntries(pares);
 }
 
 /** Fontes da tela da empresa. `organizationId` vem da SESSÃO, nunca da requisição. */
-export async function fontesDaEmpresa(
-  db: SupabaseClient,
-  organizationId: string,
-): Promise<FontesDeEstado> {
+export async function fontesDaEmpresa(db: SupabaseClient, organizationId: string): Promise<FontesDeEstado> {
   const [modulos, settings] = await Promise.all([
     // ponytail: `modulosLigados` falha fechada (erro de banco = nenhum módulo) e não
     // distingue "desligado" de "não li". Para a tela que só informa, isso vira
@@ -97,13 +90,28 @@ export async function fontesDaEmpresa(
           .maybeSingle();
         if (error || !data) return null;
         const s = (data as { settings?: unknown }).settings;
-        return s && typeof s === "object" && !Array.isArray(s)
-          ? (s as Record<string, unknown>)
-          : {};
+        return s && typeof s === "object" && !Array.isArray(s) ? (s as Record<string, unknown>) : {};
       } catch {
         return null;
       }
     })(),
   ]);
   return { modulos, settings, servidor: {} };
+}
+
+/**
+ * Alguém já gravou "quem pode criar conta" nesta instalação? Há SEMPRE um modo em vigor
+ * (sem decisão vale o cadastro aberto), então "ler o modo" não responde. Responde o
+ * recibo que a tela grava ao salvar (`platform.signup_mode_updated`, em
+ * `app/actions/settings/updateSignupMode.ts`), pelo índice `idx_audit_action_time`.
+ * `platform_settings` não serve: a linha nasce também quando outra tela grava outra coluna.
+ */
+async function cadastroFoiDecidido(): Promise<boolean> {
+  const { data, error } = await createAdminClient()
+    .from("api_audit_log")
+    .select("id")
+    .eq("action", "platform.signup_mode_updated")
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return (data?.length ?? 0) > 0;
 }

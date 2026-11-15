@@ -28,6 +28,7 @@ import { ApiError } from "@/lib/api/types";
 import { useT } from "@/hooks/i18n/useT";
 import { useIdioma } from "@/lib/i18n/IdiomaProvider";
 import { copyToClipboard } from "@/lib/clipboard";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Schema (mirrors server Zod; client keeps it in sync)
@@ -195,8 +196,9 @@ export function NewTenantForm() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <ContextoDaSubpagina href="/admin/tenants" />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Nova organização")}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("Nova empresa")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("Você terá acesso como administrador e poderá concluir a configuração inicial.")}
         </p>

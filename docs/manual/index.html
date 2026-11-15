@@ -8762,7 +8762,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li><strong>Dica de cada item.</strong> No computador, ao passar o mouse sobre um item do menu (ou chegar nele com a tecla <kbd>Tab</kbd>), aparece uma frase curta dizendo para que ele serve — por exemplo, em Empresas: “As empresas que usam esta instalação: criar, suspender e reativar.”.</li>
   <li><strong>Celular e telas pequenas.</strong> O menu vira uma gaveta (botão de três tracinhos, “Abrir menu de navegação”). Ali não existe “passar o mouse”, então a gaveta não mostra dicas: a mesma ajuda aparece, sempre visível, no cabeçalho de cada tela (veja abaixo).</li>
   <li>Nas telas internas (a ficha de uma empresa, o detalhe de um pedido), o menu continua marcando o item de onde você veio.</li>
-  <li>O título da aba do navegador segue o padrão “&lt;nome da tela&gt; · Administração” (por exemplo, “Empresas · Administração”).</li>
+  <li>O título da aba do navegador segue o padrão “&lt;nome da tela&gt; · Administração” (por exemplo, “Empresas · Administração”), no idioma de quem abre. Nas subpáginas ele começa pelo que se está vendo: “Detalhe do incidente · Incidentes · Administração”.</li>
 </ul>
 
 <h3 id="admin-visao--cabecalho">O cabeçalho de cada tela</h3>
@@ -8791,6 +8791,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
     <tr><td>Destinos internos</td><td>Libera endereços da rede interna, como um modelo de IA rodando na própria máquina, que o sistema bloqueia por segurança.</td><td>Só se você roda outro serviço na mesma máquina ou na mesma rede e quer que o sistema o use.</td></tr>
   </tbody>
 </table>
+<p><strong>Nas subpáginas</strong> (o detalhe de uma empresa, de um incidente, de um pedido de LGPD, de um usuário, de uma ação do registro, e “Nova empresa”) o título é o do próprio registro — o nome da empresa, o tipo do incidente. Acima dele aparece uma linha com o ícone da tela-mãe, o caminho “grupo › tela” (clicar no nome da tela volta para a lista) e a frase de para que essa tela serve.</p>
 <aside class="nota dica"><strong>Os endereços antigos continuam valendo.</strong><p>Só os nomes mudaram: os endereços das telas são os mesmos de antes (<code>/admin/tenants</code>, <code>/admin/audit</code>, <code>/admin/usage</code>…), então favoritos antigos funcionam. O antigo <code>/admin/modulos</code> leva direto ao bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>.</p></aside>
 
 <h2 id="admin-visao--acesso">Quem pode abrir e quem pode alterar</h2>
@@ -8933,8 +8934,8 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="admin-tenants--novo">Nova empresa</h2>
 <figure class="print">
-  <img src="img/admin-novo-tenant.png" alt="Formulário Nova organização com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
-  <figcaption>O formulário “Nova organização” (com um nome de exemplo digitado e nada enviado).</figcaption>
+  <img src="img/admin-novo-tenant.png" alt="Formulário Nova empresa com nome, slug, razão social, CNPJ, plano, e-mail do responsável e interface, numerado de 1 a 8" loading="lazy">
+  <figcaption>O formulário “Nova empresa” (com um nome de exemplo digitado e nada enviado).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Nome de exibição.</strong> Obrigatório, 2 a 120 caracteres (“Loja da Maria”). Ao digitar, o slug é gerado sozinho.</li>
@@ -8973,17 +8974,17 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <h3 id="admin-tenants--saude">Aba Saúde</h3>
 <!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões WAHA, Orçamento IA e Audit Lag, numerada de 1 a 4" loading="lazy">
+  <img src="img/admin-tenant-saude.png" alt="Aba Saúde com os três cartões Números conectados, Orçamento IA e Atraso do registro de ações, numerada de 1 a 4" loading="lazy">
   <figcaption>A aba Saúde (atualiza sozinha; mostra “Atualizado às HH:MM:SS”).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Status de Saúde.</strong></li>
-  <li><strong>WAHA.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
+  <li><strong>Números conectados.</strong> “N/M conectada(s)” e a lista (até 4) de sessões com o status. <em>Atenção</em> se não há sessões ou nenhuma está conectada; <em>Crítico</em> se há sessão FAILED/STOPPED e nenhuma conectada (foi o caso da sessão de teste da captura).</li>
   <li><strong>Orçamento IA.</strong> “N% usado”, consumido, orçamento (ou “Ilimitado”) e o limite (“Não aplicado”, “Só avisa” ou “Para a IA no limite”). Aqui o gasto é o <em>do mês</em>. A partir de 80% é Atenção; 100% só é Crítico quando a empresa escolheu parar a IA.</li>
-  <li><strong>Audit Lag.</strong> Tempo desde o último evento de auditoria da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
+  <li><strong>Atraso do registro de ações.</strong> Tempo desde a última ação registrada da empresa. Acima de 2 minutos é Atenção e acima de 10 minutos, Crítico.</li>
 </ol>
-<p>O cartão <em>Audit Lag</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
-<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Audit Lag” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
+<p>O cartão <em>Atraso do registro de ações</em> traz o tempo em destaque (“45s”, “3min”, “2h”) e, embaixo, “Último evento” (data e hora) e “Lag”; sem nenhum evento, mostra “—” e fica em <em>Atenção</em>. No cartão de orçamento, sem teto definido aparece “Sem orçamento” e, no lugar do orçamento, “Ilimitado”.</p>
+<p><strong>Armadilha:</strong> uma empresa parada, sem nenhuma atividade, aparece com “Atraso do registro de ações” <em>Crítico</em> só por não ter evento recente — não é falha real.</p>
 <h3 id="admin-tenants--agente">Aba Agente</h3>
 <!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
@@ -9059,9 +9060,9 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 </figure>
 <ol class="legenda">
   <li><strong>Metadata.</strong> O JSON bruto do que mudou (nunca contém segredos).</li>
-  <li><strong>Código da requisição.</strong> Com Tipo do recurso, Código do recurso, “Feita por cima do isolamento entre empresas” (Sim/Não — Sim quando a ação veio de uma rotina do sistema, que enxerga todas as empresas), Endereço IP de quem fez e Navegador de quem fez.</li>
+  <li><strong>Código da requisição.</strong> Com Tipo do recurso, Código do recurso, “Feita por cima do isolamento entre empresas” (Sim/Não — Sim quando a gravação usou o acesso do servidor que enxerga todas as empresas), Endereço IP de quem fez e Navegador de quem fez.</li>
   <li><strong>Quem fez.</strong> Código da pessoa e e-mail <em>mascarado</em> (<code>m****@dominio</code>).</li>
-  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Platform Admin</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
+  <li><strong>Empresa.</strong> O cartão da empresa: nome, slug, status e o botão <span class="ui">Ver empresa</span>. O selo amarelo <strong>Pela administração da plataforma</strong> no alto indica ação feita como administrador da plataforma. Há ainda o cartão <em>Recurso</em> com <span class="ui">Abrir recurso</span> (só para conversas e organizações). No alto, o link <span class="ui">Registro de ações</span> volta à lista; se a entrada não existir, a tela diz “Entrada de audit não encontrada.”.</li>
 </ol>
 <p>A própria consulta desta tela é auditada (por isso, na captura, as últimas linhas são as aberturas de ficha e de saúde).</p>
 
@@ -9149,7 +9150,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <ol class="legenda">
   <li><strong>Informações do usuário.</strong> E-mail confirmado, último acesso, criado em e MFA.</li>
   <li><strong>Memberships.</strong> As empresas a que a pessoa pertence, com papel e status.</li>
-  <li><strong>Audit recente.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
+  <li><strong>Ações recentes.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
 </ol>
 
 <h2 id="admin-usage--platform-admins">Administradores da plataforma</h2>
@@ -9160,7 +9161,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Adicionar, remover ou alterar é feito exclusivamente por SQL (comandos direto no banco) pelo DBA, a pessoa que cuida do banco, com nota na auditoria. A página é informativa e não tem nenhum botão de alteração.</li>
+  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Incluir, tirar ou mudar alguém é feito só por comando direto no banco de dados (por quem cuida do servidor), com uma nota no registro de ações. A página só mostra quem é: de propósito, ela não tem botão de mudança. Com a lista vazia, a tela diz “Nenhum administrador da plataforma encontrado”.</li>
   <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
   <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>
@@ -9501,7 +9502,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Instalar vale para todas as empresas, cria as tabelas no banco e não se desfaz pela tela. O passo a passo e os cuidados estão em <a href="#admin-sistema--instalar">Recursos opcionais › Módulos com tabela própria</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>d357f407</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>da27c276</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

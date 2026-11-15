@@ -12,12 +12,13 @@ import {
   estadoDoRecurso,
   type EstadoDoRecurso,
   type FontesDeEstado,
+  type NivelNoChecklist,
   type RecursoOpcional,
 } from "./catalogo";
 
 export interface ItemDoChecklist {
   recurso: RecursoOpcional;
-  nivel: "obrigatorio" | "opcional";
+  nivel: NivelNoChecklist;
   estado: EstadoDoRecurso;
   /** Só `ligado` conta como feito. "Não consegui ler" nunca vira feito nem falta. */
   feito: boolean;

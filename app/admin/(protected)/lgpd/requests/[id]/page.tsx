@@ -1,8 +1,7 @@
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 import { LgpdRequestAdminDetail } from "./_client";
 
-export const metadata = {
-  title: "Solicitação LGPD — Admin",
-};
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/lgpd", "pedidoLgpd");
 
 export default async function AdminLgpdRequestPage({
   params,

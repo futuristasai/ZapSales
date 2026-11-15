@@ -126,6 +126,15 @@ test("toda tela abre com o cabeçalho padrão, marcada no menu e com o nome na a
       .getByRole("navigation", { name: "Navegação da administração" })
       .locator(`a[aria-current="page"]`),
   ).toHaveAttribute("href", "/admin/tenants");
+  // ...e ela abre com a ajuda da tela-mãe, com o título do próprio registro.
+  const contexto = page.getByTestId("contexto-da-subpagina");
+  await expect(contexto).toContainText("Empresas e pessoas");
+  await expect(contexto.getByRole("link", { name: "Empresas", exact: true })).toHaveAttribute(
+    "href",
+    "/admin/tenants",
+  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Nova empresa");
+  expect(await page.title()).toContain("Nova empresa · Empresas · Administração");
 });
 
 test("o Painel diz o que falta configurar e os cartões levam à lista", async ({ page }) => {

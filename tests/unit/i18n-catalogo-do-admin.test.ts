@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN } from "@/lib/admin/catalogo";
+import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN, SUBPAGINAS_DO_ADMIN } from "@/lib/admin/catalogo";
 import { TEXTOS_DO_CHECKLIST } from "@/components/admin/dashboard/ChecklistDaInstalacao";
 import { TEXTOS_DOS_CARTOES } from "@/components/admin/dashboard/KPICards";
 import { RECURSOS_OPCIONAIS } from "@/lib/recursos-opcionais/catalogo";
@@ -30,6 +30,8 @@ const CHINES = ler("zh-CN.json");
 function textos(): { onde: string; texto: string }[] {
   const lista: { onde: string; texto: string }[] = [];
   for (const g of GRUPOS_DO_ADMIN) lista.push({ onde: `grupo:${g.id}`, texto: g.label });
+  for (const [id, texto] of Object.entries(SUBPAGINAS_DO_ADMIN))
+    lista.push({ onde: `subpagina:${id}`, texto });
   for (const i of CATALOGO_DO_ADMIN) {
     for (const campo of ["label", "dica", "paraQueServe", "quandoUsar"] as const) {
       lista.push({ onde: `${i.href} [${campo}]`, texto: i[campo] });

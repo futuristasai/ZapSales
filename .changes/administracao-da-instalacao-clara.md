@@ -1,6 +1,6 @@
 ---
-impacto: nada_mudou
-secao: alterado
+impacto: capacidade_nova
+secao: adicionado
 titulo: Administração da instalação — menu em grupos, em português e com ajuda em cada tela
 ---
 

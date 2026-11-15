@@ -636,9 +636,6 @@ export const DICIONARIO: Traducoes = {
     es: "El servicio de envío de correo, propio o externo, está en Correo →",
   },
   "Extensões da instalação": { es: "Extensiones de la instalación" },
-  "O que este servidor conhece, de onde veio e quem está usando. Instalar e configurar continua sendo feito dentro de cada empresa.": {
-    es: "Lo que conoce este servidor, de dónde viene y quién lo usa. La instalación y la configuración se siguen haciendo dentro de cada empresa.",
-  },
   "De onde vêm as extensões": { es: "De dónde vienen las extensiones" },
   "O catálogo admitido neste servidor. É a origem que o instalador aceita.": {
     es: "El catálogo admitido en este servidor. Es el origen que el instalador acepta.",
@@ -660,9 +657,6 @@ export const DICIONARIO: Traducoes = {
     es: "Para instalar o configurar una extensión, entra a la empresa:",
   },
   "Extensões da empresa →": { es: "Extensiones de la empresa →" },
-  "Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo de envio: o e-mail passa a sair pelo seu próprio servidor.": {
-    es: "Por aquí salen las invitaciones al equipo, la entrega de datos personales y los avisos de plazo. Completar esta pantalla es la alternativa a contratar un servicio externo de envío: el correo saldrá por tu propio servidor.",
-  },
   "Endereço do servidor": { es: "Dirección del servidor" },
   "Normalmente é a palavra smtp seguida do seu domínio. Só o endereço: sem smtp:// na frente e sem a porta no fim.": {
     es: "Normalmente es la palabra smtp seguida de tu dominio. Solo la dirección: sin smtp:// al principio y sin el puerto al final.",
@@ -3395,9 +3389,6 @@ export const DICIONARIO: Traducoes = {
   "Custo no período": { es: "Costo en el período" },
   // ── Administração › Destinos internos (decisão 22-d, #1004) ──────────────
   "Destinos internos": { es: "Destinos internos" },
-  "Endereços da rede deste servidor que a instalação pode alcançar.": {
-    es: "Direcciones de la red de este servidor que la instalación puede alcanzar.",
-  },
   "Endereços liberados": { es: "Direcciones liberadas" },
   "Por padrão esta instalação não fala com a própria rede: um endereço como 10.0.0.5 ou 192.168.1.20 é recusado antes de qualquer arquivo ou chave sair daqui. O que estiver nesta lista deixa de ser recusado — e só isso: o endereço continua precisando ser https em produção, e continua valendo só para o que a INSTALAÇÃO configura. O endereço que uma empresa escolhe no painel dela segue sem poder apontar para dentro, esteja aqui ou não.": {
     es: "Por defecto, esta instalación no se comunica con su propia red: una dirección como 10.0.0.5 o 192.168.1.20 se rechaza antes de que salga de aquí cualquier archivo o clave. Lo que está en esta lista deja de rechazarse, y nada más: la dirección debe seguir siendo https en producción y sigue aplicando solo a lo que configura la INSTALACIÓN. La dirección que una empresa elige en su propio panel sigue sin poder apuntar hacia adentro, esté aquí o no.",
@@ -4680,9 +4671,6 @@ export const DICIONARIO: Traducoes = {
   "Confirmar e entrar": { es: "Confirmar y entrar" },
 
   // ─── Admin de plataforma: Dashboard ───
-  "Visão cross-tenant — atualiza a cada 30 segundos.": {
-    es: "Vista cross-tenant. Se actualiza cada 30 segundos.",
-  },
   "IA Budget": { es: "Presupuesto IA" },
   Overflow: { es: "Desborde" },
   Crítico: { es: "Crítico" },
@@ -4695,9 +4683,6 @@ export const DICIONARIO: Traducoes = {
   alerta: { es: "alerta" },
   alertas: { es: "alertas" },
   "alertas adicionais": { es: "alertas adicionales" },
-  "tenants com gasto acumulado ≥80% do teto": {
-    es: "tenants con gasto acumulado ≥80% del tope",
-  },
 
   // ─── Admin de plataforma: Tenants (lista + criação) ───
   "Buscar por nome, slug ou CNPJ...": { es: "Buscar por nombre, slug o CNPJ..." },
@@ -4705,9 +4690,6 @@ export const DICIONARIO: Traducoes = {
   Suspenso: { es: "Suspendido" },
   Redigido: { es: "Anonimizado" },
   Conversas: { es: "Conversaciones" },
-  "Ajuste os filtros ou crie um novo tenant.": {
-    es: "Ajusta los filtros o crea un nuevo tenant.",
-  },
   Ver: { es: "Ver" },
   "Este slug já está em uso": { es: "Este slug ya está en uso" },
   "Novo Tenant": { es: "Nuevo tenant" },
@@ -4734,9 +4716,6 @@ export const DICIONARIO: Traducoes = {
   "Visão Geral": { es: "Vista general" },
   Saúde: { es: "Salud" },
   "em breve": { es: "próximamente" },
-  "Não foi possível carregar os dados do tenant. Tente recarregar a página.": {
-    es: "No se pudieron cargar los datos del tenant. Intenta recargar la página.",
-  },
   Conectando: { es: "Conectando" },
   Conectado: { es: "Conectado" },
   "Token expirado": { es: "Token expirado" },
@@ -4758,9 +4737,6 @@ export const DICIONARIO: Traducoes = {
   "Solicitações LGPD pendentes": { es: "Solicitudes LGPD pendientes" },
   "Pendências LGPD": { es: "Pendientes LGPD" },
   "Invocações IA (30d)": { es: "Invocaciones IA (30d)" },
-  "Tenant redigido — ações de gestão não disponíveis.": {
-    es: "Tenant anonimizado — acciones de gestión no disponibles.",
-  },
   hoje: { es: "hoy" },
   ontem: { es: "ayer" },
   semana: { es: "semana" },
@@ -4782,9 +4758,6 @@ export const DICIONARIO: Traducoes = {
   },
   "Suspendendo...": { es: "Suspendiendo..." },
   "Confirmar suspensão": { es: "Confirmar suspensión" },
-  "A reativação restabelece o acesso dos usuários deste tenant à plataforma. Informe o motivo da reativação para o registro de auditoria.": {
-    es: "La reactivación restablece el acceso de los usuarios de este tenant a la plataforma. Indica el motivo de la reactivación para el registro de auditoría.",
-  },
   "Motivo da reativação": { es: "Motivo de la reactivación" },
   "Descreva o motivo da reativação (mínimo 10 caracteres)...": {
     es: "Describe el motivo de la reactivación (mínimo 10 caracteres)...",
@@ -4793,9 +4766,6 @@ export const DICIONARIO: Traducoes = {
   "Confirmar reativação": { es: "Confirmar reactivación" },
 
   // ─── Admin de plataforma: Tenant health ───
-  "Não foi possível carregar o status de saúde do tenant. Tente recarregar a página.": {
-    es: "No se pudo cargar el estado de salud del tenant. Intenta recargar la página.",
-  },
   "Status de Saúde": { es: "Estado de salud" },
   "Atualizado às": { es: "Actualizado a las" },
   "Sem sessões": { es: "Sin sesiones" },
@@ -4820,8 +4790,6 @@ export const DICIONARIO: Traducoes = {
   // ─── Admin de plataforma: Users (lista + detalhe) ───
   "Buscar por email ou nome...": { es: "Buscar por email o nombre..." },
   "Buscar usuários": { es: "Buscar usuarios" },
-  "Filtrar por role": { es: "Filtrar por rol" },
-  "Todos os roles": { es: "Todos los roles" },
   "Nenhum usuário encontrado": { es: "No se encontró ningún usuario" },
   "Ajuste os filtros para refinar a busca.": {
     es: "Ajusta los filtros para refinar la búsqueda.",
@@ -4835,7 +4803,6 @@ export const DICIONARIO: Traducoes = {
   Inativo: { es: "Inactivo" },
   "Sem memberships registrados.": { es: "Sin memberships registrados." },
   "Aceito em": { es: "Aceptado el" },
-  "Audit recente": { es: "Auditoría reciente" },
   "Nenhuma entrada de auditoria encontrada para este usuário.": {
     es: "No se encontró ninguna entrada de auditoría para este usuario.",
   },
@@ -4868,9 +4835,6 @@ export const DICIONARIO: Traducoes = {
   },
   "Falha ao carregar solicitação.": { es: "No se pudo cargar la solicitud." },
   Urgente: { es: "Urgente" },
-  "Somente leitura — aprovação é feita pelo operador no contexto do tenant.": {
-    es: "Solo lectura — la aprobación la hace el operador en el contexto del tenant.",
-  },
   Origem: { es: "Origen" },
   Escopo: { es: "Alcance" },
   Tentativas: { es: "Intentos" },
@@ -4926,41 +4890,18 @@ export const DICIONARIO: Traducoes = {
     es: "Ajusta los filtros para ver entradas del registro de auditoría.",
   },
   "Entrada de audit não encontrada.": { es: "No se encontró la entrada de audit." },
-  "Sem actor registrado": { es: "Sin actor registrado" },
   "Abrir recurso": { es: "Abrir recurso" },
 
   // ─── Admin de plataforma: Platform Admins ───
-  "Administradores com acesso privilegiado à plataforma": {
-    es: "Administradores con acceso privilegiado a la plataforma",
-  },
   "Erro ao carregar platform admins. Tente recarregar.": {
     es: "Error al cargar los platform admins. Intenta recargar.",
-  },
-  "Gerenciamento de Platform Admins é restrito ao DBA": {
-    es: "Solo el DBA puede gestionar Platform Admins",
-  },
-  "Conforme Spec 01 §3.4 T-04: adição, remoção ou alteração de": {
-    es: "Según la Spec 01 §3.4 T-04: la adición, eliminación o modificación de",
-  },
-  "é feita exclusivamente via SQL pelo DBA, com nota explicativa em": {
-    es: "se hace exclusivamente vía SQL por el DBA, con una nota explicativa en",
-  },
-  ". Esta página é informativa e read-only — nenhum botão de modificação está disponível por design.": {
-    es: ". Esta página es informativa y de solo lectura: por diseño, no incluye botones para modificar nada.",
   },
   "Ver runbook →": { es: "Ver runbook →" },
   "Usuário": { es: "Usuario" },
   "Concedido em": { es: "Concedido el" },
   "Concedido por": { es: "Concedido por" },
-  "Nenhum platform admin encontrado": { es: "No se encontraron platform admins" },
-  "Platform admins são configurados exclusivamente via DBA.": {
-    es: "Los platform admins solo los configura el DBA.",
-  },
 
   // ─── Admin de plataforma: Usage & Custo ───
-  "Consumo de mensagens, conversas e AI por tenant": {
-    es: "Consumo de mensajes, conversaciones e IA por tenant",
-  },
   "Período": { es: "Período" },
   "Últimos 7 dias": { es: "Últimos 7 días" },
   "Últimos 30 dias": { es: "Últimos 30 días" },
@@ -4979,9 +4920,6 @@ export const DICIONARIO: Traducoes = {
   "Custo AI": { es: "Costo IA" },
 
   // ─── Admin de plataforma: Marca (page.tsx, _form.tsx, _estado.tsx) ───
-  "O nome e a cor que este sistema mostra para todo mundo que usa esta instalação.": {
-    es: "El nombre y el color que este sistema muestra a todas las personas que usan esta instalación.",
-  },
   "Sua cor": { es: "Tu color" },
   "fora da escala — fica só no logo": { es: "fuera de la escala: solo se usa en el logo" },
   "Botões no modo claro": { es: "Botones en el modo claro" },
@@ -13610,9 +13548,6 @@ export const DICIONARIO: Traducoes = {
   "Contrato de honorários (fixo, êxito ou misto) e o calendário de parcelas, ligado ao caixa do núcleo. Para escritórios de advocacia que cobram por caso.": {
     es: "Contrato de honorarios (fijo, éxito o mixto) y el calendario de cuotas, vinculado a la caja del núcleo. Para despachos de abogados que cobran por caso.",
   },
-  "Módulos opcionais com tabela própria, criados quando você instala — quem não instala não carrega as tabelas dele. Instalar aqui vale para todas as organizações desta instalação.": {
-    es: "Módulos opcionales con tabla propia, creados cuando los instalas — quien no instala no carga sus tablas. Instalar aquí vale para todas las organizaciones de esta instalación.",
-  },
   "Honorários": { es: "Honorarios" },
   "O modelo de cobrança de cada caso e o calendário de parcelas.": {
     es: "El modelo de cobro de cada caso y el calendario de cuotas.",
@@ -16114,6 +16049,26 @@ export const DICIONARIO: Traducoes = {
   "Endereço IP de quem fez": {"es": "Dirección IP de quien lo hizo"},
   "Navegador de quem fez": {"es": "Navegador de quien lo hizo"},
   "Código da pessoa": {"es": "Código de la persona"},
+  // ─── ADMINISTRAÇÃO DA INSTALAÇÃO (issue #308) ───
+  "Detalhe da ação": {"es": "Detalle de la acción"},
+  "Detalhe do pedido": {"es": "Detalle de la solicitud"},
+  "Detalhe do incidente": {"es": "Detalle del incidente"},
+  "Detalhe do usuário": {"es": "Detalle del usuario"},
+  "Detalhe da empresa": {"es": "Detalle de la empresa"},
+  "Pela administração da plataforma": {"es": "Por la administración de la plataforma"},
+  "Sem registro de quem fez": {"es": "Sin registro de quién lo hizo"},
+  "Ações recentes": {"es": "Acciones recientes"},
+  "Filtrar por papel": {"es": "Filtrar por rol"},
+  "Nenhum administrador da plataforma encontrado": {"es": "No se encontró ningún administrador de la plataforma"},
+  "Quem administra a plataforma só se define direto no banco de dados.": {"es": "Quién administra la plataforma solo se define directamente en la base de datos."},
+  "Incluir, tirar ou mudar alguém em": {"es": "Agregar, quitar o cambiar a alguien en"},
+  "é feito só por comando direto no banco de dados, com uma nota no registro de ações (": {"es": "se hace solo con un comando directo en la base de datos, con una nota en el registro de acciones ("},
+  "). Esta página só mostra quem é: de propósito, ela não tem botão de mudança.": {"es": "). Esta página solo muestra quién es: a propósito, no tiene botón para cambiar."},
+  "Números conectados": {"es": "Números conectados"},
+  "Atraso do registro de ações": {"es": "Retraso del registro de acciones"},
+  "Números conectados por QR code": {"es": "Números conectados por código QR"},
+  "Falta 1 item": {"es": "Falta 1 elemento"},
+  "Faltam {n} itens": {"es": "Faltan {n} elementos"},
 };
 
 /**

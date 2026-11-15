@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CaretLeft } from "@/lib/ui/icons";
 import { useAdminAuditEntry } from "@/hooks/useAdminAuditEntry";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -108,6 +109,8 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
         </Link>
       </Button>
 
+      <ContextoDaSubpagina href="/admin/audit" />
+
       {/* Header */}
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-3">
@@ -119,7 +122,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
           )}
           {entry.acting_as_platform_admin && (
             <Badge variant="warning" className="text-xs">
-              Platform Admin
+              {t("Pela administração da plataforma")}
             </Badge>
           )}
         </div>
@@ -161,7 +164,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {entry.actor_user_id ? `ID: ${entry.actor_user_id}` : t("Sem actor registrado")}
+                {entry.actor_user_id ? `ID: ${entry.actor_user_id}` : t("Sem registro de quem fez")}
               </p>
             )}
           </div>

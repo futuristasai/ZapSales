@@ -42,7 +42,7 @@
 <ol class="legenda">
   <li><strong>Informações do usuário.</strong> E-mail confirmado, último acesso, criado em e MFA.</li>
   <li><strong>Memberships.</strong> As empresas a que a pessoa pertence, com papel e status.</li>
-  <li><strong>Audit recente.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
+  <li><strong>Ações recentes.</strong> As últimas ações da pessoa (inclusive as aberturas de tela da própria administração).</li>
 </ol>
 
 <h2 id="platform-admins">Administradores da plataforma</h2>
@@ -53,7 +53,7 @@
   <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
 </figure>
 <ol class="legenda">
-  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Adicionar, remover ou alterar é feito exclusivamente por SQL (comandos direto no banco) pelo DBA, a pessoa que cuida do banco, com nota na auditoria. A página é informativa e não tem nenhum botão de alteração.</li>
+  <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Incluir, tirar ou mudar alguém é feito só por comando direto no banco de dados (por quem cuida do servidor), com uma nota no registro de ações. A página só mostra quem é: de propósito, ela não tem botão de mudança. Com a lista vazia, a tela diz “Nenhum administrador da plataforma encontrado”.</li>
   <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
   <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>

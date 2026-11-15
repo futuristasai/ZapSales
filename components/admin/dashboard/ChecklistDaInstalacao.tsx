@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { CaretDown, CheckCircle, Circle, Question, WarningCircle } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/i18n/useT";
+import type { EstadoDoRecurso, NivelNoChecklist } from "@/lib/recursos-opcionais/catalogo";
 
 /** O que o servidor manda: só dado serializável, já calculado por `checklistDaInstalacao`. */
 export interface ItemDoChecklistVisto {
@@ -14,8 +15,8 @@ export interface ItemDoChecklistVisto {
   nome: string;
   oQueFaz: string;
   href: string;
-  nivel: "obrigatorio" | "opcional";
-  estado: "ligado" | "desligado" | "varia" | "nao_verificado" | "nao_lido";
+  nivel: NivelNoChecklist;
+  estado: EstadoDoRecurso;
   feito: boolean;
 }
 
@@ -37,6 +38,8 @@ export const TEXTOS_DO_CHECKLIST = {
   opcional: "Opcional",
   feito: "Pronto",
   falta: "Falta",
+  faltaUm: "Falta 1 item",
+  faltamVarios: "Faltam {n} itens",
   naoLido: "Não consegui ler agora",
   configurar: "Configurar",
   revisar: "Revisar",
@@ -60,9 +63,13 @@ export function ChecklistDaInstalacao({ checklist }: { checklist: ChecklistVisto
     : checklist.essencialPronto
       ? T.essencialPronto
       : T.faltaEssencial;
-  const contagem = checklist.tudoPronto
-    ? null
-    : `${checklist.faltamObrigatorios + checklist.faltamOpcionais} ${t(T.falta).toLowerCase()}`;
+  const faltam = checklist.faltamObrigatorios + checklist.faltamOpcionais;
+  const contagem =
+    faltam === 0
+      ? null
+      : faltam === 1
+        ? t(T.faltaUm)
+        : t(T.faltamVarios).replace("{n}", String(faltam));
 
   return (
     <Card className="p-0" data-testid="checklist-da-instalacao">

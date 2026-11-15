@@ -150,4 +150,41 @@ describe("menu do administrador da instalação", () => {
     }
     expect(faltando).toEqual([]);
   });
+
+  it("nenhuma página da administração tem título de aba fixo (história 15: no idioma de quem abre)", () => {
+    // Subpágina também: "Audit Entry — Admin" ficou em inglês justamente numa delas. O
+    // título sai de `metadadosDaTelaDoAdmin`, que traduz pela pessoa logada.
+    const pasta = join(process.cwd(), "app", "admin");
+    const fixos: string[] = [];
+    const visitar = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const caminho = join(dir, e.name);
+        if (e.isDirectory()) visitar(caminho);
+        else if (/^(page|layout)\.tsx$/.test(e.name)) {
+          if (/export const metadata\b/.test(readFileSync(caminho, "utf8")))
+            fixos.push(caminho.slice(pasta.length + 1));
+        }
+      }
+    };
+    visitar(pasta);
+    expect(fixos).toEqual([]);
+  });
+
+  it("as subpáginas abrem com a ajuda da tela-mãe (o título é o do registro)", () => {
+    const subpaginas: [string, string][] = [
+      ["audit/[entryId]/_client.tsx", "/admin/audit"],
+      ["lgpd/requests/[id]/_client.tsx", "/admin/lgpd"],
+      ["incidents/[id]/_client.tsx", "/admin/incidents"],
+      ["users/[id]/_client.tsx", "/admin/users"],
+      ["tenants/new/_form.tsx", "/admin/tenants"],
+      ["tenants/[id]/layout.tsx", "/admin/tenants"],
+    ];
+    const faltando = subpaginas
+      .filter(
+        ([arq, href]) =>
+          !readFileSync(join(RAIZ, arq), "utf8").includes(`<ContextoDaSubpagina href="${href}"`),
+      )
+      .map(([arq]) => arq);
+    expect(faltando).toEqual([]);
+  });
 });

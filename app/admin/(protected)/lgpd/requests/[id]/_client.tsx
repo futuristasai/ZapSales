@@ -13,6 +13,7 @@ import { useAdminLgpdRequest } from "@/hooks/useAdminLgpdRequest";
 import type { AdminLgpdStatus, AdminLgpdRequestType } from "@/hooks/useAdminLGPDRequests";
 import { diasAtePrazo, prazoEmBr, progressoDoPrazo } from "@/lib/lgpd/sla";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Inline SLA Timeline (simplified — no approve button, admin observe-only)
@@ -258,6 +259,8 @@ export function LgpdRequestAdminDetail({ id }: Props) {
           </Link>
         </Button>
       </div>
+
+      <ContextoDaSubpagina href="/admin/lgpd" />
 
       {/* Header */}
       <div className="flex flex-col gap-2">

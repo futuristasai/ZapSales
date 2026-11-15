@@ -95,7 +95,7 @@ export function UsersClient() {
         </Select>
 
         <Select value={filters.role ?? "all"} onValueChange={handleRole}>
-          <SelectTrigger className="sm:w-40" aria-label={t("Filtrar por role")}>
+          <SelectTrigger className="sm:w-40" aria-label={t("Filtrar por papel")}>
             <SelectValue placeholder={t("Papel")} />
           </SelectTrigger>
           <SelectContent>

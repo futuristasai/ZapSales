@@ -2,7 +2,8 @@
  * OS TONS DOS GRUPOS DO MENU DO ADMIN TÊM CONTRASTE NOS DOIS TEMAS (issue #308, história 20).
  *
  * Cada grupo do menu da administração tem um tom (`--color-grupo-*`), que pinta só o
- * ícone. Ícone é elemento gráfico: o mínimo da WCAG (1.4.11) é 3:1 contra o fundo. Aqui
+ * ícone. Ícone é elemento gráfico: o mínimo da WCAG (1.4.11) é 3:1 contra o fundo, e a
+ * casa promete mais — 4,5:1, o de texto, como diz o comentário dos tokens. Aqui
  * o contraste é CALCULADO dos tokens de `app/globals.css`, nos blocos claro (`:root`) e
  * escuro (`[data-theme="dark"]`), contra a superfície (`--color-surface`) e o fundo
  * (`--color-bg`) — os dois lugares onde o ícone aparece (barra lateral e cabeçalho).
@@ -49,14 +50,14 @@ describe("tons dos grupos do admin", () => {
   it.each([
     ["claro", ":root"],
     ["escuro", '[data-theme="dark"]'],
-  ])("tema %s: cada tom tem pelo menos 3:1 contra a superfície e o fundo", (_tema, seletor) => {
+  ])("tema %s: cada tom tem pelo menos 4,5:1 contra a superfície e o fundo", (_tema, seletor) => {
     const css = bloco(seletor);
     const superficie = token(css, "color-surface");
     const fundo = token(css, "color-bg");
     for (const g of GRUPOS_DO_ADMIN) {
       const cor = token(css, `color-${g.tom.replace(/^text-/, "")}`);
-      expect(contraste(cor, superficie), `${g.id} sobre a superfície`).toBeGreaterThanOrEqual(3);
-      expect(contraste(cor, fundo), `${g.id} sobre o fundo`).toBeGreaterThanOrEqual(3);
+      expect(contraste(cor, superficie), `${g.id} sobre a superfície`).toBeGreaterThanOrEqual(4.5);
+      expect(contraste(cor, fundo), `${g.id} sobre o fundo`).toBeGreaterThanOrEqual(4.5);
     }
   });
 

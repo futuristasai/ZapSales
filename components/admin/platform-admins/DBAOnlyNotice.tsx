@@ -16,13 +16,11 @@ export function DBAOnlyNotice() {
           {t("Quem administra a plataforma só se muda direto no banco de dados")}
         </p>
         <p className="text-sm leading-relaxed text-info-fg">
-          {t("Conforme Spec 01 §3.4 T-04: adição, remoção ou alteração de")}{" "}
+          {t("Incluir, tirar ou mudar alguém em")}{" "}
           <code className="rounded-md bg-info-bg px-1 font-mono text-xs">platform_admins</code>{" "}
-          {t("é feita exclusivamente via SQL pelo DBA, com nota explicativa em")}{" "}
+          {t("é feito só por comando direto no banco de dados, com uma nota no registro de ações (")}
           <code className="rounded-md bg-info-bg px-1 font-mono text-xs">api_audit_log</code>
-          {t(
-            ". Esta página é informativa e read-only — nenhum botão de modificação está disponível por design.",
-          )}
+          {t("). Esta página só mostra quem é: de propósito, ela não tem botão de mudança.")}
         </p>
         <p className="pt-1">
           <Link

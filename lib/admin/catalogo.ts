@@ -295,6 +295,23 @@ export const CATALOGO_DO_ADMIN: readonly ItemDoAdmin[] = [
 export const ICONE_DA_TARJA: IconeDoAdmin = "HardDrives";
 
 /**
+ * O nome de cada SUBPÁGINA no título da aba ("Detalhe do incidente · Incidentes ·
+ * Administração"). Dado, e não parâmetro livre: a cerca de idioma só traduz texto que
+ * mora num catálogo, e é aqui que `tests/unit/i18n-catalogo-do-admin.test.ts` o lê.
+ */
+export const SUBPAGINAS_DO_ADMIN = {
+  acao: "Detalhe da ação",
+  pedidoLgpd: "Detalhe do pedido",
+  incidente: "Detalhe do incidente",
+  usuario: "Detalhe do usuário",
+  empresa: "Detalhe da empresa",
+  novaEmpresa: "Nova empresa",
+  acessoNegado: "Acesso negado",
+} as const;
+
+export type SubpaginaDoAdmin = keyof typeof SUBPAGINAS_DO_ADMIN;
+
+/**
  * Telas de primeiro nível que só REDIRECIONAM e por isso não têm porta no menu. A
  * cerca de completude (`tests/unit/admin-navegacao-completude.test.ts`) aceita só o
  * que estiver aqui, com o motivo escrito, e confere que a página não desenha nada.

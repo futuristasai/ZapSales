@@ -30,11 +30,7 @@
  * quem desenha passa por `t()`/`traduzir()`.
  */
 import type { Role } from "@/lib/auth/types";
-import {
-  MODULOS_OPCIONAIS,
-  MODULOS_OPCIONAIS_POR_FLAG,
-  type ModuloOpcional,
-} from "@/lib/instalacao/modulos";
+import { MODULOS_OPCIONAIS, MODULOS_OPCIONAIS_POR_FLAG, type ModuloOpcional } from "@/lib/instalacao/modulos";
 import { NAV_CATALOG, type NavMetadata } from "@/lib/navigation/catalogo";
 import { lerConfigDoJev } from "@/lib/ai/decisao/config";
 import { lerConfigDeMcp } from "@/lib/ai/ferramentas-externas/mcp/config";
@@ -84,9 +80,12 @@ export interface RecursoOpcional {
    * peso dele. O checklist não tem lista própria: é este campo, e o estado é o mesmo
    * `estadoDoRecurso` desta tela — as duas nunca discordam. Ver `checklist.ts`.
    */
-  checklist?: { nivel: "obrigatorio" | "opcional"; ordem: number };
+  checklist?: { nivel: NivelNoChecklist; ordem: number };
   ler?: (f: FontesDeEstado) => EstadoDoRecurso;
 }
+
+/** O peso de um item no checklist do Painel: sem o obrigatório a instalação não funciona inteira. */
+export type NivelNoChecklist = "obrigatorio" | "opcional";
 
 function objeto(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
@@ -115,8 +114,7 @@ const TEXTO_DO_MODULO: Record<ModuloOpcional, { nome: string; oQueFaz: string }>
   },
   fluxos_atendimento: {
     nome: "Fluxos de atendimento",
-    oQueFaz:
-      "A IA conduz um roteiro de perguntas na conversa e grava as respostas na ficha do cliente.",
+    oQueFaz: "A IA conduz um roteiro de perguntas na conversa e grava as respostas na ficha do cliente.",
   },
   propostas: {
     nome: "Propostas comerciais",
@@ -124,8 +122,7 @@ const TEXTO_DO_MODULO: Record<ModuloOpcional, { nome: string; oQueFaz: string }>
   },
   crm_b2b: {
     nome: "Empresas e pessoas (venda para empresas)",
-    oQueFaz:
-      "Cadastro de empresas por CNPJ, das pessoas que decidem nelas e importação de planilha.",
+    oQueFaz: "Cadastro de empresas por CNPJ, das pessoas que decidem nelas e importação de planilha.",
   },
   honorarios: {
     nome: "Honorários",
@@ -137,9 +134,7 @@ const TEXTO_DO_MODULO: Record<ModuloOpcional, { nome: string; oQueFaz: string }>
  * Onde a EMPRESA usa o módulo: a primeira porta do menu que o declara. Lido do
  * menu, e não escrito aqui, para não haver segunda lista de endereços.
  */
-export function portaDoModuloNaEmpresa(
-  modulo: ModuloOpcional,
-): { href: string; minRole?: Role } | null {
+export function portaDoModuloNaEmpresa(modulo: ModuloOpcional): { href: string; minRole?: Role } | null {
   const porta = (NAV_CATALOG as readonly NavMetadata[]).find((d) => d.modulo === modulo);
   return porta ? { href: porta.href, minRole: porta.minRole } : null;
 }
@@ -200,8 +195,7 @@ const DA_INSTALACAO: RecursoOpcional[] = [
   {
     id: "marca",
     nome: "Marca própria",
-    oQueFaz:
-      "O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.",
+    oQueFaz: "O nome, a cor e o logo do sistema trocados pelos seus, para revender com a sua marca.",
     nivel: "instalacao",
     padrao: "desligado",
     quemDecide: "dono_do_servidor",
@@ -218,8 +212,9 @@ const DA_INSTALACAO: RecursoOpcional[] = [
     padrao: "ligado",
     quemDecide: "dono_do_servidor",
     href: "/admin/cadastro",
-    // Sempre há um modo em vigor (o padrão é o cadastro aberto, `padraoDaInstalacao`): "configurado" quer dizer
-    // que a decisão existe e foi lida, e o checklist convida a revisá-la, não a criá-la.
+    // "Configurado" = alguém já GRAVOU uma decisão na tela, qualquer que seja (aberto é
+    // escolha válida). Sem isso vale o padrão de instalação nova, cadastro aberto
+    // (`padraoDaInstalacao`), que ninguém escolheu — ver "cadastro" em `detectarServidor`.
     ler: peloServidor("cadastro"),
     checklist: { nivel: "opcional", ordem: 3 },
   },
@@ -238,8 +233,7 @@ const DO_SERVIDOR: RecursoOpcional[] = [
   {
     id: "email",
     nome: "E-mail",
-    oQueFaz:
-      "Sem ele não sai convite de equipe, recuperação de senha nem entrega de dados da LGPD.",
+    oQueFaz: "Sem ele não sai convite de equipe, recuperação de senha nem entrega de dados da LGPD.",
     nivel: "servidor",
     padrao: "desligado",
     quemDecide: "dono_do_servidor",
@@ -276,14 +270,12 @@ const DO_SERVIDOR: RecursoOpcional[] = [
   {
     id: "voz_whatsapp",
     nome: "Chamada de voz pelo WhatsApp",
-    oQueFaz:
-      "Fazer e receber chamada de voz pelo número. Depois, cada empresa aceita o risco e liga.",
+    oQueFaz: "Fazer e receber chamada de voz pelo número. Depois, cada empresa aceita o risco e liga.",
     nivel: "servidor",
     padrao: "desligado",
     quemDecide: "dono_do_servidor",
     href: null,
-    comoLigar:
-      "No arquivo de ambiente, WACALLS_API_BASE_URL e WACALLS_API_TOKEN, e voz em COMPOSE_PROFILES.",
+    comoLigar: "No arquivo de ambiente, WACALLS_API_BASE_URL e WACALLS_API_TOKEN, e voz em COMPOSE_PROFILES.",
     ler: peloServidor("voz_whatsapp"),
   },
   {
@@ -294,8 +286,7 @@ const DO_SERVIDOR: RecursoOpcional[] = [
     padrao: "desligado",
     quemDecide: "dono_do_servidor",
     href: null,
-    comoLigar:
-      "No servidor, telefonia em COMPOSE_PROFILES e os arquivos do Asterisk. Este app não enxerga isso.",
+    comoLigar: "No servidor, telefonia em COMPOSE_PROFILES e os arquivos do Asterisk. Este app não enxerga isso.",
     ler: () => "nao_verificado",
   },
   {
@@ -362,9 +353,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
     padrao: "desligado",
     quemDecide: "manager",
     href: "/app/settings/atendimento",
-    ler: peloSettings(
-      (s) => s.visibility_mode === "own" || s.visibility_mode === "own_and_unassigned",
-    ),
+    ler: peloSettings((s) => s.visibility_mode === "own" || s.visibility_mode === "own_and_unassigned"),
   },
   {
     id: "assinatura_do_emissor",
@@ -459,8 +448,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "acesso_da_ia_por_numero",
     nome: "Acesso da IA por número",
-    oQueFaz:
-      "Em cada número, a IA atende todo mundo, só números de teste, ninguém, ou só quem veio de uma origem.",
+    oQueFaz: "Em cada número, a IA atende todo mundo, só números de teste, ninguém, ou só quem veio de uma origem.",
     nivel: "organizacao",
     padrao: "varia",
     quemDecide: "admin",
@@ -470,8 +458,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "protecao_de_envio",
     nome: "Proteção de envio por número",
-    oQueFaz:
-      "Janelas de resposta e de disparo, ritmo, teto diário, envio aos domingos e aquecimento de cada número.",
+    oQueFaz: "Janelas de resposta e de disparo, ritmo, teto diário, envio aos domingos e aquecimento de cada número.",
     nivel: "organizacao",
     padrao: "varia",
     quemDecide: "admin",
@@ -501,8 +488,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "voz_da_empresa",
     nome: "Chamada de voz da empresa",
-    oQueFaz:
-      "A empresa aceita o risco e liga a chamada de voz pelo WhatsApp, se o servidor oferecer.",
+    oQueFaz: "A empresa aceita o risco e liga a chamada de voz pelo WhatsApp, se o servidor oferecer.",
     nivel: "organizacao",
     padrao: "desligado",
     quemDecide: "admin",
@@ -530,8 +516,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "resposta_em_audio",
     nome: "Resposta em áudio",
-    oQueFaz:
-      "Quando o cliente manda áudio, o agente pode responder em nota de voz, com a chave de voz da própria empresa.",
+    oQueFaz: "Quando o cliente manda áudio, o agente pode responder em nota de voz, com a chave de voz da própria empresa.",
     nivel: "organizacao",
     padrao: "desligado",
     quemDecide: "admin",
@@ -543,8 +528,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "mcp_externo",
     nome: "Servidores MCP externos",
-    oQueFaz:
-      "O agente passa a poder usar ferramentas de servidores MCP de terceiros que um administrador cadastra; cada uma que altera algo espera aprovação.",
+    oQueFaz: "O agente passa a poder usar ferramentas de servidores MCP de terceiros que um administrador cadastra; cada uma que altera algo espera aprovação.",
     nivel: "organizacao",
     padrao: "desligado",
     quemDecide: "admin",
@@ -556,8 +540,7 @@ const DA_EMPRESA: RecursoOpcional[] = [
   {
     id: "base_com_google",
     nome: "Base de conhecimento com o Google",
-    oQueFaz:
-      "Prepara a base de conhecimento com a chave do Google em vez da OpenAI. Trocar refaz a base.",
+    oQueFaz: "Prepara a base de conhecimento com a chave do Google em vez da OpenAI. Trocar refaz a base.",
     nivel: "organizacao",
     padrao: "desligado",
     quemDecide: "manager",
@@ -566,18 +549,13 @@ const DA_EMPRESA: RecursoOpcional[] = [
     ler: (f) => {
       if (f.settings === null) return "nao_lido";
       const familia = objeto(f.settings.base_de_conhecimento)?.familia;
-      return familia === "google"
-        ? "ligado"
-        : familia === "openai"
-          ? "desligado"
-          : "nao_verificado";
+      return familia === "google" ? "ligado" : familia === "openai" ? "desligado" : "nao_verificado";
     },
   },
   {
     id: "mapas",
     nome: "Endereço aproximado do pino",
-    oQueFaz:
-      "Com uma chave do Google, o pino de localização do cliente chega com rua e cidade aproximadas.",
+    oQueFaz: "Com uma chave do Google, o pino de localização do cliente chega com rua e cidade aproximadas.",
     nivel: "organizacao",
     padrao: "desligado",
     quemDecide: "admin",

@@ -104,7 +104,7 @@ export function TenantOverview({ organization, counts }: TenantOverviewProps) {
             {t("Integrações")}
           </h2>
           <div>
-            <InfoRow label="WAHA sessions" value={counts.waha_sessions_count} />
+            <InfoRow label={t("Números conectados por QR code")} value={counts.waha_sessions_count} />
           </div>
         </div>
 

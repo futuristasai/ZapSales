@@ -53,8 +53,7 @@ export function Honorarios({ podeGerenciar }: { podeGerenciar: boolean }) {
 
   const contratos = useQuery({
     queryKey: ["honorarios", "contratos"],
-    queryFn: async () =>
-      (await apiClient.get<{ data: Contrato[] }>("/api/v1/honorarios/contratos")).data,
+    queryFn: async () => (await apiClient.get<{ data: Contrato[] }>("/api/v1/honorarios/contratos")).data,
     retry: false,
   });
 
@@ -80,13 +79,18 @@ export function Honorarios({ podeGerenciar }: { podeGerenciar: boolean }) {
   }
 
   if (contratos.isError) {
-    return <p className="text-danger text-sm">{t("Não foi possível carregar os contratos.")}</p>;
+    return (
+      <p className="text-sm text-danger">{t("Não foi possível carregar os contratos.")}</p>
+    );
   }
 
   return (
     <div className="flex flex-col gap-4">
       {podeGerenciar ? (
-        <FormularioDeContrato criando={criar.isPending} onCriar={(corpo) => criar.mutate(corpo)} />
+        <FormularioDeContrato
+          criando={criar.isPending}
+          onCriar={(corpo) => criar.mutate(corpo)}
+        />
       ) : null}
 
       <section className="rounded-md border border-border p-3">

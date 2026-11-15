@@ -2,10 +2,7 @@
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { WifiSlash, Scales, ChartBar, Clock, Warning } from "@/lib/ui/icons";
-import type {
-  AlertItem as AlertItemType,
-  AlertKind,
-} from "@/app/api/v1/admin/dashboard/kpis/route";
+import type { AlertItem as AlertItemType, AlertKind } from "@/app/api/v1/admin/dashboard/kpis/route";
 import type { ElementType } from "react";
 import { useT } from "@/hooks/i18n/useT";
 
@@ -53,12 +50,12 @@ export function AlertItem({ alert }: AlertItemProps) {
     <button
       type="button"
       onClick={() => router.push(alert.link)}
-      className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden"
+      className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex items-center gap-2">
-          <span className="truncate font-medium">{alert.tenant_name}</span>
+          <span className="font-medium truncate">{alert.tenant_name}</span>
           <Badge variant={severityVariant} className="shrink-0 text-xs">
             {severityLabel}
           </Badge>
@@ -66,7 +63,7 @@ export function AlertItem({ alert }: AlertItemProps) {
             {kindLabel}
           </Badge>
         </div>
-        <p className="truncate text-xs text-muted-foreground">{alert.message}</p>
+        <p className="text-muted-foreground text-xs truncate">{alert.message}</p>
       </div>
     </button>
   );

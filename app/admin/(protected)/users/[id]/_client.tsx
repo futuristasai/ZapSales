@@ -21,6 +21,7 @@ import {
 import { CaretLeft } from "@/lib/ui/icons";
 import { useAdminUser } from "@/hooks/useAdminUser";
 import { useT } from "@/hooks/i18n/useT";
+import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -123,6 +124,8 @@ export function UserDetailClient({ id }: UserDetailClientProps) {
           {t("Usuários")}
         </Link>
       </div>
+
+      <ContextoDaSubpagina href="/admin/users" />
 
       {/* Header */}
       <div className="space-y-1">
@@ -241,7 +244,7 @@ export function UserDetailClient({ id }: UserDetailClientProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">
-            {t("Audit recente")} ({recent_audit.length}{recent_audit.length === 50 ? "+" : ""})
+            {t("Ações recentes")} ({recent_audit.length}{recent_audit.length === 50 ? "+" : ""})
           </CardTitle>
         </CardHeader>
         <CardContent>
