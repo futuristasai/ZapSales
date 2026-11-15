@@ -8,6 +8,16 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.2.1] — 2026-11-15
+
+### Alterado
+
+- **Editor do agente — o "Cérebro do agente" vem logo depois do nome, e cada parte tem título mais claro** No editor do agente de IA, a parte que diz **o que ele consulta antes de responder** virou o **Cérebro do agente** e subiu para logo depois de "Quem é este agente". Ela ganhou destaque próprio, mostra quantos materiais do acervo o agente lê, e traz sempre à vista os botões **Adicionar material** (que já abre a janela de cadastro do acervo) e **Abrir o acervo**. Os dois abrem em outra aba, para não perder o que ainda não foi salvo, e o material novo aparece na lista quando você volta.
+
+  Cada material é agora uma linha inteira clicável, com o tipo (documento, perguntas e respostas, site…), a quantidade de trechos e um aviso quando ainda não foi preparado.
+
+  As outras partes do editor ganharam título maior, faixa de título com ícone colorido e o mesmo ícone no índice lateral, para ficar claro qual parte você está editando.
+
 ## [1.2.0] — 2026-11-14
 
 ### Adicionado
@@ -206,7 +216,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/futuristasai/ZapSales/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/futuristasai/ZapSales/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/futuristasai/ZapSales/compare/v1.0.0...v1.0.1
