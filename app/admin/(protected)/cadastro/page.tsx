@@ -9,8 +9,10 @@ import { traduzir } from "@/lib/i18n/dicionario";
 
 import { FormularioDeCadastro } from "./_form";
 import { PedidosPendentes } from "./_pedidos";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Cadastro na instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/cadastro");
 export const dynamic = "force-dynamic";
 
 /**
@@ -60,14 +62,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {traduzir("Cadastro", usuario.idioma)}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {traduzir("Quem pode criar uma conta nesta instalação.", usuario.idioma)}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/cadastro" />
       {aviso && (
         <div
           role="status"

@@ -1205,6 +1205,7 @@ jobs:
         prova-painel-provedores.spec.ts
         qa-l12-inbox.spec.ts
         recursos-opcionais.spec.ts
+        admin-plataforma-claro.spec.ts
         resposta-em-audio-pela-tela.spec.ts
         sons-dos-avisos.spec.ts
         suspensao-administrativa.spec.ts
@@ -2123,6 +2124,16 @@ jobs:
         with:
           name: evidencia-menu-prova-final-parte-${{ matrix.parte }}
           path: evidence/menu-prova-final/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # As capturas da administração da instalação (issue #308), pelo mesmo motivo do passo de
+      # cima: são a prova visual que a doutrina pede, e precisam sobreviver ao verde.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: evidencia-admin-plataforma-claro-parte-${{ matrix.parte }}
+          path: evidence/admin-plataforma-claro/
           if-no-files-found: ignore
           retention-days: 14
 

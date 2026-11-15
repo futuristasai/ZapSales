@@ -10,11 +10,9 @@ import {
 } from "@/components/ui/select";
 import { useAdminUsers, type AdminUsersFilters } from "@/hooks/useAdminUsers";
 import { useAdminTenants } from "@/hooks/useAdminTenants";
-import {
-  UsersTableAdmin,
-  UsersTableAdminSkeleton,
-} from "@/components/admin/users/UsersTableAdmin";
+import { UsersTableAdmin, UsersTableAdminSkeleton } from "@/components/admin/users/UsersTableAdmin";
 import { useT } from "@/hooks/i18n/useT";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -38,16 +36,13 @@ export function UsersClient() {
   const rows = data?.pages.flatMap((p) => p.data ?? []) ?? [];
   const total = rows.length;
 
-  const handleSearch = useCallback(
-    (value: string) => {
-      setInputValue(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        setFilters((prev) => ({ ...prev, q: value || undefined }));
-      }, 300);
-    },
-    [],
-  );
+  const handleSearch = useCallback((value: string) => {
+    setInputValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, q: value || undefined }));
+    }, 300);
+  }, []);
 
   const handleTenant = useCallback((value: string) => {
     setFilters((prev) => ({
@@ -59,27 +54,24 @@ export function UsersClient() {
   const handleRole = useCallback((value: string) => {
     setFilters((prev) => ({
       ...prev,
-      role:
-        value === "all"
-          ? undefined
-          : (value as AdminUsersFilters["role"]),
+      role: value === "all" ? undefined : (value as AdminUsersFilters["role"]),
     }));
   }, []);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Usuários")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isLoading
+      <CabecalhoDaPlataforma
+        href="/admin/users"
+        complemento={
+          isLoading
             ? t("Carregando...")
-            : `${total} ${total !== 1 ? t("usuários") : t("usuário")}${hasNextPage ? "+" : ""}`}
-        </p>
-      </div>
+            : `${total} ${total !== 1 ? t("usuários") : t("usuário")}${hasNextPage ? "+" : ""}`
+        }
+      />
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Input
           placeholder={t("Buscar por email ou nome...")}
           value={inputValue}
@@ -88,15 +80,12 @@ export function UsersClient() {
           aria-label={t("Buscar usuários")}
         />
 
-        <Select
-          value={filters.tenant_id ?? "all"}
-          onValueChange={handleTenant}
-        >
-          <SelectTrigger className="sm:w-52" aria-label={t("Filtrar por tenant")}>
-            <SelectValue placeholder="Tenant" />
+        <Select value={filters.tenant_id ?? "all"} onValueChange={handleTenant}>
+          <SelectTrigger className="sm:w-52" aria-label={t("Filtrar por empresa")}>
+            <SelectValue placeholder={t("Empresa")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("Todos os tenants")}</SelectItem>
+            <SelectItem value="all">{t("Todas as empresas")}</SelectItem>
             {tenants.map((tenant) => (
               <SelectItem key={tenant.id} value={tenant.id}>
                 {tenant.display_name}
@@ -107,10 +96,10 @@ export function UsersClient() {
 
         <Select value={filters.role ?? "all"} onValueChange={handleRole}>
           <SelectTrigger className="sm:w-40" aria-label={t("Filtrar por role")}>
-            <SelectValue placeholder="Role" />
+            <SelectValue placeholder={t("Papel")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("Todos os roles")}</SelectItem>
+            <SelectItem value="all">{t("Todos os papéis")}</SelectItem>
             <SelectItem value="admin">{t("Admin")}</SelectItem>
             <SelectItem value="manager">{t("Manager")}</SelectItem>
             <SelectItem value="agent">{t("Agente")}</SelectItem>

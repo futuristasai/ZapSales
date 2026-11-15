@@ -144,7 +144,7 @@ test.describe("o servidor de e-mail da instalação, pela tela", () => {
     await porta.click();
     await page.waitForURL(/\/admin\/email/);
 
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Servidor de e-mail");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("E-mail");
     // O estado honesto: numa instalação sem e-mail nenhum, a tela diz o que
     // acontece na prática com os convites, em vez de só "não configurado".
     await expect(page.getByTestId("smtp-estado")).toContainText(/link para copiar/i);

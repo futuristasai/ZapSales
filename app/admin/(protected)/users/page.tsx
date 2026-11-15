@@ -1,6 +1,7 @@
 import { UsersClient } from "./_client";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Usuários — Admin Plataforma" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/users");
 
 export default function AdminUsersPage() {
   return <UsersClient />;

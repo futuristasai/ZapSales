@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import { loadAuthUser } from "@/lib/auth/server";
 import { carregarCotacao, COTACAO_DE_REFERENCIA } from "@/lib/custo/cotacao";
 import { carregarTabela } from "@/lib/custo/tabela-de-precos";
-import { traduzir } from "@/lib/i18n/dicionario";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import { FormularioDePrecosDaMeta } from "./_form";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Preços da Meta" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/precos-da-meta");
 export const dynamic = "force-dynamic";
 
 /**
@@ -33,15 +34,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{traduzir("Preços da Meta", usuario.idioma)}</h1>
-        <p className="text-sm text-muted-foreground">
-          {traduzir(
-            "Quanto a Meta cobra por mensagem, por país de quem recebe e categoria. É a base da estimativa antes do disparo, do custo de cada mensagem e do teto de gasto das campanhas.",
-            usuario.idioma,
-          )}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/precos-da-meta" />
       <FormularioDePrecosDaMeta
         linhasIniciais={tabela}
         cotacaoInicial={cotacao.referencia ? null : cotacao.valor}

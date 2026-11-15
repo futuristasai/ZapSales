@@ -6,7 +6,7 @@ import { IdiomaProvider } from "@/lib/i18n/IdiomaProvider";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
 import { traduzir } from "@/lib/i18n/dicionario";
 
-export const metadata = { title: "Acesso negado — Admin Plataforma" };
+export const metadata = { title: "Acesso negado · Administração" };
 
 export default async function AdminForbiddenPage() {
   // Página sem `requirePlatformAdmin()` (é o próprio destino do redirect dele)
@@ -17,9 +17,7 @@ export default async function AdminForbiddenPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const idioma = normalizarIdioma(
-    (user?.user_metadata?.locale as string | undefined) ?? null,
-  );
+  const idioma = normalizarIdioma((user?.user_metadata?.locale as string | undefined) ?? null);
 
   // Traduzir o texto não basta: o `<html lang="pt-BR">` do layout raiz só é
   // corrigido por um `IdiomaProvider`, e esta tela não está sob nenhum. Sem

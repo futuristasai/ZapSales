@@ -8,7 +8,8 @@
  * zero, sem o módulo.
  *
  * O caminho, como um leigo faria:
- *   1. o dono do servidor acha "Módulos" no menu do painel e instala Honorários;
+ *   1. o dono do servidor abre "Recursos opcionais" no menu do painel e instala Honorários
+ *      no bloco Módulos (issue #308 — antes havia um item "Módulos" só para isso);
  *   2. a porta aparece em Análise e leva à tela;
  *   3. cria uma conta no caixa, um contrato de valor fixo e uma parcela;
  *   4. clica DUAS VEZES em "Pagar" — o clique duplo que pagava em dobro;
@@ -33,18 +34,23 @@ test.describe("Honorários: instalar e registrar um pagamento", () => {
     test.setTimeout(180_000);
     await loginComoDono(page, lerCreds());
 
-    // 1. A porta no menu do painel da instalação, e o botão Instalar.
+    // 1. A porta no menu do painel da instalação, e o botão Instalar no bloco Módulos.
     await page.goto("/admin/dashboard");
-    const porta = page.locator('a[href="/admin/modulos"]').first();
-    await expect(porta, "o menu do painel não oferece porta para os módulos").toBeVisible();
+    const porta = page.locator('nav a[href="/admin/sistema"]').first();
+    await expect(porta, "o menu do painel não oferece porta para Recursos opcionais").toBeVisible();
     await porta.click();
-    await expect(page).toHaveURL(/\/admin\/modulos/);
+    await expect(page).toHaveURL(/\/admin\/sistema/);
+    await expect(page.getByRole("heading", { name: "Módulos", exact: true })).toBeVisible();
 
     const cartao = page.getByTestId("modulo-honorarios");
     await expect(cartao).toBeVisible();
     const instalar = page.getByTestId("instalar-honorarios");
-    if (await instalar.isVisible()) await instalar.click();
-    await expect(cartao.getByText(/instalado/i), "o módulo não ficou instalado").toBeVisible({
+    if (await instalar.isVisible()) {
+      // Antes do clique, a tela diz o peso da decisão (história 25).
+      await expect(page.getByTestId("aviso-honorarios")).toContainText("todas as empresas");
+      await instalar.click();
+    }
+    await expect(cartao.getByText(/instalado em/i), "o módulo não ficou instalado").toBeVisible({
       timeout: 30_000,
     });
 

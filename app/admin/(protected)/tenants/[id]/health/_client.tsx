@@ -40,7 +40,7 @@ export function TenantHealthClient({ id }: TenantHealthClientProps) {
   if (isError || !data?.data) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-10 text-center text-sm text-destructive">
-        {t("Não foi possível carregar o status de saúde do tenant. Tente recarregar a página.")}
+        {t("Não foi possível carregar a saúde da empresa. Tente recarregar a página.")}
       </div>
     );
   }
@@ -57,14 +57,16 @@ export function TenantHealthClient({ id }: TenantHealthClientProps) {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+        <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
           {t("Status de Saúde")}
         </h2>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {isFetching && (
-            <ArrowsClockwise size={13} className="animate-spin" aria-hidden />
+          {isFetching && <ArrowsClockwise size={13} className="animate-spin" aria-hidden />}
+          {lastChecked && (
+            <span>
+              {t("Atualizado às")} {lastChecked}
+            </span>
           )}
-          {lastChecked && <span>{t("Atualizado às")} {lastChecked}</span>}
         </div>
       </div>
 

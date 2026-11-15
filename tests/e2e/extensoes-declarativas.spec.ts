@@ -1029,9 +1029,9 @@ test("pacote pós-build atravessa catálogo, tenants, guia e Tarefas com recuper
     const auditPage = await page.context().newPage();
     observarErros(auditPage, "visualizador de auditoria", observacoes);
     await auditPage.goto("/admin/audit");
-    await expect(auditPage.getByRole("heading", { name: "Audit Log", exact: true })).toBeVisible();
+    await expect(auditPage.getByRole("heading", { name: "Registro de ações", exact: true })).toBeVisible();
 
-    await auditPage.getByRole("button", { name: "Tenants", exact: true }).click();
+    await auditPage.getByRole("button", { name: "Empresas", exact: true }).click();
     await auditPage.getByPlaceholder("Buscar...").fill(organization.display_name);
     await auditPage
       .getByRole("button", {

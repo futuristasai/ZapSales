@@ -8,11 +8,12 @@ import {
 } from "@/lib/instalacao/catalogo";
 import { estadoParaTela, type EstadoParaTela } from "@/lib/instalacao/config";
 import { normalizarIdioma } from "@/lib/i18n/idiomas";
-import { traduzir } from "@/lib/i18n/dicionario";
 
 import { PainelDeConfiguracao } from "./_form";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Configuração da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/configuracao");
 export const dynamic = "force-dynamic";
 
 /**
@@ -50,7 +51,11 @@ const ORDEM: readonly {
   },
   { grupo: "banco", titulo: "Banco de dados", resumo: "Onde ficam todos os seus dados." },
   { grupo: "fila", titulo: "Fila de tarefas", resumo: "Controla o ritmo dos envios." },
-  { grupo: "ia", titulo: "Inteligência artificial", resumo: "Como o atendimento automático opera." },
+  {
+    grupo: "ia",
+    titulo: "Inteligência artificial",
+    resumo: "Como o atendimento automático opera.",
+  },
 ];
 
 export interface LinhaDaTela {
@@ -75,7 +80,9 @@ export default async function Page() {
   // servidor manda e-mail" é um assunto só, e estava dividido em duas telas.
   // O filtro é o catálogo, não uma lista escrita aqui — assim não há como as
   // duas telas mostrarem a mesma chave.
-  const daTela = CATALOGO_DA_INSTALACAO.filter((d) => (d.telaDona ?? "credenciais") === "credenciais");
+  const daTela = CATALOGO_DA_INSTALACAO.filter(
+    (d) => (d.telaDona ?? "credenciais") === "credenciais",
+  );
 
   const linhas: LinhaDaTela[] = await Promise.all(
     daTela.map(async (definicao) => ({
@@ -91,17 +98,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {traduzir("Configuração da instalação", idioma)}
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-text-muted">
-          {traduzir(
-            "O que este servidor precisa saber para funcionar. O que dá para trocar aqui, você troca e vale na hora — sem mexer no servidor.",
-            idioma,
-          )}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma href="/admin/configuracao" />
 
       <PainelDeConfiguracao grupos={grupos} idioma={idioma} />
     </div>

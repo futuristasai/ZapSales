@@ -36,16 +36,14 @@ export function SuspendedBanner({ suspendedAt, reason }: SuspendedBannerProps) {
   return (
     <div
       role="region"
-      aria-label={t("Tenant Suspenso")}
+      aria-label={t("Empresa suspensa")}
       className="sticky top-0 z-10 flex items-start gap-3 rounded-lg border border-warning/40 bg-warning-bg px-4 py-3 text-warning-fg"
     >
       <Warning size={18} weight="fill" className="mt-0.5 shrink-0 text-warning-fg" aria-hidden />
       <p className="text-sm">
-        <span className="font-semibold">{t("Tenant suspenso")}</span>{" "}
+        <span className="font-semibold">{t("Empresa suspensa")}</span>{" "}
         {formatRelativePtBr(suspendedAt, t)}.{" "}
-        <span className="text-warning-fg">
-          {reason ?? t("Sem razão registrada.")}
-        </span>
+        <span className="text-warning-fg">{reason ?? t("Sem razão registrada.")}</span>
       </p>
     </div>
   );

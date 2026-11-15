@@ -11,9 +11,13 @@ import { CampoEditavel, type LinhaDaInstalacao } from "@/components/admin/CampoD
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/i18n/useT";
-import { MENSAGEM_DA_RECUSA_DE_ESCRITA, ehRecusaDeEscrita } from "@/lib/auth/recusa-de-escrita-de-admin";
+import {
+  MENSAGEM_DA_RECUSA_DE_ESCRITA,
+  ehRecusaDeEscrita,
+} from "@/lib/auth/recusa-de-escrita-de-admin";
 import type { SmtpSecurity } from "@/lib/email/config";
 import type { Idioma } from "@/lib/i18n/idiomas";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 interface Props {
   readonly host: string;
@@ -100,7 +104,9 @@ export function FormularioDeSmtp({
       } else if (r.reason === "authentication_failed") {
         toast.error(t("O servidor respondeu, mas recusou o usuário e a senha."));
       } else {
-        toast.error(t("Não foi possível falar com o servidor. Confira o endereço, a porta e a segurança."));
+        toast.error(
+          t("Não foi possível falar com o servidor. Confira o endereço, a porta e a segurança."),
+        );
       }
     });
 
@@ -108,7 +114,9 @@ export function FormularioDeSmtp({
     iniciar(async () => {
       const r = await updateSmtp(form);
       if (!r.ok) {
-        toast.error(t(ehRecusaDeEscrita(r.error) ? MENSAGEM_DA_RECUSA_DE_ESCRITA[r.error] : r.error));
+        toast.error(
+          t(ehRecusaDeEscrita(r.error) ? MENSAGEM_DA_RECUSA_DE_ESCRITA[r.error] : r.error),
+        );
         return;
       }
       toast.success(t("Servidor de e-mail salvo."));
@@ -118,16 +126,7 @@ export function FormularioDeSmtp({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t("Servidor de e-mail desta instalação")}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t(
-            "Convite de equipe, entrega de dados de LGPD e aviso de prazo saem por aqui. Preencher esta tela é a alternativa a contratar um serviço externo de envio: o e-mail passa a sair pelo seu próprio servidor.",
-          )}
-        </p>
-      </header>
+      <CabecalhoDaPlataforma href="/admin/email" />
 
       <Card className="flex flex-col gap-4 p-4">
         <div className="flex flex-col gap-1.5">
@@ -196,7 +195,9 @@ export function FormularioDeSmtp({
           />
           <p className="text-xs text-muted-foreground">
             {temSenhaSalva
-              ? t("Já existe uma senha gravada. Deixe em branco para mantê-la, ou digite uma nova para substituir.")
+              ? t(
+                  "Já existe uma senha gravada. Deixe em branco para mantê-la, ou digite uma nova para substituir.",
+                )
               : t("Ela é guardada cifrada e nunca volta a aparecer nesta tela.")}
           </p>
         </div>
@@ -245,8 +246,12 @@ export function FormularioDeSmtp({
             {transporte === "smtp"
               ? t("Em uso: o e-mail está saindo por este servidor.")
               : transporte === "resend"
-                ? t("O e-mail desta instalação já sai por um serviço externo. Preencher esta tela passa a entrega para o seu servidor.")
-                : t("Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.")}
+                ? t(
+                    "O e-mail desta instalação já sai por um serviço externo. Preencher esta tela passa a entrega para o seu servidor.",
+                  )
+                : t(
+                    "Nenhum caminho de e-mail configurado: os convites aparecem como link para copiar, em vez de chegar na caixa de entrada.",
+                  )}
           </span>
           <div className="flex gap-2">
             <Button

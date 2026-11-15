@@ -5,7 +5,7 @@
  * Módulo opcional (ADR-0002): antes de instalado, toda leitura devolve 409
  * `module_not_installed`. A tela não trata isso como erro genérico — mostra o
  * mesmo texto que a rota manda (quem resolve é o administrador da instalação,
- * em Configurações da instalação › Módulos, não quem está nesta tela).
+ * em Administração da instalação › Recursos opcionais › Módulos, não quem está nesta tela).
  */
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -53,7 +53,8 @@ export function Honorarios({ podeGerenciar }: { podeGerenciar: boolean }) {
 
   const contratos = useQuery({
     queryKey: ["honorarios", "contratos"],
-    queryFn: async () => (await apiClient.get<{ data: Contrato[] }>("/api/v1/honorarios/contratos")).data,
+    queryFn: async () =>
+      (await apiClient.get<{ data: Contrato[] }>("/api/v1/honorarios/contratos")).data,
     retry: false,
   });
 
@@ -79,18 +80,13 @@ export function Honorarios({ podeGerenciar }: { podeGerenciar: boolean }) {
   }
 
   if (contratos.isError) {
-    return (
-      <p className="text-sm text-danger">{t("Não foi possível carregar os contratos.")}</p>
-    );
+    return <p className="text-danger text-sm">{t("Não foi possível carregar os contratos.")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-4">
       {podeGerenciar ? (
-        <FormularioDeContrato
-          criando={criar.isPending}
-          onCriar={(corpo) => criar.mutate(corpo)}
-        />
+        <FormularioDeContrato criando={criar.isPending} onCriar={(corpo) => criar.mutate(corpo)} />
       ) : null}
 
       <section className="rounded-md border border-border p-3">

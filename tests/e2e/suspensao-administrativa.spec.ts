@@ -182,7 +182,7 @@ test("suspender cala B pela tela; o hub atende quem ficou; reativar não solta r
     const pLeitura = await ctxLeitura.newPage();
     await entrar(pLeitura, leitura.email);
     await pLeitura.goto(`/admin/tenants/${orgB}`);
-    await pLeitura.getByRole("button", { name: "Suspender tenant" }).click();
+    await pLeitura.getByRole("button", { name: "Suspender empresa" }).click();
     await pLeitura.locator("#suspend-reason").fill("Tentativa de quem só tem leitura");
     // O toast é o mesmo para qualquer falha; a resposta diz que foi o scope.
     const [recusa] = await Promise.all([
@@ -191,14 +191,14 @@ test("suspender cala B pela tela; o hub atende quem ficou; reativar não solta r
     ]);
     expect(recusa.status()).toBe(403);
     expect(((await recusa.json()) as { error: { code: string } }).error.code).toBe("forbidden_scope");
-    await expect(pLeitura.getByText("Erro ao suspender tenant")).toBeVisible();
+    await expect(pLeitura.getByText("Erro ao suspender a empresa")).toBeVisible();
     expect((await estadoDaOrg(orgB)).status).toBe("active");
     await pLeitura.screenshot({ path: `${EVIDENCIA}/leitura-recusada.png` });
 
     // ── 2. O dono suspende B pela tela ─────────────────────────────────────
     await entrar(page, dono.email);
     await page.goto(`/admin/tenants/${orgB}`);
-    await page.getByRole("button", { name: "Suspender tenant" }).click();
+    await page.getByRole("button", { name: "Suspender empresa" }).click();
     await page.locator("#suspend-reason").fill("Suspensão administrativa de teste E2E");
     await page.getByRole("button", { name: "Confirmar suspensão" }).click();
     await expect.poll(async () => (await estadoDaOrg(orgB)).status).toBe("suspended");
@@ -279,7 +279,7 @@ test("suspender cala B pela tela; o hub atende quem ficou; reativar não solta r
 
     // ── 7. O dono reativa: nada em rajada, e a Central pede revisão ────────
     await page.goto(`/admin/tenants/${orgB}`);
-    await page.getByRole("button", { name: "Reativar tenant" }).click();
+    await page.getByRole("button", { name: "Reativar empresa" }).click();
     await page.locator("#reactivate-reason").fill("Reativação administrativa de teste E2E");
     await page.getByRole("button", { name: "Confirmar reativação" }).click();
     await expect.poll(async () => (await estadoDaOrg(orgB)).status).toBe("active");

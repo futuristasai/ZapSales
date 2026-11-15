@@ -70,13 +70,18 @@ export function ReactivateDialog({ open, onClose, organizationId }: ReactivateDi
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={(open) => { if (!open) handleClose(); }}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("Reativar tenant")}</AlertDialogTitle>
+          <AlertDialogTitle>{t("Reativar empresa")}</AlertDialogTitle>
           <AlertDialogDescription>
             {t(
-              "A reativação restabelece o acesso dos usuários deste tenant à plataforma. Informe o motivo da reativação para o registro de auditoria.",
+              "A reativação devolve o acesso das pessoas desta empresa. Informe o motivo, que fica guardado no Registro de ações.",
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -84,9 +89,7 @@ export function ReactivateDialog({ open, onClose, organizationId }: ReactivateDi
         <div className="space-y-2 py-2">
           <Label htmlFor="reactivate-reason">
             {t("Motivo da reativação")}{" "}
-            <span className="text-muted-foreground text-xs font-normal">
-              ({reason.length}/500)
-            </span>
+            <span className="text-xs font-normal text-muted-foreground">({reason.length}/500)</span>
           </Label>
           <Textarea
             id="reactivate-reason"

@@ -25,6 +25,13 @@ export {
   House,
   // admin platform
   Buildings,
+  // "Quem pode criar conta" e a tarja da instalação (issue #308): a tarja deixou o
+  // prédio para "Empresas", e o servidor é o objeto do que se muda ali.
+  UserPlus,
+  HardDrives,
+  // o checklist "Sua instalação está pronta?" do Painel: falta obrigatório / falta opcional
+  WarningCircle,
+  Circle,
   FlowArrow,
   ChatsCircle,
   ClipboardText,

@@ -127,7 +127,7 @@ export function NewTenantForm() {
         owner_interface_settings: ownerInterface,
       });
 
-      toast.success(t("Tenant criado com sucesso!"));
+      toast.success(t("Empresa criada!"));
       setCreated(result.data);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -135,9 +135,9 @@ export function NewTenantForm() {
           form.setError("slug", { message: t("Este slug já está em uso") });
           return;
         }
-        toast.error(`${t("Erro ao criar tenant:")} ${err.message}`);
+        toast.error(`${t("Erro ao criar a empresa:")} ${err.message}`);
       } else {
-        toast.error(t("Erro inesperado ao criar tenant"));
+        toast.error(t("Erro inesperado ao criar a empresa"));
       }
     }
   });

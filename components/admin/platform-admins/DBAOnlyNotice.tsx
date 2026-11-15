@@ -13,17 +13,13 @@ export function DBAOnlyNotice() {
       <Info size={20} className="mt-0.5 shrink-0 text-info-fg" aria-hidden />
       <div className="space-y-1">
         <p className="text-sm font-semibold">
-          {t("Gerenciamento de Platform Admins é restrito ao DBA")}
+          {t("Quem administra a plataforma só se muda direto no banco de dados")}
         </p>
         <p className="text-sm leading-relaxed text-info-fg">
           {t("Conforme Spec 01 §3.4 T-04: adição, remoção ou alteração de")}{" "}
-          <code className="rounded-md bg-info-bg px-1 font-mono text-xs">
-            platform_admins
-          </code>{" "}
+          <code className="rounded-md bg-info-bg px-1 font-mono text-xs">platform_admins</code>{" "}
           {t("é feita exclusivamente via SQL pelo DBA, com nota explicativa em")}{" "}
-          <code className="rounded-md bg-info-bg px-1 font-mono text-xs">
-            api_audit_log
-          </code>
+          <code className="rounded-md bg-info-bg px-1 font-mono text-xs">api_audit_log</code>
           {t(
             ". Esta página é informativa e read-only — nenhum botão de modificação está disponível por design.",
           )}

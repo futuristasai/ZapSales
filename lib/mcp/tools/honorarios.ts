@@ -2,7 +2,7 @@
  * Capacidades de HONORÁRIOS — módulo opcional de advocacia (ADR-0002).
  *
  * As tabelas só existem depois que o administrador da instalação instala `honorarios` em
- * `/admin/modulos`. Uma organização que liga esta capacidade sem o módulo instalado é erro de
+ * Recursos opcionais (`/admin/sistema#modulos`). Uma organização que liga esta capacidade sem o módulo instalado é erro de
  * configuração, não "não achei" — por isso as duas tools aqui LANÇAM (não devolvem vazio
  * silencioso) quando a tabela não existe, com uma mensagem que aponta a causa.
  *
@@ -15,7 +15,7 @@ import type { McpToolDefinition } from "../types";
 
 const MODULO_NAO_INSTALADO_HINT =
   "módulo de honorários não está instalado nesta instalação (peça ao administrador para " +
-  "instalar em Configurações da instalação › Módulos) — esta capacidade não deveria estar " +
+  "instalar em Administração da instalação › Recursos opcionais › Módulos) — esta capacidade não deveria estar " +
   "ligada em nenhum agente enquanto isso";
 
 function ehTabelaInexistente(error: { code?: string } | null): boolean {

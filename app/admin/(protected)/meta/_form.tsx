@@ -26,8 +26,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/i18n/useT";
-import { MENSAGEM_DA_RECUSA_DE_ESCRITA, ehRecusaDeEscrita } from "@/lib/auth/recusa-de-escrita-de-admin";
+import {
+  MENSAGEM_DA_RECUSA_DE_ESCRITA,
+  ehRecusaDeEscrita,
+} from "@/lib/auth/recusa-de-escrita-de-admin";
 import { copyToClipboard } from "@/lib/clipboard";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 interface Props {
   /**
@@ -76,13 +80,17 @@ export function FormularioDaMeta({
     if (ehRecusaDeEscrita(r.error)) return t(MENSAGEM_DA_RECUSA_DE_ESCRITA[r.error]);
     switch (r.error) {
       case "invalid_input":
-        return t("A chave parece incompleta. Copie de novo do painel da Meta — ela tem 32 caracteres.");
+        return t(
+          "A chave parece incompleta. Copie de novo do painel da Meta — ela tem 32 caracteres.",
+        );
       case "app_secret_obrigatorio":
         return t("Cadastre a chave secreta do aplicativo primeiro. Sem ela o token não vale.");
       case "nada_para_salvar":
         return t("Nada mudou. Digite uma chave nova para substituir a atual.");
       case "leitura_do_app_falhou":
-        return t("Não consegui conferir o que já está gravado, então nada foi alterado. Tente de novo em instantes.");
+        return t(
+          "Não consegui conferir o que já está gravado, então nada foi alterado. Tente de novo em instantes.",
+        );
       default:
         // Cifra indisponível ou erro do banco: o texto da action diz qual, e
         // quem administra o servidor precisa dele para agir. Nada foi gravado.
@@ -122,19 +130,16 @@ export function FormularioDaMeta({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("API Oficial da Meta desta instalação")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("É com estas duas informações que o sistema confere que cada mensagem recebida pelo número oficial veio mesmo da Meta. Elas valem para a instalação inteira — cada empresa conecta o próprio número depois, em Conexões.")}
-        </p>
-      </header>
+      <CabecalhoDaPlataforma href="/admin/meta" />
 
       {leituraFalhou ? (
         <p
           role="alert"
           className="rounded-md border border-warning/40 bg-warning-bg p-3 text-xs leading-4 text-text-muted"
         >
-          {t("Não deu para ler a configuração salva agora, então o que aparece abaixo pode não ser o que está valendo. Recarregue a página antes de trocar qualquer coisa.")}
+          {t(
+            "Não deu para ler a configuração salva agora, então o que aparece abaixo pode não ser o que está valendo. Recarregue a página antes de trocar qualquer coisa.",
+          )}
         </p>
       ) : null}
 
@@ -148,12 +153,18 @@ export function FormularioDaMeta({
             autoComplete="new-password"
             value={chave}
             onChange={(e) => setChave(e.target.value)}
-            placeholder={temSegredoSalvo ? t("••••••••  (já cadastrada)") : t("32 letras e números")}
+            placeholder={
+              temSegredoSalvo ? t("••••••••  (já cadastrada)") : t("32 letras e números")
+            }
           />
           <p className="text-xs text-muted-foreground">
             {temSegredoSalvo
-              ? t("Já existe uma chave cadastrada. Deixe em branco para mantê-la, ou digite uma nova para substituir.")
-              : t("Fica no painel da Meta, em Configurações do app › Básico. Ela é guardada cifrada e nunca volta a aparecer nesta tela.")}
+              ? t(
+                  "Já existe uma chave cadastrada. Deixe em branco para mantê-la, ou digite uma nova para substituir.",
+                )
+              : t(
+                  "Fica no painel da Meta, em Configurações do app › Básico. Ela é guardada cifrada e nunca volta a aparecer nesta tela.",
+                )}
           </p>
         </div>
 
@@ -162,7 +173,9 @@ export function FormularioDaMeta({
             data-testid="meta-tem-no-ambiente"
             className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground"
           >
-            {t("Esta instalação já tem a chave e o token no arquivo de configuração do servidor. O que você salvar aqui passa a valer no lugar deles — e, a partir daí, é o token desta tela que precisa estar colado no painel da Meta.")}
+            {t(
+              "Esta instalação já tem a chave e o token no arquivo de configuração do servidor. O que você salvar aqui passa a valer no lugar deles — e, a partir daí, é o token desta tela que precisa estar colado no painel da Meta.",
+            )}
           </p>
         ) : null}
 
@@ -186,7 +199,9 @@ export function FormularioDaMeta({
               ? `${t("Gerado em")} ${tokenGeradoEm}.`
               : temTokenSalvo
                 ? t("Já existe um token gerado.")
-                : t("Ainda não existe. Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.")}
+                : t(
+                    "Ainda não existe. Ele é criado pelo sistema na primeira vez que você salva a chave secreta — ninguém precisa inventar nada.",
+                  )}
           </p>
         </div>
 
@@ -212,13 +227,17 @@ export function FormularioDaMeta({
             </div>
             <p className="rounded-md border border-warning/40 bg-warning-bg p-3 text-xs leading-4 text-text-muted">
               <strong className="font-semibold text-text">{t("Copie agora.")}</strong>{" "}
-              {t("Por segurança, ele não aparece de novo depois que você sair desta página. Se perder, é só gerar outro aqui.")}
+              {t(
+                "Por segurança, ele não aparece de novo depois que você sair desta página. Se perder, é só gerar outro aqui.",
+              )}
             </p>
           </div>
         ) : null}
 
         <p className="text-xs text-muted-foreground">
-          {t("No painel da Meta, em WhatsApp › Configuração › Webhook, este token vai no campo “Verificar token”. O outro campo, “URL de callback”, é de cada número: ele aparece em Conexões › API Oficial (Meta), depois que o número é conectado. Abra Conexões em outra aba, para não perder o token desta página.")}{" "}
+          {t(
+            "No painel da Meta, em WhatsApp › Configuração › Webhook, este token vai no campo “Verificar token”. O outro campo, “URL de callback”, é de cada número: ele aparece em Conexões › API Oficial (Meta), depois que o número é conectado. Abra Conexões em outra aba, para não perder o token desta página.",
+          )}{" "}
           {/*
             Outra aba de propósito: o token recém-gerado vive só nesta página, e
             a URL de callback só em Conexões. Na mesma aba a pessoa perde o token
@@ -251,14 +270,19 @@ export function FormularioDaMeta({
         ) : null}
       </Card>
 
-      <CartaoDoEmbeddedSignup inicial={embeddedSignup} temSegredo={temSegredoSalvo || temNoAmbiente} />
+      <CartaoDoEmbeddedSignup
+        inicial={embeddedSignup}
+        temSegredo={temSegredoSalvo || temNoAmbiente}
+      />
 
       <AlertDialog open={confirmandoTroca} onOpenChange={setConfirmandoTroca}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("Gerar um novo token de verificação?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("O token atual deixa de valer na hora. As mensagens que já chegam continuam chegando, porque elas são conferidas pela chave secreta. O que muda: a Meta só consegue confirmar o endereço do webhook de novo depois que você colar o token novo no painel dela.")}
+              {t(
+                "O token atual deixa de valer na hora. As mensagens que já chegam continuam chegando, porque elas são conferidas pela chave secreta. O que muda: a Meta só consegue confirmar o endereço do webhook de novo depois que você colar o token novo no painel dela.",
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -298,7 +322,9 @@ function CartaoDoEmbeddedSignup({
       case "ids_obrigatorios":
         return t("Preencha o ID do app e o ID da configuração antes de ligar.");
       case "app_secret_obrigatorio":
-        return t("Cadastre a chave secreta do aplicativo primeiro. Sem ela o código do login não pode ser trocado.");
+        return t(
+          "Cadastre a chave secreta do aplicativo primeiro. Sem ela o código do login não pode ser trocado.",
+        );
       case "invalid_input":
         return t("Os IDs da Meta têm só números. Confira o que foi colado.");
       default:
@@ -309,12 +335,18 @@ function CartaoDoEmbeddedSignup({
 
   function salvar(ligado: boolean) {
     iniciar(async () => {
-      const r = await updateEmbeddedSignup({ ligado, app_id: appId.trim(), config_id: configId.trim() });
+      const r = await updateEmbeddedSignup({
+        ligado,
+        app_id: appId.trim(),
+        config_id: configId.trim(),
+      });
       if (!r.ok) {
         toast.error(motivo(r.error));
         return;
       }
-      toast.success(ligado ? t("Conectar com Facebook ligado.") : t("Conectar com Facebook desligado."));
+      toast.success(
+        ligado ? t("Conectar com Facebook ligado.") : t("Conectar com Facebook desligado."),
+      );
       router.refresh();
     });
   }
@@ -325,8 +357,12 @@ function CartaoDoEmbeddedSignup({
         <h2 className="font-medium">{t("Conectar com Facebook (Embedded Signup)")}</h2>
         <p className="text-sm text-muted-foreground" data-testid="meta-embedded-signup-estado">
           {inicial.ligado
-            ? t("Ligado: as empresas desta instalação veem o botão Conectar com Facebook em Conexões › API Oficial.")
-            : t("Desligado. Ligue só depois que o seu app for aprovado como Tech Provider pela Meta — antes disso o login da Meta não conclui.")}
+            ? t(
+                "Ligado: as empresas desta instalação veem o botão Conectar com Facebook em Conexões › API Oficial.",
+              )
+            : t(
+                "Desligado. Ligue só depois que o seu app for aprovado como Tech Provider pela Meta — antes disso o login da Meta não conclui.",
+              )}
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -354,7 +390,9 @@ function CartaoDoEmbeddedSignup({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        {t("Os dois ficam no painel da Meta: o ID do app em Configurações do app › Básico; o ID da configuração em Facebook Login for Business › Configurações, na configuração do WhatsApp Embedded Signup.")}
+        {t(
+          "Os dois ficam no painel da Meta: o ID do app em Configurações do app › Básico; o ID da configuração em Facebook Login for Business › Configurações, na configuração do WhatsApp Embedded Signup.",
+        )}
       </p>
       {!temSegredo ? (
         <p className="text-xs text-destructive">
@@ -363,7 +401,12 @@ function CartaoDoEmbeddedSignup({
       ) : null}
       <div className="flex justify-end gap-2">
         {inicial.ligado ? (
-          <Button variant="outline" disabled={ocupado} onClick={() => salvar(false)} data-testid="meta-es-desligar">
+          <Button
+            variant="outline"
+            disabled={ocupado}
+            onClick={() => salvar(false)}
+            data-testid="meta-es-desligar"
+          >
             {t("Desligar")}
           </Button>
         ) : null}

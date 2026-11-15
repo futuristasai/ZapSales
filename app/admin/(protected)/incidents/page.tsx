@@ -1,6 +1,7 @@
 import { IncidentsClient } from "./_client";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Incidentes — Admin Plataforma" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/incidents");
 
 export default function AdminIncidentsPage() {
   return <IncidentsClient />;

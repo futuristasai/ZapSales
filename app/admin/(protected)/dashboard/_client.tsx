@@ -3,16 +3,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { KPICards } from "@/components/admin/dashboard/KPICards";
 import { AlertsBanner } from "@/components/admin/dashboard/AlertsBanner";
+import {
+  ChecklistDaInstalacao,
+  type ChecklistVisto,
+} from "@/components/admin/dashboard/ChecklistDaInstalacao";
 import { useAdminDashboardKPIs } from "@/hooks/useAdminDashboardKPIs";
 import { useAlertsRealtime } from "@/hooks/useAlertsRealtime";
 import { useT } from "@/hooks/i18n/useT";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 function KPISkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {Array.from({ length: 5 }).map((_, i) => (
         <Card key={i}>
-          <CardContent className="pt-6 space-y-3">
+          <CardContent className="space-y-3 pt-6">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-8 w-16" />
             <Skeleton className="h-3 w-32" />
@@ -26,7 +31,7 @@ function KPISkeleton() {
 function AlertsSkeleton() {
   return (
     <Card>
-      <CardContent className="py-4 space-y-3">
+      <CardContent className="space-y-3 py-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-10 w-full" />
         ))}
@@ -35,19 +40,21 @@ function AlertsSkeleton() {
   );
 }
 
-export function DashboardClient() {
+export function DashboardClient({ checklist }: { checklist: ChecklistVisto }) {
   const t = useT();
   const { data, isLoading } = useAdminDashboardKPIs();
   useAlertsRealtime();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Dashboard")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("Visão cross-tenant — atualiza a cada 30 segundos.")}
-        </p>
-      </div>
+      <CabecalhoDaPlataforma
+        href="/admin/dashboard"
+        complemento={t("Os números se atualizam sozinhos a cada 30 segundos.")}
+      />
+
+      {/* Primeiro "o que falta configurar?", depois "está tudo bem?" — numa instalação
+          recém-feita os números estão todos em zero, e o que importa é o checklist. */}
+      <ChecklistDaInstalacao checklist={checklist} />
 
       {isLoading || !data ? (
         <>
@@ -57,7 +64,9 @@ export function DashboardClient() {
       ) : (
         <>
           <KPICards kpis={data} />
-          <AlertsBanner alerts={data.alerts} />
+          <div id="alertas" className="scroll-mt-16">
+            <AlertsBanner alerts={data.alerts} />
+          </div>
         </>
       )}
     </div>

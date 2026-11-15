@@ -95,7 +95,7 @@ test.describe("Credencial do Google da instalação, pela tela (#370)", () => {
     // ── Estado inicial: nada cadastrado, nada no .env (o CI não define
     // GOOGLE_CALENDAR_CLIENT_ID/_SECRET) ────────────────────────────────────
     await page.goto("/admin/google");
-    await expect(page.getByRole("heading", { name: /google agenda desta instalação/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Google Agenda" })).toBeVisible();
     await expect(page.locator("#client-id")).toHaveValue("");
     await expect(
       page.getByTestId("google-tem-no-ambiente"),

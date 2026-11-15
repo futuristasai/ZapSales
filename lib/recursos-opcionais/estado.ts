@@ -14,6 +14,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { googleEstaConfigurado } from "@/lib/agenda/google/config";
+import { modoDeCadastro } from "@/lib/auth/politica-de-cadastro";
+import { marcaEhADoProduto } from "@/lib/branding";
+import { marcaDaInstalacao } from "@/lib/branding/instalacao";
+import { REGUA_DO_PRODUTO } from "@/lib/branding/regua-do-produto";
+import { camadaDaInstalacao, camadaDoAmbiente, resolverMarca } from "@/lib/branding/resolve";
 import { appDaMeta } from "@/lib/channels/meta/app";
 import { emailConfigurado } from "@/lib/email/roteador";
 import { env } from "@/lib/env";
@@ -25,7 +30,10 @@ import { getWacallsClient } from "@/lib/wacalls/client";
 
 import type { FontesDeEstado } from "./catalogo";
 
-async function detectar(id: string, ler: () => boolean | Promise<boolean>): Promise<[string, boolean | null]> {
+async function detectar(
+  id: string,
+  ler: () => boolean | Promise<boolean>,
+): Promise<[string, boolean | null]> {
   try {
     return [id, await ler()];
   } catch (erro) {
@@ -37,7 +45,13 @@ async function detectar(id: string, ler: () => boolean | Promise<boolean>): Prom
   }
 }
 
-/** O que o servidor tem configurado, por `id` do catálogo. */
+/**
+ * O que o servidor tem configurado, por `id` do catálogo.
+ *
+ * `marca` e `cadastro` (issue #308) moram no banco da instalação, e não no `.env`, mas a
+ * pergunta é a mesma — "isto está decidido nesta instalação?" — e o checklist do Painel
+ * e a tela de Recursos opcionais leem as duas daqui, pelo mesmo `peloServidor`.
+ */
 export async function detectarServidor(): Promise<Record<string, boolean | null>> {
   const pares = await Promise.all([
     detectar("email", emailConfigurado),
@@ -50,12 +64,25 @@ export async function detectarServidor(): Promise<Record<string, boolean | null>
     detectar("google_ads", () => googleAdsEstaConfigurado()),
     detectar("web_push", vapidPronto),
     detectar("transcricao", () => env.TRANSCRIPTION_BASE_URL.trim().length > 0),
+    // A MESMA resolução do layout raiz (`app/layout.tsx`): banco acima do `.env`.
+    detectar("marca", async () => {
+      const marca = resolverMarca(
+        [camadaDaInstalacao(await marcaDaInstalacao()), camadaDoAmbiente(env)],
+        REGUA_DO_PRODUTO,
+      );
+      return !marcaEhADoProduto(marca);
+    }),
+    // Há sempre um modo em vigor; ler o modo é a prova de que a decisão existe.
+    detectar("cadastro", async () => Boolean(await modoDeCadastro())),
   ]);
   return Object.fromEntries(pares);
 }
 
 /** Fontes da tela da empresa. `organizationId` vem da SESSÃO, nunca da requisição. */
-export async function fontesDaEmpresa(db: SupabaseClient, organizationId: string): Promise<FontesDeEstado> {
+export async function fontesDaEmpresa(
+  db: SupabaseClient,
+  organizationId: string,
+): Promise<FontesDeEstado> {
   const [modulos, settings] = await Promise.all([
     // ponytail: `modulosLigados` falha fechada (erro de banco = nenhum módulo) e não
     // distingue "desligado" de "não li". Para a tela que só informa, isso vira
@@ -70,7 +97,9 @@ export async function fontesDaEmpresa(db: SupabaseClient, organizationId: string
           .maybeSingle();
         if (error || !data) return null;
         const s = (data as { settings?: unknown }).settings;
-        return s && typeof s === "object" && !Array.isArray(s) ? (s as Record<string, unknown>) : {};
+        return s && typeof s === "object" && !Array.isArray(s)
+          ? (s as Record<string, unknown>)
+          : {};
       } catch {
         return null;
       }

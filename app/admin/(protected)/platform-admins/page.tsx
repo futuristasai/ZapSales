@@ -1,6 +1,7 @@
 import { PlatformAdminsClient } from "./_client";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Platform Admins — Admin Plataforma" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/platform-admins");
 
 export default function AdminPlatformAdminsPage() {
   return <PlatformAdminsClient />;

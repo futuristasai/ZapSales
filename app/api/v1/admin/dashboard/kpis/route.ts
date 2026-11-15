@@ -186,8 +186,8 @@ export async function GET(_req: NextRequest) {
       tenant_name: (org as { display_name?: string })?.display_name ?? row.organization_id,
       message:
         row.status === "ban_suspected"
-          ? "Sessão WAHA com suspeita de banimento"
-          : `Sessão desconectada inesperadamente${row.status_reason ? `: ${row.status_reason}` : ""}`,
+          ? "Número com suspeita de bloqueio pelo WhatsApp"
+          : `Número desconectado sem aviso${row.status_reason ? `: ${row.status_reason}` : ""}`,
       link: `/admin/tenants/${row.organization_id}/health`,
       created_at: row.updated_at,
     });
@@ -285,8 +285,8 @@ export async function GET(_req: NextRequest) {
       tenant_name: row.nome,
       message:
         row.modo === "bloquear"
-          ? `Budget IA ${Math.round(row.pct * 100)}% do teto (gasto acumulado) — este tenant escolheu parar a IA no limite`
-          : `Budget IA ${Math.round(row.pct * 100)}% do teto (gasto acumulado)`,
+          ? `Gasto com IA em ${Math.round(row.pct * 100)}% do teto (acumulado) — a empresa escolheu parar a IA no limite`
+          : `Gasto com IA em ${Math.round(row.pct * 100)}% do teto (acumulado)`,
       // Leva à saúde DO TENANT, e não a `/admin/usage`: é a única tela de admin
       // que lê a régua real (`fn_gasto_de_ia_do_mes`). Quem clicar por causa
       // deste alerta chega no número que decide, não em outro acumulado.

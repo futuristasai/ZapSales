@@ -7,8 +7,9 @@ import type { Idioma } from "@/lib/i18n/idiomas";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import { FormularioDaMeta } from "./_form";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "API Oficial da Meta da instalação" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/meta");
 export const dynamic = "force-dynamic";
 
 /**
@@ -55,17 +56,15 @@ export default async function Page() {
     .eq("id", 1)
     .maybeSingle();
 
-  const linha = data as
-    | {
-        app_secret_encrypted: string | null;
-        verify_token_encrypted: string | null;
-        verify_token_created_at: string | null;
-        updated_at: string | null;
-        app_id?: string | null;
-        embedded_signup_config_id?: string | null;
-        embedded_signup_ligado?: boolean | null;
-      }
-    | null;
+  const linha = data as {
+    app_secret_encrypted: string | null;
+    verify_token_encrypted: string | null;
+    verify_token_created_at: string | null;
+    updated_at: string | null;
+    app_id?: string | null;
+    embedded_signup_config_id?: string | null;
+    embedded_signup_ligado?: boolean | null;
+  } | null;
 
   // O `.env` é o piso de rollback (`lib/channels/meta/app.ts`). Dizer que ele
   // existe é o que torna a precedência visível: sem isto, quem tem o par no

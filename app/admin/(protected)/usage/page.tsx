@@ -1,6 +1,7 @@
 import { UsageClient } from "./_client";
+import { metadadosDaTelaDoAdmin } from "@/lib/admin/metadados";
 
-export const metadata = { title: "Uso & Custo — Admin Plataforma" };
+export const generateMetadata = metadadosDaTelaDoAdmin("/admin/usage");
 
 export default function AdminUsagePage() {
   return <UsageClient />;

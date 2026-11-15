@@ -22,6 +22,7 @@ import {
   LgpdRequestsTableSkeleton,
 } from "@/components/admin/lgpd/LgpdRequestsTable";
 import { useT } from "@/hooks/i18n/useT";
+import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
 
 const NONE = "__none__";
 
@@ -64,7 +65,12 @@ export function LgpdAdminClient() {
     setFilters({});
   }
 
-  const hasActiveFilters = !!(filters.status || filters.request_type || filters.risk_level || filters.tenant_id);
+  const hasActiveFilters = !!(
+    filters.status ||
+    filters.request_type ||
+    filters.risk_level ||
+    filters.tenant_id
+  );
 
   return (
     <div className="space-y-6">
@@ -72,14 +78,14 @@ export function LgpdAdminClient() {
       <LgpdRiskBanner requests={bannerRows} />
 
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("LGPD — Cross-tenant")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isLoading
+      <CabecalhoDaPlataforma
+        href="/admin/lgpd"
+        complemento={
+          isLoading
             ? t("Carregando...")
-            : `${total} ${total !== 1 ? t("solicitações") : t("solicitação")}${hasNextPage ? "+" : ""}`}
-        </p>
-      </div>
+            : `${total} ${total !== 1 ? t("solicitações") : t("solicitação")}${hasNextPage ? "+" : ""}`
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -105,7 +111,7 @@ export function LgpdAdminClient() {
             <SelectItem value={NONE}>{t("Todos os tipos")}</SelectItem>
             <SelectItem value="redact">{t("Anonimização cliente")}</SelectItem>
             <SelectItem value="data_request">{t("Solicitação de dados")}</SelectItem>
-            <SelectItem value="store_redact">{t("Anonimização tenant")}</SelectItem>
+            <SelectItem value="store_redact">{t("Anonimização da empresa")}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -123,11 +129,7 @@ export function LgpdAdminClient() {
         </Select>
 
         {hasActiveFilters && (
-          <Badge
-            variant="secondary"
-            className="cursor-pointer text-xs"
-            onClick={clearFilters}
-          >
+          <Badge variant="secondary" className="cursor-pointer text-xs" onClick={clearFilters}>
             {t("Limpar filtros")} ×
           </Badge>
         )}
