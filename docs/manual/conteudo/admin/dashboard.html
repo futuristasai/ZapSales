@@ -1,4 +1,4 @@
-<!--meta {"id":"admin-dashboard","grupo":"admin","titulo":"Painel","ordem":2,"resumo":"A primeira tela da Administração da instalação: o checklist “Sua instalação está pronta?” e, de relance, o que pede atenção em todas as empresas (número de WhatsApp com problema, prazo de LGPD, teto de IA, clientes esperando resposta).","palavras":["painel","dashboard","checklist","sua instalação está pronta","kpi","indicadores","alertas","empresas ativas","tenants ativos","esperando resposta","pendentes","números com problema","waha","pedidos de lgpd","lgpd em risco","teto de ia","budgets ia","cross-tenant"],"onde":"Administração da instalação › Visão geral › Painel (/admin/dashboard)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
+<!--meta {"id":"admin-dashboard","grupo":"admin","titulo":"Painel","ordem":2,"resumo":"A primeira tela da Administração da instalação: o checklist “Sua instalação está pronta?”, a saúde da instalação (banco, WhatsApp, Redis e fila de tarefas), a situação da licença e, de relance, o que pede atenção em todas as empresas (número de WhatsApp com problema, prazo de LGPD, teto de IA, clientes esperando resposta).","palavras":["painel","dashboard","checklist","sua instalação está pronta","kpi","indicadores","alertas","empresas ativas","tenants ativos","esperando resposta","pendentes","números com problema","waha","pedidos de lgpd","lgpd em risco","teto de ia","budgets ia","cross-tenant","saúde da instalação","health","banco de dados","redis","fila de tarefas","agendador","fora do ar","licença","conferir de novo"],"onde":"Administração da instalação › Visão geral › Painel (/admin/dashboard)","quem":"Administrador da plataforma (só leitura)","rotas":[]} -->
 
 <h2 id="visao-geral">Para que serve</h2>
 <p>É a tela que abre quando você entra na Administração da instalação. Responde duas perguntas: <em>“falta configurar alguma coisa?”</em> e <em>“alguma empresa da minha instalação está com problema agora?”</em>. O cabeçalho diz: “Mostra, num lugar só, o que pede atenção em todas as empresas desta instalação e o que ainda falta configurar.”, “Quando usar: Ao entrar, para saber se está tudo em ordem e por onde começar.” e “Os números se atualizam sozinhos a cada 30 segundos.”.</p>
@@ -22,6 +22,30 @@
   <li><strong>Aberto ou recolhido.</strong> Enquanto o e-mail (o único obrigatório) não estiver configurado, o cartão fica aberto. Com o essencial pronto, ele aparece <em>recolhido</em> numa linha só; clique nele (ou use <kbd>Enter</kbd>) para abrir a lista de novo.</li>
   <li>O checklist só lê: ele nunca muda nada sozinho. Nenhum segredo aparece aqui, só “pronto” ou “falta” por item.</li>
 </ul>
+
+<h2 id="saude">Saúde da instalação</h2>
+<!-- PRINT DESATUALIZADO (issue #310): fotografar o bloco de saúde e o cartão da licença após o deploy -->
+<p>Logo abaixo do checklist, o cartão <strong>“Saúde da instalação”</strong> responde <em>“está tudo bem?”</em>. Ele faz a mesma checagem do endereço <code>/api/v1/health</code> e mostra quatro itens, cada um <strong>Funcionando</strong> (verde), <strong>Fora do ar</strong> (vermelho), <strong>Não configurado</strong> ou <strong>Não consegui ler agora</strong>:</p>
+<table class="tabela">
+  <thead><tr><th>Item</th><th>Quando está fora do ar, diz</th><th>Comando mostrado</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Banco de dados</strong></td><td>“O banco de dados não respondeu. Sem ele nada funciona: suba os serviços da instalação de novo.”</td><td><code>sudo docker compose up -d</code></td></tr>
+    <tr><td><strong>WhatsApp (conexão por QR code)</strong></td><td>“O serviço que conecta os números por QR code não respondeu. Os números conectados por QR code não enviam nem recebem enquanto ele estiver parado.” Se o serviço responde mas recusa a chave, a frase manda rodar o instalador de novo para regravá-la.</td><td><code>sudo docker compose up -d waha</code></td></tr>
+    <tr><td><strong>Redis (contadores e limites de envio)</strong></td><td>“O Redis não respondeu. Sem ele os limites de envio contam em memória, e reiniciar o app zera a contagem.” Se o endereço no arquivo <code>.env</code> está escrito errado (aspas ou espaço sobrando), a frase diz isso em vez de mandar reiniciar.</td><td><code>sudo docker compose up -d redis srh</code></td></tr>
+    <tr><td><strong>Fila de tarefas</strong></td><td>“Há tarefas em segundo plano paradas há mais de 10 minutos (respostas da IA, avisos, follow-ups). O agendador pode estar parado.”</td><td><code>sudo docker compose up -d scheduler worker</code></td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>O comando aparece com a instrução “Na pasta da instalação no servidor (a mesma onde você rodou o instalador), rode:”. Ele só aparece quando subir o serviço resolve; quando o problema é chave, senha ou endereço, a frase diz o que corrigir.</li>
+  <li>A fila só fica vermelha quando uma tarefa <em>já devia ter rodado</em> há mais de 10 minutos. Uma tarefa reagendada de propósito — por exemplo, um atendimento esperando atendente livre — não conta, por mais antiga que seja.</li>
+  <li><strong>Não configurado</strong> não é defeito: é um serviço que esta instalação não usa (sem conexão por QR code, por exemplo, só a API Oficial da Meta funciona).</li>
+  <li>O botão <span class="ui">Conferir de novo</span> refaz a checagem. A saúde não se atualiza sozinha como os números.</li>
+  <li>Nenhum endereço interno, senha ou chave aparece aqui — só o estado e a frase.</li>
+</ul>
+
+<h2 id="licenca">Licença</h2>
+<p>Ao lado da saúde (no celular, embaixo dela), o cartão <strong>“Licença”</strong> mostra a situação da licença desta instalação, com as mesmas frases da faixa do topo e da tela de licença: <em>Uso não comercial</em>, <em>Ativação pendente</em>, <em>Licença temporária</em> (com quantos dias faltam), <em>Licença permanente</em>, <em>Autorização vencida</em> ou <em>Licença bloqueada</em>, e o selo <strong>Funcionando</strong> ou <strong>Não opera</strong>. Quando houver, mostra também <strong>Ativada em</strong> e <strong>Última conversa com o servidor de licenças</strong>, e se a licença está “Em observação” ou “Em vigor”. Licença vencida ou bloqueada deixa o cartão vermelho. <span class="ui">Ver a licença</span> abre a tela de licença, com os detalhes e o botão de renovar.</p>
+<aside class="nota"><strong>O que o cartão ainda não mostra.</strong><p>O nome do comprador e o vencimento do suporte não aparecem: a autorização que o servidor de licenças entrega à instalação não traz essas informações.</p></aside>
 
 <h2 id="numeros">Os cinco números</h2>
 <figure class="print">

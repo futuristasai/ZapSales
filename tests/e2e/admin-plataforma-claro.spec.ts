@@ -13,7 +13,10 @@
  *      e a aba do navegador diz o nome da tela;
  *   3. o Painel tem o checklist "Sua instalação está pronta?" e cartões que levam à lista;
  *   4. o endereço antigo `/admin/modulos` leva ao bloco Módulos de Recursos opcionais;
- *   5. no celular, a gaveta mostra os mesmos grupos, e a ajuda está no topo da tela.
+ *   5. no celular, a gaveta mostra os mesmos grupos, e a ajuda está no topo da tela;
+ *   6. o Painel diz se está tudo bem (issue #310): banco, WhatsApp por QR code, Redis e
+ *      fila em verde/vermelho com a frase do que fazer, e o cartão da licença — sem
+ *      segredo nem endereço interno na página.
  *
  * Medidas por ferramenta (`getBoundingClientRect`/`getComputedStyle`), nunca a olho.
  * As capturas vão para `evidence/admin-plataforma-claro/`, publicadas pelo CI.
@@ -25,6 +28,8 @@ import { createClient } from "@supabase/supabase-js";
 
 import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN } from "@/lib/admin/catalogo";
 import { traduzir } from "@/lib/i18n/dicionario";
+import type { EstadoDaLicenca } from "@/lib/licenca/decidir";
+import { textoDaLicenca } from "@/lib/licenca/textos";
 
 import { expect, test } from "./helpers/test";
 
@@ -174,6 +179,175 @@ test("o Painel diz o que falta configurar e os cartões levam à lista", async (
   }
   await checklist.getByTestId("checklist-email").getByRole("link").click();
   await expect(page).toHaveURL(/\/admin\/email$/);
+});
+
+/**
+ * "ESTÁ TUDO BEM?" (issue #310). A régua de cada serviço é o ALCANCE REAL deste ambiente,
+ * medido pela própria spec com o mesmo endereço que o app recebe (`.env.e2e`): no CI, o
+ * gerador aponta WAHA e Redis para portas onde nada escuta — o serviço está fora do ar de
+ * verdade, e o Painel tem de dizer isso com a frase e o comando. A fila é parada de
+ * propósito: um evento sem consumidor, vencido há 20 minutos, apagado no fim.
+ */
+test("o Painel diz se a instalação está saudável e mostra a licença, sem segredo", async ({
+  page,
+}) => {
+  const c = credenciaisSupabaseDeTeste();
+  const db = createClient(c.url, c.serviceRole, { auth: { persistSession: false } });
+  const { data: org, error: erroOrg } = await db
+    .from("organizations")
+    .select("id")
+    .limit(1)
+    .single();
+  if (erroOrg) throw erroOrg;
+  const { data: evento, error: erroEvento } = await db
+    .from("event_log")
+    .insert({
+      organization_id: org.id,
+      event_type: "teste_e2e.fila_parada",
+      entity_kind: "teste_e2e",
+      status: "pending",
+      created_at: new Date(Date.now() - 20 * 60_000).toISOString(),
+    })
+    .select("id")
+    .single();
+  if (erroEvento) throw erroEvento;
+
+  const alcanca = async (url: string | undefined, init?: RequestInit) => {
+    if (!url) return null; // não configurado
+    try {
+      await fetch(url, { ...init, signal: AbortSignal.timeout(3_000) });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const qrNoAr = await alcanca(process.env.WAHA_API_BASE_URL);
+  const redisNoAr = await alcanca(process.env.UPSTASH_REDIS_REST_URL, {
+    method: "POST",
+    body: JSON.stringify(["PING"]),
+  });
+
+  try {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await loginComoDono(page, lerCreds());
+    await page.goto("/admin/dashboard");
+
+    const saude = page.getByTestId("saude-da-instalacao");
+    await expect(saude.getByRole("heading", { name: "Saúde da instalação" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(saude.getByTestId("saude-banco")).toHaveAttribute("data-estado", "ok");
+    await expect(saude.getByTestId("saude-banco")).toContainText("Funcionando");
+
+    // A fila parada: vermelha, com a frase e o comando que a resolve.
+    const fila = saude.getByTestId("saude-fila");
+    await expect(fila).toHaveAttribute("data-estado", "fora");
+    await expect(fila).toContainText("Fora do ar");
+    await expect(fila).toContainText("O agendador pode estar parado");
+    await expect(saude.getByTestId("saude-fila-comando")).toHaveText(
+      "sudo docker compose up -d scheduler worker",
+    );
+    await expect(saude.getByTestId("saude-resumo")).toHaveText("Algo precisa de atenção.");
+
+    for (const [id, noAr, frase] of [
+      ["whatsapp", qrNoAr, "O serviço que conecta os números por QR code não respondeu"],
+      ["redis", redisNoAr, "O Redis não respondeu"],
+    ] as const) {
+      const item = saude.getByTestId(`saude-${id}`);
+      if (noAr === false) {
+        await expect(item, `${id} está fora do ar neste ambiente`).toHaveAttribute(
+          "data-estado",
+          "fora",
+        );
+        await expect(item).toContainText(frase);
+        await expect(saude.getByTestId(`saude-${id}-comando`)).toContainText(
+          "sudo docker compose up -d",
+        );
+      } else if (noAr === null) {
+        await expect(item).toHaveAttribute("data-estado", "nao_configurado");
+      } else {
+        // Alcançável não garante credencial certa; só garante que não é "fora do ar".
+        await expect(item).not.toContainText(frase);
+      }
+    }
+
+    // A licença: a situação real, com as mesmas frases da tela de licença.
+    const licenca = page.getByTestId("cartao-licenca");
+    await expect(licenca).toBeVisible();
+    const estado = (await licenca.getAttribute("data-licenca-estado")) as EstadoDaLicenca;
+    expect(estado).not.toBe("ilegivel");
+    await expect(licenca).toContainText(textoDaLicenca(estado, null, (t) => t).titulo);
+
+    // Nenhum segredo nem endereço interno na página — HTML e o payload do servidor juntos.
+    const html = await page.content();
+    const segredos = Object.entries({
+      WAHA_API_KEY: process.env.WAHA_API_KEY,
+      UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+      SUPABASE_SERVICE_ROLE_KEY: c.serviceRole,
+      INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET,
+      WAHA_API_BASE_URL: process.env.WAHA_API_BASE_URL,
+      UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    }).filter(([, v]) => typeof v === "string" && v.length >= 8);
+    expect(segredos.length, "a varredura precisa ter o que procurar").toBeGreaterThan(1);
+    for (const [nome, valor] of segredos) {
+      expect(html.includes(valor!), `${nome} apareceu no Painel`).toBe(false);
+    }
+    await saude.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: evidencia("painel-saude-e-licenca.png"), fullPage: true });
+
+    // Resolvida a causa, "Conferir de novo" lê de novo e a fila volta ao verde. Mas o e2e
+    // não tem agendador: eventos que OUTRAS specs emitiram também podem estar parados de
+    // verdade. O verde só é exigido quando nenhum outro está atrasado — senão o vermelho
+    // continua sendo a resposta certa, e é ela que se afirma.
+    await db.from("event_log").delete().eq("id", evento.id);
+    const limite = new Date(Date.now() - 9 * 60_000).toISOString();
+    const { count: outrosParados, error: erroOutros } = await db
+      .from("event_log")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending")
+      .or(`and(next_attempt_at.is.null,created_at.lt.${limite}),next_attempt_at.lt.${limite}`);
+    if (erroOutros) throw erroOutros;
+    await saude.getByRole("button", { name: "Conferir de novo" }).click();
+    if ((outrosParados ?? 0) === 0) {
+      await expect(fila).toHaveAttribute("data-estado", "ok", { timeout: 30_000 });
+      await expect(saude.getByTestId("saude-fila-comando")).toHaveCount(0);
+    } else {
+      test.info().annotations.push({
+        type: "fila",
+        description: `${outrosParados} evento(s) de outras specs parados (o e2e não tem agendador): a fila segue vermelha, como deve`,
+      });
+      await expect(fila).toHaveAttribute("data-estado", "fora");
+    }
+
+    // No celular: um bloco embaixo do outro, sem rolagem lateral.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/admin/dashboard");
+    await expect(saude.getByTestId("saude-banco")).toBeVisible({ timeout: 30_000 });
+    await expect(licenca).toBeVisible();
+    const medidas = await page.evaluate(() => {
+      const s = document
+        .querySelector('[data-testid="saude-da-instalacao"]')!
+        .getBoundingClientRect();
+      const l = document.querySelector('[data-testid="cartao-licenca"]')!.getBoundingClientRect();
+      return {
+        pagina: document.documentElement.scrollWidth,
+        tela: window.innerWidth,
+        licencaAbaixo: l.top >= s.bottom - 1,
+      };
+    });
+    expect(medidas.pagina).toBeLessThanOrEqual(medidas.tela);
+    expect(medidas.licencaAbaixo).toBe(true);
+    await page.screenshot({
+      path: evidencia("celular-painel-saude-e-licenca.png"),
+      fullPage: true,
+    });
+
+    // "Ver a licença" leva à tela da licença.
+    await licenca.getByRole("link", { name: "Ver a licença" }).click();
+    await expect(page).toHaveURL(/\/app\/licenca$/);
+  } finally {
+    await db.from("event_log").delete().eq("id", evento.id);
+  }
 });
 
 test("o endereço antigo de Módulos leva ao bloco de módulos de Recursos opcionais", async ({

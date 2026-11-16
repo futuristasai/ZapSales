@@ -49,6 +49,7 @@ const detalhes = (mudancas: Partial<DetalhesDaLicenca> = {}): DetalhesDaLicenca 
   modo: "sombra",
   instalacaoId: ID,
   ativada: true,
+  ativadaEm: null,
   ultimaConsultaOkEm: "2027-01-15T11:00:00.000Z",
   janelaTerminaEm: "2027-01-19T11:00:00.000Z",
   proximaConsultaEm: "2027-01-15T12:00:00.000Z",

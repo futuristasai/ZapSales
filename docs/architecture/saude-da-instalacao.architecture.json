@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "titulo": "Saúde da instalação e licença no Painel (issue #310)",
+  "descricao": "O Painel da administração responde \"está tudo bem?\" com as MESMAS sondas do /api/v1/health, mais o atraso da fila do event_log, e mostra a licença pela mesma leitura da tela de licença. Nenhum endereço, erro cru nem segredo atravessa para o navegador: a frase é escolhida pelo motivo da sonda.",
+  "lanes": [
+    { "id": "fontes", "label": "Fontes" },
+    { "id": "nucleo", "label": "lib/saude" },
+    { "id": "telas", "label": "Telas e rotas" },
+    { "id": "guarda", "label": "Laço de retorno" }
+  ],
+  "mainPath": ["sondas", "traducao", "painelServidor", "blocoSaude"],
+  "nodes": [
+    {
+      "id": "sondas",
+      "lane": "fontes",
+      "label": "checkSupabase · checkRedis",
+      "sublabel": "lib/saude/sondas.ts — saíram da rota do health sem mudar comportamento",
+      "type": "lib",
+      "dot": "blue"
+    },
+    {
+      "id": "sondaQr",
+      "lane": "fontes",
+      "label": "sondarTransporteQr()",
+      "sublabel": "lib/channels/sonda-do-transporte-qr.ts — só a fronteira de canais nomeia o provedor",
+      "type": "lib",
+      "dot": "blue"
+    },
+    {
+      "id": "fila",
+      "lane": "fontes",
+      "label": "lerAtrasoDaFila()",
+      "sublabel": "lib/saude/fila.ts — event_log pending com next_attempt_at nulo ou vencido; reagendado de propósito não conta",
+      "type": "lib",
+      "dot": "blue"
+    },
+    {
+      "id": "licenca",
+      "lane": "fontes",
+      "label": "detalhesDaLicenca()",
+      "sublabel": "lib/licenca/situacao.ts — a mesma leitura de /app/licenca (ganhou ativadaEm)",
+      "type": "lib",
+      "dot": "blue"
+    },
+    {
+      "id": "traducao",
+      "lane": "nucleo",
+      "label": "saudeDaInstalacao()",
+      "sublabel": "lib/saude/da-instalacao.ts — pura: motivo → estado, frase e comando; nunca lê error/target",
+      "type": "lib",
+      "dot": "green"
+    },
+    {
+      "id": "painelServidor",
+      "lane": "nucleo",
+      "label": "saudeDaInstalacaoAgora()",
+      "sublabel": "lib/saude/painel.ts — server-only, sondas em paralelo (teto de 3 s)",
+      "type": "lib",
+      "dot": "green"
+    },
+    {
+      "id": "rotaHealth",
+      "lane": "telas",
+      "label": "GET /api/v1/health",
+      "sublabel": "monitor externo e kit — mesmas sondas; endereço só com o segredo interno",
+      "type": "route",
+      "dot": "purple"
+    },
+    {
+      "id": "blocoSaude",
+      "lane": "telas",
+      "label": "Saúde da instalação",
+      "sublabel": "/admin/dashboard — Suspense; \"Conferir de novo\" refaz a leitura",
+      "type": "page",
+      "dot": "purple"
+    },
+    {
+      "id": "cartaoLicenca",
+      "lane": "telas",
+      "label": "Cartão da licença",
+      "sublabel": "/admin/dashboard — frases de textoDaLicenca; leva a /app/licenca",
+      "type": "page",
+      "dot": "purple"
+    },
+    {
+      "id": "testePura",
+      "lane": "guarda",
+      "label": "da-instalacao.test.ts",
+      "sublabel": "cada motivo vira a frase certa; nenhum endereço na saída",
+      "type": "test",
+      "dot": "amber"
+    },
+    {
+      "id": "e2e",
+      "lane": "guarda",
+      "label": "admin-plataforma-claro.spec.ts",
+      "sublabel": "vermelho real (portas sem ninguém no CI), fila semeada, varredura de segredo no HTML",
+      "type": "test",
+      "dot": "amber"
+    }
+  ],
+  "edges": [
+    { "id": "e1", "from": "sondas", "to": "traducao", "label": "Check" },
+    { "id": "e2", "from": "sondaQr", "to": "traducao", "label": "Check" },
+    { "id": "e3", "from": "fila", "to": "traducao", "label": "atraso em segundos" },
+    { "id": "e4", "from": "traducao", "to": "painelServidor", "label": "itens" },
+    { "id": "e5", "from": "painelServidor", "to": "blocoSaude", "label": "sem segredo" },
+    { "id": "e6", "from": "sondas", "to": "rotaHealth", "label": "mesma sonda" },
+    { "id": "e7", "from": "sondaQr", "to": "rotaHealth", "label": "checks.waha" },
+    { "id": "e8", "from": "licenca", "to": "cartaoLicenca", "label": "recorte" },
+    { "id": "e9", "from": "testePura", "to": "traducao", "label": "vigia" },
+    { "id": "e10", "from": "e2e", "to": "blocoSaude", "label": "prova pela tela" },
+    { "id": "e11", "from": "e2e", "to": "cartaoLicenca", "label": "prova pela tela" }
+  ]
+}

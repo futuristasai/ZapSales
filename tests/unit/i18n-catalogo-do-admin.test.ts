@@ -6,6 +6,10 @@ import { describe, expect, it } from "vitest";
 import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN, SUBPAGINAS_DO_ADMIN } from "@/lib/admin/catalogo";
 import { TEXTOS_DO_CHECKLIST } from "@/components/admin/dashboard/ChecklistDaInstalacao";
 import { TEXTOS_DOS_CARTOES } from "@/components/admin/dashboard/KPICards";
+import { TEXTOS_DA_LICENCA_NO_PAINEL } from "@/components/admin/dashboard/CartaoDaLicenca";
+import { TEXTOS_DA_SAUDE } from "@/lib/saude/da-instalacao";
+import { textoDaLicenca, textoDoModo } from "@/lib/licenca/textos";
+import type { EstadoDaLicenca } from "@/lib/licenca/decidir";
 import { RECURSOS_OPCIONAIS } from "@/lib/recursos-opcionais/catalogo";
 import { DICIONARIO } from "@/lib/i18n/dicionario";
 
@@ -51,6 +55,33 @@ function textos(): { onde: string; texto: string }[] {
       { onde: `checklist:${r.id} [oQueFaz]`, texto: r.oQueFaz },
     );
   }
+  // A saúde e a licença do Painel (issue #310). A saúde tem dois níveis (nomes, estados).
+  const folhas = (prefixo: string, obj: object) => {
+    for (const [campo, valor] of Object.entries(obj)) {
+      if (typeof valor === "string") lista.push({ onde: `${prefixo} [${campo}]`, texto: valor });
+      else folhas(`${prefixo}.${campo}`, valor as object);
+    }
+  };
+  folhas("saude", TEXTOS_DA_SAUDE);
+  folhas("licenca-no-painel", TEXTOS_DA_LICENCA_NO_PAINEL);
+  // As frases da licença que o cartão reaproveita (`textoDaLicenca`, `textoDoModo`): o
+  // Painel as mostra, então também têm de existir nos quatro idiomas. Lidas com um `t`
+  // que só anota o que recebeu.
+  const anotar = (texto: string) => {
+    lista.push({ onde: "licenca (textos.ts)", texto });
+    return texto;
+  };
+  const estados: EstadoDaLicenca[] = [
+    "sem_selo",
+    "ativacao_pendente",
+    "temporario_valido",
+    "permanente_valido",
+    "temporario_vencido",
+    "bloqueada",
+  ];
+  for (const e of estados) for (const dias of [null, 0, 1, 7]) textoDaLicenca(e, dias, anotar);
+  textoDoModo("sombra", anotar);
+  textoDoModo("valendo", anotar);
   return lista;
 }
 
