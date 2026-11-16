@@ -8,6 +8,52 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.3.0] — 2026-11-16
+
+### Adicionado
+
+- **Administração da instalação — menu em grupos, em português e com ajuda em cada tela** A área **Administração da instalação** (o antigo "Admin Plataforma", em `/admin`) foi reorganizada para quem não é programador:
+
+  - O menu agora tem **cinco grupos** — Visão geral, Empresas e pessoas, Acompanhar e proteger, Configurar a instalação e Integrações — e os nomes saíram do inglês: **Empresas** (era "Tenants"), **Registro de ações** ("Audit"), **Uso e custo**, **Usuários**, **Administradores da plataforma**, **Conversas de todas as empresas** ("Inbox") e **Quem pode criar conta** ("Cadastro").
+  - Passando o mouse (ou o teclado) num item, aparece uma frase dizendo o que ele faz. Toda tela começa com o mesmo cabeçalho: o que ela faz e quando usar. No celular, essa ajuda fica visível no topo da tela.
+  - Cada grupo tem um tom de cor próprio nos ícones, e nenhum ícone se repete. A faixa do topo diz: "Administração da instalação — o que você muda aqui vale para todas as empresas".
+  - O **Painel** ganhou o quadro **"Sua instalação está pronta?"**, que mostra o que já está configurado e o que falta (e-mail, marca, quem pode criar conta, API Oficial da Meta, Google Agenda), dizendo o que é obrigatório e o que é opcional. Os cartões de números agora se clicam, levam à lista que contam e dizem em palavras o que o número quer dizer — o zero aparece como "tudo em dia".
+  - **Módulos** saiu do menu: o botão **Instalar** do módulo Honorários agora fica no bloco Módulos de **Recursos opcionais**, com o aviso de que ele cria tabelas e vale para todas as empresas. O endereço antigo continua funcionando e leva direto para lá.
+
+  Os endereços das telas não mudaram, e nada precisa ser feito no servidor.
+
+- **Atualizar com um clique, com volta automática, e backup no Painel** O botão **Atualizar agora** voltou a funcionar, e agora mora na Administração da instalação: **Configurar a instalação › Atualização** (`/admin/atualizacao`). O endereço antigo, `/app/settings/atualizacao`, leva para lá.
+
+  - **Um programa do servidor** (`zapsales-agente`) passa a conversar com a tela a cada minuto: conta a versão instalada, a última versão publicada, com as notas, e como está o backup. É ele quem atende o botão. O sistema nunca manda comando ao servidor: só avisa que alguém pediu.
+  - **A atualização é protegida**: cópia do banco antes, instalação da última versão publicada (nunca o código em desenvolvimento, nunca uma versão mais antiga), conferência por 2 minutos e **volta sozinha** para a versão anterior se a nova não ficar de pé. A tela mostra o andamento, o desfecho em português e o **histórico** (quando, de qual para qual versão, quem pediu, resultado).
+  - Uma atualização recusada antes de começar (por exemplo, a versão nova ainda não terminou de ser publicada) diz que **nada foi alterado**, e o botão volta.
+  - Sem notícia do programa há mais de 5 minutos, a tela mostra **"O programa do servidor está desligado"** com o comando que o liga, e não cria pedido que ninguém vai atender.
+  - O **Painel** ganhou os cartões **Versão** (instalada, disponível e o caminho para atualizar) e **Backup** (data da última cópia do banco, aviso quando passa de dois dias, e se a cópia fora do servidor, no R2, está configurada, com o comando `sudo kit/backup.sh configurar-r2` quando não está). Nenhuma senha nem chave aparece.
+
+  **No servidor:** nada a editar à mão. O programa chega na próxima vez que o kit roda, ou seja, na próxima atualização pelo terminal (`curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash`). Depois dela, as atualizações seguintes podem ser feitas pelo botão.
+
+- **Painel da administração — saúde da instalação e situação da licença** O **Painel** da Administração da instalação (`/admin/dashboard`) agora responde "está tudo bem?":
+
+  - **Saúde da instalação**: o banco de dados, o WhatsApp (conexão por QR code), o Redis e a fila de tarefas em segundo plano aparecem em verde ou vermelho. Cada item vermelho diz, em uma frase, o que fazer — e, quando um comando resolve, mostra o comando pronto para copiar (por exemplo, `sudo docker compose up -d redis srh`). A checagem é a mesma do endereço `/api/v1/health`; o Painel nunca mostra endereço interno, senha nem chave. O botão **Conferir de novo** lê tudo outra vez.
+  - A fila de tarefas só fica vermelha quando uma tarefa já devia ter rodado há mais de 10 minutos. Tarefa reagendada de propósito (como um atendimento esperando atendente) não conta.
+  - **Licença**: um cartão mostra a situação da licença desta instalação (sem licença, temporária, permanente, vencida ou bloqueada), se ela está funcionando, quando foi ativada e a última conversa com o servidor de licenças, com as mesmas frases da tela de licença.
+
+  Nada precisa ser feito no servidor.
+
+### Corrigido
+
+- **Administração da instalação — últimos termos técnicos trocados e conversas sem rolar a página** Na **Administração da instalação** (`/admin`), os últimos textos em inglês ou jargão viraram português claro:
+
+  - **Administradores da plataforma**: as colunas "Scope" e "MFA" agora se chamam **Tipo de acesso** (Acesso completo ou Só leitura) e **Exige duas etapas**. O link "Ver runbook", que não levava a lugar nenhum, foi trocado por um que abre o manual na seção que explica como incluir ou tirar alguém.
+  - **Uso e custo**: "Custo AI / dia (R$)" mostrava valores em dólar; agora é **Custo da IA por dia (US$)**, e as colunas são **Chamadas à IA** e **Custo da IA (US$)**.
+  - **Registro de ações**: o detalhe de uma ação mostra **Dados registrados** (era "Metadata") e a situação da empresa em palavras (era "active").
+  - Ficha da empresa: na aba Saúde, "Lag" virou **Tempo sem registro**; na aba Agente, o tipo aparece em palavras.
+  - **Pedidos de LGPD**: escopo, origem e os códigos do contato e do cliente aparecem em português. Resolver um incidente fala em **registro de ações**, não mais em "audit log".
+  - O CSV exportado em Uso e custo chama a coluna de custo de `custo_ia_dolares` (era `custo_reais`, mas o valor sempre foi em dólar).
+  - **Conversas de todas as empresas** cabe na janela: com muitas conversas, a lista esticava a página e o aviso "Selecione uma conversa" sumia lá embaixo.
+
+  O manual da área ganhou prints novos de todas as telas. Nada precisa ser feito no servidor.
+
 ## [1.2.1] — 2026-11-15
 
 ### Alterado
@@ -216,7 +262,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/futuristasai/ZapSales/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/futuristasai/ZapSales/compare/v1.0.1...v1.1.0
