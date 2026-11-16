@@ -71,10 +71,15 @@ it("programa do servidor sem batida recente: 409 agent_offline, e nenhuma rodada
   expect(mocks.audit).not.toHaveBeenCalled();
 });
 
-it("programa que nunca bateu também é desligado", async () => {
+it("programa que nunca bateu também é desligado — mesmo sem versão anunciada", async () => {
+  // A instalação de antes do programa: ninguém contou a versão disponível. A
+  // resposta tem de ser "desligado", não "você já está em dia", que seria um
+  // palpite sobre um dado que ninguém mediu.
   mocks.version.agent_last_seen_at = null;
+  mocks.version.latest_version = "";
   const res = await clicar();
   expect(res.status).toBe(409);
+  expect((await res.json()).error.code).toBe("agent_offline");
   expect(mocks.inserts).toEqual([]);
 });
 

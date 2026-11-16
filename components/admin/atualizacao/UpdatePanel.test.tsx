@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { UpdatePanel } from "./UpdatePanel";
 import type { SystemVersion } from "@/hooks/system/useSystemVersion";
+import { COMANDO_DE_ATUALIZAR, COMANDO_DE_LIGAR_O_PROGRAMA } from "@/lib/atualizacao/comandos";
 
 /**
  * O botão "Atualizar agora" morava DEPOIS do "O que muda" — com várias versões
@@ -201,8 +202,8 @@ describe("tela de atualização — o programa do servidor da #311", () => {
     renderTela({ ...BASE, agent_online: false, agent_last_seen_at: null });
     expect(screen.getByText("O programa do servidor está desligado")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Atualizar agora" })).toBeNull();
-    expect(screen.getByText("sudo systemctl enable --now zapsales-agente.timer")).toBeTruthy();
-    expect(screen.getByText("curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash")).toBeTruthy();
+    expect(screen.getByText(COMANDO_DE_LIGAR_O_PROGRAMA)).toBeTruthy();
+    expect(screen.getByText(COMANDO_DE_ATUALIZAR)).toBeTruthy();
   });
 
   it("instalação que anda pela main: diz quem a atualiza, e não oferece botão", () => {
@@ -221,14 +222,14 @@ describe("tela de atualização — o programa do servidor da #311", () => {
         from_version: "1.2.1",
         to_version: "1.3.0",
         log_tail:
-          "▶ Conferindo o pedido\n✖ RECUSADO: a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.\n  Nada foi alterado na instalação.",
+          "▶ Conferindo o pedido\n✖ RECUSADO: a imagem ghcr.io/exemplo/app:1.3.0 não existe ou não pôde ser puxada.\n  Nada foi alterado na instalação.",
       },
     });
     expect(screen.getByText("A atualização para a versão 1.3.0 não começou")).toBeTruthy();
     expect(screen.getByText("nada foi alterado")).toBeTruthy();
     // O motivo aparece em destaque (e de novo, inteiro, nos detalhes técnicos).
     expect(
-      screen.getByText("a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.", {
+      screen.getByText("a imagem ghcr.io/exemplo/app:1.3.0 não existe ou não pôde ser puxada.", {
         selector: "p",
       }),
     ).toBeTruthy();

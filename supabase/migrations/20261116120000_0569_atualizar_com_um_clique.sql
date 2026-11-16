@@ -61,9 +61,11 @@ begin
   end loop;
 end $$;
 
+alter table public.system_update_runs drop constraint if exists system_update_runs_status_check;
 alter table public.system_update_runs
   add constraint system_update_runs_status_check
     check (status in ('dispatched','success','failed','failed_rolled_back','refused'));
+alter table public.system_update_runs drop constraint if exists system_update_runs_last_step_check;
 alter table public.system_update_runs
   add constraint system_update_runs_last_step_check
     check (last_step in ('backup','codigo','banco','conferencia'));

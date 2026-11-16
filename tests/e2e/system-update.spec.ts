@@ -395,8 +395,14 @@ test("quando a atualização falha, a tela nomeia a versão certa, mostra o log 
   // O aviso da sidebar só acende porque o app sabe que está rodando a 1.0.0 —
   // se ele tivesse acreditado no "1.1.0" que o host reportou, `update_available`
   // seria falso e o rodapé mostraria "versão 1.1.0" como instalada, que é
-  // justamente a versão que quebrou.
+  // justamente a versão que quebrou. O aviso mora no menu do app (o Admin não
+  // tem esse rodapé), então a conferência vai até lá e volta.
+  await page.goto("/app/inbox");
   await expect(page.getByRole("link", { name: /nova versão/i })).toBeVisible();
+  await page.goto("/admin/atualizacao");
+  await expect(
+    page.getByRole("heading", { name: /a atualização para a versão 1\.1\.0 não deu certo/i }),
+  ).toBeVisible();
 
   // Saída garantida: o botão NÃO aparece (um novo pedido faria o servidor
   // responder "já estou na 1.1.0" e reportar sucesso sem trocar imagem

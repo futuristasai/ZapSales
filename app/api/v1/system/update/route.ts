@@ -59,16 +59,19 @@ export async function POST(_req: NextRequest): Promise<Response> {
   const current = version?.current_version ?? "";
   const latest = version?.latest_version ?? "";
 
-  if (!latest || latest === current) {
-    return fail("state_conflict", "Você já está na versão mais recente.", 409);
-  }
-
+  // Primeiro o programa do servidor: sem a batida dele, a versão disponível
+  // nem é conhecida (quem a conta é ele), e "você já está em dia" seria um
+  // palpite sobre um dado que ninguém mediu.
   if (!agenteNoAr(version?.agent_last_seen_at, new Date())) {
     return fail(
       "agent_offline",
       "O programa do servidor que faz a atualização está desligado. Abra Atualização para ver o comando que o liga.",
       409,
     );
+  }
+
+  if (!latest || latest === current) {
+    return fail("state_conflict", "Você já está na versão mais recente.", 409);
   }
 
   // `null` é o programa antigo, que executava: só o `false` explícito recusa.
