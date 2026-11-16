@@ -4045,7 +4045,13 @@ instalar: se ele não entende, abandona.
 | Celular (390 px): a ajuda da tela está no topo, a gaveta mostra os mesmos grupos, sem rolagem lateral | `tests/e2e/admin-plataforma-claro.spec.ts` | CI (PARTE_6) |
 | Catálogo completo (rótulo, dica, ajuda e ícone únicos, sem jargão, porta para toda tela) e nos quatro idiomas | `tests/unit/admin-navegacao-completude.test.ts`, `tests/unit/i18n-catalogo-do-admin.test.ts` | unit |
 | O checklist lê o mesmo estado de Recursos opcionais (nenhuma segunda conta) | `tests/unit/checklist-da-instalacao.test.ts` | unit |
+| Painel, saúde (issue #310): banco verde; WhatsApp por QR code e Redis vermelhos com frase e comando quando o endereço do ambiente não responde (no CI as portas não têm ninguém escutando); fila vermelha com um evento atrasado semeado, e "Conferir de novo" a devolve ao verde quando nenhum outro evento está parado | `tests/e2e/admin-plataforma-claro.spec.ts` | CI (PARTE_6) |
+| Painel, licença (issue #310): o cartão mostra o estado real com as frases da tela de licença; "Ver a licença" leva a `/app/licenca`; nenhum segredo nem endereço interno no HTML e no payload do servidor; no celular a licença fica embaixo da saúde, sem rolagem lateral | idem | CI (PARTE_6) |
+| Cada motivo da sonda vira a frase certa (fora do ar → comando; credencial/endereço errado → o que corrigir; não configurado é neutro; fila ilegível não chuta) | `lib/saude/da-instalacao.test.ts` | unit |
 
 **Não coberto pela tela:** o checklist com tudo configurado recolhido (o banco do e2e não
 tem Meta nem Google configurados — a regra está no unit); o contraste dos tons dos grupos
 no tema escuro foi conferido pelos valores dos tokens, não medido pela tela.
+A saúde com credencial recusada (WAHA ou Redis de pé com chave errada) e a licença
+bloqueada/vencida só estão provadas no unit: o e2e não tem como produzir esses estados
+sem mexer no servidor de licenças ou nos contêineres.

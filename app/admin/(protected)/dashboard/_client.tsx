@@ -1,4 +1,6 @@
 "use client";
+import type { ReactNode } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { KPICards } from "@/components/admin/dashboard/KPICards";
@@ -40,7 +42,17 @@ function AlertsSkeleton() {
   );
 }
 
-export function DashboardClient({ checklist }: { checklist: ChecklistVisto }) {
+export function DashboardClient({
+  checklist,
+  saude,
+  licenca,
+}: {
+  checklist: ChecklistVisto;
+  /** "Está tudo bem?" — desenhado no servidor (issue #310). */
+  saude: ReactNode;
+  /** A situação da licença — desenhada no servidor (issue #310). */
+  licenca: ReactNode;
+}) {
   const t = useT();
   const { data, isLoading } = useAdminDashboardKPIs();
   useAlertsRealtime();
@@ -55,6 +67,13 @@ export function DashboardClient({ checklist }: { checklist: ChecklistVisto }) {
       {/* Primeiro "o que falta configurar?", depois "está tudo bem?" — numa instalação
           recém-feita os números estão todos em zero, e o que importa é o checklist. */}
       <ChecklistDaInstalacao checklist={checklist} />
+
+      {/* "Está tudo bem?": a saúde ocupa a maior parte; a licença, ao lado. No celular,
+          um embaixo do outro. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">{saude}</div>
+        <div className="[&>*]:h-full">{licenca}</div>
+      </div>
 
       {isLoading || !data ? (
         <>

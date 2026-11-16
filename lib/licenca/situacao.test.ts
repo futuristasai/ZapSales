@@ -86,6 +86,7 @@ describe("detalhesDaLicenca — a página de quem administra", () => {
       modo: "sombra",
       instalacaoId: "6f1c2d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f",
       ativada: true,
+      ativadaEm: new Date((T0 - 3 * 86_400) * 1000).toISOString(),
       ultimaConsultaOkEm: new Date((T0 - 600) * 1000).toISOString(),
       janelaTerminaEm: new Date((T0 + 7 * 86_400) * 1000).toISOString(),
       proximaConsultaEm: new Date((T0 + 3000) * 1000).toISOString(),
@@ -108,6 +109,7 @@ describe("detalhesDaLicenca — a página de quem administra", () => {
     });
     expect(await detalhesDaLicenca()).toMatchObject({
       ativada: false,
+      ativadaEm: null,
       ultimaConsultaOkEm: null,
       janelaTerminaEm: null,
       proximaConsultaEm: null,

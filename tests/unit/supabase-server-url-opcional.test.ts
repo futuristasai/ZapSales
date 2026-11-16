@@ -383,7 +383,7 @@ describe("a variável é lida nos três pontos de servidor, e nowhere menos", ()
     "lib/supabase/server.ts",
     "lib/supabase/admin.ts",
     "proxy.ts",
-    "app/api/v1/health/route.ts",
+    "lib/saude/sondas.ts", // a sonda do /api/v1/health (issue #310)
   ];
 
   it("cada um dos pontos de servidor passa pela mesma função", () => {
@@ -404,7 +404,7 @@ describe("a variável é lida nos três pontos de servidor, e nowhere menos", ()
       "lib/supabase/server.ts",
       "lib/supabase/admin.ts",
       "proxy.ts",
-      "app/api/v1/health/route.ts",
+      "lib/saude/sondas.ts",
       ...EXTRA,
     ];
     for (const arquivo of todos) {

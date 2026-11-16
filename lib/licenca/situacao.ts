@@ -32,6 +32,8 @@ export interface DetalhesDaLicenca extends SituacaoDaLicenca {
   readonly instalacaoId: string;
   /** Já foi ativada alguma vez (há `ativada_em`). */
   readonly ativada: boolean;
+  /** Quando foi ativada pela primeira vez (ISO-8601 UTC), ou `null`. O Painel da administração mostra. */
+  readonly ativadaEm: string | null;
   /** Instantes em ISO-8601 UTC, ou `null`. */
   readonly ultimaConsultaOkEm: string | null;
   readonly janelaTerminaEm: string | null;
@@ -75,6 +77,7 @@ export async function detalhesDaLicenca(): Promise<DetalhesDaLicenca | null> {
     modo: veredito.modo,
     instalacaoId: estado.instalacaoId,
     ativada: estado.ativadaEm !== null,
+    ativadaEm: isoDe(estado.ativadaEm),
     ultimaConsultaOkEm: isoDe(estado.ultimaConsultaOkEm),
     janelaTerminaEm: isoDe(estado.janelaTerminaEm),
     proximaConsultaEm: isoDe(estado.proximaConsultaEm),
