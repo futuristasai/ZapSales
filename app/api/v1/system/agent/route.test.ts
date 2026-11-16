@@ -402,3 +402,29 @@ describe("POST /api/v1/system/agent — o programa do servidor da #311", () => {
     );
   });
 });
+
+describe("POST /api/v1/system/agent — pedido parado não é pedido (#311)", () => {
+  it("rodada sem notícia há mais de 15 minutos não volta como pedido", async () => {
+    runRow = {
+      id: RUN_ID,
+      status: "dispatched",
+      dispatched_at: new Date(Date.now() - 60 * 60_000).toISOString(),
+      last_step_at: null,
+    };
+    const { POST } = await import("./route");
+    const body = await (await POST(req(HEARTBEAT))).json();
+    expect(body.data).toEqual({ update_requested: false, run_id: null });
+  });
+
+  it("rodada antiga com passo recente continua sendo pedido", async () => {
+    runRow = {
+      id: RUN_ID,
+      status: "dispatched",
+      dispatched_at: new Date(Date.now() - 20 * 60_000).toISOString(),
+      last_step_at: new Date(Date.now() - 60_000).toISOString(),
+    };
+    const { POST } = await import("./route");
+    const body = await (await POST(req(HEARTBEAT))).json();
+    expect(body.data).toEqual({ update_requested: true, run_id: RUN_ID });
+  });
+});

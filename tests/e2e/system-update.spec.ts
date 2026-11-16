@@ -749,6 +749,9 @@ test("o Painel mostra a versão, a nova com o caminho para atualizar, e o backup
   await expect(versao).toHaveAttribute("data-versao-estado", "nova");
   await expect(versao).toContainText("1.2.1");
   await expect(versao).toContainText("1.3.0");
+  // As notas e o botão estão no próprio cartão (história 36–38).
+  await expect(versao.getByTestId("notas-da-versao")).toContainText("Botão de atualizar.");
+  await expect(versao.getByRole("button", { name: /atualizar agora/i })).toBeVisible();
 
   const backup = page.getByTestId("cartao-backup");
   await expect(backup).toHaveAttribute("data-backup-estado", "atencao");

@@ -20,7 +20,7 @@ import { audit } from "@/lib/audit";
 import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CHANGELOG_MAX_BYTES } from "@/lib/system/changelog";
-import { canTransition, type RunStatus } from "@/lib/system/update-run";
+import { canTransition, isRunStale, type RunStatus } from "@/lib/system/update-run";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // um `update_requested: false` otimista.
     const { data: run, error: runLookupError } = await db
       .from("system_update_runs")
-      .select("id, status")
+      .select("id, status, dispatched_at, last_step_at")
       .eq("status", "dispatched")
       .order("dispatched_at", { ascending: false })
       .limit(1)
@@ -215,7 +215,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       return fail("internal_error", "Não consegui checar o pedido de atualização.", 500);
     }
 
-    return ok({ update_requested: Boolean(run), run_id: run?.id ?? null });
+    // Pedido parado (15 minutos sem notícia) não é pedido (issue #311): a tela
+    // já o mostra como "sem notícia do servidor" e libera o botão. Entregá-lo
+    // faria um clique esquecido de uma hora atrás disparar uma atualização
+    // quando o programa voltasse — ou repetir uma rodada cujo desfecho não
+    // chegou ao app.
+    const vigente = run && !isRunStale(run.dispatched_at, new Date(), run.last_step_at) ? run : null;
+
+    return ok({ update_requested: Boolean(vigente), run_id: vigente?.id ?? null });
   }
 
   // Erro de leitura ≠ "não existe": sem checar, uma falha de banco viraria 404

@@ -192,11 +192,16 @@ export async function GET(_req: NextRequest): Promise<Response> {
 
   // O histórico (issue #311): data, de → para, quem pediu, resultado. Uma
   // leitura que falha esvazia só o histórico — a tela de atualizar continua.
-  const { data: rodadas } = await db
+  const { data: rodadas, error: historicoError } = await db
     .from("system_update_runs")
     .select("id, status, dispatched_at, finished_at, last_step_at, from_version, to_version, requested_by")
     .order("dispatched_at", { ascending: false })
     .limit(HISTORICO_MAX);
+  if (historicoError) {
+    logger.warn("[system/version] leitura do histórico falhou — a tela segue sem ele", {
+      error: historicoError.message,
+    });
+  }
   const emails = await emailsDeQuemPediu(
     db,
     (rodadas ?? []).map((r) => r.requested_by).filter((id): id is string => Boolean(id)),

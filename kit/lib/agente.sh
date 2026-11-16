@@ -76,6 +76,17 @@ if d.get("update_requested") is True and isinstance(r, str) and re.fullmatch(r"[
     print(r)' | tr -d '\r'
 }
 
+# codigo_da_resposta / corpo_da_resposta TEXTO — falar_com_o_app imprime o
+# código HTTP na primeira linha e o corpo depois. Decidir pelo código, e não por
+# um pedaço do texto, é o que não confunde um 502 do proxy com resposta do app.
+codigo_da_resposta() { printf '%s\n' "${1%%$'\n'*}"; }
+corpo_da_resposta() { case "${1:-}" in *$'\n'*) printf '%s' "${1#*$'\n'}" ;; esac; }
+
+# desfecho_entregue CÓDIGO — o app recebeu (200), ou já tem um desfecho para a
+# rodada (409, uma insistência anterior chegou), ou ela não existe mais (404).
+# Nos três, insistir não muda nada.
+desfecho_entregue() { case "${1:-}" in 200|409|404) return 0 ;; *) return 1 ;; esac; }
+
 # passo_do_titulo TÍTULO — o andamento que um título de passo do kit/instalar.sh
 # anuncia: as imagens são o código novo chegando; o schema é o banco.
 passo_do_titulo() {

@@ -6075,6 +6075,9 @@ export const DICIONARIO: Traducoes = {
   "É a versão publicada mais recente.": { es: "Es la versión publicada más reciente." },
   "Última cópia do banco": { es: "Última copia de la base de datos" },
   "Conferindo, por 2 minutos, se a versão nova ficou de pé": { es: "Revisando, durante 2 minutos, si la versión nueva se mantuvo en pie" },
+  // ─── Admin › cartão Versão do Painel: notas e botão (issue #311) ───
+  "Esta versão tem um aviso que pede atenção antes de atualizar.": { es: "Esta versión tiene un aviso que requiere atención antes de actualizar." },
+  "Ler o aviso e atualizar": { es: "Leer el aviso y actualizar" },
   // ─── Configurações: Atualização do sistema ───
   "Não consegui iniciar a atualização. Tente de novo em instantes.": {
     es: "No pude iniciar la actualización. Inténtalo de nuevo en unos instantes.",

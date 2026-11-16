@@ -5702,5 +5702,7 @@
   "É a versão publicada mais recente.": "这是最新发布的版本。",
   "Última cópia do banco": "最近一次数据库副本",
   "Conferindo, por 2 minutos, se a versão nova ficou de pé": "用 2 分钟检查新版本是否稳定运行",
-  "desde": "自"
+  "desde": "自",
+  "Esta versão tem um aviso que pede atenção antes de atualizar.": "此版本有一条需要在更新前注意的提示。",
+  "Ler o aviso e atualizar": "阅读提示并更新"
 }

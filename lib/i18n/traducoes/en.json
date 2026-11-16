@@ -11039,5 +11039,7 @@
   "não começou": "did not start",
   "É a versão publicada mais recente.": "It is the latest published version.",
   "Última cópia do banco": "Last database copy",
-  "Conferindo, por 2 minutos, se a versão nova ficou de pé": "Checking, for 2 minutes, that the new version stayed up"
+  "Conferindo, por 2 minutos, se a versão nova ficou de pé": "Checking, for 2 minutes, that the new version stayed up",
+  "Esta versão tem um aviso que pede atenção antes de atualizar.": "This version has a notice that needs your attention before updating.",
+  "Ler o aviso e atualizar": "Read the notice and update"
 }

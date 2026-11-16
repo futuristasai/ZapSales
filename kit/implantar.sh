@@ -298,8 +298,7 @@ baixar_codigo() {
 
 copiar_codigo() { # SHA — o código daquela versão em $RAIZ (o .env fica)
   copiar_arvore "$VERSOES/$1" "$RAIZ"
-  printf '%s
-' "$1" > "$RAIZ/.zapsales-revisao"
+  printf '%s\n' "$1" > "$RAIZ/.zapsales-revisao"
 }
 
 # guardar_codigo_de_agora — a primeira implantação contínua chega numa pasta

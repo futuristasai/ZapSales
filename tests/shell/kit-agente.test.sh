@@ -128,6 +128,46 @@ igual "notas da versão, inteiras" "sim" "$(CORPO="$corpo" ARQ="$TMP/changelog.m
 sem_changelog="$(A_ATUAL=x A_CHANGELOG="$TMP/nao-existe" corpo_da_batida)"
 igual "sem notas, texto vazio" '""' "$(CORPO="$sem_changelog" python3 -I -c 'import json,os; print(json.dumps(json.loads(os.environ["CORPO"])["changelog"]))')"
 
+echo "a resposta do app é lida pelo código HTTP, não por pedaço de texto"
+resp200="$(printf '200\n{"data":{"update_requested":true,"run_id":"%s"}}' "$RUN")"
+igual "código 200" "200" "$(codigo_da_resposta "$resp200")"
+igual "o corpo segue para quem lê o pedido" "$RUN" "$(corpo_da_resposta "$resp200" | pedido_da_resposta)"
+igual "502 do proxy com \"data\" no HTML não é resposta do app" "502" \
+  "$(codigo_da_resposta "$(printf '502\n<html>"data"</html>')")"
+igual "sem rede: 000 e corpo vazio" "" "$(corpo_da_resposta "000")"
+verdade "desfecho entregue com 200" desfecho_entregue 200
+verdade "409: o app já tem o desfecho" desfecho_entregue 409
+verdade "404: a rodada não existe mais" desfecho_entregue 404
+falso "500 insiste" desfecho_entregue 500
+falso "sem rede insiste" desfecho_entregue 000
+
+echo "a rotina conta à tela quando o banco começou"
+# shellcheck source=/dev/null
+. kit/lib/rotina.sh
+vistos=""
+ao_ver_titulo_do_kit() { vistos="$vistos|$1"; printf 'isto não pode ir para o registro\n'; }
+saida="$(printf '\033[32m▶ Imagens: puxando do registro\033[0m\nlinha bruta ▶ no meio\n▶ Aplicando o schema do ZapSales\n' \
+  | { _avisar_titulos_do_kit; printf 'VISTOS%s\n' "$vistos" >&2; } 2>"$TMP/vistos")"
+igual "o gancho vê os dois títulos, sem cor" "VISTOS|Imagens: puxando do registro|Aplicando o schema do ZapSales" "$(cat "$TMP/vistos")"
+igual "a saída do kit passa inteira e sem o que o gancho imprimiu" "3" "$(printf '%s\n' "$saida" | wc -l | tr -d ' ')"
+if sed -n '/^instalar()/,/^}/p' kit/lib/rotina.sh | grep -q '_avisar_titulos_do_kit | titulos_do_kit'; then
+  ok "instalar() passa a saída do kit pelo gancho antes dos títulos"
+else nok "instalar() não chama o gancho dos títulos do kit"; fi
+unset -f ao_ver_titulo_do_kit
+
+echo "uma rodada se executa uma vez só"
+BATER="$(sed -n '/^bater()/,/^}/p' kit/agente.sh)"
+p_guarda="$(grep -n '\.desfecho" \]' <<< "$BATER" | head -1 | cut -d: -f1)"
+p_exec="$(grep -n -- '--executar' <<< "$BATER" | head -1 | cut -d: -f1)"
+p_grava="$(grep -n 'printf .*> "\$ESTADO/\$pedido.desfecho"' <<< "$BATER" | head -1 | cut -d: -f1)"
+p_conta="$(grep -n 'relatar_desfecho "\$pedido" "\$status"' <<< "$BATER" | head -1 | cut -d: -f1)"
+if [ -n "$p_guarda" ] && [ -n "$p_exec" ] && [ "$p_guarda" -lt "$p_exec" ]; then
+  ok "a batida confere o desfecho guardado antes de executar"
+else nok "a batida executa sem conferir se a rodada já foi executada"; fi
+if [ -n "$p_grava" ] && [ -n "$p_conta" ] && [ "$p_grava" -lt "$p_conta" ]; then
+  ok "o desfecho é guardado antes de ir ao app"
+else nok "o desfecho só é guardado depois de ir ao app (ou nunca)"; fi
+
 echo "a trava é a do zapsales-implantar"
 igual "mesmo arquivo de trava" "/run/zapsales-implantar.lock" "$TRAVA_DAS_ATUALIZACOES"
 if command -v flock >/dev/null; then

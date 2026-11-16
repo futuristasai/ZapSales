@@ -1,7 +1,14 @@
 "use client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { apiClient } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/types";
+import { markdownParaTextoSimples } from "@/lib/system/changelog";
 import { Selo } from "@/components/ui/selo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSystemVersion } from "@/hooks/system/useSystemVersion";
@@ -30,19 +37,40 @@ export const TEXTOS_DA_VERSAO_NO_PAINEL = {
   verAtualizacao: "Ver a atualização",
   verComoLigar: "Ver como ligar",
   ilegivel: "Não consegui ler a versão agora.",
+  oQueMuda: "O que muda",
+  atualizarAgora: "Atualizar agora",
+  iniciando: "Iniciando…",
+  pedeAtencao: "Esta versão tem um aviso que pede atenção antes de atualizar.",
+  lerAvisos: "Ler o aviso e atualizar",
+  naoIniciou: "Não consegui iniciar a atualização. Tente de novo em instantes.",
 } as const;
 
 /**
- * O CARTÃO VERSÃO do Painel (issue #311, história 36 da #308): a versão instalada,
- * a disponível e o caminho para atualizar. Lê a mesma rota da tela de atualização
- * (`/api/v1/system/version`) — as duas nunca discordam. O botão de verdade mora na
- * tela de atualização, junto das notas da versão: decidir atualizar pede ler o que
- * muda.
+ * O CARTÃO VERSÃO do Painel (issue #311, histórias 36–38 da #308): a versão instalada,
+ * a disponível, o que muda nela e o botão de atualizar. Lê a mesma rota da tela de
+ * atualização (`/api/v1/system/version`) — as duas nunca discordam.
+ *
+ * O botão do cartão é o mesmo pedido da tela (`POST /api/v1/system/update`), e depois
+ * do clique leva à tela, que mostra o andamento. Uma exceção, de propósito: quando a
+ * faixa de versões traz um aviso "Requer atenção" (ex.: reconectar um número depois),
+ * o cartão não atualiza direto — leva à tela, onde o aviso fica ANTES do botão.
  */
 export function CartaoDaVersao() {
   const t = useT();
   const T = TEXTOS_DA_VERSAO_NO_PAINEL;
   const { data, isError, isLoading } = useSystemVersion({ refetchInterval: 30_000 });
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [erro, setErro] = useState<string | null>(null);
+  const atualizar = useMutation({
+    mutationFn: async () => apiClient.post("/api/v1/system/update", {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["system-version"] });
+      router.push("/admin/atualizacao");
+    },
+    onError: (err) =>
+      setErro(err instanceof ApiError && err.status === 409 ? t(err.message) : t(T.naoIniciou)),
+  });
 
   if (isLoading) {
     return (
@@ -113,6 +141,15 @@ export function CartaoDaVersao() {
         ) : null}
       </dl>
       <p className="text-sm text-muted-foreground">{t(explica)}</p>
+      {estado === "nova" ? (
+        <NovaVersao
+          notas={data.notes?.sections[0]?.body ?? ""}
+          pedeAtencao={(data.notes?.requires_attention.length ?? 0) > 0}
+          atualizar={() => atualizar.mutate()}
+          iniciando={atualizar.isPending}
+          erro={erro}
+        />
+      ) : null}
       <Link
         href="/admin/atualizacao"
         className={cn(
@@ -126,6 +163,50 @@ export function CartaoDaVersao() {
         <CaretRight size={12} aria-hidden />
       </Link>
     </Card>
+  );
+}
+
+/** As notas da versão-alvo (recortadas) e o botão — ou o caminho para o aviso. */
+function NovaVersao({
+  notas,
+  pedeAtencao,
+  atualizar,
+  iniciando,
+  erro,
+}: {
+  notas: string;
+  pedeAtencao: boolean;
+  atualizar: () => void;
+  iniciando: boolean;
+  erro: string | null;
+}) {
+  const t = useT();
+  const T = TEXTOS_DA_VERSAO_NO_PAINEL;
+  const texto = markdownParaTextoSimples(notas).trim();
+  return (
+    <div className="space-y-2">
+      {texto ? (
+        <div data-testid="notas-da-versao">
+          <p className="text-xs font-medium text-muted-foreground">{t(T.oQueMuda)}</p>
+          <p className="line-clamp-4 text-sm whitespace-pre-line">{texto}</p>
+        </div>
+      ) : null}
+      {pedeAtencao ? (
+        <>
+          <p className="rounded-md border border-warning bg-warning-bg p-2 text-sm text-warning-fg">
+            {t(T.pedeAtencao)}
+          </p>
+          <Button asChild size="sm">
+            <Link href="/admin/atualizacao">{t(T.lerAvisos)}</Link>
+          </Button>
+        </>
+      ) : (
+        <Button size="sm" onClick={atualizar} disabled={iniciando}>
+          {t(iniciando ? T.iniciando : T.atualizarAgora)}
+        </Button>
+      )}
+      {erro ? <p className="text-sm text-error-fg">{erro}</p> : null}
+    </div>
   );
 }
 

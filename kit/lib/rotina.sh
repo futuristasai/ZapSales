@@ -73,10 +73,22 @@ guardar_o_que_esta_no_ar() {
 # espelho com remoção apagaria o que mora em $RAIZ sem ser do repositório.
 copiar_arvore() { tar -C "$1" --exclude=./.env -cf - . | tar -xf - -C "$2"; }
 
-# O título de cada passo do kit, como etapa — e, se quem chama quiser, um aviso
-# de andamento (o programa do servidor conta à tela quando o banco começou).
-_titulo_do_kit_visto() {
-  if declare -F ao_ver_titulo_do_kit >/dev/null; then ao_ver_titulo_do_kit "$1" || true; fi
+# _avisar_titulos_do_kit — passa a saída do kit adiante, linha por linha, sem
+# mudar nada, e chama `ao_ver_titulo_do_kit TÍTULO` (se quem chama a definiu) a
+# cada título de passo (a linha que COMEÇA com `▶ `, como em titulos_do_kit). É
+# por aqui que o programa do servidor conta à tela quando o banco começou. O
+# gancho escreve só em stderr/arquivo: o que ele imprimir em stdout iria parar
+# no registro como se fosse do kit.
+_avisar_titulos_do_kit() {
+  local l t
+  while IFS= read -r l || [ -n "$l" ]; do
+    printf '%s\n' "$l"
+    if declare -F ao_ver_titulo_do_kit >/dev/null; then
+      t="$(printf '%s' "$l" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g')"
+      case "$t" in "▶ "*) ao_ver_titulo_do_kit "${t#"▶ "}" >/dev/null || true ;; esac
+    fi
+  done
+  return 0
 }
 
 instalar() {
@@ -98,7 +110,7 @@ instalar() {
   { trap - ERR; set +e
     ZAPSALES_IMAGENS=registro ZAPSALES_VERSAO="$VERSAO_IMAGENS" bash "$RAIZ/kit/instalar.sh" < /dev/null 2>&1
     printf '%s\n' "$?" > "$rc_arq"
-  } | tee "$reg_kit" | titulos_do_kit
+  } | tee "$reg_kit" | _avisar_titulos_do_kit | titulos_do_kit
   [ "$(cat "$rc_arq" 2>/dev/null)" = "0" ] || voltar "o kit/instalar.sh falhou — o motivo está no fim de $reg_kit, na VPS."
 }
 

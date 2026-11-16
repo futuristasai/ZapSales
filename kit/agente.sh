@@ -151,6 +151,12 @@ carregar_instalacao() {
 
 commit_instalado() {
   local c=""
+  # Numa release instalada por clone (o kit/obter.sh), quem diz o commit é o
+  # git: o .zapsales-revisao é da implantação contínua e pode ser de antes.
+  if [ "$MODO" = "release" ] && [ -d "$RAIZ/.git" ]; then
+    c="$(git -C "$RAIZ" rev-parse HEAD 2>/dev/null || true)"
+    [ -z "$c" ] || { printf '%s\n' "$c"; return 0; }
+  fi
   c="$(tr -d '[:space:]' 2>/dev/null < "$RAIZ/.zapsales-revisao" || true)"
   [ -n "$c" ] || c="$(git -C "$RAIZ" rev-parse HEAD 2>/dev/null || true)"
   printf '%s\n' "$c"
@@ -237,20 +243,22 @@ corpo() {
 
 # falar_com_o_app JSON — POST no endpoint único do agente, pelo proxy desta
 # máquina. O segredo vai por arquivo de configuração na entrada do curl, nunca
-# por argumento (que qualquer usuário lê em /proc). Imprime a resposta.
+# por argumento (que qualquer usuário lê em /proc). Imprime o código HTTP na
+# primeira linha e o corpo da resposta depois (`codigo_da_resposta` e
+# `corpo_da_resposta`, em kit/lib/agente.sh, separam os dois).
 falar_com_o_app() {
-  local corpo_arq
+  local corpo_arq resp_arq codigo
   corpo_arq="$(mktemp "$CORRIDA/corpo.XXXXXX")"
+  resp_arq="$(mktemp "$CORRIDA/resposta.XXXXXX")"
   printf '%s' "$1" > "$corpo_arq"
-  printf 'header = "Authorization: Bearer %s"\n' "$SEGREDO" \
-    | curl -s --max-time 20 --resolve "$DOMINIO:443:127.0.0.1" -K - \
+  codigo="$(printf 'header = "Authorization: Bearer %s"\n' "$SEGREDO" \
+    | curl -s --max-time 20 --resolve "$DOMINIO:443:127.0.0.1" -K - -o "$resp_arq" -w '%{http_code}' \
         -H 'Content-Type: application/json' --data-binary "@$corpo_arq" \
-        "https://$DOMINIO/api/v1/system/agent" 2>/dev/null || true
-  rm -f "$corpo_arq"
+        "https://$DOMINIO/api/v1/system/agent" 2>/dev/null || true)"
+  printf '%s\n' "${codigo:-000}"
+  cat "$resp_arq" 2>/dev/null || true
+  rm -f "$corpo_arq" "$resp_arq"
 }
-
-# A resposta foi um 200 do app ({"data": …})?
-respondeu() { [[ "${1:-}" == *'"data"'* ]]; }
 
 relatar_andamento() { # RUN PASSO — sem insistir: andamento perdido não é desfecho perdido
   [ -n "${RUN_ID:-}" ] || return 0
@@ -265,12 +273,11 @@ with open(os.environ["CAUDA"], encoding="utf-8", errors="ignore") as f: cauda = 
 print(json.dumps({"kind": "run_result", "run_id": os.environ["RUN"], "status": os.environ["STATUS"], "log_tail": cauda}, ensure_ascii=False))')"
   for _ in $(seq 1 24); do
     resp="$(falar_com_o_app "$corpo_json")"
-    respondeu "$resp" && return 0
-    # 409: o app já tem esse desfecho (uma insistência anterior chegou).
-    [[ "$resp" == *'"state_conflict"'* || "$resp" == *'"invalid_state_transition"'* ]] && return 0
+    desfecho_entregue "$(codigo_da_resposta "$resp")" && return 0
     sleep 10
   done
-  aviso "não consegui contar ao app o desfecho da rodada $1 ($2)."
+  aviso "não consegui contar ao app o desfecho da rodada $1 ($2); conto de novo na próxima batida que a trouxer."
+  return 1
 }
 
 # ─── A batida ────────────────────────────────────────────────────────────────
@@ -278,12 +285,24 @@ print(json.dumps({"kind": "run_result", "run_id": os.environ["RUN"], "status": o
 bater() {
   exigir_root
   carregar_instalacao
-  [ -n "$SEGREDO" ] || falha "O .env não tem INTERNAL_CRON_SECRET: sem ele o app não aceita a batida."
+  # Sem o segredo, não há com quem falar — e falhar a unidade a cada minuto só
+  # enche o journal. O aviso fica; a tela mostra "programa desligado".
+  [ -n "$SEGREDO" ] || { aviso "O .env não tem INTERNAL_CRON_SECRET: sem ele o app não aceita a batida."; exit 0; }
   local resp pedido
   resp="$(falar_com_o_app "$(corpo)")"
-  respondeu "$resp" || { aviso "o app não respondeu à batida (está no ar?)."; exit 0; }
-  pedido="$(printf '%s' "$resp" | pedido_da_resposta)"
+  [ "$(codigo_da_resposta "$resp")" = "200" ] \
+    || { aviso "o app não respondeu à batida (código $(codigo_da_resposta "$resp"); está no ar?)."; exit 0; }
+  pedido="$(corpo_da_resposta "$resp" | pedido_da_resposta)"
   [ -n "$pedido" ] || exit 0
+  # Uma rodada se executa UMA vez. Se esta já foi executada aqui e o desfecho
+  # não chegou ao app (ele estava fora do ar), conta de novo — nunca repete a
+  # atualização, que refaria cópia, instalação e volta a cada minuto.
+  install -d -m 700 "$ESTADO"
+  if [ -s "$ESTADO/$pedido.desfecho" ]; then
+    msg "Pedido $pedido já foi executado ($(cat "$ESTADO/$pedido.desfecho")); contando o desfecho de novo."
+    relatar_desfecho "$pedido" "$(cat "$ESTADO/$pedido.desfecho")" "$ESTADO/$pedido.cauda" || true
+    exit 0
+  fi
   if [ "$MODO" != "release" ]; then
     msg "Há pedido de atualização, e esta instalação anda pela main: quem a atualiza é a implantação contínua. Nada a fazer."
     exit 0
@@ -300,12 +319,15 @@ bater() {
   msg "Pedido $pedido: atualizando. Registro: $registro"
   "$COMANDO_EM_USO" --executar "$pedido" > "$registro" 2>&1 < /dev/null || rc=$?
   status="$(status_do_codigo "$rc")"
-  cauda="$(mktemp "$CORRIDA/cauda.XXXXXX")"
+  cauda="$ESTADO/$pedido.cauda"
   # Para a tela vão só as linhas que a rotina marcou, redigidas — as mesmas
   # duas camadas da saída do zapsales-implantar para o GitHub (issue #39).
   etapas_do_registro < "$registro" | redigir | tail -n 120 | cortar_em_bytes 15000 > "$cauda"
-  relatar_desfecho "$pedido" "$status" "$cauda"
-  rm -f "$cauda"
+  # O desfecho fica guardado ANTES de ir ao app: é ele que impede esta rodada
+  # de ser executada de novo se o app não o receber agora.
+  printf '%s\n' "$status" > "$ESTADO/$pedido.desfecho"
+  relatar_desfecho "$pedido" "$status" "$cauda" || true
+  find "$ESTADO" -maxdepth 1 -type f \( -name '*.desfecho' -o -name '*.cauda' \) -mtime +30 -delete 2>/dev/null || true
   msg "Pedido $pedido: $status (código $rc)."
 }
 
@@ -424,7 +446,17 @@ executar() {
   conferir_e_baixar
   copia_do_banco
   guardar_o_que_esta_no_ar
+  # O kit tem a própria trava, e alguém pode tê-lo começado pelo terminal desde
+  # a batida: aqui, ainda sem tocar, isso é recusa — depois seria uma volta.
+  trava_livre "$TRAVA_DO_KIT" || recusar "o kit começou a rodar nesta máquina (alguém atualizou pelo terminal?); tente de novo quando ele terminar."
+  # Daqui em diante a instalação vai ser tocada: toda parada é volta, nunca a
+  # recusa "nada foi alterado".
+  falha() { voltar "$*"; }
   relatar_andamento codigo
+  # O kit/instalar.sh reinstala este programa e as bibliotecas fora de
+  # /opt/zapsales; a volta não as desfaz. É de propósito: o processo em curso
+  # segue lendo os arquivos antigos (cada um entrou por rename), e a versão
+  # anterior do kit os reinstala na próxima rodada dela.
   instalar
   relatar_andamento conferencia
   provar
