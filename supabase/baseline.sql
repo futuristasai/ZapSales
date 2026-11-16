@@ -46755,6 +46755,65 @@ revoke insert, update, delete on table public.org_memory_versions from anon, aut
 revoke insert, update, delete on table public.org_memory_pointers from anon, authenticated;
 revoke insert, update, delete on table public.channel_knobs from anon, authenticated;
 
+-- ---- atualizar com um clique: backup na batida, passo "conferencia", desfecho "refused" (migration 0569) ----
+--
+-- Ver o cabeçalho de supabase/migrations/20261116120000_0569_atualizar_com_um_clique.sql.
+-- Fica ANTES da varredura de anon porque recria uma função (a trava das extensões).
+alter table public.system_version
+  add column if not exists last_backup_at timestamptz,
+  add column if not exists last_offsite_backup_at timestamptz,
+  add column if not exists backup_offsite_configured boolean,
+  add column if not exists executes_updates boolean;
+
+comment on column public.system_version.last_backup_at is
+  'Último dump do banco bem-sucedido, contado pelo programa do servidor (kit/agente.sh). Nulo = ainda não contado.';
+comment on column public.system_version.last_offsite_backup_at is
+  'Última cópia semanal (restic → R2) que terminou bem. Nulo = nunca, ou ainda não contado.';
+comment on column public.system_version.backup_offsite_configured is
+  'Se a cópia externa (R2) tem credenciais no servidor. Só o booleano: a credencial nunca sai do servidor. Nulo = ainda não contado.';
+comment on column public.system_version.executes_updates is
+  'false quando o programa do servidor só anuncia (instalação que anda pela main, atualizada pela implantação contínua). Nulo = programa antigo, que executava.';
+
+alter table public.system_update_runs
+  add column if not exists last_step_at timestamptz;
+comment on column public.system_update_runs.last_step_at is
+  'Quando o programa do servidor contou o último passo. O pedido parado é medido desde aqui (ou desde dispatched_at, sem passo).';
+
+do $$
+declare r record;
+begin
+  for r in
+    select c.conname
+    from pg_constraint c
+    join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+    where c.conrelid = 'public.system_update_runs'::regclass
+      and c.contype = 'c'
+      and a.attname in ('status', 'last_step')
+      and array_length(c.conkey, 1) = 1
+  loop
+    execute format('alter table public.system_update_runs drop constraint %I', r.conname);
+  end loop;
+end $$;
+
+alter table public.system_update_runs drop constraint if exists system_update_runs_status_check;
+alter table public.system_update_runs
+  add constraint system_update_runs_status_check
+    check (status in ('dispatched','success','failed','failed_rolled_back','refused'));
+alter table public.system_update_runs drop constraint if exists system_update_runs_last_step_check;
+alter table public.system_update_runs
+  add constraint system_update_runs_last_step_check
+    check (last_step in ('backup','codigo','banco','conferencia'));
+
+-- A trava das extensões espera a atualização do core. Mesmo relógio do app
+-- (RUN_STALE_AFTER_MS em lib/system/update-run.ts): parada é 15 minutos sem
+-- notícia, contados do último passo.
+create or replace function public.fn_extensions_core_update_in_progress()
+returns boolean language sql stable set search_path = public, pg_temp as $$
+  select exists (select 1 from public.system_update_runs
+    where status='dispatched' and coalesce(last_step_at, dispatched_at) > now() - interval '15 minutes');
+$$;
+revoke execute on function public.fn_extensions_core_update_in_progress() from public, anon, authenticated, service_role;
+
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
 -- ⚠️ DE PROPÓSITO, NENHUMA FUNÇÃO É CRIADA DEPOIS DESTE BLOCO. Apêndice que cria

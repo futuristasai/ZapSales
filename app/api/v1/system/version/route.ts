@@ -13,6 +13,7 @@ import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractChangelogRange } from "@/lib/system/changelog";
 import {
+  agenteNoAr,
   isRunStale,
   rodadaDoBancoDaLinha,
   rollbackDesmentidoPeloApp,
@@ -24,8 +25,30 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** Sem notícia do agente por 24h, a tela ensina o caminho manual. */
-const AGENT_OFFLINE_AFTER_MS = 24 * 60 * 60 * 1000;
+/** Quantas rodadas o histórico da tela mostra. */
+const HISTORICO_MAX = 10;
+
+type Admin = ReturnType<typeof createAdminClient>;
+
+/**
+ * O e-mail de quem pediu cada rodada, para o histórico. Best-effort: quem lê é o
+ * dono da instalação, e uma conta apagada ou uma falha do Auth vira "—" na
+ * tela, nunca um 500 que esconda o histórico inteiro.
+ */
+async function emailsDeQuemPediu(db: Admin, ids: string[]): Promise<Map<string, string>> {
+  const unicos = [...new Set(ids)];
+  const pares = await Promise.all(
+    unicos.map(async (id) => {
+      try {
+        const { data } = await db.auth.admin.getUserById(id);
+        return [id, data?.user?.email ?? null] as const;
+      } catch {
+        return [id, null] as const;
+      }
+    }),
+  );
+  return new Map(pares.filter((p): p is readonly [string, string] => Boolean(p[1])));
+}
 
 export async function GET(_req: NextRequest): Promise<Response> {
   const user = await loadAuthUser();
@@ -37,7 +60,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
   const { data: version, error: versionError } = await db
     .from("system_version")
     .select(
-      "current_version, latest_version, off_release, compare_failed, has_known_release, changelog_raw, agent_last_seen_at, updated_at",
+      "current_version, latest_version, off_release, compare_failed, has_known_release, changelog_raw, agent_last_seen_at, updated_at, executes_updates, last_backup_at, last_offsite_backup_at, backup_offsite_configured",
     )
     .eq("id", 1)
     .maybeSingle();
@@ -64,7 +87,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
   const { data: run, error: runError } = await db
     .from("system_update_runs")
     .select(
-      "id, status, last_step, dispatched_at, finished_at, from_version, to_version, log_tail, disputa_de_banco, retentativas_do_banco, passada_do_banco",
+      "id, status, last_step, last_step_at, dispatched_at, finished_at, from_version, to_version, log_tail, disputa_de_banco, retentativas_do_banco, passada_do_banco",
     )
     .order("dispatched_at", { ascending: false })
     .limit(1)
@@ -76,7 +99,6 @@ export async function GET(_req: NextRequest): Promise<Response> {
   }
 
   const now = new Date();
-  const lastSeen = version?.agent_last_seen_at ? Date.parse(version.agent_last_seen_at) : NaN;
 
   // A versão que a tela mostra é a do APP QUE ESTÁ RODANDO. Depois de um
   // rollback, o host reporta a versão nova (o `git checkout` deu certo; quem
@@ -168,6 +190,35 @@ export async function GET(_req: NextRequest): Promise<Response> {
     return ok({ current_version: running, is_owner: false });
   }
 
+  // O histórico (issue #311): data, de → para, quem pediu, resultado. Uma
+  // leitura que falha esvazia só o histórico — a tela de atualizar continua.
+  const { data: rodadas, error: historicoError } = await db
+    .from("system_update_runs")
+    .select("id, status, dispatched_at, finished_at, last_step_at, from_version, to_version, requested_by")
+    .order("dispatched_at", { ascending: false })
+    .limit(HISTORICO_MAX);
+  if (historicoError) {
+    logger.warn("[system/version] leitura do histórico falhou — a tela segue sem ele", {
+      error: historicoError.message,
+    });
+  }
+  const emails = await emailsDeQuemPediu(
+    db,
+    (rodadas ?? []).map((r) => r.requested_by).filter((id): id is string => Boolean(id)),
+  );
+  const historico = (rodadas ?? []).map((r) => ({
+    id: r.id,
+    dispatched_at: r.dispatched_at,
+    finished_at: r.finished_at,
+    from_version: r.from_version ?? "",
+    to_version: r.to_version ?? "",
+    status:
+      r.status === "dispatched" && isRunStale(r.dispatched_at, now, r.last_step_at)
+        ? ("unknown" as const)
+        : (r.status as RunStatus),
+    requested_by_email: r.requested_by ? (emails.get(r.requested_by) ?? null) : null,
+  }));
+
   const latest = version?.latest_version ?? "";
   // A faixa INTEIRA entre o que está no ar e o que vai entrar, não só a seção
   // da versão-alvo. Mostrar só a alvo perdia aviso: quem pulava da 1.4.0 para a
@@ -204,7 +255,21 @@ export async function GET(_req: NextRequest): Promise<Response> {
     // frente da publicada" para quem nunca gravou este campo (linha ainda
     // não tocada por nenhum heartbeat, coluna com o default da migration).
     has_known_release: version?.has_known_release ?? true,
-    agent_online: !Number.isNaN(lastSeen) && now.getTime() - lastSeen < AGENT_OFFLINE_AFTER_MS,
+    // O programa do servidor bate a cada minuto; sem batida há 5 minutos ele
+    // está desligado, e a tela troca o botão pelo comando que o liga.
+    agent_online: agenteNoAr(version?.agent_last_seen_at, now),
+    agent_last_seen_at: version?.agent_last_seen_at ?? null,
+    // `false` só quando o programa disse com todas as letras que só anuncia
+    // (instalação que anda pela main). Nulo é o programa antigo, que executava.
+    executes_updates: version?.executes_updates !== false,
+    // O backup, como o programa do servidor contou (issue #311). Nulo = ainda
+    // não contou — a tela diz isso, e não "nunca houve backup".
+    backup: {
+      last_backup_at: version?.last_backup_at ?? null,
+      last_offsite_backup_at: version?.last_offsite_backup_at ?? null,
+      offsite_configured: version?.backup_offsite_configured ?? null,
+    },
+    history: historico,
     // A janela em que a atualização TERMINOU e o host ainda não contou. É o que
     // deixa a tela dizer que o pedido terminou, em vez de cair no texto
     // genérico de quem nunca atualizou nada — e ela se fecha sozinha na batida
@@ -241,7 +306,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
           // `unknown` é derivado aqui, não gravado: um agente morto não
           // consegue anunciar a própria morte.
           status:
-            run.status === "dispatched" && isRunStale(run.dispatched_at, now)
+            run.status === "dispatched" && isRunStale(run.dispatched_at, now, run.last_step_at)
               ? ("unknown" as const)
               : (run.status as RunStatus),
           last_step: (run.last_step as RunStep | null) ?? null,

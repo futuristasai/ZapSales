@@ -3,8 +3,13 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
  * POST /api/v1/system/update — o clique do dono.
  *
  * Não executa nada: cria o run em `dispatched` e marca o pedido. Quem executa é
- * o agente do host, no próximo heartbeat. O app escreve APENAS esta transição —
- * é o único instante em que ele sabe com certeza que a ordem saiu.
+ * o programa do servidor (`kit/agente.sh`), na batida seguinte (a cada minuto).
+ * O app escreve APENAS esta transição — é o único instante em que ele sabe com
+ * certeza que a ordem saiu.
+ *
+ * E o pedido só nasce quando alguém vai atendê-lo (issue #311): com o programa
+ * desligado, ou numa instalação que anda pela main (o programa só anuncia), a
+ * rodada venceria em 15 minutos e a tela mentiria nesse meio-tempo.
  */
 import type { NextRequest } from "next/server";
 
@@ -14,7 +19,7 @@ import { falhaDaEscritaDePlatformAdmin, requirePlatformAdminEscrita } from "@/li
 import { loadAuthUser } from "@/lib/auth/server";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isRunStale } from "@/lib/system/update-run";
+import { agenteNoAr, isRunStale, versaoSobe } from "@/lib/system/update-run";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +44,7 @@ export async function POST(_req: NextRequest): Promise<Response> {
   const db = createAdminClient();
   const { data: version, error: versionError } = await db
     .from("system_version")
-    .select("current_version, latest_version")
+    .select("current_version, latest_version, agent_last_seen_at, executes_updates")
     .eq("id", 1)
     .maybeSingle();
 
@@ -54,20 +59,51 @@ export async function POST(_req: NextRequest): Promise<Response> {
   const current = version?.current_version ?? "";
   const latest = version?.latest_version ?? "";
 
+  // Primeiro o programa do servidor: sem a batida dele, a versão disponível
+  // nem é conhecida (quem a conta é ele), e "você já está em dia" seria um
+  // palpite sobre um dado que ninguém mediu.
+  if (!agenteNoAr(version?.agent_last_seen_at, new Date())) {
+    return fail(
+      "agent_offline",
+      "O programa do servidor que faz a atualização está desligado. Abra Atualização para ver o comando que o liga.",
+      409,
+    );
+  }
+
   if (!latest || latest === current) {
     return fail("state_conflict", "Você já está na versão mais recente.", 409);
   }
 
+  // `null` é o programa antigo, que executava: só o `false` explícito recusa.
+  if (version?.executes_updates === false) {
+    return fail(
+      "state_conflict",
+      "Esta instalação acompanha o desenvolvimento e é atualizada sozinha pela implantação contínua: o botão não se aplica a ela.",
+      409,
+    );
+  }
+
+  // O botão leva só a uma release, e só para cima. O programa do servidor
+  // recusa o mesmo do lado dele; aqui a recusa poupa uma rodada que nasceria
+  // para ser recusada.
+  if (!versaoSobe(current, latest)) {
+    return fail(
+      "state_conflict",
+      "A versão anunciada não é mais nova que a instalada. O botão nunca volta versão nem leva ao código em desenvolvimento.",
+      409,
+    );
+  }
+
   const { data: running } = await db
     .from("system_update_runs")
-    .select("id, status, dispatched_at")
+    .select("id, status, dispatched_at, last_step_at")
     .eq("status", "dispatched")
     .order("dispatched_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (running) {
-    if (!isRunStale(running.dispatched_at, new Date())) {
+    if (!isRunStale(running.dispatched_at, new Date(), running.last_step_at)) {
       return fail("state_conflict", RUN_IN_PROGRESS_MESSAGE, 409);
     }
     // Run "dispatched" vencido (>15min, RUN_STALE_AFTER_MS): o agente do host
@@ -85,7 +121,8 @@ export async function POST(_req: NextRequest): Promise<Response> {
       .update({
         status: "failed",
         finished_at: new Date().toISOString(),
-        log_tail: "Run abandonado: o agente do host não reportou o desfecho a tempo (agente parado ou travado).",
+        log_tail:
+          "Pedido abandonado: o programa do servidor ficou mais de 15 minutos sem dar notícia (desligado, ou a máquina reiniciou no meio).",
       })
       .eq("id", running.id)
       .eq("status", "dispatched");

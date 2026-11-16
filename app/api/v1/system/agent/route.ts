@@ -1,8 +1,10 @@
 /**
  * POST /api/v1/system/agent — endpoint ÚNICO do agente do host.
  *
- * O app não alcança o host: quem puxa é o `agent.sh`, por cron. Ele anuncia a
- * versão instalada e lê, na resposta, se alguém clicou em "Atualizar agora".
+ * O app não alcança o host: quem puxa é o programa do servidor
+ * (`kit/agente.sh`, issue #311), a cada minuto. Ele anuncia a versão instalada,
+ * a última release, o último backup e lê, na resposta, se alguém clicou em
+ * "Atualizar agora".
  * O que atravessa a fronteira é um booleano, nunca um comando — mesmo com o app
  * comprometido, o atacante não escolhe O QUE roda no host.
  *
@@ -18,7 +20,7 @@ import { audit } from "@/lib/audit";
 import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CHANGELOG_MAX_BYTES } from "@/lib/system/changelog";
-import { canTransition, type RunStatus } from "@/lib/system/update-run";
+import { canTransition, isRunStale, type RunStatus } from "@/lib/system/update-run";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -43,18 +45,35 @@ const heartbeat = z.object({
   // "nunca houve release" para todo mundo.
   has_known_release: z.boolean().optional().default(true),
   changelog: z.string().max(CHANGELOG_MAX_BYTES),
+  // ── Campos do programa do servidor da issue #311 ──────────────────────────
+  // OPCIONAIS SEM DEFAULT, de propósito: ausente quer dizer "este programa não
+  // conta isso" (o antigo), e aí a coluna não é escrita — um programa velho que
+  // batesse depois de um novo não pode apagar o que o novo contou. `null`
+  // explícito quer dizer "contei, e não há" (nunca houve cópia semanal).
+  last_backup_at: z.string().datetime({ offset: true }).nullable().optional(),
+  last_offsite_backup_at: z.string().datetime({ offset: true }).nullable().optional(),
+  // "Configurado ou não" — a credencial do R2 nunca sai do servidor.
+  backup_offsite_configured: z.boolean().optional(),
+  // `false`: a instalação anda pela main e quem a atualiza é a implantação
+  // contínua; o programa só anuncia. A tela troca o botão pela explicação.
+  executes_updates: z.boolean().optional(),
 });
+
+/** ISO-8601 em UTC, como o resto do contrato; `null` fica `null`. */
+function emUtc(v: string | null): string | null {
+  return v === null ? null : new Date(v).toISOString();
+}
 
 const runProgress = z.object({
   kind: z.literal("run_progress"),
   run_id: z.string().uuid(),
-  step: z.enum(["backup", "codigo", "banco"]),
+  step: z.enum(["backup", "codigo", "banco", "conferencia"]),
 });
 
 const runResult = z.object({
   kind: z.literal("run_result"),
   run_id: z.string().uuid(),
-  status: z.enum(["success", "failed", "failed_rolled_back"]),
+  status: z.enum(["success", "failed", "failed_rolled_back", "refused"]),
   log_tail: z.string().max(16_000),
   // O que a rodada do banco contou de si mesma: se a base estava ocupada, quantas
   // retentativas custou e em qual passada fechou. Ausente quando o kit não mediu
@@ -135,9 +154,23 @@ export async function POST(req: NextRequest): Promise<Response> {
   const payload = parsed.data;
 
   if (payload.kind === "heartbeat") {
+    const doProgramaNovo: {
+      last_backup_at?: string | null;
+      last_offsite_backup_at?: string | null;
+      backup_offsite_configured?: boolean;
+      executes_updates?: boolean;
+    } = {};
+    if (payload.last_backup_at !== undefined) doProgramaNovo.last_backup_at = emUtc(payload.last_backup_at);
+    if (payload.last_offsite_backup_at !== undefined)
+      doProgramaNovo.last_offsite_backup_at = emUtc(payload.last_offsite_backup_at);
+    if (payload.backup_offsite_configured !== undefined)
+      doProgramaNovo.backup_offsite_configured = payload.backup_offsite_configured;
+    if (payload.executes_updates !== undefined) doProgramaNovo.executes_updates = payload.executes_updates;
+
     const { error } = await db
       .from("system_version")
       .update({
+        ...doProgramaNovo,
         current_version: payload.current_version,
         current_sha: payload.current_sha,
         off_release: payload.off_release,
@@ -169,7 +202,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // um `update_requested: false` otimista.
     const { data: run, error: runLookupError } = await db
       .from("system_update_runs")
-      .select("id, status")
+      .select("id, status, dispatched_at, last_step_at")
       .eq("status", "dispatched")
       .order("dispatched_at", { ascending: false })
       .limit(1)
@@ -182,7 +215,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       return fail("internal_error", "Não consegui checar o pedido de atualização.", 500);
     }
 
-    return ok({ update_requested: Boolean(run), run_id: run?.id ?? null });
+    // Pedido parado (15 minutos sem notícia) não é pedido (issue #311): a tela
+    // já o mostra como "sem notícia do servidor" e libera o botão. Entregá-lo
+    // faria um clique esquecido de uma hora atrás disparar uma atualização
+    // quando o programa voltasse — ou repetir uma rodada cujo desfecho não
+    // chegou ao app.
+    const vigente = run && !isRunStale(run.dispatched_at, new Date(), run.last_step_at) ? run : null;
+
+    return ok({ update_requested: Boolean(vigente), run_id: vigente?.id ?? null });
   }
 
   // Erro de leitura ≠ "não existe": sem checar, uma falha de banco viraria 404
@@ -210,7 +250,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
     const { error } = await db
       .from("system_update_runs")
-      .update({ last_step: payload.step })
+      .update({ last_step: payload.step, last_step_at: new Date().toISOString() })
       .eq("id", payload.run_id);
     if (error) {
       logger.error("[system/agent] run_progress falhou", { error: error.message, runId: payload.run_id });

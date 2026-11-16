@@ -313,7 +313,7 @@ envelhecer. Quem precisar da verdade de hoje roda o script.
 | `/app/ai/providers`, `/app/ai/credentials` | provedores de LLM e credenciais |
 | `/app/settings` | hub de Configurações |
 | `/app/settings/atendimento` | governança de atendimento |
-| `/app/settings/atualizacao` | atualização self-service (só dono do servidor) |
+| `/app/settings/atualizacao` | redirect permanente para `/admin/atualizacao` (issue #311) |
 | `/app/settings/canal-oficial`, `/app/settings/templates` | redirects para `/app/connections` |
 | `/app/settings/tenant/pipelines` | gestão de funis |
 | `/app/settings/tenant/whatsapp` | redirect legado para `/app/connections` |

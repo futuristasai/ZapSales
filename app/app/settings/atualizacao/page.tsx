@@ -1,18 +1,12 @@
-import { notFound } from "next/navigation";
-
-import { loadAuthUser } from "@/lib/auth/server";
-import { UpdatePanel } from "./_components/UpdatePanel";
-
-export const metadata = { title: "Atualização do sistema" };
-export const dynamic = "force-dynamic";
+import { permanentRedirect } from "next/navigation";
 
 /**
- * Só o dono do servidor. Um `notFound()` em vez de uma tela de "sem permissão"
- * porque, para quem não é dono, esta página simplesmente não faz parte do
- * produto.
+ * O ENDEREÇO ANTIGO DA ATUALIZAÇÃO (issue #311). A tela foi para a
+ * administração da instalação (`/admin/atualizacao`), no grupo "Configurar a
+ * instalação": atualizar o servidor vale para todas as empresas, e não é
+ * configuração da empresa. O endereço continua valendo para favoritos e para o
+ * rodapé de versão de uma aba antiga.
  */
-export default async function Page() {
-  const user = await loadAuthUser();
-  if (!user?.is_platform_admin) notFound();
-  return <UpdatePanel />;
+export default function Page() {
+  permanentRedirect("/admin/atualizacao");
 }

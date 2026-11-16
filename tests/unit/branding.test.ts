@@ -258,8 +258,8 @@ const MARCA_CONGELADA: Record<string, EntradaDeMarca> = {
   "lib/atualizacao/comandos.ts": {
     categoria: "PROTOCOLO",
     motivo:
-      "o nome da variável de ambiente que o `kit/obter.sh` lê para fixar a versão (`ZAPSALES_REF`), dentro do comando que a tela Atualização mostra para voltar à versão anterior. É identificador técnico do kit, documentado no cabeçalho do `obter.sh`: renomeá-lo só aqui faria o comando copiado ser ignorado em silêncio e reinstalar a última versão. Não é texto de interface e não varia por marca própria",
-    marcas: ["zapsales_ref"],
+      "o nome da variável de ambiente que o `kit/obter.sh` lê para fixar a versão (`ZAPSALES_REF`), dentro do comando que a tela Atualização mostra para voltar à versão anterior. É identificador técnico do kit, documentado no cabeçalho do `obter.sh`: renomeá-lo só aqui faria o comando copiado ser ignorado em silêncio e reinstalar a última versão. Não é texto de interface e não varia por marca própria. Pela mesma razão, o nome da unidade do systemd do programa do servidor (`zapsales-agente.timer`, issue #311), que o `kit/agente.sh instalar-comando` cria e que o comando de ligar o programa nomeia: renomeá-lo só aqui faria o comando copiado falhar com 'unit not found' (o par é conferido em tests/unit/comandos-de-atualizacao.test.ts)",
+    marcas: ["zapsales-agente.timer", "zapsales_ref"],
   },
   "lib/mcp/server.ts": {
     categoria: "PROTOCOLO",

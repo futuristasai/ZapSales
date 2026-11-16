@@ -1,0 +1,47 @@
+<!--meta {"id":"atualizacao","grupo":"admin","titulo":"Atualização","ordem":12,"resumo":"Ver a versão instalada no servidor e, havendo uma nova, atualizar com um clique: o sistema copia o banco antes, confere a versão nova por 2 minutos e volta sozinho para a anterior se ela não ficar de pé. Só quem administra a instalação.","palavras":["atualização","atualizar agora","versão","nova versão","update","backup","cópia do banco","volta automática","rollback","programa do servidor","zapsales-agente","histórico de atualizações","dono do servidor","rodapé","obter.sh"],"onde":"Administração › Configurar a instalação › Atualização (endereço /admin/atualizacao); também pelo cartão Versão do Painel e pelo aviso “Nova versão · X.Y.Z” no rodapé do painel Todo dia. O endereço antigo /app/settings/atualizacao leva para cá.","quem":"Só quem administra a instalação (administrador da plataforma). O suporte em modo só leitura vê a versão e o histórico, mas não consegue atualizar; quem deve a verificação em duas etapas também é barrado.","rotas":[]} -->
+
+<h2 id="visao-geral">Para que serve</h2>
+<p>Mostra a <strong>versão instalada no servidor</strong> e, quando há uma nova, o que muda nela — e atualiza com <strong>um clique</strong>, sem terminal. É uma tela da <em>instalação</em>, não da empresa: vale para todas as empresas do servidor, e fica em <span class="ui">Administração</span> › <span class="ui">Configurar a instalação</span> › <span class="ui">Atualização</span>.</p>
+<p>Quem faz o trabalho é um <strong>programa pequeno que roda no servidor</strong> (o <em>programa do servidor</em>). A cada minuto ele conta a esta tela qual versão está instalada, qual é a última publicada e como está o backup; e é ele quem atende o botão. O sistema nunca manda comando ao servidor: ele só avisa “alguém pediu para atualizar”, e o programa decide o resto sozinho.</p>
+
+<h2 id="como-atualizar">Como atualizar</h2>
+<ol class="passos">
+  <li>Abra o <a href="#admin-dashboard">Painel</a>. O cartão <strong>Versão</strong> mostra a instalada e, quando há uma nova, o selo <strong>Versão nova</strong>. Clique em <span class="ui">Ver a atualização</span> (ou no aviso “Nova versão · X.Y.Z” do rodapé).</li>
+  <li>Leia o que muda. Os avisos <em>“⚠️ Requer atenção”</em> de todas as versões entre a sua e a nova ficam no topo, antes do botão.</li>
+  <li>Clique em <span class="ui">Atualizar agora</span>. A tela mostra <strong>“Pedido enviado — esperando o servidor pegar”</strong>, com um relógio: o programa confere a cada minuto.</li>
+  <li>Acompanhe os quatro passos: <em>Guardando uma cópia de segurança dos seus dados</em> → <em>Baixando a versão nova</em> → <em>Atualizando o banco de dados</em> → <em>Conferindo, por 2 minutos, se a versão nova ficou de pé</em>. O sistema sai do ar por alguns instantes no meio e volta sozinho; pode deixar a página aberta.</li>
+  <li>No fim, a tela diz como terminou, e a linha entra no <strong>Histórico de atualizações</strong>, embaixo.</li>
+</ol>
+
+<aside class="nota atencao"><strong>Atualizar tira o sistema do ar para todos, por alguns instantes.</strong><p>A troca de versão reinicia o sistema para <strong>todas as empresas e usuários</strong> da instalação. Prefira um horário de pouco movimento. Cada pedido fica no <a href="#admin-audit">Registro de ações</a> (<code>system.update_requested</code>), com o desfecho (<code>system.update_finished</code>).</p></aside>
+
+<h2 id="protecao">O que protege você</h2>
+<ul>
+  <li><strong>Cópia do banco antes de tudo.</strong> Se a cópia falhar, a atualização nem começa.</li>
+  <li><strong>Volta automática.</strong> Depois de instalar, o programa confere por 2 minutos se a versão nova responde, se nada que estava funcionando piorou e se nenhum serviço reiniciou. Qualquer falha — e também qualquer erro no meio da instalação — faz o sistema <strong>voltar sozinho</strong> para a versão anterior: o código, a configuração e as imagens. O banco fica como está (a versão anterior funciona com ele); para desfazer também o banco, use a cópia feita antes, como explica <a href="#backup-e-restauracao">Backup e restauração</a>.</li>
+  <li><strong>Só versões publicadas, e só para a frente.</strong> O botão leva sempre à última versão publicada (com número, como 1.3.0), nunca ao código em desenvolvimento, e nunca oferece voltar para uma versão mais antiga.</li>
+  <li><strong>Uma atualização por vez.</strong> Dois cliques seguidos não disparam duas; um pedido que o servidor não atendeu em 15 minutos deixa de travar o botão.</li>
+</ul>
+
+<h2 id="estados">Os estados da tela</h2>
+<table class="tabela">
+  <thead><tr><th>Título</th><th>O que significa e o que fazer</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Você está na versão X</strong></td><td>É a mais recente. Não há nada a fazer.</td></tr>
+    <tr><td><strong>Versão X disponível</strong></td><td>Os avisos, o botão <span class="ui">Atualizar agora</span> e “O que muda”. Veja <a href="#atualizacao--como-atualizar">Como atualizar</a>.</td></tr>
+    <tr><td><strong>Pedido enviado — esperando o servidor pegar</strong></td><td>O programa confere a cada minuto: a tela parada nesse tempo é normal. Pode fechar a página; o pedido não se perde.</td></tr>
+    <tr><td><strong>Atualizando para a versão X</strong></td><td>Os quatro passos, marcados conforme o programa conta.</td></tr>
+    <tr><td><strong>A atualização para a versão X terminou</strong></td><td>Deu certo; o servidor confirma a versão na batida seguinte.</td></tr>
+    <tr><td><strong>A atualização para a versão X não começou</strong></td><td>O servidor recusou <strong>antes de mexer em qualquer coisa</strong> — nada foi alterado. O motivo aparece em destaque (por exemplo, a versão nova ainda não terminou de ser publicada). Tentar de novo é seguro, e o botão volta.</td></tr>
+    <tr><td><strong>A atualização para a versão X não deu certo</strong></td><td>Dois desfechos. No normal, “a versão nova não ficou de pé, e eu voltei o sistema sozinho para a versão Y”: o sistema está no ar na versão anterior e os seus dados estão intactos; o motivo está em “Detalhes técnicos”. No raro, “<strong>não consegui</strong> voltar sozinho”: a tela mostra o comando para quem tem acesso ao servidor deixar tudo na versão que funcionava.</td></tr>
+    <tr><td><strong>Não sei dizer como terminou</strong></td><td>O servidor ficou mais de 15 minutos sem dar notícia. Confira se o sistema está funcionando.</td></tr>
+    <tr><td><strong>O programa do servidor está desligado</strong></td><td>Ele não dá notícia há mais de 5 minutos (ou nunca deu). O botão some e a tela mostra o comando que o liga: <code>sudo systemctl enable --now zapsales-agente.timer</code>. Se o servidor responder que a unidade não existe, a instalação é anterior ao programa: rode uma vez a atualização pelo terminal (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>), que ela instala o programa, e ele cuida das próximas.</td></tr>
+    <tr><td><strong>Você está na versão X</strong>, numa instalação que acompanha o desenvolvimento</td><td>Instalação que anda pelo código em desenvolvimento e é atualizada sozinha a cada mudança aprovada. Não há botão: o programa só informa a versão.</td></tr>
+    <tr><td>“Não consegui checar se há versão nova”, “Ainda não há nenhuma versão publicada”, “Você está à frente da versão publicada”</td><td>Casos de borda; a tela explica cada um.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="historico">Histórico de atualizações</h2>
+<p>Embaixo do cartão, a tabela das últimas atualizações pedidas por esta tela: <strong>Quando</strong>, <strong>Versão</strong> (de → para), <strong>Quem pediu</strong> e <strong>Resultado</strong> (<em>Atualizado</em>, <em>Não deu certo — voltou sozinho</em>, <em>Não deu certo — precisa de atenção</em>, <em>Não começou — nada mudou</em>, <em>Sem notícia do servidor</em>). Quem atualiza pelo terminal não deixa linha aqui.</p>
+
+<aside class="nota info"><strong>Atualizar pelo terminal continua valendo.</strong><p>O comando da instalação (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>) continua sendo uma forma de atualizar, e é como uma instalação antiga recebe o programa do servidor pela primeira vez. Veja <a href="#instalar-na-vps--atualizar">Instalar o ZapSales numa VPS › Atualizar</a>.</p></aside>

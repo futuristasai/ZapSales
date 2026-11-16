@@ -128,6 +128,8 @@ async function heartbeat(
     off_release?: boolean;
     compare_failed?: boolean;
     has_known_release?: boolean;
+    /** Os campos do programa do servidor da issue #311 — ausentes = programa antigo. */
+    extra?: Record<string, unknown>;
   },
 ): Promise<HeartbeatResponse> {
   const res = await request.post("/api/v1/system/agent", {
@@ -141,6 +143,7 @@ async function heartbeat(
       compare_failed: opts.compare_failed ?? false,
       has_known_release: opts.has_known_release ?? true,
       changelog: opts.changelog ?? "",
+      ...opts.extra,
     },
   });
   expect(res.status()).toBe(200);
@@ -151,7 +154,7 @@ async function heartbeat(
 async function runResult(
   request: APIRequestContext,
   runId: string,
-  status: "success" | "failed" | "failed_rolled_back",
+  status: "success" | "failed" | "failed_rolled_back" | "refused",
   logTail = "",
 ): Promise<void> {
   const res = await request.post("/api/v1/system/agent", {
@@ -165,7 +168,7 @@ async function runResult(
 async function runProgress(
   request: APIRequestContext,
   runId: string,
-  step: "backup" | "codigo" | "banco",
+  step: "backup" | "codigo" | "banco" | "conferencia",
 ): Promise<void> {
   const res = await request.post("/api/v1/system/agent", {
     headers: { Authorization: `Bearer ${SECRET}` },
@@ -216,7 +219,7 @@ test("quem pula versões vê os avisos de TODAS elas, não só o da mais nova", 
 
   await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
   await heartbeat(request, { latest_version: "1.2.0", current_version: "1.0.0", changelog });
-  await page.goto("/app/settings/atualizacao");
+  await page.goto("/admin/atualizacao");
 
   // Os DOIS avisos visíveis, o da alvo e o da versão do meio, cada um nomeando
   // de onde veio.
@@ -255,7 +258,7 @@ test("o dono vê a versão nova na sidebar e atualiza pela tela", async ({ page,
   const aviso = page.getByRole("link", { name: /nova versão/i });
   await expect(aviso).toBeVisible();
   await aviso.click();
-  await page.waitForURL(/\/app\/settings\/atualizacao/);
+  await page.waitForURL(/\/admin\/atualizacao/);
 
   await expect(page.getByRole("heading", { name: /versão 1\.1\.0 disponível/i })).toBeVisible();
   await expect(page.getByText(/Reconecte o número depois/)).toBeVisible();
@@ -352,7 +355,7 @@ test("quando a atualização falha, a tela nomeia a versão certa, mostra o log 
   resetEstado();
   await heartbeat(request, { current_version: "1.0.0", latest_version: "1.1.0" });
   await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
-  await page.goto("/app/settings/atualizacao");
+  await page.goto("/admin/atualizacao");
   await page.getByRole("button", { name: /atualizar agora/i }).click();
   // ⛔ NÃO é "Atualizando para a versão 1.1.0". O clique registra um PEDIDO; quem
   // executa é o agente no host, que confere de poucos em poucos minutos — e a
@@ -380,7 +383,7 @@ test("quando a atualização falha, a tela nomeia a versão certa, mostra o log 
   await expect(
     page.getByRole("heading", { name: /a atualização para a versão 1\.1\.0 não deu certo/i }),
   ).toBeVisible();
-  await expect(page.getByText(/Voltei o sistema para a versão 1\.0\.0/)).toBeVisible();
+  await expect(page.getByText(/voltei o sistema sozinho para a versão 1\.0\.0/)).toBeVisible();
 
   // O log só existe se der pra ler: recolhido, mas presente e abrível.
   const detalhes = page.getByText(/Detalhes técnicos/);
@@ -392,8 +395,14 @@ test("quando a atualização falha, a tela nomeia a versão certa, mostra o log 
   // O aviso da sidebar só acende porque o app sabe que está rodando a 1.0.0 —
   // se ele tivesse acreditado no "1.1.0" que o host reportou, `update_available`
   // seria falso e o rodapé mostraria "versão 1.1.0" como instalada, que é
-  // justamente a versão que quebrou.
+  // justamente a versão que quebrou. O aviso mora no menu do app (o Admin não
+  // tem esse rodapé), então a conferência vai até lá e volta.
+  await page.goto("/app/inbox");
   await expect(page.getByRole("link", { name: /nova versão/i })).toBeVisible();
+  await page.goto("/admin/atualizacao");
+  await expect(
+    page.getByRole("heading", { name: /a atualização para a versão 1\.1\.0 não deu certo/i }),
+  ).toBeVisible();
 
   // Saída garantida: o botão NÃO aparece (um novo pedido faria o servidor
   // responder "já estou na 1.1.0" e reportar sucesso sem trocar imagem
@@ -424,7 +433,7 @@ test("quando a atualização falha, a tela nomeia a versão certa, mostra o log 
     page.getByRole("heading", { name: /a atualização para a versão 1\.2\.0 não deu certo/i }),
   ).toBeVisible();
   await expect(page.getByText(/não consegui/i)).toBeVisible();
-  await expect(page.getByText(/Voltei o sistema para a versão/)).toHaveCount(0);
+  await expect(page.getByText(/voltei o sistema sozinho/)).toHaveCount(0);
   await expect(
     page.getByText("curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo ZAPSALES_REF=v1.1.0 bash"),
   ).toBeVisible();
@@ -504,7 +513,7 @@ test("quando o host não conseguiu comparar, a tela não diz que está em dia", 
     compare_failed: true,
   });
   await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
-  await page.goto("/app/settings/atualizacao");
+  await page.goto("/admin/atualizacao");
 
   await expect(page.getByRole("heading", { name: /não consegui checar/i })).toBeVisible();
   await expect(page.getByText(/é a mais recente/i)).toHaveCount(0);
@@ -532,7 +541,7 @@ test("instalação à frente da versão publicada não vira tela quebrada nem al
   await expect(page.getByRole("link", { name: /nova versão/i })).toHaveCount(0);
   await expect(page.getByText("versão abc1234")).toBeVisible();
 
-  await page.goto("/app/settings/atualizacao");
+  await page.goto("/admin/atualizacao");
   await expect(
     page.getByRole("heading", { name: /você está à frente da versão publicada/i }),
   ).toBeVisible();
@@ -557,7 +566,7 @@ test("fork sem nenhuma release publicada não afirma 'à frente' sem base", asyn
   });
   await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
 
-  await page.goto("/app/settings/atualizacao");
+  await page.goto("/admin/atualizacao");
   await expect(
     page.getByRole("heading", { name: /ainda não há nenhuma versão publicada/i }),
   ).toBeVisible();
@@ -577,7 +586,195 @@ test("quem não é dono do servidor não vê o botão", async ({ page, request }
   await page.goto("/app/inbox");
   await expect(page.getByRole("link", { name: /nova versão/i })).toHaveCount(0);
 
+  // A tela mora na administração da instalação: quem não administra a
+  // plataforma é barrado pelo layout antes de a página rodar. O endereço antigo
+  // leva ao mesmo lugar.
+  await page.goto("/admin/atualizacao");
+  await page.waitForURL(/\/admin\/forbidden/);
+  await expect(page.getByRole("button", { name: /atualizar agora/i })).toHaveCount(0);
   await page.goto("/app/settings/atualizacao");
-  await expect(page.getByText(/404 — Página não encontrada/i)).toBeVisible();
-  await page.screenshot({ path: "evidence/task9-4-nao-dono-404.png" });
+  await page.waitForURL(/\/admin\/forbidden/);
+  await page.screenshot({ path: "evidence/task9-4-nao-dono-barrado.png" });
+});
+
+// ── O programa do servidor da issue #311 ─────────────────────────────────────
+
+test("o endereço antigo leva à tela nova, no grupo Configurar a instalação", async ({ page, request }) => {
+  resetEstado();
+  await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/app/settings/atualizacao");
+  await page.waitForURL(/\/admin\/atualizacao$/);
+  await expect(page.getByTestId("cabecalho-da-plataforma")).toContainText("Configurar a instalação");
+  await expect(page.getByRole("heading", { level: 1, name: "Atualização" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /atualizar agora/i })).toBeVisible();
+});
+
+test("programa do servidor desligado: a tela mostra o comando, e o clique não cria rodada", async ({
+  page,
+}) => {
+  // O seed zera a batida: para o app, o programa nunca falou. Nenhuma batida
+  // aqui — é o estado de uma instalação antiga, de antes do programa.
+  resetEstado();
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/atualizacao");
+
+  await expect(page.getByRole("heading", { name: /o programa do servidor está desligado/i })).toBeVisible();
+  await expect(page.getByText("sudo systemctl enable --now zapsales-agente.timer", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /atualizar agora/i })).toHaveCount(0);
+  await page.screenshot({ path: "evidence/311-programa-desligado.png" });
+
+  // Nem quem chamar a rota direto (aba antiga, duplo clique) cria rodada:
+  // ninguém vai atendê-la.
+  const res = await page.request.post("/api/v1/system/update", { data: {} });
+  expect(res.status()).toBe(409);
+  expect((await res.json()).error.code).toBe("agent_offline");
+  await expect(page.getByTestId("historico-de-atualizacoes")).toContainText(
+    "Nenhuma atualização foi pedida por esta tela ainda.",
+  );
+});
+
+test("dois cliques seguidos não disparam duas atualizações", async ({ page, request }) => {
+  resetEstado();
+  await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/atualizacao");
+  const [a, b] = await Promise.all([
+    page.request.post("/api/v1/system/update", { data: {} }),
+    page.request.post("/api/v1/system/update", { data: {} }),
+  ]);
+  expect([a.status(), b.status()].sort()).toEqual([200, 409]);
+  const { data } = await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  expect(data.update_requested).toBe(true);
+  // Fecha a rodada para não deixar estado para os casos seguintes.
+  await runResult(request, data.run_id!, "refused", "✖ RECUSADO: fim do teste.\n  Nada foi alterado na instalação.");
+});
+
+test("recusa antes de tocar: a tela diz que nada mudou e o histórico registra", async ({ page, request }) => {
+  resetEstado();
+  await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/atualizacao");
+  await page.getByRole("button", { name: /atualizar agora/i }).click();
+  await expect(page.getByRole("heading", { name: /pedido enviado/i })).toBeVisible();
+
+  const { data } = await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await runResult(
+    request,
+    data.run_id!,
+    "refused",
+    "▶ Conferindo o pedido\n✖ RECUSADO: a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.\n  Nada foi alterado na instalação.",
+  );
+  await page.reload();
+
+  await expect(page.getByRole("heading", { name: /a atualização para a versão 1\.3\.0 não começou/i })).toBeVisible();
+  await expect(page.getByText("nada foi alterado", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.", { exact: true }),
+  ).toBeVisible();
+  // Tentar de novo é seguro: o botão volta.
+  await expect(page.getByRole("button", { name: /atualizar agora/i })).toBeVisible();
+
+  const historico = page.getByTestId("historico-de-atualizacoes");
+  await expect(historico).toContainText("1.2.1 → 1.3.0");
+  await expect(historico).toContainText(creds.users.dono!.email);
+  await expect(historico).toContainText("Não começou — nada mudou");
+  await page.screenshot({ path: "evidence/311-recusa-e-historico.png", fullPage: true });
+});
+
+test("o andamento mostra a conferência dos 2 minutos e a volta automática em português", async ({
+  page,
+  request,
+}) => {
+  resetEstado();
+  await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/atualizacao");
+  await page.getByRole("button", { name: /atualizar agora/i }).click();
+  await expect(page.getByRole("heading", { name: /pedido enviado/i })).toBeVisible();
+
+  const { data } = await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  await runProgress(request, data.run_id!, "conferencia");
+  await page.reload();
+  await expect(page.getByText(/Conferindo, por 2 minutos, se a versão nova ficou de pé/)).toBeVisible();
+  await page.screenshot({ path: "evidence/311-conferencia.png" });
+
+  await runResult(
+    request,
+    data.run_id!,
+    "failed_rolled_back",
+    "▶ Provando a versão nova\n✖ FALHOU: reinício durante a observação\n▶ Voltando para v1.2.1\n  de volta em v1.2.1: serviços saudáveis.",
+  );
+  await page.reload();
+  await expect(page.getByRole("heading", { name: /a atualização para a versão 1\.3\.0 não deu certo/i })).toBeVisible();
+  await expect(page.getByText(/voltei o sistema sozinho para a versão 1\.2\.1/)).toBeVisible();
+  await expect(page.getByTestId("historico-de-atualizacoes")).toContainText("Não deu certo — voltou sozinho");
+  await page.screenshot({ path: "evidence/311-voltou-sozinho.png", fullPage: true });
+});
+
+test("instalação que anda pela main: o programa só anuncia, sem botão", async ({ page, request }) => {
+  resetEstado();
+  await heartbeat(request, {
+    current_version: "abc1234",
+    latest_version: "",
+    off_release: true,
+    extra: { executes_updates: false, backup_offsite_configured: true, last_backup_at: new Date().toISOString() },
+  });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/atualizacao");
+  await expect(page.getByText(/atualizada sozinha pela implantação contínua/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /atualizar agora/i })).toHaveCount(0);
+  const res = await page.request.post("/api/v1/system/update", { data: {} });
+  expect(res.status()).toBe(409);
+});
+
+test("o Painel mostra a versão, a nova com o caminho para atualizar, e o backup sem segredo", async ({
+  page,
+  request,
+}) => {
+  resetEstado();
+  const tresDiasAtras = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  await heartbeat(request, {
+    current_version: "1.2.1",
+    latest_version: "1.3.0",
+    changelog: "## [1.3.0] — 2026-11-16\n\n- Botão de atualizar.\n\n## [1.2.1] — 2026-11-14\n\n- Antes.\n",
+    extra: {
+      executes_updates: true,
+      last_backup_at: tresDiasAtras,
+      last_offsite_backup_at: null,
+      backup_offsite_configured: false,
+    },
+  });
+  await loginWithTotp(page, creds.users.dono!.email, creds.dono_totp!.secret);
+  await page.goto("/admin/dashboard");
+
+  const versao = page.getByTestId("cartao-versao");
+  await expect(versao).toHaveAttribute("data-versao-estado", "nova");
+  await expect(versao).toContainText("1.2.1");
+  await expect(versao).toContainText("1.3.0");
+  // As notas e o botão estão no próprio cartão (história 36–38).
+  await expect(versao.getByTestId("notas-da-versao")).toContainText("Botão de atualizar.");
+  await expect(versao.getByRole("button", { name: /atualizar agora/i })).toBeVisible();
+
+  const backup = page.getByTestId("cartao-backup");
+  await expect(backup).toHaveAttribute("data-backup-estado", "atencao");
+  await expect(backup).toContainText("passou de dois dias");
+  await expect(backup.getByTestId("comando-r2")).toHaveText("sudo kit/backup.sh configurar-r2");
+  // Nenhum segredo: só "configurado ou não".
+  await expect(backup).not.toContainText(/AWS_|RESTIC_|secret/i);
+  await page.screenshot({ path: "evidence/311-painel-versao-e-backup.png", fullPage: true });
+
+  // O caminho do cartão leva à tela onde estão as notas e o botão.
+  await versao.getByRole("link", { name: /ver a atualização/i }).click();
+  await page.waitForURL(/\/admin\/atualizacao/);
+  await expect(page.getByText(/Botão de atualizar\./)).toBeVisible();
+});
+
+test("programa antigo, sem os campos novos, continua recebendo 200", async ({ request }) => {
+  resetEstado();
+  const { data } = await heartbeat(request, { current_version: "1.2.1", latest_version: "1.3.0" });
+  expect(data.update_requested).toBe(false);
 });

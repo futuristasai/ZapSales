@@ -7,17 +7,35 @@
  * mudar um lado sem o outro fica vermelho.
  */
 
-export type RunStatus = "dispatched" | "success" | "failed" | "failed_rolled_back";
-export type RunStep = "backup" | "codigo" | "banco";
+/**
+ * `refused` (issue #311): o programa do servidor recusou ANTES de tocar em
+ * qualquer coisa — rebaixamento, imagem que não existe, cópia do banco que
+ * falhou. Nada mudou no servidor, e a tela diz isso, em vez do "não consegui
+ * voltar" de `failed`.
+ */
+export type RunStatus = "dispatched" | "success" | "failed" | "failed_rolled_back" | "refused";
+/** `conferencia` (issue #311): os 2 minutos de prova depois de instalar. */
+export type RunStep = "backup" | "codigo" | "banco" | "conferencia";
 
 /**
- * Depois disso sem notícia, a UI trata o run como desfecho desconhecido.
- * 15 min é folgado: uma atualização real leva ~2 min, e o agente ainda tenta
- * reportar por ~2 min após o reinício do app.
+ * Depois disso SEM NOTÍCIA, a UI trata o run como desfecho desconhecido. A
+ * notícia é o clique ou o último passo contado (`last_step_at`): uma atualização
+ * com cópia do banco, imagens e 2 minutos de prova pode passar de 15 minutos
+ * sem estar parada, mas nenhum passo dela leva 15 minutos.
  */
 export const RUN_STALE_AFTER_MS = 15 * 60 * 1000;
 
-const TERMINAL: readonly RunStatus[] = ["success", "failed", "failed_rolled_back"];
+/**
+ * Sem batida há mais que isto, o programa do servidor está desligado. Ele bate a
+ * cada minuto (temporizador do systemd, `kit/agente.sh`); cinco minutos dão
+ * folga para um reinício da máquina ou do app sem a tela piscar "desligado".
+ *
+ * Durante uma atualização ele não bate (está atendendo o pedido) — por isso a
+ * tela olha a rodada em andamento ANTES de olhar a batida.
+ */
+export const AGENTE_SEM_BATIDA_MS = 5 * 60 * 1000;
+
+const TERMINAL: readonly RunStatus[] = ["success", "failed", "failed_rolled_back", "refused"];
 
 /**
  * Só existe uma transição legítima: de `dispatched` para um desfecho. Um run
@@ -32,10 +50,43 @@ export function canTransition(from: RunStatus, to: RunStatus): boolean {
  * `unknown` é DERIVADO na leitura, nunca gravado: um agente morto não consegue
  * anunciar a própria morte.
  */
-export function isRunStale(dispatchedAt: string, now: Date): boolean {
+export function isRunStale(
+  dispatchedAt: string,
+  now: Date,
+  lastStepAt?: string | null,
+): boolean {
   const started = Date.parse(dispatchedAt);
   if (Number.isNaN(started)) return true;
-  return now.getTime() - started > RUN_STALE_AFTER_MS;
+  const passo = lastStepAt ? Date.parse(lastStepAt) : NaN;
+  const ultimaNoticia = Number.isNaN(passo) ? started : Math.max(started, passo);
+  return now.getTime() - ultimaNoticia > RUN_STALE_AFTER_MS;
+}
+
+/** O programa do servidor bateu há pouco? Sem batida nenhuma, não. */
+export function agenteNoAr(lastSeenAt: string | null | undefined, now: Date): boolean {
+  const visto = lastSeenAt ? Date.parse(lastSeenAt) : NaN;
+  return !Number.isNaN(visto) && now.getTime() - visto < AGENTE_SEM_BATIDA_MS;
+}
+
+/**
+ * `alvo` é uma versão publicada MAIOR que `atual`? As duas X.Y.Z, com ou sem o
+ * `v`. Igual não sobe, menor é rebaixamento, e o que não é versão (um commit da
+ * main) nunca sobe: o botão leva sempre a uma release, e só para cima. O
+ * programa do servidor confere a mesma coisa do lado dele (`sobe`, em
+ * `kit/lib/agente.sh`) — com o app comprometido, a recusa de lá é a que vale.
+ */
+export function versaoSobe(atual: string, alvo: string): boolean {
+  const partes = (v: string) => {
+    const m = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(v.trim());
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+  };
+  const a = partes(atual);
+  const b = partes(alvo);
+  if (!a || !b) return false;
+  for (let i = 0; i < 3; i++) {
+    if (b[i]! !== a[i]!) return b[i]! > a[i]!;
+  }
+  return false;
 }
 
 /**

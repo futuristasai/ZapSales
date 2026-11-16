@@ -333,3 +333,98 @@ describe("POST /api/v1/system/agent", () => {
     expect((await POST(req({ kind: "sei-la" }))).status).toBe(422);
   });
 });
+
+/**
+ * O programa do servidor novo (kit/agente.sh, issue #311). A batida ganhou campos
+ * OPCIONAIS — backup, cópia externa, quem executa —, e a rodada ganhou o passo
+ * "conferencia" e o desfecho "refused". Programa antigo, sem os campos, continua
+ * recebendo 200: voltar a ficar mudo é o defeito que o default existe para impedir.
+ */
+describe("POST /api/v1/system/agent — o programa do servidor da #311", () => {
+  const NOVO = {
+    ...HEARTBEAT,
+    last_backup_at: "2026-11-14T03:15:00Z",
+    last_offsite_backup_at: null,
+    backup_offsite_configured: false,
+    executes_updates: true,
+  };
+
+  it("grava o último backup, a cópia externa e quem executa", async () => {
+    const { POST } = await import("./route");
+    const res = await POST(req(NOVO));
+    expect(res.status).toBe(200);
+    expect(lastUpdate("system_version")).toMatchObject({
+      last_backup_at: "2026-11-14T03:15:00.000Z",
+      last_offsite_backup_at: null,
+      backup_offsite_configured: false,
+      executes_updates: true,
+    });
+  });
+
+  it("programa antigo (sem os campos novos) recebe 200 e não apaga o que o novo contou", async () => {
+    const { POST } = await import("./route");
+    const res = await POST(req(HEARTBEAT));
+    expect(res.status).toBe(200);
+    const escrito = lastUpdate("system_version") ?? {};
+    for (const campo of ["last_backup_at", "last_offsite_backup_at", "backup_offsite_configured", "executes_updates"]) {
+      expect(escrito).not.toHaveProperty(campo);
+    }
+  });
+
+  it("data de backup que não é data é recusada (422), sem gravar", async () => {
+    const { POST } = await import("./route");
+    const res = await POST(req({ ...NOVO, last_backup_at: "ontem à noite" }));
+    expect(res.status).toBe(422);
+    expect(updates).toEqual([]);
+  });
+
+  it("o passo 'conferencia' entra no andamento, com a hora da notícia", async () => {
+    runRow = { id: RUN_ID, status: "dispatched", dispatched_at: new Date().toISOString() };
+    const { POST } = await import("./route");
+    const res = await POST(req({ kind: "run_progress", run_id: RUN_ID, step: "conferencia" }));
+    expect(res.status).toBe(200);
+    const escrito = lastUpdate("system_update_runs");
+    expect(escrito).toMatchObject({ last_step: "conferencia" });
+    expect(escrito?.last_step_at).toBeTruthy();
+  });
+
+  it("'refused' fecha a rodada: recusou antes de tocar, nada mudou", async () => {
+    const { audit } = await import("@/lib/audit");
+    runRow = { id: RUN_ID, status: "dispatched", dispatched_at: new Date().toISOString() };
+    const { POST } = await import("./route");
+    const res = await POST(
+      req({ kind: "run_result", run_id: RUN_ID, status: "refused", log_tail: "✖ RECUSADO: rebaixamento" }),
+    );
+    expect(res.status).toBe(200);
+    expect(lastUpdate("system_update_runs")).toMatchObject({ status: "refused" });
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "system.update_finished", metadata: { status: "refused" } }),
+    );
+  });
+});
+
+describe("POST /api/v1/system/agent — pedido parado não é pedido (#311)", () => {
+  it("rodada sem notícia há mais de 15 minutos não volta como pedido", async () => {
+    runRow = {
+      id: RUN_ID,
+      status: "dispatched",
+      dispatched_at: new Date(Date.now() - 60 * 60_000).toISOString(),
+      last_step_at: null,
+    };
+    const { POST } = await import("./route");
+    const body = await (await POST(req(HEARTBEAT))).json();
+    expect(body.data).toEqual({ update_requested: false, run_id: null });
+  });
+
+  it("rodada antiga com passo recente continua sendo pedido", async () => {
+    runRow = {
+      id: RUN_ID,
+      status: "dispatched",
+      dispatched_at: new Date(Date.now() - 20 * 60_000).toISOString(),
+      last_step_at: new Date(Date.now() - 60_000).toISOString(),
+    };
+    const { POST } = await import("./route");
+    const body = await (await POST(req(HEARTBEAT))).json();
+    expect(body.data).toEqual({ update_requested: true, run_id: RUN_ID });
+  });
+});

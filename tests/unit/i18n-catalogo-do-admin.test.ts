@@ -7,6 +7,9 @@ import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN, SUBPAGINAS_DO_ADMIN } from "@/lib/a
 import { TEXTOS_DO_CHECKLIST } from "@/components/admin/dashboard/ChecklistDaInstalacao";
 import { TEXTOS_DOS_CARTOES } from "@/components/admin/dashboard/KPICards";
 import { TEXTOS_DA_LICENCA_NO_PAINEL } from "@/components/admin/dashboard/CartaoDaLicenca";
+import { TEXTOS_DA_VERSAO_NO_PAINEL } from "@/components/admin/dashboard/CartaoDaVersao";
+import { TEXTOS_DO_BACKUP_NO_PAINEL } from "@/components/admin/dashboard/CartaoDoBackup";
+import { RESULTADO_NO_HISTORICO } from "@/components/admin/atualizacao/UpdatePanel";
 import { TEXTOS_DA_SAUDE } from "@/lib/saude/da-instalacao";
 import { textoDaLicenca, textoDoModo } from "@/lib/licenca/textos";
 import type { EstadoDaLicenca } from "@/lib/licenca/decidir";
@@ -64,6 +67,10 @@ function textos(): { onde: string; texto: string }[] {
   };
   folhas("saude", TEXTOS_DA_SAUDE);
   folhas("licenca-no-painel", TEXTOS_DA_LICENCA_NO_PAINEL);
+  // A versão, o backup e o histórico das atualizações (issue #311).
+  folhas("versao-no-painel", TEXTOS_DA_VERSAO_NO_PAINEL);
+  folhas("backup-no-painel", TEXTOS_DO_BACKUP_NO_PAINEL);
+  folhas("historico-de-atualizacoes", RESULTADO_NO_HISTORICO);
   // As frases da licença que o cartão reaproveita (`textoDaLicenca`, `textoDoModo`): o
   // Painel as mostra, então também têm de existir nos quatro idiomas. Lidas com um `t`
   // que só anota o que recebeu.
@@ -108,7 +115,8 @@ describe("o catálogo do admin tem os quatro idiomas", () => {
   });
 
   it("a tradução não é a frase em português copiada (fora nomes próprios)", () => {
-    const iguaisPermitidos = new Set(["Marca", "E-mail", "Google Agenda"]);
+    // "Backup" é a mesma palavra em inglês (o cartão do Painel, issue #311).
+    const iguaisPermitidos = new Set(["Marca", "E-mail", "Google Agenda", "Backup"]);
     const copiadas = todos
       .filter((t) => !iguaisPermitidos.has(t.texto))
       .filter(

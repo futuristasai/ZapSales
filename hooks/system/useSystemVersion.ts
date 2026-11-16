@@ -16,7 +16,31 @@ export interface SystemVersion {
   compare_failed?: boolean;
   /** O host já viu ao menos uma tag `v*` publicada neste repositório. */
   has_known_release?: boolean;
+  /** O programa do servidor bateu nos últimos 5 minutos. */
   agent_online?: boolean;
+  /** A última batida do programa do servidor (issue #311). */
+  agent_last_seen_at?: string | null;
+  /**
+   * `false` quando a instalação anda pela main e o programa do servidor só
+   * anuncia a versão: quem atualiza é a implantação contínua (issue #311).
+   */
+  executes_updates?: boolean;
+  /** O backup como o programa do servidor contou. Nulo = ainda não contou. */
+  backup?: {
+    last_backup_at: string | null;
+    last_offsite_backup_at: string | null;
+    offsite_configured: boolean | null;
+  };
+  /** As últimas rodadas pedidas pela tela, da mais nova à mais velha. */
+  history?: Array<{
+    id: string;
+    dispatched_at: string;
+    finished_at: string | null;
+    from_version: string;
+    to_version: string;
+    status: string;
+    requested_by_email: string | null;
+  }>;
   /**
    * A atualização terminou bem e o host ainda não confirmou (janela de até 5
    * min). Fora dela é `false` — o campo se fecha sozinho.
@@ -58,9 +82,9 @@ export interface SystemVersion {
 }
 
 /**
- * Estado da versão desta instalação. Fonte única do rodapé da sidebar e da
- * tela de atualização. Poll folgado (5 min) porque o agente do host só reporta
- * a cada 5 min — bater mais rápido não traria informação nova.
+ * Estado da versão desta instalação. Fonte única do rodapé da sidebar, da tela
+ * de atualização e dos cartões Versão e Backup do Painel do admin. Poll folgado
+ * (5 min) por padrão: o rodapé não precisa de mais; a tela de atualização pede 5 s.
  */
 export function useSystemVersion(opts?: { refetchInterval?: number; depoisDaAbertura?: boolean }) {
   // O rodapé da sidebar mostra a versão numa letra miúda: não precisa competir

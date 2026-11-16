@@ -79,6 +79,10 @@ export const ApiErrorCodes = {
   // retentar depois resolve, enquanto conflito manda trocar a chave.
   idempotency_in_progress: "idempotency_in_progress",
   state_conflict: "state_conflict",
+  // POST /system/update sem batida recente do programa do servidor (issue #311):
+  // ninguém vai atender o pedido, então ele não nasce. A tela mostra o comando
+  // que liga o programa em vez de uma rodada que venceria em 15 minutos.
+  agent_offline: "agent_offline",
   // POST /admin/tenants/[id]/reactivate sobre suspensão por falta de pagamento:
   // a saída é "Dar prazo" ou "Tornar isenta", nunca o "Reativar" genérico.
   suspensao_de_cobranca: "suspensao_de_cobranca",

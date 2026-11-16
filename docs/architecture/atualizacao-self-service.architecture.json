@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Atualização self-service — o botão que substitui o SSH",
-    "subtitle": "agent.sh puxa, nunca o app empurra: o host decide o que roda",
+    "subtitle": "o programa do servidor (kit/agente.sh) puxa, nunca o app empurra: o host decide o que roda",
     "output": "atualizacao-self-service.html",
     "quality_profile": "standard"
   },
@@ -40,16 +40,16 @@
       "lane": "host",
       "col": 0,
       "type": "service",
-      "label": "agent.sh",
-      "sublabel": "cron 5min · flock · esc() byte-safe (LC_ALL=C)"
+      "label": "kit/agente.sh (zapsales-agente)",
+      "sublabel": "temporizador do systemd, 1 min · trava compartilhada com o zapsales-implantar · só executa em instalação por release"
     },
     {
       "id": "updatesh",
       "lane": "host",
       "col": 1,
       "type": "service",
-      "label": "update.sh --to <tag>",
-      "sublabel": "backup → checkout da tag → baseline → imagem → healthcheck"
+      "label": "rotina protegida (kit/lib/rotina.sh)",
+      "sublabel": "cópia do banco → tag vX.Y.Z → kit/instalar.sh → prova por 2 min → volta sozinha"
     },
     {
       "id": "agentroute",
@@ -81,7 +81,7 @@
       "col": 1,
       "type": "database",
       "label": "system_version",
-      "sublabel": "singleton id=1 · current/latest/changelog_raw"
+      "sublabel": "singleton id=1 · current/latest/changelog_raw · último backup, R2 (booleano), executes_updates"
     },
     {
       "id": "runs",
@@ -104,7 +104,7 @@
       "lane": "humano",
       "col": 3,
       "type": "frontend",
-      "label": "/app/settings/atualizacao",
+      "label": "/admin/atualizacao + cartões Versão e Backup do Painel",
       "sublabel": "4 estados · avisos de TODAS as versões da faixa, antes do botão"
     }
   ],

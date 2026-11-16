@@ -154,6 +154,11 @@ async function resetSystemVersion(): Promise<void> {
       latest_version: "",
       changelog_raw: "",
       agent_last_seen_at: null,
+      // O programa do servidor da issue #311: nada contado ainda.
+      executes_updates: null,
+      last_backup_at: null,
+      last_offsite_backup_at: null,
+      backup_offsite_configured: null,
       update_requested_at: null,
       update_requested_by: null,
     } as never)

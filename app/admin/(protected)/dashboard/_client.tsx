@@ -13,6 +13,8 @@ import { useAdminDashboardKPIs } from "@/hooks/useAdminDashboardKPIs";
 import { useAlertsRealtime } from "@/hooks/useAlertsRealtime";
 import { useT } from "@/hooks/i18n/useT";
 import { CabecalhoDaPlataforma } from "@/components/admin/CabecalhoDaPlataforma";
+import { CartaoDaVersao } from "@/components/admin/dashboard/CartaoDaVersao";
+import { CartaoDoBackup } from "@/components/admin/dashboard/CartaoDoBackup";
 
 function KPISkeleton() {
   return (
@@ -73,6 +75,14 @@ export function DashboardClient({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">{saude}</div>
         <div className="[&>*]:h-full">{licenca}</div>
+      </div>
+
+      {/* "Estou protegido e em dia?" (issue #311): a versão, com o caminho para
+          atualizar, e o backup, que roda no servidor e é contado pelo programa
+          do servidor a cada minuto. */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <CartaoDaVersao />
+        <CartaoDoBackup />
       </div>
 
       {isLoading || !data ? (

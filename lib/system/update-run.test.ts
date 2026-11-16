@@ -206,3 +206,36 @@ describe("rollbackDesmentidoPeloApp", () => {
     expect(rollbackDesmentidoPeloApp(null, "1.33.0")).toBe(false);
   });
 });
+
+describe("o programa do servidor da issue #311", () => {
+  const agora = new Date("2026-11-16T12:00:00Z");
+
+  it("pedido parado é medido desde a última notícia, não desde o clique", async () => {
+    const { isRunStale } = await import("./update-run");
+    const clique = "2026-11-16T11:40:00Z"; // 20 min atrás
+    expect(isRunStale(clique, agora)).toBe(true);
+    expect(isRunStale(clique, agora, "2026-11-16T11:55:00Z")).toBe(false);
+    expect(isRunStale(clique, agora, "2026-11-16T11:44:00Z")).toBe(true);
+    expect(isRunStale(clique, agora, "lixo")).toBe(true);
+  });
+
+  it("o programa está no ar só com batida dos últimos 5 minutos", async () => {
+    const { agenteNoAr } = await import("./update-run");
+    expect(agenteNoAr("2026-11-16T11:58:00Z", agora)).toBe(true);
+    expect(agenteNoAr("2026-11-16T11:54:00Z", agora)).toBe(false);
+    expect(agenteNoAr(null, agora)).toBe(false);
+    expect(agenteNoAr("lixo", agora)).toBe(false);
+  });
+
+  it("o botão só sobe, e só para uma release", async () => {
+    const { versaoSobe } = await import("./update-run");
+    expect(versaoSobe("1.2.1", "1.3.0")).toBe(true);
+    expect(versaoSobe("1.9.0", "1.10.0")).toBe(true);
+    expect(versaoSobe("v1.2.1", "v1.2.2")).toBe(true);
+    expect(versaoSobe("1.3.0", "1.3.0")).toBe(false);
+    expect(versaoSobe("1.3.0", "1.2.9")).toBe(false);
+    expect(versaoSobe("abc1234", "1.3.0")).toBe(false);
+    expect(versaoSobe("1.2.0", "main")).toBe(false);
+    expect(versaoSobe("1.2.0", "1.3.0-rc1")).toBe(false);
+  });
+});
