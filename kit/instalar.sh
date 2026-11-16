@@ -781,5 +781,10 @@ provar
 # `kit/implantar.sh acesso`, que é decisão do operador. Falhar aqui não desfaz
 # uma instalação que acabou de passar nas provas.
 "$KIT/implantar.sh" instalar-comando || aviso "Não consegui instalar o comando zapsales-implantar (só a implantação contínua depende dele)."
+# O programa do servidor (kit/agente.sh, issue #311) também acompanha o código, e
+# é por aqui que uma instalação antiga o recebe: na próxima vez que o kit roda.
+# Ele conta a versão ao app a cada minuto e atende o botão "Atualizar agora".
+# Falhar aqui só desliga o botão — a instalação que passou nas provas vale.
+"$KIT/agente.sh" instalar-comando || aviso "Não consegui instalar o programa do servidor (zapsales-agente): o botão Atualizar agora fica desligado até a próxima rodada do kit."
 relatar_vizinhos
 resumo

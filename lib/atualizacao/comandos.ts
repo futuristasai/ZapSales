@@ -21,6 +21,19 @@ export const ENDERECO_DO_OBTER = "https://zapinstalador.futuristas.app/obter.sh"
 /** Atualiza para a última versão publicada. Roda de qualquer pasta, como root. */
 export const COMANDO_DE_ATUALIZAR = `curl -fsSL ${ENDERECO_DO_OBTER} | sudo bash`;
 
+/**
+ * Liga o programa do servidor (issue #311) numa instalação que já o tem: ele é
+ * um temporizador do systemd que o `kit/agente.sh instalar-comando` cria a cada
+ * rodada do kit. Numa instalação anterior a ele a unidade não existe, e quem a
+ * traz é a atualização pelo terminal (`COMANDO_DE_ATUALIZAR`) — a tela mostra os
+ * dois, nessa ordem.
+ */
+export const UNIDADE_DO_PROGRAMA = "zapsales-agente.timer";
+export const COMANDO_DE_LIGAR_O_PROGRAMA = `sudo systemctl enable --now ${UNIDADE_DO_PROGRAMA}`;
+
+/** Configura a cópia externa do backup (Cloudflare R2), na pasta da instalação. */
+export const COMANDO_DE_CONFIGURAR_O_R2 = "sudo kit/backup.sh configurar-r2";
+
 /** Tira o "v" das versões: a tela fala "1.1.0", não "v1.1.0". */
 export function semV(versao: string | undefined): string {
   return (versao ?? "").replace(/^v/i, "");

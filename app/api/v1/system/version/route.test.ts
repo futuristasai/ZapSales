@@ -52,6 +52,8 @@ let insertError: { code: string; message: string } | null;
 let versionSelectError: { message: string } | null;
 /** Erro que a leitura (`maybeSingle`) de `system_update_runs` deve devolver neste caso. */
 let runSelectError: { message: string } | null;
+/** As linhas do histórico (a leitura de `system_update_runs` com `limit(10)`, sem `maybeSingle`). */
+let historyRows: Array<Record<string, unknown>>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -63,6 +65,7 @@ beforeEach(() => {
   insertError = null;
   versionSelectError = null;
   runSelectError = null;
+  historyRows = [];
   versionRow = {
     id: 1,
     current_version: "1.0.0",
@@ -79,6 +82,14 @@ beforeEach(() => {
   };
 
   vi.mocked(createAdminClient).mockReturnValue({
+    auth: {
+      admin: {
+        getUserById: async (id: string) => ({
+          data: { user: id === OWNER.id ? { email: OWNER.email } : null },
+          error: null,
+        }),
+      },
+    },
     from: (table: string) => {
       // O double espelha o banco: `system_version` é sempre buscado por
       // `.eq("id", 1)`; `system_update_runs` é buscado tanto por
@@ -99,7 +110,15 @@ beforeEach(() => {
             maybeSingle,
             order: () => ({ limit: () => ({ maybeSingle }) }),
           }),
-          order: () => ({ limit: () => ({ maybeSingle }) }),
+          order: () => ({
+            limit: () => ({
+              maybeSingle,
+              then: (
+                ok: (v: { data: unknown; error: null }) => unknown,
+                ko?: (e: unknown) => unknown,
+              ) => Promise.resolve({ data: historyRows, error: null }).then(ok, ko),
+            }),
+          }),
         }),
         insert: (row: Record<string, unknown>) => ({
           select: () => ({
@@ -863,5 +882,80 @@ describe("POST /api/v1/system/update", () => {
     const body = await res.json();
     expect(body.error.code).toBe("state_conflict");
     expect(body.error.message).toBe("Já existe uma atualização em andamento.");
+  });
+});
+
+describe("GET /api/v1/system/version — o programa do servidor da #311", () => {
+  it("sem batida há mais de 5 minutos, o programa está desligado", async () => {
+    vi.mocked(loadAuthUser).mockResolvedValue(OWNER as never);
+    versionRow.agent_last_seen_at = new Date(Date.now() - 6 * 60_000).toISOString();
+    const { GET } = await import("../version/route");
+    const { data } = await (await GET(get())).json();
+    expect(data.agent_online).toBe(false);
+    expect(data.agent_last_seen_at).toBe(versionRow.agent_last_seen_at);
+  });
+
+  it("conta o backup como o programa contou, sem inventar o que ele não contou", async () => {
+    vi.mocked(loadAuthUser).mockResolvedValue(OWNER as never);
+    const { GET } = await import("../version/route");
+    let { data } = await (await GET(get())).json();
+    expect(data.backup).toEqual({ last_backup_at: null, last_offsite_backup_at: null, offsite_configured: null });
+
+    versionRow.last_backup_at = "2026-11-14T03:15:00.000Z";
+    versionRow.backup_offsite_configured = false;
+    ({ data } = await (await GET(get())).json());
+    expect(data.backup).toEqual({
+      last_backup_at: "2026-11-14T03:15:00.000Z",
+      last_offsite_backup_at: null,
+      offsite_configured: false,
+    });
+  });
+
+  it("instalação que anda pela main: executes_updates=false; programa antigo (nulo) executa", async () => {
+    vi.mocked(loadAuthUser).mockResolvedValue(OWNER as never);
+    const { GET } = await import("../version/route");
+    expect((await (await GET(get())).json()).data.executes_updates).toBe(true);
+    versionRow.executes_updates = false;
+    expect((await (await GET(get())).json()).data.executes_updates).toBe(false);
+  });
+
+  it("o histórico traz data, de → para, quem pediu e o resultado — e a rodada parada vira unknown", async () => {
+    vi.mocked(loadAuthUser).mockResolvedValue(OWNER as never);
+    historyRows = [
+      {
+        id: "a",
+        status: "dispatched",
+        dispatched_at: new Date(Date.now() - 40 * 60_000).toISOString(),
+        finished_at: null,
+        last_step_at: null,
+        from_version: "1.2.0",
+        to_version: "1.3.0",
+        requested_by: OWNER.id,
+      },
+      {
+        id: "b",
+        status: "refused",
+        dispatched_at: "2026-11-10T10:00:00.000Z",
+        finished_at: "2026-11-10T10:01:00.000Z",
+        last_step_at: null,
+        from_version: "1.1.0",
+        to_version: "1.2.0",
+        requested_by: "33333333-3333-4333-8333-333333333333",
+      },
+    ];
+    const { GET } = await import("../version/route");
+    const { data } = await (await GET(get())).json();
+    expect(data.history).toEqual([
+      expect.objectContaining({ id: "a", status: "unknown", from_version: "1.2.0", to_version: "1.3.0", requested_by_email: OWNER.email }),
+      expect.objectContaining({ id: "b", status: "refused", requested_by_email: null }),
+    ]);
+  });
+
+  it("quem não é dono não vê histórico nem backup", async () => {
+    vi.mocked(loadAuthUser).mockResolvedValue(MEMBRO as never);
+    const { GET } = await import("../version/route");
+    const { data } = await (await GET(get())).json();
+    expect(data).not.toHaveProperty("history");
+    expect(data).not.toHaveProperty("backup");
   });
 });

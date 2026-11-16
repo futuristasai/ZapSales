@@ -1,6 +1,4 @@
 "use client";
-import { CabecalhoDePagina } from "@/components/shell/CabecalhoDePagina";
-import { CorpoDaPagina } from "@/components/shell/CorpoDaPagina";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -13,18 +11,45 @@ import { textoDaRodadaDoBanco } from "@/lib/system/update-run";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/hooks/i18n/useT";
-import { COMANDO_DE_ATUALIZAR, comandoDeVolta, semV } from "@/lib/atualizacao/comandos";
+import {
+  COMANDO_DE_ATUALIZAR,
+  COMANDO_DE_LIGAR_O_PROGRAMA,
+  comandoDeVolta,
+  semV,
+} from "@/lib/atualizacao/comandos";
+import { useIdioma } from "@/lib/i18n/IdiomaProvider";
+import { tagDeIdioma } from "@/lib/i18n/datas";
 
 const COMANDO_MANUAL = COMANDO_DE_ATUALIZAR;
 
+/**
+ * Os passos que o programa do servidor (`kit/agente.sh`) conta, na ordem em que
+ * acontecem. A "conferência" (issue #311) são os 2 minutos em que ele confere se
+ * a versão nova ficou de pé — e volta sozinho se não ficou.
+ */
 const PASSOS = [
   { chave: "backup", texto: "Guardando uma cópia de segurança dos seus dados" },
   { chave: "codigo", texto: "Baixando a versão nova" },
   { chave: "banco", texto: "Atualizando o banco de dados" },
-  { chave: "app", texto: "Reiniciando o sistema" },
+  { chave: "conferencia", texto: "Conferindo, por 2 minutos, se a versão nova ficou de pé" },
 ] as const;
 
+/**
+ * A tela de atualização da instalação (issue #311): mora em Administração ›
+ * Configurar a instalação › Atualização, embaixo do cabeçalho padrão da área
+ * (que a página desenha). O estado da atualização vem num cartão, e o histórico
+ * das rodadas embaixo.
+ */
 export function UpdatePanel() {
+  return (
+    <>
+      <EstadoDaAtualizacao />
+      <Historico />
+    </>
+  );
+}
+
+function EstadoDaAtualizacao() {
   const t = useT();
   const { data, isError } = useSystemVersion({ refetchInterval: 5_000 });
   const queryClient = useQueryClient();
@@ -196,13 +221,18 @@ export function UpdatePanel() {
     return (
       <Layout titulo={`${t("A atualização para a versão")} ${alvo} ${t("não deu certo")}`}>
         <p className="text-sm">
-          {t("Voltei o sistema para a versão")} {anterior},{" "}
+          {t("A versão nova não ficou de pé, e eu voltei o sistema sozinho para a versão")}{" "}
+          <strong>{anterior}</strong>
           {t(
-            "que é a que está no ar agora, e os seus dados estão intactos. O banco de dados já tinha sido atualizado e permanece assim — isso é seguro, a versão",
-          )}{" "}
+            ", que é a que está no ar agora: o código, a configuração e as imagens voltaram, e os seus dados estão intactos.",
+          )}
+        </p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("O banco de dados já tinha sido atualizado e permanece assim — isso é seguro, a versão")}{" "}
           {anterior}{" "}
           {t("funciona com ele. Se quiser desfazer também o banco, use a cópia de segurança feita antes da tentativa (")}
-          <code>docs/runbooks/backup-e-restauracao.md</code>).
+          <code>docs/runbooks/backup-e-restauracao.md</code>).{" "}
+          {t("O motivo da volta está nos detalhes técnicos abaixo.")}
         </p>
         {contaDoBanco ? (
           <p className="mt-3 text-sm text-muted-foreground">{t(contaDoBanco)}</p>
@@ -223,6 +253,29 @@ export function UpdatePanel() {
           texto={`${t("Para deixar o servidor inteiro de volta na versão")} ${anterior} ${t("— inclusive o código, que já foi trocado —, quem tem acesso pode rodar:")}`}
           comando={comandoDeVolta(data.run.from_version)}
         />
+      </Layout>
+    );
+  }
+
+  // Recusou ANTES de tocar (issue #311): rebaixamento, imagem que ainda não foi
+  // publicada, cópia do banco que falhou. Nada mudou — dizer "não consegui
+  // voltar", como `failed` diz, assustaria à toa. O motivo vem no registro, já
+  // em português, e o botão volta: tentar de novo é seguro.
+  if (falhaVigente && data.run?.status === "refused") {
+    return (
+      <Layout titulo={`${t("A atualização para a versão")} ${alvo} ${t("não começou")}`}>
+        <p className="text-sm">
+          {t("O servidor conferiu o pedido e recusou antes de mexer em qualquer coisa:")}{" "}
+          <strong>{t("nada foi alterado")}</strong>
+          {t(", e o sistema segue na versão")} {versaoNaFrase}.
+        </p>
+        <MotivoDaRecusa texto={data.run.log_tail} />
+        <DetalhesTecnicos texto={data.run.log_tail} />
+        {data.update_available && data.agent_online && data.executes_updates !== false ? (
+          <div className="mt-6 border-t pt-4">
+            <BotaoAtualizar mutate={() => atualizar.mutate()} isPending={atualizar.isPending} erro={erro} />
+          </div>
+        ) : null}
       </Layout>
     );
   }
@@ -284,17 +337,50 @@ export function UpdatePanel() {
     );
   }
 
+  // Sem batida recente (issue #311): o programa do servidor está desligado, ou
+  // ainda não existe nesta instalação. O botão sai — um pedido agora venceria
+  // sem ninguém atender — e entra o comando que resolve.
   if (!data.agent_online) {
     return (
-      <Layout titulo={t("Atualização automática indisponível")}>
+      <Layout titulo={t("O programa do servidor está desligado")}>
         <p className="text-sm">
           {t(
-            "Não estou conseguindo falar com o servidor onde o sistema está instalado, então não posso atualizar sozinho. Quem tem acesso ao servidor pode entrar na pasta onde o sistema foi instalado e rodar este comando — se for a primeira vez, rode duas vezes: a primeira baixa o programa novo e a segunda liga o botão desta tela.",
+            "Quem atualiza o sistema é um programa pequeno que roda no servidor e fala com esta tela a cada minuto. Ele não dá notícia",
+          )}{" "}
+          {data.agent_last_seen_at ? (
+            <>
+              {t("desde")} <DataHora iso={data.agent_last_seen_at} />
+            </>
+          ) : (
+            t("desde que o sistema foi instalado")
+          )}
+          {t(", então o botão de atualizar fica desligado até ele voltar.")}
+        </p>
+        <p className="mt-3 text-sm">{t("Quem tem acesso ao servidor liga o programa com:")}</p>
+        <Comando comando={COMANDO_DE_LIGAR_O_PROGRAMA} />
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t(
+            "Se o servidor responder que a unidade não existe, esta instalação é anterior ao programa: rode uma vez a atualização pelo terminal, que ela instala o programa e ele passa a cuidar das próximas.",
           )}
         </p>
         <Comando comando={COMANDO_MANUAL} />
         <p className="mt-3 text-sm text-muted-foreground">
           {t("Versão instalada:")} {versaoNaFrase}.
+        </p>
+      </Layout>
+    );
+  }
+
+  // A instalação anda pela main (a produção do próprio projeto): quem a
+  // atualiza é a implantação contínua, e o programa do servidor só anuncia a
+  // versão. Os dois nunca atualizam juntos — e o botão não se aplica.
+  if (data.executes_updates === false) {
+    return (
+      <Layout titulo={`${t("Você está na versão")} ${versao}`}>
+        <p className="text-sm">
+          {t(
+            "Esta instalação acompanha o desenvolvimento e é atualizada sozinha pela implantação contínua a cada mudança aprovada. Por isso não há botão de atualizar aqui: o programa do servidor só informa a versão.",
+          )}
         </p>
       </Layout>
     );
@@ -470,8 +556,8 @@ export function UpdatePanel() {
 /**
  * A ESPERA, com nome e com relógio.
  *
- * O pedido fica numa fila que o servidor lê de tempos em tempos — o `agent.sh`
- * roda de 5 em 5 minutos no host. Antes disto a tela já mostrava a lista dos
+ * O pedido fica numa fila que o servidor lê de tempos em tempos — o programa
+ * do servidor (`kit/agente.sh`) bate a cada minuto. Antes disto a tela já mostrava a lista dos
  * quatro passos, todos vazios, dizendo "Atualizando para a versão X": afirmava
  * trabalho que ainda não tinha começado, e ficava imóvel por até cinco minutos.
  *
@@ -509,7 +595,7 @@ function AguardandoOServidor({
       <p className="text-sm">
         {t("Anotei o pedido de atualizar para a versão")} <strong>{destino}</strong>.{" "}
         {t(
-          "O servidor confere se há algo a fazer de poucos em poucos minutos, então a atualização pode levar até cerca de cinco minutos para começar.",
+          "O servidor confere se há algo a fazer a cada minuto, então a atualização pode levar até cerca de um minuto para começar.",
         )}
       </p>
       <p className="mt-3 text-sm">
@@ -624,13 +710,97 @@ function DetalhesTecnicos({ texto }: { texto: string | undefined }) {
 function Layout({ titulo, children }: { titulo?: string; children: React.ReactNode }) {
   const t = useT();
   return (
-    <CorpoDaPagina largura="formulario">
-      <CabecalhoDePagina
-        titulo={titulo ?? t("Atualização do sistema")}
-        descricao={t("A versão instalada no servidor e, quando houver uma nova, o que muda nela.")}
-      />
-      <Card className="p-6">{children}</Card>
-    </CorpoDaPagina>
+    <Card className="max-w-3xl p-6" data-testid="estado-da-atualizacao">
+      <h2 className="mb-3 text-lg font-semibold">{titulo ?? t("Atualização do sistema")}</h2>
+      {children}
+    </Card>
+  );
+}
+
+/** Data e hora no idioma de quem lê. */
+function DataHora({ iso }: { iso: string | null | undefined }) {
+  const idioma = useIdioma();
+  if (!iso) return <>—</>;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return <>—</>;
+  return (
+    <time dateTime={iso}>
+      {d.toLocaleString(tagDeIdioma(idioma), { dateStyle: "short", timeStyle: "short" })}
+    </time>
+  );
+}
+
+/**
+ * A linha "✖ RECUSADO: …" do registro, em destaque: é o motivo, em português,
+ * escrito pelo programa do servidor. O registro inteiro continua nos detalhes
+ * técnicos.
+ */
+function MotivoDaRecusa({ texto }: { texto: string | undefined }) {
+  const linha = (texto ?? "").split("\n").find((l) => l.includes("RECUSADO:"));
+  if (!linha) return null;
+  const motivo = linha.replace(/^.*RECUSADO:\s*/, "").trim();
+  return (
+    <p className="mt-3 rounded-md border border-warning bg-warning-bg p-3 text-sm text-warning-fg">
+      {motivo}
+    </p>
+  );
+}
+
+/** Os textos do resultado de cada rodada no histórico — dado, para a cerca de idioma. */
+export const RESULTADO_NO_HISTORICO: Record<string, string> = {
+  dispatched: "Em andamento",
+  success: "Atualizado",
+  failed_rolled_back: "Não deu certo — voltou sozinho",
+  failed: "Não deu certo — precisa de atenção",
+  refused: "Não começou — nada mudou",
+  unknown: "Sem notícia do servidor",
+};
+
+/**
+ * O HISTÓRICO das atualizações (issue #311, história 42): data, de → para, quem
+ * pediu e o resultado. São as rodadas pedidas pela tela; quem atualiza pelo
+ * terminal não deixa linha aqui.
+ */
+function Historico() {
+  const t = useT();
+  const { data } = useSystemVersion({ refetchInterval: 5_000 });
+  const linhas = data?.history ?? [];
+  return (
+    <section className="max-w-3xl space-y-2" data-testid="historico-de-atualizacoes">
+      <h2 className="text-base font-semibold">{t("Histórico de atualizações")}</h2>
+      {linhas.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {t("Nenhuma atualização foi pedida por esta tela ainda.")}
+        </p>
+      ) : (
+        <div className="overflow-x-auto rounded-md border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 font-medium">{t("Quando")}</th>
+                <th className="px-3 py-2 font-medium">{t("Versão")}</th>
+                <th className="px-3 py-2 font-medium">{t("Quem pediu")}</th>
+                <th className="px-3 py-2 font-medium">{t("Resultado")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((r) => (
+                <tr key={r.id} className="border-t">
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <DataHora iso={r.dispatched_at} />
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap tabular-nums">
+                    {semV(r.from_version) || "—"} → {semV(r.to_version) || "—"}
+                  </td>
+                  <td className="px-3 py-2">{r.requested_by_email ?? "—"}</td>
+                  <td className="px-3 py-2">{t(RESULTADO_NO_HISTORICO[r.status] ?? r.status)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 

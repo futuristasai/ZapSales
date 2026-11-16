@@ -359,7 +359,6 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
         <li><a href="#api-e-mcp" data-pagina="api-e-mcp">API e MCP: ligar outros sistemas ao ZapSales</a></li>
         <li><a href="#linha-sip" data-pagina="linha-sip">Linha telefônica (SIP)</a></li>
         <li><a href="#extensoes" data-pagina="extensoes">Extensões</a></li>
-        <li><a href="#atualizacao" data-pagina="atualizacao">Atualização do sistema</a></li>
       </ul>
     </details>
     <details class="grupo" data-grupo="entrada">
@@ -391,6 +390,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
         <li><a href="#admin-sistema" data-pagina="admin-sistema">Recursos opcionais da instalação</a></li>
         <li><a href="#admin-destinos" data-pagina="admin-destinos">Destinos internos, Preços da Meta e Credenciais</a></li>
         <li><a href="#admin-extensoes" data-pagina="admin-extensoes">Extensões da instalação (e onde instalar módulos)</a></li>
+        <li><a href="#atualizacao" data-pagina="atualizacao">Atualização</a></li>
       </ul>
     </details>
   </nav>
@@ -6641,7 +6641,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 
 <h2 id="config-hub--fora-do-hub">O que não está nesta página</h2>
 <ul>
-  <li><a href="#atualizacao">Atualização do sistema</a> — só o dono do servidor; chega-se pelo rodapé do painel Todo dia (“Nova versão · X.Y.Z”).</li>
+  <li><a href="#atualizacao">Atualização</a> — mora na Administração da instalação (Configurar a instalação › Atualização); chega-se também pelo rodapé do painel Todo dia (“Nova versão · X.Y.Z”).</li>
   <li><strong>Antigos endereços de WhatsApp</strong> (<code>/app/settings/canal-oficial</code>, <code>/templates</code> e <code>/tenant/whatsapp</code>) apenas redirecionam para <a href="#conexoes">Conexões</a>.</li>
   <li>As telas do dia a dia (Conversas, Funis, Contatos…), as do agente de IA e as de Resultados moram em <span class="ui">Todo dia</span>, <span class="ui">Agente</span> e <span class="ui">Resultados</span>, não aqui.</li>
 </ul>
@@ -8196,53 +8196,6 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="atualizacao" data-titulo="Atualização do sistema" data-grupo="organizacao" data-grupo-titulo="Organização e configurações" data-resumo="Ver a versão instalada no servidor e, havendo uma nova, mandar o servidor atualizar (com cópia de segurança antes). Só o dono do servidor." data-palavras="atualização versão comando de atualização obter.sh atualizar agora nova versão update backup kit update dono do servidor rodapé do painel aviso de versão faixa celular" hidden>
-  <p class="migalha"><a href="#inicio">Manual</a> › Organização e configurações › Atualização do sistema</p>
-  <h1>Atualização do sistema</h1>
-  <p class="lede">Ver a versão instalada no servidor e, havendo uma nova, mandar o servidor atualizar (com cópia de segurança antes). Só o dono do servidor.</p>
-  <dl class="ficha"><dt>Onde fica</dt><dd>Rodapé do painel Todo dia (“versão X.Y.Z” / “Nova versão · X.Y.Z”), no pé da faixa com o painel recolhido e no rodapé das folhas do celular — endereço /app/settings/atualizacao; não tem item no menu</dd><dt>Quem pode usar</dt><dd>Só o dono do servidor (administrador da plataforma). Qualquer outra pessoa recebe “página não encontrada”.</dd></dl>
-  <div class="conteudo-pagina">
-<h2 id="atualizacao--visao-geral">Para que serve</h2>
-<p>Mostra a <strong>versão instalada no servidor</strong> e, quando há uma nova, o que muda nela — e deixa o dono mandar o servidor atualizar. É uma tela do <em>servidor</em>, não da empresa: “Administrador” da empresa <strong>não</strong> a vê (recebe “página não encontrada”), e ela não tem item no menu nem na página de área <a href="#config-hub">Configurações</a>. A porta é o <strong>rodapé do painel Todo dia</strong>, ao lado da faixa, junto do link <span class="ui">Manual</span>: mostra “versão X.Y.Z” e, só para o dono, quando há versão nova, vira o link <strong>“Nova versão · X.Y.Z”</strong> com um ponto pulsando.</p>
-<ul>
-<li><strong>Painel recolhido</strong> (setinha <span class="ui">«</span>): a versão não cabe na faixa e some, mas o aviso de versão nova continua à vista, no pé da faixa, abaixo de <span class="ui">Você</span>, como um ponto pulsando com uma seta.</li>
-<li><strong>Celular:</strong> o mesmo rodapé (<span class="ui">Manual</span> e a versão ou o aviso) fica no fim de cada folha da barra de baixo — Todo dia, Configurar e Resultados.</li>
-</ul>
-<figure class="print media">
-  <img src="img/atualizacao.png" alt="Tela Atualização do sistema no estado Atualização automática indisponível, com o comando curl para atualizar, o botão Copiar e a linha da versão instalada, com quatro marcações numeradas" loading="lazy">
-  <figcaption>A tela, no estado “Atualização automática indisponível”.</figcaption>
-</figure>
-<ol class="legenda">
-  <li><strong>Título do estado.</strong> Diz em que situação a tela está (veja a tabela abaixo).</li>
-  <li><strong>O comando de atualização.</strong> É o mesmo da instalação; rode no servidor.</li>
-  <li><strong>Copiar.</strong> Copia o comando para colar no terminal do servidor.</li>
-  <li><strong>Versão instalada.</strong> O número da versão, ou “ainda não informada pelo servidor”.</li>
-</ol>
-<p>A captura mostra o estado em que o sistema <em>não consegue falar com o servidor onde está instalado</em>: “Quem tem acesso ao servidor pode entrar na pasta onde o sistema foi instalado e rodar este comando — se for a primeira vez, rode duas vezes: a primeira baixa o programa novo e a segunda liga o botão desta tela.” O comando é <code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>, com o botão <span class="ui">Copiar</span>. Abaixo do comando, a linha “Versão instalada:” mostra o número, ou “ainda não informada pelo servidor” quando o servidor nunca respondeu desde a instalação.</p>
-
-<aside class="nota"><strong>O que o comando faz.</strong><p>É o mesmo comando da instalação: ele traz a versão nova, reinstala por cima e faz um backup antes de mexer no banco, sem perguntar de novo o que já foi respondido. Rode como administrador (<code>sudo</code>) no servidor, de qualquer pasta. Veja <a href="#instalar-na-vps--atualizar">Instalar o ZapSales numa VPS › Atualizar</a>. Versões antigas da tela mandavam rodar <code>bash kit/update.sh</code>, um arquivo que não existe no kit (issue #173, corrigida): se o seu servidor ainda mostrar esse comando, use o de cima.</p></aside>
-
-<h2 id="atualizacao--estados">Os estados da tela</h2>
-<p>A descrição padrão é “A versão instalada no servidor e, quando houver uma nova, o que muda nela.” Cada estado tem título próprio:</p>
-<table class="tabela">
-  <thead><tr><th>Título</th><th>O que significa e o que fazer</th></tr></thead>
-  <tbody>
-    <tr><td>Carregando…</td><td>Lendo a versão.</td></tr>
-    <tr><td><strong>Você está na versão X</strong></td><td>“É a mais recente. Não há nada a fazer.”</td></tr>
-    <tr><td><strong>Versão X disponível</strong></td><td>Mostra a caixa <em>“⚠️ Requer atenção”</em> (“Da versão X:” com avisos de ação manual), o aviso de histórico incompleto, a seção <em>“O que muda”</em> (notas da versão-alvo abertas; as intermediárias recolhidas) e o botão <span class="ui">Atualizar agora</span> (“Iniciando…”) com a nota “O sistema sai do ar por cerca de 2 minutos e volta sozinho. Faço uma cópia de segurança dos seus dados antes.” Em instalação de desenvolvimento aparece um aviso amarelo de que a atualização leva à versão publicada.</td></tr>
-    <tr><td><strong>Pedido enviado — esperando o servidor pegar</strong></td><td>O servidor confere se há algo a fazer “de poucos em poucos minutos”, então a atualização pode levar até cerca de cinco minutos para começar; ficar parada nesse tempo é normal. “Pode fechar esta página: o pedido já está registrado e não se perde.”</td></tr>
-    <tr><td><strong>Atualizando para a versão X</strong></td><td>Quatro passos com ✓/○: “Guardando uma cópia de segurança dos seus dados”, “Baixando a versão nova”, “Atualizando o banco de dados”, “Reiniciando o sistema”. Depois, “Reiniciando…”: “O sistema está voltando. Esta página se atualiza sozinha em alguns instantes.”</td></tr>
-    <tr><td><strong>A atualização para a versão X terminou</strong></td><td>Quando o servidor ainda não confirmou em que versão voltou ao ar, mostra a última confirmada.</td></tr>
-    <tr><td><strong>A atualização para a versão X não deu certo</strong></td><td>Dois desfechos, com o mesmo título. Num deles o sistema <strong>voltou sozinho</strong> para a versão anterior (“Voltei o sistema para a versão Y … os seus dados estão intactos”); no outro, “<strong>não consegui</strong> voltar sozinho”: o sistema pode estar numa versão com defeito ou fora do ar, e a cópia de segurança feita antes continua guardada no servidor. Nos dois a tela mostra o comando para rodar no servidor que deixa tudo na versão que funcionava (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo ZAPSALES_REF=vX.Y.Z bash</code>) e “Detalhes técnicos (útil se for pedir ajuda)”. Nesses estados não há botão <span class="ui">Atualizar agora</span>.</td></tr>
-    <tr><td><strong>Não sei dizer como terminou</strong></td><td>O servidor perdeu contato antes do fim. “Confira se o sistema está funcionando normalmente — se estiver, provavelmente deu certo.” Mostra o comando de atualizar (o mesmo de cima) para conferir pelo servidor e os “Detalhes técnicos”.</td></tr>
-    <tr><td><strong>Atualização automática indisponível</strong></td><td>Veja acima: rode o comando no servidor.</td></tr>
-    <tr><td>“Não consegui checar se há versão nova”, “Ainda não há nenhuma versão publicada”, “Você está à frente da versão publicada”</td><td>Casos de borda; a tela explica cada um.</td></tr>
-  </tbody>
-</table>
-<aside class="nota atencao"><strong>Atualizar tira o sistema do ar para todos.</strong><p>O pedido é anotado e o agente do servidor (que confere a cada ~5 minutos) faz a cópia de segurança, baixa a versão, atualiza o banco e reinicia: <strong>o sistema fica fora do ar por cerca de 2 minutos para TODAS as empresas e usuários da instalação</strong>. Registra o pedido (<code>system.update_requested</code>) e o fim (<code>system.update_finished</code>) em <a href="#auditoria">Quem mexeu em quê</a> (a Auditoria). <em>Esta tela não foi acionada nas capturas</em>; atualização é um ato de operação do servidor, não do uso diário. Para a regra de versões e o que cada versão traz, veja o histórico de mudanças (changelog) do produto.</p></aside>
-  </div>
-</article>
-
 <article class="pagina" id="entrada-acesso" data-titulo="Entrar, recuperar senha e criar conta" data-grupo="entrada" data-grupo-titulo="Entrar e começar" data-resumo="As telas públicas de acesso: login (e-mail e senha ou Google), esqueci a senha, nova senha, verificação em duas etapas, código de recuperação, criar conta, configurar organização e aceitar convite." data-palavras="login entrar senha esqueci minha senha redefinir verificação em duas etapas mfa código de recuperação criar conta cadastro convite aceitar convite google get started" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Entrar e começar › Entrar, recuperar senha e criar conta</p>
   <h1>Entrar, recuperar senha e criar conta</h1>
@@ -8596,7 +8549,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <p>O resultado esperado é <code>307</code>.</p>
 
 <h2 id="instalar-na-vps--atualizar">Atualizar</h2>
-<p>Rode <strong>o mesmo comando do começo</strong>. Ele traz a versão nova e reinstala por cima, sem perguntar de novo (o arquivo <code>.env</code> lembra as respostas) e sem perder nada: antes de mexer no banco ele faz um backup. Veja também <a href="#atualizacao">Atualização do sistema</a>, a tela do sistema que mostra o comando.</p>
+<p>Rode <strong>o mesmo comando do começo</strong>. Ele traz a versão nova e reinstala por cima, sem perguntar de novo (o arquivo <code>.env</code> lembra as respostas) e sem perder nada: antes de mexer no banco ele faz um backup. Depois da primeira atualização por aqui, o servidor passa a ter o programa que atende o botão <a href="#atualizacao">Atualizar agora</a> (Administração › Atualização): daí em diante dá para atualizar com um clique, com cópia do banco e volta automática.</p>
 
 <h2 id="instalar-na-vps--problemas">Se algo der errado</h2>
 <p>O kit para com um <strong>✖ vermelho</strong> e uma frase dizendo o que fazer. Rodar o comando de novo é sempre seguro. Para pedir ajuda, guarde a saída do terminal — ela diz em que etapa parou. Os casos mais comuns:</p>
@@ -8886,6 +8839,13 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <h2 id="admin-dashboard--licenca">Licença</h2>
 <p>Ao lado da saúde (no celular, embaixo dela), o cartão <strong>“Licença”</strong> mostra a situação da licença desta instalação, com as mesmas frases da faixa do topo e da tela de licença: <em>Uso não comercial</em>, <em>Ativação pendente</em>, <em>Licença temporária</em> (com quantos dias faltam), <em>Licença permanente</em>, <em>Autorização vencida</em> ou <em>Licença bloqueada</em>, e o selo <strong>Funcionando</strong> ou <strong>Não opera</strong>. Quando houver, mostra também <strong>Ativada em</strong> e <strong>Última conversa com o servidor de licenças</strong>, e se a licença está “Em observação” ou “Em vigor”. Licença vencida ou bloqueada deixa o cartão vermelho. <span class="ui">Ver a licença</span> abre a tela de licença, com os detalhes e o botão de renovar.</p>
 <aside class="nota"><strong>O que o cartão ainda não mostra.</strong><p>O nome do comprador e o vencimento do suporte não aparecem: a autorização que o servidor de licenças entrega à instalação não traz essas informações.</p></aside>
+
+<h2 id="admin-dashboard--versao-e-backup">Versão e backup</h2>
+<p>Embaixo da saúde e da licença, dois cartões respondem “estou em dia e protegido?”. Os dois são contados pelo <a href="#atualizacao">programa do servidor</a>, a cada minuto.</p>
+<ul>
+  <li><strong>Versão</strong>: a versão <strong>Instalada</strong> e, quando há uma nova, a <strong>Disponível</strong>, com o selo <em>Versão nova</em> e o link <span class="ui">Ver a atualização</span>, que abre a tela onde estão as notas e o botão <span class="ui">Atualizar agora</span>. O selo também pode dizer <em>Em dia</em>, <em>Atualizando</em>, <em>Atualizada pela implantação contínua</em> (instalação que acompanha o desenvolvimento) ou <em>Programa do servidor desligado</em> — este deixa o cartão vermelho, e o link vira <span class="ui">Ver como ligar</span>.</li>
+  <li><strong>Backup</strong>: a data da <strong>Última cópia do banco</strong> e a situação da <strong>Cópia fora do servidor (R2)</strong>. A cópia do banco é diária; o cartão avisa (<em>Pede atenção</em>) quando a última passou de dois dias. A cópia de fora é semanal e é avisada depois de oito dias. Quando ela não está configurada, o cartão mostra o comando para rodar na pasta da instalação: <code>sudo kit/backup.sh configurar-r2</code>. Nenhuma senha nem chave aparece: só se está configurado.</li>
+</ul>
 
 <h2 id="admin-dashboard--numeros">Os cinco números</h2>
 <figure class="print">
@@ -9499,7 +9459,61 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota atencao"><strong>Instalar é para sempre.</strong><p>Instalar vale para todas as empresas, cria as tabelas no banco e não se desfaz pela tela. O passo a passo e os cuidados estão em <a href="#admin-sistema--instalar">Recursos opcionais › Módulos com tabela própria</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 15 de novembro de 2026 a partir do código na revisão <code>6abdfc31</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+
+<article class="pagina" id="atualizacao" data-titulo="Atualização" data-grupo="admin" data-grupo-titulo="Painel do dono do servidor" data-resumo="Ver a versão instalada no servidor e, havendo uma nova, atualizar com um clique: o sistema copia o banco antes, confere a versão nova por 2 minutos e volta sozinho para a anterior se ela não ficar de pé. Só quem administra a instalação." data-palavras="atualização atualizar agora versão nova versão update backup cópia do banco volta automática rollback programa do servidor zapsales-agente histórico de atualizações dono do servidor rodapé obter.sh" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Painel do dono do servidor › Atualização</p>
+  <h1>Atualização</h1>
+  <p class="lede">Ver a versão instalada no servidor e, havendo uma nova, atualizar com um clique: o sistema copia o banco antes, confere a versão nova por 2 minutos e volta sozinho para a anterior se ela não ficar de pé. Só quem administra a instalação.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Administração › Configurar a instalação › Atualização (endereço /admin/atualizacao); também pelo cartão Versão do Painel e pelo aviso “Nova versão · X.Y.Z” no rodapé do painel Todo dia. O endereço antigo /app/settings/atualizacao leva para cá.</dd><dt>Quem pode usar</dt><dd>Só quem administra a instalação (administrador da plataforma). O suporte em modo só leitura vê a versão e o histórico, mas não consegue atualizar; quem deve a verificação em duas etapas também é barrado.</dd></dl>
+  <div class="conteudo-pagina">
+<h2 id="atualizacao--visao-geral">Para que serve</h2>
+<p>Mostra a <strong>versão instalada no servidor</strong> e, quando há uma nova, o que muda nela — e atualiza com <strong>um clique</strong>, sem terminal. É uma tela da <em>instalação</em>, não da empresa: vale para todas as empresas do servidor, e fica em <span class="ui">Administração</span> › <span class="ui">Configurar a instalação</span> › <span class="ui">Atualização</span>.</p>
+<p>Quem faz o trabalho é um <strong>programa pequeno que roda no servidor</strong> (o <em>programa do servidor</em>). A cada minuto ele conta a esta tela qual versão está instalada, qual é a última publicada e como está o backup; e é ele quem atende o botão. O sistema nunca manda comando ao servidor: ele só avisa “alguém pediu para atualizar”, e o programa decide o resto sozinho.</p>
+
+<h2 id="atualizacao--como-atualizar">Como atualizar</h2>
+<ol class="passos">
+  <li>Abra o <a href="#admin-dashboard">Painel</a>. O cartão <strong>Versão</strong> mostra a instalada e, quando há uma nova, o selo <strong>Versão nova</strong>. Clique em <span class="ui">Ver a atualização</span> (ou no aviso “Nova versão · X.Y.Z” do rodapé).</li>
+  <li>Leia o que muda. Os avisos <em>“⚠️ Requer atenção”</em> de todas as versões entre a sua e a nova ficam no topo, antes do botão.</li>
+  <li>Clique em <span class="ui">Atualizar agora</span>. A tela mostra <strong>“Pedido enviado — esperando o servidor pegar”</strong>, com um relógio: o programa confere a cada minuto.</li>
+  <li>Acompanhe os quatro passos: <em>Guardando uma cópia de segurança dos seus dados</em> → <em>Baixando a versão nova</em> → <em>Atualizando o banco de dados</em> → <em>Conferindo, por 2 minutos, se a versão nova ficou de pé</em>. O sistema sai do ar por alguns instantes no meio e volta sozinho; pode deixar a página aberta.</li>
+  <li>No fim, a tela diz como terminou, e a linha entra no <strong>Histórico de atualizações</strong>, embaixo.</li>
+</ol>
+
+<aside class="nota atencao"><strong>Atualizar tira o sistema do ar para todos, por alguns instantes.</strong><p>A troca de versão reinicia o sistema para <strong>todas as empresas e usuários</strong> da instalação. Prefira um horário de pouco movimento. Cada pedido fica no <a href="#admin-audit">Registro de ações</a> (<code>system.update_requested</code>), com o desfecho (<code>system.update_finished</code>).</p></aside>
+
+<h2 id="atualizacao--protecao">O que protege você</h2>
+<ul>
+  <li><strong>Cópia do banco antes de tudo.</strong> Se a cópia falhar, a atualização nem começa.</li>
+  <li><strong>Volta automática.</strong> Depois de instalar, o programa confere por 2 minutos se a versão nova responde, se nada que estava funcionando piorou e se nenhum serviço reiniciou. Qualquer falha — e também qualquer erro no meio da instalação — faz o sistema <strong>voltar sozinho</strong> para a versão anterior: o código, a configuração e as imagens. O banco fica como está (a versão anterior funciona com ele); para desfazer também o banco, use a cópia feita antes, como explica <a href="#backup-e-restauracao">Backup e restauração</a>.</li>
+  <li><strong>Só versões publicadas, e só para a frente.</strong> O botão leva sempre à última versão publicada (com número, como 1.3.0), nunca ao código em desenvolvimento, e nunca oferece voltar para uma versão mais antiga.</li>
+  <li><strong>Uma atualização por vez.</strong> Dois cliques seguidos não disparam duas; um pedido que o servidor não atendeu em 15 minutos deixa de travar o botão.</li>
+</ul>
+
+<h2 id="atualizacao--estados">Os estados da tela</h2>
+<table class="tabela">
+  <thead><tr><th>Título</th><th>O que significa e o que fazer</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Você está na versão X</strong></td><td>É a mais recente. Não há nada a fazer.</td></tr>
+    <tr><td><strong>Versão X disponível</strong></td><td>Os avisos, o botão <span class="ui">Atualizar agora</span> e “O que muda”. Veja <a href="#atualizacao--como-atualizar">Como atualizar</a>.</td></tr>
+    <tr><td><strong>Pedido enviado — esperando o servidor pegar</strong></td><td>O programa confere a cada minuto: a tela parada nesse tempo é normal. Pode fechar a página; o pedido não se perde.</td></tr>
+    <tr><td><strong>Atualizando para a versão X</strong></td><td>Os quatro passos, marcados conforme o programa conta.</td></tr>
+    <tr><td><strong>A atualização para a versão X terminou</strong></td><td>Deu certo; o servidor confirma a versão na batida seguinte.</td></tr>
+    <tr><td><strong>A atualização para a versão X não começou</strong></td><td>O servidor recusou <strong>antes de mexer em qualquer coisa</strong> — nada foi alterado. O motivo aparece em destaque (por exemplo, a versão nova ainda não terminou de ser publicada). Tentar de novo é seguro, e o botão volta.</td></tr>
+    <tr><td><strong>A atualização para a versão X não deu certo</strong></td><td>Dois desfechos. No normal, “a versão nova não ficou de pé, e eu voltei o sistema sozinho para a versão Y”: o sistema está no ar na versão anterior e os seus dados estão intactos; o motivo está em “Detalhes técnicos”. No raro, “<strong>não consegui</strong> voltar sozinho”: a tela mostra o comando para quem tem acesso ao servidor deixar tudo na versão que funcionava.</td></tr>
+    <tr><td><strong>Não sei dizer como terminou</strong></td><td>O servidor ficou mais de 15 minutos sem dar notícia. Confira se o sistema está funcionando.</td></tr>
+    <tr><td><strong>O programa do servidor está desligado</strong></td><td>Ele não dá notícia há mais de 5 minutos (ou nunca deu). O botão some e a tela mostra o comando que o liga: <code>sudo systemctl enable --now zapsales-agente.timer</code>. Se o servidor responder que a unidade não existe, a instalação é anterior ao programa: rode uma vez a atualização pelo terminal (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>), que ela instala o programa, e ele cuida das próximas.</td></tr>
+    <tr><td><strong>Você está na versão X</strong>, numa instalação que acompanha o desenvolvimento</td><td>Instalação que anda pelo código em desenvolvimento e é atualizada sozinha a cada mudança aprovada. Não há botão: o programa só informa a versão.</td></tr>
+    <tr><td>“Não consegui checar se há versão nova”, “Ainda não há nenhuma versão publicada”, “Você está à frente da versão publicada”</td><td>Casos de borda; a tela explica cada um.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="atualizacao--historico">Histórico de atualizações</h2>
+<p>Embaixo do cartão, a tabela das últimas atualizações pedidas por esta tela: <strong>Quando</strong>, <strong>Versão</strong> (de → para), <strong>Quem pediu</strong> e <strong>Resultado</strong> (<em>Atualizado</em>, <em>Não deu certo — voltou sozinho</em>, <em>Não deu certo — precisa de atenção</em>, <em>Não começou — nada mudou</em>, <em>Sem notícia do servidor</em>). Quem atualiza pelo terminal não deixa linha aqui.</p>
+
+<aside class="nota info"><strong>Atualizar pelo terminal continua valendo.</strong><p>O comando da instalação (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>) continua sendo uma forma de atualizar, e é como uma instalação antiga recebe o programa do servidor pela primeira vez. Veja <a href="#instalar-na-vps--atualizar">Instalar o ZapSales numa VPS › Atualizar</a>.</p></aside>
+  </div>
+</article>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 16 de novembro de 2026 a partir do código na revisão <code>321fae95</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

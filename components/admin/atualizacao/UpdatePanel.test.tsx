@@ -183,3 +183,92 @@ describe("tela de atualização — a rodada conta a disputa do banco", () => {
     expect(screen.getByText(/\.update\.log/)).toBeInTheDocument();
   });
 });
+
+describe("tela de atualização — o programa do servidor da #311", () => {
+  const BASE: SystemVersion = {
+    current_version: "1.2.1",
+    is_owner: true,
+    latest_version: "1.3.0",
+    update_available: true,
+    agent_online: true,
+    executes_updates: true,
+    notes: null,
+    run: null,
+    history: [],
+  };
+
+  it("programa desligado: sem botão, com o comando que liga e o que instala", () => {
+    renderTela({ ...BASE, agent_online: false, agent_last_seen_at: null });
+    expect(screen.getByText("O programa do servidor está desligado")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Atualizar agora" })).toBeNull();
+    expect(screen.getByText("sudo systemctl enable --now zapsales-agente.timer")).toBeTruthy();
+    expect(screen.getByText("curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash")).toBeTruthy();
+  });
+
+  it("instalação que anda pela main: diz quem a atualiza, e não oferece botão", () => {
+    renderTela({ ...BASE, executes_updates: false, current_version: "abc1234", off_release: true });
+    expect(screen.getByText(/implantação contínua/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Atualizar agora" })).toBeNull();
+  });
+
+  it("recusa antes de tocar: diz que nada mudou, mostra o motivo e devolve o botão", () => {
+    renderTela({
+      ...BASE,
+      run: {
+        id: "r",
+        status: "refused",
+        last_step: null,
+        from_version: "1.2.1",
+        to_version: "1.3.0",
+        log_tail:
+          "▶ Conferindo o pedido\n✖ RECUSADO: a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.\n  Nada foi alterado na instalação.",
+      },
+    });
+    expect(screen.getByText("A atualização para a versão 1.3.0 não começou")).toBeTruthy();
+    expect(screen.getByText("nada foi alterado")).toBeTruthy();
+    // O motivo aparece em destaque (e de novo, inteiro, nos detalhes técnicos).
+    expect(
+      screen.getByText("a imagem ghcr.io/futuristasai/zapsales:1.3.0 não existe ou não pôde ser puxada.", {
+        selector: "p",
+      }),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Atualizar agora" })).toBeTruthy();
+  });
+
+  it("o andamento tem o passo da conferência", () => {
+    renderTela({
+      ...BASE,
+      run: {
+        id: "r",
+        status: "dispatched",
+        last_step: "conferencia",
+        dispatched_at: new Date().toISOString(),
+        from_version: "1.2.1",
+        to_version: "1.3.0",
+        log_tail: "",
+      },
+    });
+    expect(screen.getByText(/Conferindo, por 2 minutos, se a versão nova ficou de pé/)).toBeTruthy();
+  });
+
+  it("o histórico mostra de → para, quem pediu e o resultado", () => {
+    renderTela({
+      ...BASE,
+      history: [
+        {
+          id: "h1",
+          dispatched_at: "2026-11-16T10:00:00Z",
+          finished_at: "2026-11-16T10:06:00Z",
+          from_version: "1.2.1",
+          to_version: "1.3.0",
+          status: "failed_rolled_back",
+          requested_by_email: "dono@exemplo.com",
+        },
+      ],
+    });
+    const historico = screen.getByTestId("historico-de-atualizacoes");
+    expect(historico.textContent).toContain("1.2.1 → 1.3.0");
+    expect(historico.textContent).toContain("dono@exemplo.com");
+    expect(historico.textContent).toContain("Não deu certo — voltou sozinho");
+  });
+});

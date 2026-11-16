@@ -14,7 +14,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   COMANDO_DE_ATUALIZAR,
+  COMANDO_DE_CONFIGURAR_O_R2,
+  COMANDO_DE_LIGAR_O_PROGRAMA,
   ENDERECO_DO_OBTER,
+  UNIDADE_DO_PROGRAMA,
   comandoDeVolta,
 } from "@/lib/atualizacao/comandos";
 
@@ -61,7 +64,7 @@ describe("comandos de atualização das telas", () => {
 
   it("nenhuma das duas telas manda rodar um script que não existe", () => {
     for (const tela of [
-      "app/app/settings/atualizacao/_components/UpdatePanel.tsx",
+      "components/admin/atualizacao/UpdatePanel.tsx",
       "app/admin/(protected)/cadastro/page.tsx",
     ]) {
       expect(ler(tela), tela).not.toMatch(/bash\s+\S*(update|restore)\.sh/);
@@ -71,5 +74,21 @@ describe("comandos de atualização das telas", () => {
     expect(existsSync(join(RAIZ, "kit", "restore.sh"))).toBe(false);
     // O guia que a tela cita existe de verdade.
     expect(existsSync(join(RAIZ, "docs/runbooks/backup-e-restauracao.md"))).toBe(true);
+  });
+
+  it("o temporizador que a tela manda ligar é o que o kit cria (issue #311)", () => {
+    const agente = ler("kit/agente.sh");
+    expect(UNIDADE_DO_PROGRAMA).toBe("zapsales-agente.timer");
+    expect(agente).toContain("UNIDADE=zapsales-agente");
+    expect(agente).toContain('"$UNIDADE.timer"');
+    expect(COMANDO_DE_LIGAR_O_PROGRAMA).toBe("sudo systemctl enable --now zapsales-agente.timer");
+    // E é o kit/instalar.sh que o cria — por isso a tela oferece a atualização
+    // pelo terminal para quem ainda não o tem.
+    expect(ler("kit/instalar.sh")).toContain('"$KIT/agente.sh" instalar-comando');
+  });
+
+  it("o comando do R2 é o subcomando que o kit/backup.sh tem", () => {
+    expect(COMANDO_DE_CONFIGURAR_O_R2).toBe("sudo kit/backup.sh configurar-r2");
+    expect(ler("kit/backup.sh")).toContain("configurar-r2) cmd_configurar_r2 ;;");
   });
 });

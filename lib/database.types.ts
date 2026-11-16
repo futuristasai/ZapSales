@@ -9254,6 +9254,7 @@ export type Database = {
           from_version: string
           id: string
           last_step: string | null
+          last_step_at: string | null
           log_tail: string
           passada_do_banco: number | null
           requested_by: string | null
@@ -9268,6 +9269,7 @@ export type Database = {
           from_version?: string
           id?: string
           last_step?: string | null
+          last_step_at?: string | null
           log_tail?: string
           passada_do_banco?: number | null
           requested_by?: string | null
@@ -9282,6 +9284,7 @@ export type Database = {
           from_version?: string
           id?: string
           last_step?: string | null
+          last_step_at?: string | null
           log_tail?: string
           passada_do_banco?: number | null
           requested_by?: string | null
@@ -9294,12 +9297,16 @@ export type Database = {
       system_version: {
         Row: {
           agent_last_seen_at: string | null
+          backup_offsite_configured: boolean | null
           changelog_raw: string
           compare_failed: boolean
           current_sha: string
           current_version: string
+          executes_updates: boolean | null
           has_known_release: boolean
           id: number
+          last_backup_at: string | null
+          last_offsite_backup_at: string | null
           latest_version: string
           off_release: boolean
           update_requested_at: string | null
@@ -9308,12 +9315,16 @@ export type Database = {
         }
         Insert: {
           agent_last_seen_at?: string | null
+          backup_offsite_configured?: boolean | null
           changelog_raw?: string
           compare_failed?: boolean
           current_sha?: string
           current_version?: string
+          executes_updates?: boolean | null
           has_known_release?: boolean
           id?: number
+          last_backup_at?: string | null
+          last_offsite_backup_at?: string | null
           latest_version?: string
           off_release?: boolean
           update_requested_at?: string | null
@@ -9322,12 +9333,16 @@ export type Database = {
         }
         Update: {
           agent_last_seen_at?: string | null
+          backup_offsite_configured?: boolean | null
           changelog_raw?: string
           compare_failed?: boolean
           current_sha?: string
           current_version?: string
+          executes_updates?: boolean | null
           has_known_release?: boolean
           id?: number
+          last_backup_at?: string | null
+          last_offsite_backup_at?: string | null
           latest_version?: string
           off_release?: boolean
           update_requested_at?: string | null

@@ -47,6 +47,13 @@
 <p>Ao lado da saúde (no celular, embaixo dela), o cartão <strong>“Licença”</strong> mostra a situação da licença desta instalação, com as mesmas frases da faixa do topo e da tela de licença: <em>Uso não comercial</em>, <em>Ativação pendente</em>, <em>Licença temporária</em> (com quantos dias faltam), <em>Licença permanente</em>, <em>Autorização vencida</em> ou <em>Licença bloqueada</em>, e o selo <strong>Funcionando</strong> ou <strong>Não opera</strong>. Quando houver, mostra também <strong>Ativada em</strong> e <strong>Última conversa com o servidor de licenças</strong>, e se a licença está “Em observação” ou “Em vigor”. Licença vencida ou bloqueada deixa o cartão vermelho. <span class="ui">Ver a licença</span> abre a tela de licença, com os detalhes e o botão de renovar.</p>
 <aside class="nota"><strong>O que o cartão ainda não mostra.</strong><p>O nome do comprador e o vencimento do suporte não aparecem: a autorização que o servidor de licenças entrega à instalação não traz essas informações.</p></aside>
 
+<h2 id="versao-e-backup">Versão e backup</h2>
+<p>Embaixo da saúde e da licença, dois cartões respondem “estou em dia e protegido?”. Os dois são contados pelo <a href="#atualizacao">programa do servidor</a>, a cada minuto.</p>
+<ul>
+  <li><strong>Versão</strong>: a versão <strong>Instalada</strong> e, quando há uma nova, a <strong>Disponível</strong>, com o selo <em>Versão nova</em> e o link <span class="ui">Ver a atualização</span>, que abre a tela onde estão as notas e o botão <span class="ui">Atualizar agora</span>. O selo também pode dizer <em>Em dia</em>, <em>Atualizando</em>, <em>Atualizada pela implantação contínua</em> (instalação que acompanha o desenvolvimento) ou <em>Programa do servidor desligado</em> — este deixa o cartão vermelho, e o link vira <span class="ui">Ver como ligar</span>.</li>
+  <li><strong>Backup</strong>: a data da <strong>Última cópia do banco</strong> e a situação da <strong>Cópia fora do servidor (R2)</strong>. A cópia do banco é diária; o cartão avisa (<em>Pede atenção</em>) quando a última passou de dois dias. A cópia de fora é semanal e é avisada depois de oito dias. Quando ela não está configurada, o cartão mostra o comando para rodar na pasta da instalação: <code>sudo kit/backup.sh configurar-r2</code>. Nenhuma senha nem chave aparece: só se está configurado.</li>
+</ul>
+
 <h2 id="numeros">Os cinco números</h2>
 <figure class="print">
   <img src="img/admin-dashboard.png" alt="Painel da administração com cinco cartões de indicadores e a lista Alertas ativos, numerado de 1 a 6" loading="lazy">

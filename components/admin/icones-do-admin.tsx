@@ -2,6 +2,7 @@ import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
 import type { IconeDoAdmin } from "@/lib/admin/catalogo";
 import {
+  ArrowCircleUp,
   Buildings,
   CalendarBlank,
   ChartBar,
@@ -49,4 +50,5 @@ export const ICONES_DO_ADMIN: Record<IconeDoAdmin, PhosphorIcon> = {
   CalendarBlank,
   TreeStructure,
   HardDrives,
+  ArrowCircleUp,
 };

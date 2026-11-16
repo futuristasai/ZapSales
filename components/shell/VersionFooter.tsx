@@ -56,7 +56,7 @@ export function VersionFooter({
   const novo = data.latest_version?.replace(/^v/i, "") ?? "";
   return (
     <Link
-      href="/app/settings/atualizacao"
+      href="/admin/atualizacao"
       onClick={onNavigate}
       title={`${t("Nova versão")} ${novo} ${t("disponível")}`}
       className={cn(

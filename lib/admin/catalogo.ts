@@ -55,7 +55,8 @@ export type IconeDoAdmin =
   | "Receipt"
   | "CalendarBlank"
   | "TreeStructure"
-  | "HardDrives";
+  | "HardDrives"
+  | "ArrowCircleUp";
 
 export interface GrupoDoAdminDef {
   id: GrupoDoAdmin;
@@ -245,6 +246,17 @@ export const CATALOGO_DO_ADMIN: readonly ItemDoAdmin[] = [
     quandoUsar:
       "Para saber o que está instalado. Ativar e configurar continua dentro de cada empresa.",
     icone: "PuzzlePiece",
+  },
+  {
+    href: "/admin/atualizacao",
+    grupo: "instalacao",
+    label: "Atualização",
+    dica: "A versão instalada, a nova quando houver, e o botão de atualizar.",
+    paraQueServe:
+      "Mostra a versão que está no servidor, o que muda na próxima e atualiza com um clique: faz uma cópia do banco antes e volta sozinho se a versão nova não ficar de pé.",
+    quandoUsar:
+      "Quando o Painel avisar que há versão nova, ou para conferir como terminou a última atualização.",
+    icone: "ArrowCircleUp",
   },
   // ── Integrações ─────────────────────────────────────────────────────────────
   {

@@ -191,8 +191,12 @@ if grep 'tail ' <<< "$FRENTE" | grep -qv '| saida_para_o_ssh'; then
   nok "a frente tem um tail que não passa por saida_para_o_ssh"
 else ok "todo tail da frente passa por saida_para_o_ssh"; fi
 if grep -q 'usar_saida_de_etapa' <<< "$EXECUTAR"; then ok "o executor marca as próprias linhas"; else nok "executar() não chama usar_saida_de_etapa"; fi
-if grep -q 'titulos_do_kit' kit/implantar.sh; then ok "a saída do kit/instalar.sh passa por titulos_do_kit"; else nok "instalar() não usa titulos_do_kit"; fi
-if grep -nE "printf .*\\\\033" kit/implantar.sh | grep -v '^[0-9]*:\s*#'; then
+# A rotina protegida (guardar → instalar → provar → voltar) mora em
+# kit/lib/rotina.sh desde a issue #311, e é a mesma do programa do servidor.
+INSTALAR_DA_ROTINA="$(sed -n '/^instalar()/,/^}/p' kit/lib/rotina.sh | grep -vE '^[[:space:]]*#')"
+if grep -q 'titulos_do_kit' <<< "$INSTALAR_DA_ROTINA"; then ok "a saída do kit/instalar.sh passa por titulos_do_kit"; else nok "instalar() não usa titulos_do_kit"; fi
+if grep -q 'lib/rotina.sh' kit/implantar.sh; then ok "kit/implantar.sh usa a rotina compartilhada"; else nok "kit/implantar.sh não carrega kit/lib/rotina.sh"; fi
+if grep -nE "printf .*\\\\033" kit/implantar.sh kit/lib/rotina.sh kit/agente.sh | grep -v '^[^:]*:[0-9]*:\s*#'; then
   nok "kit/implantar.sh ainda escreve linha colorida sem a marca (acima)"
 else ok "nenhuma linha do executor sai sem a marca"; fi
 
