@@ -738,10 +738,6 @@ export const DICIONARIO: Traducoes = {
 
   // Painel de configuração da instalação — a tela, o formulário e a porta do
   // modo administrador no menu do usuário.
-  "O que este servidor precisa saber para funcionar. O que dá para trocar aqui, você troca e vale na hora — sem mexer no servidor.":
-    {
-      es: "Lo que este servidor necesita saber para funcionar. Lo que puedas cambiar aquí surte efecto al instante, sin tocar el servidor.",
-    },
   "Modo administrador": { es: "Modo administrador" },
   "Configurar este servidor": { es: "Configurar este servidor" },
   "Não configurado": { es: "Sin configurar" },
@@ -1300,7 +1296,6 @@ export const DICIONARIO: Traducoes = {
   Webhooks: { es: "Webhooks" },
   Desempenho: { es: "Rendimiento" },
   "Evolução da IA": { es: "Evolución de la IA" },
-  "Audit Log": { es: "Registro de auditoría" },
   Configurações: { es: "Configuración" },
   Recolher: { es: "Contraer" },
   Buscar: { es: "Buscar" },
@@ -4671,8 +4666,6 @@ export const DICIONARIO: Traducoes = {
   "Confirmar e entrar": { es: "Confirmar y entrar" },
 
   // ─── Admin de plataforma: Dashboard ───
-  "IA Budget": { es: "Presupuesto IA" },
-  Overflow: { es: "Desborde" },
   Crítico: { es: "Crítico" },
   Atenção: { es: "Atención" },
   Info: { es: "Info" },
@@ -4785,6 +4778,7 @@ export const DICIONARIO: Traducoes = {
   "Só avisa": { es: "Solo avisa" },
   "Para a IA no limite": { es: "Detiene la IA en el límite" },
   "Último evento": { es: "Último evento" },
+  "Tempo sem registro": { es: "Tiempo sin registro" },
   "Orçamento IA": { es: "Presupuesto IA" },
 
   // ─── Admin de plataforma: Users (lista + detalhe) ───
@@ -4864,9 +4858,6 @@ export const DICIONARIO: Traducoes = {
   "Resolução": { es: "Resolución" },
   "Resolvido em": { es: "Resuelto el" },
   "Resolver incidente": { es: "Resolver incidente" },
-  "Descreva como o incidente foi resolvido. Esta ação é registrada no audit log e não pode ser desfeita.": {
-    es: "Describe cómo se resolvió el incidente. Esta acción queda registrada en el registro de auditoría y no se puede deshacer.",
-  },
   "Nota de resolução": { es: "Nota de resolución" },
   "mín. 10 caracteres": { es: "mín. 10 caracteres" },
   "Descreva a causa raiz e as ações tomadas para resolver o incidente...": {
@@ -4880,23 +4871,14 @@ export const DICIONARIO: Traducoes = {
   evento: { es: "evento" },
   eventos: { es: "eventos" },
   "Limpar seleção": { es: "Limpiar selección" },
-  "Filtrar por actor user ID": { es: "Filtrar por actor user ID" },
   "Data de início": { es: "Fecha de inicio" },
   "Data de fim": { es: "Fecha de fin" },
   "Limpar": { es: "Limpiar" },
   "Recurso": { es: "Recurso" },
   "Nenhum evento encontrado": { es: "No se encontraron eventos" },
-  "Ajuste os filtros para ver entradas do audit log.": {
-    es: "Ajusta los filtros para ver entradas del registro de auditoría.",
-  },
-  "Entrada de audit não encontrada.": { es: "No se encontró la entrada de audit." },
   "Abrir recurso": { es: "Abrir recurso" },
 
   // ─── Admin de plataforma: Platform Admins ───
-  "Erro ao carregar platform admins. Tente recarregar.": {
-    es: "Error al cargar los platform admins. Intenta recargar.",
-  },
-  "Ver runbook →": { es: "Ver runbook →" },
   "Usuário": { es: "Usuario" },
   "Concedido em": { es: "Concedido el" },
   "Concedido por": { es: "Concedido por" },
@@ -4910,14 +4892,10 @@ export const DICIONARIO: Traducoes = {
     es: "Error al cargar los datos de uso. Intenta recargar.",
   },
   "Mensagens / dia": { es: "Mensajes / día" },
-  "Custo AI / dia (R$)": { es: "Costo IA / día (R$)" },
-  "AI Tokens / dia": { es: "Tokens de IA / día" },
   "Não há dados de uso no período selecionado.": {
     es: "No hay datos de uso en el período seleccionado.",
   },
   "Exportar CSV": { es: "Exportar CSV" },
-  "Invoc. AI": { es: "Invoc. IA" },
-  "Custo AI": { es: "Costo IA" },
 
   // ─── Admin de plataforma: Marca (page.tsx, _form.tsx, _estado.tsx) ───
   "Sua cor": { es: "Tu color" },
@@ -16064,6 +16042,29 @@ export const DICIONARIO: Traducoes = {
   "Números conectados por QR code": {"es": "Números conectados por código QR"},
   "Falta 1 item": {"es": "Falta 1 elemento"},
   "Faltam {n} itens": {"es": "Faltan {n} elementos"},
+  "Tipo de acesso": {"es": "Tipo de acceso"},
+  "Exige duas etapas": {"es": "Exige dos pasos"},
+  "Acesso completo": {"es": "Acceso completo"},
+  "Só leitura (suporte)": {"es": "Solo lectura (soporte)"},
+  "Ver no manual como incluir ou tirar alguém →": {"es": "Ver en el manual cómo agregar o quitar a alguien →"},
+  "Ação não encontrada no registro.": {"es": "Acción no encontrada en el registro."},
+  "Não foi possível carregar os administradores da plataforma. Tente recarregar.": {"es": "No se pudo cargar a los administradores de la plataforma. Intenta recargar."},
+  "Ajuste os filtros para ver as ações registradas.": {"es": "Ajusta los filtros para ver las acciones registradas."},
+  "Dados registrados": {"es": "Datos registrados"},
+  "Custo da IA por dia (US$)": {"es": "Costo de la IA por día (US$)"},
+  "Tokens de IA por dia": {"es": "Tokens de IA por día"},
+  "Chamadas à IA": {"es": "Llamadas a la IA"},
+  "Custo da IA (US$)": {"es": "Costo de la IA (US$)"},
+  "Descreva como o incidente foi resolvido. Esta ação fica no registro de ações e não pode ser desfeita.": {"es": "Describe cómo se resolvió el incidente. Esta acción queda en el registro de acciones y no se puede deshacer."},
+  "Código do contato": {"es": "Código del contacto"},
+  "Código do cliente no sistema de origem": {"es": "Código del cliente en el sistema de origen"},
+  "Um contato": {"es": "Un contacto"},
+  "A empresa inteira": {"es": "La empresa entera"},
+  "Registrado à mão": {"es": "Registrado a mano"},
+  "Pela API": {"es": "Por la API"},
+  "Pelo suporte": {"es": "Por el soporte"},
+  "Agente com ferramentas (MCP)": {"es": "Agente con herramientas (MCP)"},
+  "Atendente com base de conhecimento": {"es": "Asistente con base de conocimiento"},
 };
 
 /**

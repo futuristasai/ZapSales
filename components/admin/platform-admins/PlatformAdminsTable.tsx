@@ -54,7 +54,7 @@ export function PlatformAdminsTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            {[t("Usuário"), t("Concedido em"), t("Concedido por"), "Scope", "MFA", t("Status"), t("Motivo")].map(
+            {[t("Usuário"), t("Concedido em"), t("Concedido por"), t("Tipo de acesso"), t("Exige duas etapas"), t("Status"), t("Motivo")].map(
               (h) => (
                 <TableHead key={h}>{h}</TableHead>
               ),
@@ -140,8 +140,8 @@ export function PlatformAdminsTable({ data }: PlatformAdminsTableProps) {
             <TableHead className="min-w-[200px]">{t("Usuário")}</TableHead>
             <TableHead className="w-[140px]">{t("Concedido em")}</TableHead>
             <TableHead className="w-[160px]">{t("Concedido por")}</TableHead>
-            <TableHead className="w-[120px]">Scope</TableHead>
-            <TableHead className="w-[60px]">MFA</TableHead>
+            <TableHead className="w-[120px]">{t("Tipo de acesso")}</TableHead>
+            <TableHead className="w-[130px] whitespace-nowrap">{t("Exige duas etapas")}</TableHead>
             <TableHead className="w-[90px]">{t("Status")}</TableHead>
             <TableHead>{t("Motivo")}</TableHead>
           </TableRow>
@@ -179,8 +179,8 @@ export function PlatformAdminsTable({ data }: PlatformAdminsTableProps) {
 
                 {/* Scope */}
                 <TableCell>
-                  <Badge variant="outline" className="text-[10px] font-mono">
-                    {row.scope ?? "platform"}
+                  <Badge variant="outline" className="text-[10px]">
+                    {row.scope === "support_readonly" ? t("Só leitura (suporte)") : t("Acesso completo")}
                   </Badge>
                 </TableCell>
 

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CaretLeft } from "@/lib/ui/icons";
 import { useAdminAuditEntry } from "@/hooks/useAdminAuditEntry";
 import { useT } from "@/hooks/i18n/useT";
+import { ROTULO_DA_SITUACAO } from "@/lib/admin/status-da-empresa";
 import { ContextoDaSubpagina } from "@/components/admin/ContextoDaSubpagina";
 
 // ---------------------------------------------------------------------------
@@ -91,7 +92,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
   if (isError || !detail) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-10 text-center text-sm text-destructive">
-        {t("Entrada de audit não encontrada.")}
+        {t("Ação não encontrada no registro.")}
       </div>
     );
   }
@@ -136,7 +137,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Metadata JSON viewer */}
         <div className="space-y-3">
-          <h2 className="text-sm font-medium">Metadata</h2>
+          <h2 className="text-sm font-medium">{t("Dados registrados")}</h2>
           <pre className="overflow-auto rounded-md border bg-muted/40 p-4 text-xs leading-relaxed">
             {JSON.stringify(entry.metadata, null, 2)}
           </pre>
@@ -176,7 +177,7 @@ export function AuditDetailClient({ entryId }: AuditDetailClientProps) {
               <div className="space-y-1 text-sm">
                 <Row label={t("Nome")} value={tenant.display_name} />
                 <Row label="Slug" value={tenant.slug} mono />
-                <Row label={t("Status")} value={tenant.status} />
+                <Row label={t("Status")} value={t(ROTULO_DA_SITUACAO[tenant.status] ?? tenant.status)} />
               </div>
               <Button asChild variant="outline" size="sm" className="mt-2">
                 <Link href={`/admin/tenants/${tenant.id}`}>{t("Ver empresa")}</Link>

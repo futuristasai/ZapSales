@@ -2,27 +2,25 @@
 
 <h2 id="usage">Uso e custo</h2>
 <p>Antes chamada “Usage” e “Uso &amp; Custo”. Quanto cada empresa usou (mensagens, conversas, IA) e quanto isso custou em IA, por período.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-usage.png" alt="Tela Uso e custo com o seletor de período, os gráficos e a tabela Uso por empresa, numerada de 1 a 6" loading="lazy">
-  <figcaption>A tela Uso e custo (só a empresa de demonstração; print anterior à reorganização — a legenda já usa os nomes atuais).</figcaption>
+  <figcaption>A tela Uso e custo (o print mostra só a linha da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Cabeçalho.</strong> “Mostra o consumo de cada empresa e quanto a inteligência artificial custou.” e “Quando usar: Para cobrar o uso, achar uma empresa que gasta fora do normal ou planejar o servidor.”.</li>
   <li><strong>Período.</strong> “Últimos 30 dias” (padrão), “Últimos 7 dias” ou “Últimos 90 dias”.</li>
-  <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo AI / dia” e “AI Tokens / dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
-  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Invoc. AI, Tokens e Custo AI (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
-  <li><strong>Custo AI.</strong> A última coluna.</li>
+  <li><strong>Gráficos.</strong> “Mensagens / dia”, “Custo da IA por dia (US$)” e “Tokens de IA por dia”. Sem dados: “Sem dados no período” nos gráficos e “Não há dados de uso no período selecionado.” na tabela. Se a leitura falhar: “Erro ao carregar dados de uso. Tente recarregar.”.</li>
+  <li><strong>Uso por empresa.</strong> A tabela: Empresa, Agente, Mensagens, Conversas, Chamadas à IA, Tokens e Custo da IA (US$) (do maior custo para o menor). Sem nenhuma empresa no período: “Nenhuma empresa encontrada”.</li>
+  <li><strong>Custo da IA (US$).</strong> A última coluna, em dólar, porque é em dólar que os provedores de IA cobram.</li>
   <li><strong>Exportar CSV.</strong> Baixa <code>usage-&lt;periodo&gt;.csv</code> com os dados de <em>todas</em> as empresas (gerado no navegador).</li>
 </ol>
-<aside class="nota atencao"><strong>A moeda é dólar, mesmo onde está escrito “R$”.</strong><p>Os valores vêm do custo registrado em dólar; a tabela mostra “US$”, mas o título do gráfico diz “(R$)” e a coluna do CSV se chama <code>custo_reais</code> sem converter. Trate o custo como <em>dólares</em>.</p></aside>
+<aside class="nota info"><strong>O custo da IA é em dólar.</strong><p>É em dólar que os provedores de IA cobram, e é assim que o sistema guarda o custo: o gráfico, a tabela e a coluna <code>custo_ia_dolares</code> do CSV mostram US$, sem converter para reais. Até novembro de 2026 o gráfico dizia “(R$)” e a coluna do CSV se chamava <code>custo_reais</code>, mas o valor já era em dólar.</p></aside>
 
 <h2 id="users">Usuários</h2>
 <p>Antes chamada “Users”. O cabeçalho diz “Lista quem entra no sistema, em qual empresa e com qual papel.” e “Quando usar: Para achar uma pessoa, conferir o papel dela ou ver quando entrou pela última vez.”, com a contagem “N usuário(s)”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-users.png" alt="Lista de usuários com busca, filtros de empresa e papel e as colunas da tabela, numerada de 1 a 7" loading="lazy">
-  <figcaption>A lista de usuários (só a empresa de demonstração; print anterior à reorganização).</figcaption>
+  <figcaption>A lista de usuários (o e-mail do dono foi trocado por um de exemplo).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Busca.</strong> “Buscar por email ou nome…”.</li>
@@ -47,25 +45,23 @@
 
 <h2 id="platform-admins">Administradores da plataforma</h2>
 <p>Antes chamada “Platform Admins”. O cabeçalho diz “Mostra quem administra a instalação inteira, acima de todas as empresas.” e “Quando usar: Para conferir quem tem esse poder e se essas pessoas usam a verificação em duas etapas.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print media">
   <img src="img/admin-platform-admins.png" alt="Tela Administradores da plataforma com o aviso de que só se muda direto no banco de dados e a tabela de administradores, numerada de 1 a 4" loading="lazy">
-  <figcaption>A tela Administradores da plataforma (print anterior à reorganização).</figcaption>
+  <figcaption>A tela Administradores da plataforma.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>“Quem administra a plataforma só se muda direto no banco de dados”.</strong> Incluir, tirar ou mudar alguém é feito só por comando direto no banco de dados (por quem cuida do servidor), com uma nota no registro de ações. A página só mostra quem é: de propósito, ela não tem botão de mudança. Com a lista vazia, a tela diz “Nenhum administrador da plataforma encontrado”.</li>
-  <li><strong>Scope.</strong> <code>full</code> ou <code>support_readonly</code>.</li>
-  <li><strong>MFA.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
+  <li><strong>Tipo de acesso.</strong> <em>Acesso completo</em> ou <em>Só leitura (suporte)</em>.</li>
+  <li><strong>Exige duas etapas.</strong> “Sim”/“Não” = se a verificação em duas etapas é exigida dessa pessoa.</li>
   <li><strong>Motivo.</strong> O motivo registrado (cortado em 40 caracteres; o texto completo aparece ao passar o mouse).</li>
 </ol>
-<p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Scope</em>, <em>MFA</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. Há um link “Ver runbook →” que aponta para um arquivo que não existe no aplicativo (provavelmente um link quebrado). Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
+<p>Colunas: <em>Usuário</em>, <em>Concedido em</em>, <em>Concedido por</em>, <em>Tipo de acesso</em>, <em>Exige duas etapas</em>, <em>Status</em> (Ativo ou Revogado, esmaecido) e <em>Motivo</em>. O aviso do alto tem o link “Ver no manual como incluir ou tirar alguém →”, que abre este manual na seção certa. Como conceder e revogar: veja a <a href="#admin-visao">visão geral do painel</a>.</p>
 
 <h2 id="inbox">Conversas de todas as empresas (leitura)</h2>
 <p>Antes chamada “Inbox”. Permite <em>ler</em>, sem responder, as conversas de qualquer empresa (suporte e diagnóstico). Três colunas: lista (360 px), conversa e painel lateral (320 px) — largura fixa, pensada para computador. Enquanto nenhuma conversa está aberta, a área da direita mostra o cabeçalho da tela: “Junta as conversas de todas as empresas numa lista só, com o nome da empresa em cada uma.” e “Quando usar: Para investigar um problema que uma empresa relatou. Não é a sua caixa de entrada.”.</p>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
   <img src="img/admin-inbox.png" alt="Conversas de todas as empresas com a lista de conversas, a busca, o filtro de status e a mensagem Selecione uma conversa, numerada de 1 a 3" loading="lazy">
-  <figcaption>A tela Conversas de todas as empresas (só conversas da empresa de demonstração; print anterior à reorganização, sem o cabeçalho).</figcaption>
+  <figcaption>A tela Conversas de todas as empresas (o print mostra só as conversas da empresa de demonstração).</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Buscar mensagem…</strong> Busca só na <em>prévia da última mensagem</em>, não em todo o histórico.</li>

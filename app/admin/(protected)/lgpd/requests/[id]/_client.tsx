@@ -179,6 +179,31 @@ const TYPE_LABELS: Record<AdminLgpdRequestType, string> = {
   store_redact: "Anonimização da empresa",
 };
 
+/**
+ * Escopo e origem do pedido em palavras (issue #309). Os vocabulários são os dos CHECK
+ * `lgpd_requests_scope_check` e `lgpd_requests_source_check`; valor fora deles aparece cru
+ * em vez de sumir.
+ */
+const ESCOPO_DO_PEDIDO: Readonly<Record<string, string>> = {
+  contact: "Um contato",
+  tenant: "A empresa inteira",
+};
+const ORIGEM_DO_PEDIDO: Readonly<Record<string, string>> = {
+  nuvemshop: "Nuvemshop",
+  manual: "Registrado à mão",
+  api: "Pela API",
+  support: "Pelo suporte",
+};
+function rotuloOuCru(
+  mapa: Readonly<Record<string, string>>,
+  valor: string | null | undefined,
+  t: (texto: string) => string,
+): string {
+  if (!valor) return "—";
+  const rotulo = mapa[valor];
+  return rotulo ? t(rotulo) : valor;
+}
+
 const STATUS_LABELS: Record<AdminLgpdStatus, string> = {
   received: "Recebido",
   processing: "Processando",
@@ -321,9 +346,9 @@ export function LgpdRequestAdminDetail({ id }: Props) {
             <Row label={t("Status")} value={statusLabel} />
             <Row
               label={t("Origem")}
-              value={(request as { source?: string | null }).source ?? "—"}
+              value={rotuloOuCru(ORIGEM_DO_PEDIDO, (request as { source?: string | null }).source, t)}
             />
-            <Row label={t("Escopo")} value={request.scope} />
+            <Row label={t("Escopo")} value={rotuloOuCru(ESCOPO_DO_PEDIDO, request.scope, t)} />
             <Row label={t("Tentativas")} value={String(request.attempts)} />
             {tenant && (
               <>
@@ -331,9 +356,9 @@ export function LgpdRequestAdminDetail({ id }: Props) {
                 <Row label="Slug" value={tenant.slug} />
               </>
             )}
-            {request.contact_id && <Row label="Contact ID" value={request.contact_id} mono />}
+            {request.contact_id && <Row label={t("Código do contato")} value={request.contact_id} mono />}
             {request.external_customer_id && (
-              <Row label="External customer ID" value={request.external_customer_id} />
+              <Row label={t("Código do cliente no sistema de origem")} value={request.external_customer_id} />
             )}
             {request.completed_at && (
               <Row

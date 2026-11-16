@@ -3,7 +3,7 @@
 <h2 id="visao-geral">O que é</h2>
 <p>A <strong>Administração da instalação</strong> é a área de quem <em>instalou e mantém</em> o ZapSales. Você entra nela pelo item “Modo administrador” do menu do usuário, e a faixa do topo diz <strong>“Administração da instalação — o que você muda aqui vale para todas as empresas”</strong>. Em vez de mostrar uma empresa, ela mostra <strong>todas as empresas hospedadas na instalação</strong> e reúne as configurações que valem <strong>para todas ao mesmo tempo</strong>: marca, e-mail, quem pode criar conta, Google, Meta, módulos.</p>
 <aside class="nota atencao"><strong>Só para quem opera o servidor.</strong><p>Um cliente que usa o ZapSales dentro da própria empresa <em>nunca</em> vê esta área, nem como Administrador da empresa. Administrador da empresa e “administrador da plataforma” são coisas diferentes: o primeiro manda <em>numa</em> empresa; o segundo manda na <em>instalação</em>.</p></aside>
-<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. <strong>Vários prints são anteriores à reorganização da área</strong> e ainda mostram nomes antigos, como “Tenants”, “Dashboard” e a faixa “MODO PLATAFORMA”; o texto já descreve os nomes atuais, e esses prints serão refeitos.</p></aside>
+<aside class="nota info"><strong>Sobre os prints deste capítulo.</strong><p>As capturas foram feitas numa instalação real, com acesso <strong>somente leitura</strong> e com os dados de outras empresas, e-mails reais e segredos <strong>escondidos ou trocados</strong> por nomes de exemplo (por isso aparece, por exemplo, “Padaria Exemplo”). Nenhuma configuração global foi alterada para fazer as imagens. Os prints foram refeitos depois da reorganização da área (novembro de 2026) e já mostram os nomes atuais.</p></aside>
 
 <h2 id="entrar">Como se chega</h2>
 <figure class="print media">
@@ -16,10 +16,9 @@
 <p>Quem instala o sistema com o <code>kit/instalar.sh</code> já é criado como administrador da plataforma (“Bootstrap inicial do self-host (dono da instância)”); por isso o dono vê o item desde o primeiro login. Para voltar ao sistema da sua empresa há o link <span class="ui">Voltar para a sua empresa</span> em dois lugares: na faixa do topo e no rodapé do menu.</p>
 
 <h2 id="moldura">A moldura da área</h2>
-<!-- PRINT DESATUALIZADO (issue #308): refazer após o deploy -->
 <figure class="print">
-  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, numerada de 1 a 7" loading="lazy">
-  <figcaption>A moldura da área: faixa do topo e menu lateral (print anterior à reorganização; a legenda já usa os nomes atuais).</figcaption>
+  <img src="img/admin-menu.png" alt="Área de administração com a faixa do topo e o menu lateral, e a dica de um item, numerada de 1 a 7" loading="lazy">
+  <figcaption>A moldura da área: faixa do topo, menu lateral em cinco grupos e a dica de um item.</figcaption>
 </figure>
 <ol class="legenda">
   <li><strong>Administração da instalação.</strong> Faixa amarela fixa no topo, com o ícone de um servidor e a frase “— o que você muda aqui vale para todas as empresas” (em telas estreitas a frase some e fica só o título). É um lembrete de que as ações afetam a instalação inteira. À direita há o botão de tema (claro/escuro).</li>
@@ -27,7 +26,7 @@
   <li><strong>Painel.</strong> A primeira tela, no grupo <em>Visão geral</em>.</li>
   <li><strong>Empresas.</strong> No grupo <em>Empresas e pessoas</em>.</li>
   <li><strong>Marca.</strong> No grupo <em>Configurar a instalação</em>.</li>
-  <li><strong>O último item do menu.</strong> O print ainda mostra “Módulos”, que <em>não existe mais</em> no menu: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>. Hoje o último item é <span class="ui">Destinos internos</span>.</li>
+  <li><strong>A dica do item.</strong> Ao passar o mouse sobre um item, ou ao chegar nele pelo teclado (tecla Tab), aparece uma frase dizendo para que ele serve; no print, a de <span class="ui">Registro de ações</span>. O antigo item “Módulos” <em>não existe mais</em>: instalar módulo passou para o bloco Módulos de <a href="#admin-sistema--modulos">Recursos opcionais</a>, e o último item é <span class="ui">Destinos internos</span>.</li>
   <li><strong>Voltar para a sua empresa</strong> e o e-mail de quem está logado, no rodapé do menu.</li>
 </ol>
 <p>No alto do menu fica o nome do sistema e, embaixo dele, “Administração da instalação”. Os itens estão separados em <strong>cinco grupos</strong>, nesta ordem:</p>

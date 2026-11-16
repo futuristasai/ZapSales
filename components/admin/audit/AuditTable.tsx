@@ -88,7 +88,7 @@ function EmptyState() {
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
       <p className="text-sm font-medium text-muted-foreground">{t("Nenhum evento encontrado")}</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {t("Ajuste os filtros para ver entradas do audit log.")}
+        {t("Ajuste os filtros para ver as ações registradas.")}
       </p>
     </div>
   );

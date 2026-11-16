@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { ENDERECO_DO_MANUAL } from "@/lib/navigation/manual";
 import { Info } from "@/lib/ui/icons";
 import { useT } from "@/hooks/i18n/useT";
 
@@ -23,12 +23,16 @@ export function DBAOnlyNotice() {
           {t("). Esta página só mostra quem é: de propósito, ela não tem botão de mudança.")}
         </p>
         <p className="pt-1">
-          <Link
-            href="/runbook/platform-admin-management.md"
+          {/* O manual é servido por uma rota própria (`app/manual/[[...arquivo]]`) como HTML
+              inteiro, não uma tela do app: `<a>` com recarga, não `<Link>`. */}
+          <a
+            href={`${ENDERECO_DO_MANUAL}#admin-visao--conceder`}
+            target="_blank"
+            rel="noopener"
             className="text-xs font-medium text-info-fg underline underline-offset-2 hover:text-info-fg"
           >
-            {t("Ver runbook →")}
-          </Link>
+            {t("Ver no manual como incluir ou tirar alguém →")}
+          </a>
         </p>
       </div>
     </div>
