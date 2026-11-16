@@ -204,16 +204,13 @@ test("o Painel diz se a instalação está saudável e mostra a licença, sem se
 }) => {
   const c = credenciaisSupabaseDeTeste();
   const db = createClient(c.url, c.serviceRole, { auth: { persistSession: false } });
-  const { data: org, error: erroOrg } = await db
-    .from("organizations")
-    .select("id")
-    .limit(1)
-    .single();
-  if (erroOrg) throw erroOrg;
+  // A organização do seed — nunca "a primeira que vier" (`e2e-nao-escolhe-a-primeira-linha`).
+  const orgId = lerCreds().org_id;
+  if (!orgId) throw new Error("o .e2e-creds.json não tem org_id — rode o seed de credenciais");
   const { data: evento, error: erroEvento } = await db
     .from("event_log")
     .insert({
-      organization_id: org.id,
+      organization_id: orgId,
       event_type: "teste_e2e.fila_parada",
       entity_kind: "teste_e2e",
       status: "pending",

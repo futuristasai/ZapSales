@@ -27,6 +27,8 @@ import { generateTotp, msUntilNextTotpWindow } from "../utils/totp";
 const CREDS_PATH = path.join(process.cwd(), ".e2e-creds.json");
 
 export interface CredsE2E {
+  /** A organização que o seed de credenciais cria (`scripts/seed-e2e-credentials.ts`). */
+  org_id?: string;
   password: string;
   users: Record<string, { email: string }>;
   admin_totp?: { secret: string; factor_id?: string };
