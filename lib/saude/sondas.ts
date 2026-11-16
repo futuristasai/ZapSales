@@ -3,6 +3,8 @@
  * Painel da administração (issue #310). Movidas da rota sem mudar comportamento; a
  * história de cada decisão continua nos comentários abaixo.
  */
+import "server-only";
+
 import { env } from "@/lib/env";
 import { alvoDe, classificarFalhaDeAlcance } from "@/lib/net/alcance";
 import { validarConfigRedisRest } from "@/lib/redis-config";

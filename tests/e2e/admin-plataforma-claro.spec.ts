@@ -30,6 +30,7 @@ import { CATALOGO_DO_ADMIN, GRUPOS_DO_ADMIN } from "@/lib/admin/catalogo";
 import { traduzir } from "@/lib/i18n/dicionario";
 import type { EstadoDaLicenca } from "@/lib/licenca/decidir";
 import { textoDaLicenca } from "@/lib/licenca/textos";
+import { ATRASO_MAXIMO_DA_FILA_S } from "@/lib/saude/da-instalacao";
 
 import { expect, test } from "./helpers/test";
 
@@ -167,6 +168,16 @@ test("o Painel diz o que falta configurar e os cartões levam à lista", async (
   // Cada cartão diz em palavras o que o número quer dizer, e leva à lista.
   const cartaoLgpd = page.getByTestId("cartao-lgpd");
   await expect(cartaoLgpd).toBeVisible({ timeout: 30_000 });
+  // Cada um dos cinco leva à lista que conta (o de LGPD é clicado abaixo).
+  for (const [id, destino] of [
+    ["empresas", "/admin/tenants"],
+    ["esperando", "/admin/inbox"],
+    ["numeros", "#alertas"],
+    ["lgpd", "/admin/lgpd"],
+    ["teto-de-ia", "/admin/usage"],
+  ] as const) {
+    await expect(page.getByTestId(`cartao-${id}`)).toHaveAttribute("href", destino);
+  }
   await expect(cartaoLgpd).toContainText(/prazo/);
   await page.screenshot({ path: evidencia("painel.png"), fullPage: true });
   await cartaoLgpd.click();
@@ -226,6 +237,16 @@ test("o Painel diz se a instalação está saudável e mostra a licença, sem se
     method: "POST",
     body: JSON.stringify(["PING"]),
   });
+
+  // No CI esta spec roda numa parte em que o gerador (`scripts/gerar-env-e2e.sh`) aponta os
+  // dois serviços para portas sem ninguém (3999 e 3998); só a parte 4 sobe os de verdade.
+  // Se ela mudar de parte, o vermelho deixaria de ser provado em silêncio — reprova alto.
+  if (process.env.CI) {
+    expect(
+      qrNoAr === false || redisNoAr === false,
+      "nenhum serviço está fora do ar neste ambiente: o vermelho da saúde não seria provado",
+    ).toBe(true);
+  }
 
   try {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -300,7 +321,7 @@ test("o Painel diz se a instalação está saudável e mostra a licença, sem se
     // verdade. O verde só é exigido quando nenhum outro está atrasado — senão o vermelho
     // continua sendo a resposta certa, e é ela que se afirma.
     await db.from("event_log").delete().eq("id", evento.id);
-    const limite = new Date(Date.now() - 9 * 60_000).toISOString();
+    const limite = new Date(Date.now() - ATRASO_MAXIMO_DA_FILA_S * 1000).toISOString();
     const { count: outrosParados, error: erroOutros } = await db
       .from("event_log")
       .select("id", { count: "exact", head: true })

@@ -63,6 +63,18 @@ export interface SaudeDaInstalacao {
  */
 export const ATRASO_MAXIMO_DA_FILA_S = 10 * 60;
 
+/**
+ * O que rodar, na pasta da instalação, quando subir o serviço resolve. Os nomes são os
+ * serviços de `docker-compose.prod.yml`; o do transporte por QR code vem da fronteira de
+ * canais, que é quem pode nomeá-lo.
+ */
+export const COMANDOS_DA_SAUDE = {
+  subirTudo: "sudo docker compose up -d",
+  subirRedis: "sudo docker compose up -d redis srh",
+  subirTransporteQr: COMANDO_PARA_SUBIR_O_TRANSPORTE_QR,
+  subirAgendador: "sudo docker compose up -d scheduler worker",
+} as const;
+
 /** Os textos, como dado — a cerca de idioma do admin os lê daqui. */
 export const TEXTOS_DA_SAUDE = {
   titulo: "Saúde da instalação",
@@ -102,6 +114,7 @@ export const TEXTOS_DA_SAUDE = {
   redisNaoConfigurado:
     "O Redis não está configurado. Os limites de envio contam em memória, e reiniciar o app zera a contagem.",
   filaOk: "As tarefas em segundo plano estão sendo processadas em dia.",
+  // "10 minutos" é ATRASO_MAXIMO_DA_FILA_S — o teste da função cobra que os dois andem juntos.
   filaParada:
     "Há tarefas em segundo plano paradas há mais de 10 minutos (respostas da IA, avisos, follow-ups). O agendador pode estar parado.",
   filaNaoLida:
@@ -109,6 +122,7 @@ export const TEXTOS_DA_SAUDE = {
 } as const;
 
 const T = TEXTOS_DA_SAUDE;
+const C = COMANDOS_DA_SAUDE;
 
 function item(
   id: IdDoItemDeSaude,
@@ -125,7 +139,7 @@ const ehCredencial = (m: MotivoDeFalha | undefined) => m === "credencial_recusad
 function doBanco(c: Check): ItemDeSaude {
   return c.status === "ok"
     ? item("banco", "ok", T.bancoOk)
-    : item("banco", "fora", T.bancoFora, "sudo docker compose up -d");
+    : item("banco", "fora", T.bancoFora, C.subirTudo);
 }
 
 function doTransporteQr(c: Check): ItemDeSaude {
@@ -133,7 +147,7 @@ function doTransporteQr(c: Check): ItemDeSaude {
   if (c.reason === "nao_configurado")
     return item("whatsapp", "nao_configurado", T.qrNaoConfigurado);
   if (ehCredencial(c.reason)) return item("whatsapp", "fora", T.qrChave);
-  return item("whatsapp", "fora", T.qrFora, COMANDO_PARA_SUBIR_O_TRANSPORTE_QR);
+  return item("whatsapp", "fora", T.qrFora, C.subirTransporteQr);
 }
 
 function doRedis(c: Check): ItemDeSaude {
@@ -142,13 +156,13 @@ function doRedis(c: Check): ItemDeSaude {
     return item("redis", "nao_configurado", T.redisNaoConfigurado);
   if (c.reason === "configuracao_invalida") return item("redis", "fora", T.redisConfiguracao);
   if (ehCredencial(c.reason)) return item("redis", "fora", T.redisChave);
-  return item("redis", "fora", T.redisFora, "sudo docker compose up -d redis srh");
+  return item("redis", "fora", T.redisFora, C.subirRedis);
 }
 
 function daFila(f: LeituraDaFila): ItemDeSaude {
   if (f === null) return item("fila", "nao_lido", T.filaNaoLida);
   if (f.atrasoSegundos !== null && f.atrasoSegundos > ATRASO_MAXIMO_DA_FILA_S) {
-    return item("fila", "fora", T.filaParada, "sudo docker compose up -d scheduler worker");
+    return item("fila", "fora", T.filaParada, C.subirAgendador);
   }
   return item("fila", "ok", T.filaOk);
 }

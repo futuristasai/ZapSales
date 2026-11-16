@@ -5,6 +5,8 @@
  * Mora na fronteira de canais porque nomeia o provedor (`scripts/lint-channels.ts`): quem
  * está fora dela pergunta "o transporte por QR code responde?" sem saber qual é.
  */
+import "server-only";
+
 import { env } from "@/lib/env";
 import { alvoDe, classificarFalhaDeAlcance } from "@/lib/net/alcance";
 import { motivoDoStatusHttp, withTimeout, type Check } from "@/lib/saude/sonda";

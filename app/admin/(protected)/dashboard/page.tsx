@@ -14,7 +14,11 @@ import {
   CartaoDaLicenca,
   type LicencaNoPainel,
 } from "@/components/admin/dashboard/CartaoDaLicenca";
-import { SaudeCarregando, SaudeDaInstalacao } from "@/components/admin/dashboard/SaudeDaInstalacao";
+import {
+  LicencaCarregando,
+  SaudeCarregando,
+  SaudeDaInstalacao,
+} from "@/components/admin/dashboard/SaudeDaInstalacao";
 
 import { DashboardClient } from "./_client";
 
@@ -64,7 +68,7 @@ export default async function AdminDashboardPage() {
         </Suspense>
       }
       licenca={
-        <Suspense fallback={<SaudeCarregando />}>
+        <Suspense fallback={<LicencaCarregando />}>
           <BlocoDaLicenca />
         </Suspense>
       }

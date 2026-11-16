@@ -4,18 +4,15 @@ import { useTransition, type ElementType } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Selo, type SignificadoDoSelo } from "@/components/ui/selo";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowsClockwise,
-  CheckCircle,
-  Circle,
   Database,
   Heartbeat,
   Lightning,
   ListChecks,
   QrCode,
-  Question,
-  WarningCircle,
 } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/i18n/useT";
@@ -25,6 +22,14 @@ import {
   type IdDoItemDeSaude,
   type SaudeDaInstalacao as Saude,
 } from "@/lib/saude/da-instalacao";
+
+/** O significado de cada estado no sistema de selos — "não configurado" e "não lido" não são falha. */
+const SELO_DO_ESTADO: Record<EstadoDeSaude, SignificadoDoSelo> = {
+  ok: "concluido",
+  fora: "falha",
+  nao_configurado: "neutro",
+  nao_lido: "neutro",
+};
 
 const ICONE_DO_ITEM: Record<IdDoItemDeSaude, ElementType> = {
   banco: Database,
@@ -53,7 +58,14 @@ export function SaudeDaInstalacao({ saude }: { saude: Saude }) {
         <Heartbeat
           size={22}
           weight={saude.tudoBem ? "regular" : "fill"}
-          className={cn("mt-0.5 shrink-0", saude.fora > 0 ? "text-error" : "text-success")}
+          className={cn(
+            "mt-0.5 shrink-0",
+            saude.fora > 0
+              ? "text-error"
+              : saude.tudoBem
+                ? "text-success"
+                : "text-muted-foreground",
+          )}
           aria-hidden
         />
         <div className="min-w-0 flex-1">
@@ -86,7 +98,7 @@ export function SaudeDaInstalacao({ saude }: { saude: Saude }) {
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="text-sm font-medium">{t(T.nomes[item.id])}</span>
-                  <SeloDoEstado estado={item.estado} rotulo={t(T.estados[item.estado])} />
+                  <Selo significado={SELO_DO_ESTADO[item.estado]}>{t(T.estados[item.estado])}</Selo>
                 </div>
                 <p
                   className={cn(
@@ -116,37 +128,6 @@ export function SaudeDaInstalacao({ saude }: { saude: Saude }) {
   );
 }
 
-function SeloDoEstado({ estado, rotulo }: { estado: EstadoDeSaude; rotulo: string }) {
-  const comum = "inline-flex items-center gap-1 text-xs font-medium";
-  if (estado === "ok")
-    return (
-      <span className={cn(comum, "text-success-fg")}>
-        <CheckCircle size={14} weight="fill" className="text-success" aria-hidden />
-        {rotulo}
-      </span>
-    );
-  if (estado === "fora")
-    return (
-      <span className={cn(comum, "text-error-fg")}>
-        <WarningCircle size={14} weight="fill" className="text-error" aria-hidden />
-        {rotulo}
-      </span>
-    );
-  if (estado === "nao_configurado")
-    return (
-      <span className={cn(comum, "text-muted-foreground")}>
-        <Circle size={14} aria-hidden />
-        {rotulo}
-      </span>
-    );
-  return (
-    <span className={cn(comum, "text-muted-foreground")}>
-      <Question size={14} aria-hidden />
-      {rotulo}
-    </span>
-  );
-}
-
 /** Enquanto as sondas respondem (até ~3 s quando algo está fora). */
 export function SaudeCarregando() {
   return (
@@ -155,6 +136,17 @@ export function SaudeCarregando() {
       {Array.from({ length: 4 }).map((_, i) => (
         <Skeleton key={i} className="h-10 w-full" />
       ))}
+    </Card>
+  );
+}
+
+/** Enquanto a licença é lida. */
+export function LicencaCarregando() {
+  return (
+    <Card className="space-y-3 p-4" data-testid="licenca-carregando">
+      <Skeleton className="h-5 w-24" />
+      <Skeleton className="h-4 w-40" />
+      <Skeleton className="h-12 w-full" />
     </Card>
   );
 }

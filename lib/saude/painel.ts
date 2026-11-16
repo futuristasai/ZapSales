@@ -2,6 +2,10 @@
  * A saúde da instalação AGORA, para o Painel da administração (issue #310): as mesmas
  * sondas do `/api/v1/health`, mais a fila de tarefas, traduzidas por `saudeDaInstalacao`.
  *
+ * Usa o CLIENTE DE SERVIÇO para ler a fila de TODAS as organizações (só instantes): quem
+ * chama precisa ter barrado quem não é administrador da plataforma — o Painel faz
+ * `is_platform_admin` → `notFound()` antes de chegar aqui.
+ *
  * Só servidor. As sondas têm teto de 3 s cada e rodam juntas, então o pior caso é ~3 s —
  * por isso o Painel desenha este bloco dentro de um `Suspense`, e o resto da tela não espera.
  */

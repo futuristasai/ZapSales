@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { saudeDaInstalacao, type SondasDaInstalacao } from "./da-instalacao";
+import {
+  ATRASO_MAXIMO_DA_FILA_S,
+  TEXTOS_DA_SAUDE,
+  saudeDaInstalacao,
+  type SondasDaInstalacao,
+} from "./da-instalacao";
 
 const OK = { status: "ok", latency_ms: 12 } as const;
 
@@ -70,6 +75,10 @@ describe("saúde da instalação — o que o Painel mostra", () => {
     const fila = porId(sondas({ fila: { atrasoSegundos: 11 * 60 } })).fila!;
     expect(fila.estado).toBe("fora");
     expect(fila.comando).toBe("sudo docker compose up -d scheduler worker");
+  });
+
+  it("a frase da fila parada diz o mesmo limite que a regra usa", () => {
+    expect(TEXTOS_DA_SAUDE.filaParada).toContain(`${ATRASO_MAXIMO_DA_FILA_S / 60} minutos`);
   });
 
   it("fila com atraso de poucos minutos ainda é normal (o processador roda a cada minuto)", () => {

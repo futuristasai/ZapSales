@@ -17,6 +17,12 @@
  * sem reagendamento (pela criação) e a mais antiga reagendada já vencida (pelo
  * reagendamento). Cada uma devolve um instante, e só ele — nenhum payload sai daqui.
  *
+ * ENTRE ORGANIZAÇÕES DE PROPÓSITO: a pergunta é "a fila desta instalação anda?", e o
+ * processador também não filtra por organização. Só sai um número (o atraso); nenhuma
+ * coluna que identifique a organização é lida. Quem chama é o Painel de `/admin`, com
+ * `is_platform_admin` → `notFound()` no topo. Se um dia a leitura disser DE QUAL empresa é
+ * o evento parado, ela passa a ser dado de inquilino e precisa de decisão própria.
+ *
  * NUNCA LANÇA: falha de leitura vira `null` ("não consegui ler"), nunca vermelho.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
