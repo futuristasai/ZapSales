@@ -716,7 +716,6 @@ jobs:
         central-de-avisos-capacidades.spec.ts
         escalacao-ciclo.spec.ts
         distribuicao-atendimento.spec.ts
-        capacidades-do-agente.spec.ts
         escopo-de-funil-do-agente.spec.ts
         followup-tempo-adaptativo.spec.ts
         gatilho-de-etapa.spec.ts
@@ -1101,7 +1100,26 @@ jobs:
       # posição na lista NÃO decide a ordem de execução — no job 108983924934
       # ela rodou em 39º de 77, e a parte inteira passou (77 passed). Medido:
       # 16,1 s de caso.
+      #
+      # `capacidades-do-agente` veio da PARTE_2 em 2026-11-17 (issue #326), e o
+      # motivo é o relógio, medido: a parte 2 foi CORTADA no PR #329 ("a suíte
+      # rodou 1369s ... Nenhum caso vermelho até o corte: a parte cresceu") com
+      # os seis casos desta spec verdes — o PR só acrescentou um caso de ~5 s.
+      # Ela já vinha no fio na main: jobs verdes de 1527, 1588, 1648 e 1662 s
+      # contra o corte em 1680 s; esta parte, a 5, fechava entre 814 e 1045 s
+      # nas mesmas seis rodadas. A spec custa ~110 s de caso e semeia o que usa
+      # (`seed-e2e-followup-agent` e `seed-e2e-capacidades`, no corpo do módulo).
+      #
+      # O cuidado desta vizinhança: `honorarios-instalar-e-pagar` acrescenta
+      # duas capacidades ao pacote Atender, e o caso do recomendado conta 11 do
+      # seed + 17 do pacote = 28. A ordem é por CAMINHO, e `capacidades-` vem
+      # antes de `honorarios-`, então a conta é feita antes da instalação. Uma
+      # spec nova que instale módulo com capacidade e tenha nome ANTES de
+      # `capacidades-` quebra essa conta — é aqui que se olha.
+      #
+      # NÃO MEDIDO até a rodada do #329: se a spec passa no banco desta parte.
       SPECS_PARTE_5: >-
+        capacidades-do-agente.spec.ts
         extensoes-da-instalacao.spec.ts
         admin-credencial-google.spec.ts
         agenda-primeira-pintura-no-fuso.spec.ts
