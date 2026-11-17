@@ -54,6 +54,71 @@ schemas_do_supabase_prontos() {
   [ "$(sql_valor "select (to_regclass('auth.users') is not null and to_regclass('storage.buckets') is not null and to_regclass('storage.objects') is not null)::int")" = "1" ]
 }
 
+# redigir_log ENV — filtro: mascara segredo em linha de log que vai SAIR da VPS
+# (tela do comprador e, pelo executor do instalador guiado, a ficha no servidor
+# de licenças). Troca LITERALMENTE todo valor do .env cuja chave nomeia segredo
+# (o banco o devolve verbatim numa URL de conexão, por exemplo) e, por padrão,
+# credencial em URL, JWT e `password=`. Corta a linha em 300 caracteres: o
+# GoTrue e o Storage logam JSON de uma linha só, e a ficha guarda 20 linhas.
+redigir_log() {
+  local segredos
+  segredos="$(grep -E '^[A-Z0-9_]*(SECRET|PASSWORD|PASS|KEY|TOKEN|SENHA|CHAVE)[A-Z0-9_]*=.' "$1" 2>/dev/null \
+    | cut -d= -f2- | sed -E "s/^['\"](.*)['\"]$/\1/" || true)"
+  # ENVIRON e não -v: o -v do awk interpreta barra invertida, e segredo pode ter.
+  SEGREDOS="$segredos" awk '
+    BEGIN { n = split(ENVIRON["SEGREDOS"], s, "\n") }
+    {
+      linha = $0
+      for (i = 1; i <= n; i++) {
+        v = s[i]
+        if (length(v) < 8) continue   # valor curto (true, 1, porta) apagaria texto à toa
+        while ((p = index(linha, v)) > 0)
+          linha = substr(linha, 1, p - 1) "***" substr(linha, p + length(v))
+      }
+      print linha
+    }' \
+    | sed -E \
+      -e 's#(://[^:/@[:space:]]+):[^@[:space:]]+@#\1:***@#g' \
+      -e 's#eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+#***#g' \
+      -e "s#((password|passwd|pwd|secret|token)[\"']?[[:space:]]*[=:][[:space:]]*[\"']?)[^\"'[:space:],&}]+#\1***#gI" \
+    | cut -c1-300
+}
+
+# linhas_que_explicam — das últimas linhas de um log, as que dizem o motivo:
+# as 3 últimas com cara de erro (em qualquer ponto da cauda) e as 2 finais,
+# na ordem em que aconteceram, sem repetir. Máximo 5.
+linhas_que_explicam() {
+  awk '
+    # `"level":50/60` é erro/fatal no pino (o log do Storage), que nem sempre diz "error" por extenso.
+    { l[NR] = $0; if (tolower($0) ~ /fatal|panic|error|erro|failed|falh|refused|denied|cannot|could not|unable|"level": ?(50|60)[,}]/) e[++ne] = NR }
+    END {
+      for (i = (ne > 3 ? ne - 2 : 1); i <= ne; i++) escolhida[e[i]] = 1
+      for (i = (NR > 2 ? NR - 1 : 1); i <= NR; i++) escolhida[i] = 1
+      for (i = 1; i <= NR; i++) if (escolhida[i]) print l[i]
+    }'
+}
+
+# diagnosticar_servicos ENV SERVIÇO... — antes de desistir de um serviço que não
+# ficou pronto, imprime o estado de cada um (situação, reinícios, código de
+# saída) e as linhas do log que explicam por quê, já mascaradas. Sem isto a
+# ficha do instalador guiado só guardava "não ficou pronto em 240s" e o motivo
+# morria na VPS do comprador (17/11/2026). Nunca falha: é diagnóstico, e o kit
+# vai falhar logo em seguida com a mensagem de sempre.
+diagnosticar_servicos() {
+  local env="$1" s id estado
+  shift
+  for s in "$@"; do
+    estado=""
+    id="$(dc ps -q "$s" 2>/dev/null | head -1)" || id=""
+    if [ -n "$id" ]; then
+      estado="$(docker inspect -f '{{.State.Status}} reinícios={{.RestartCount}} saída={{.State.ExitCode}}' "$id" 2>/dev/null)" || estado=""
+    fi
+    msg "  Diagnóstico · $s: ${estado:-sem contêiner}"
+    { dc logs --no-color --tail 200 "$s" 2>/dev/null | linhas_que_explicam | redigir_log "$env" | sed 's/^/    /'; } || true
+  done
+  return 0
+}
+
 servico_saudavel() { # NOME
   local id estado
   id="$(dc ps -q "$1")"

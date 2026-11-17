@@ -300,6 +300,72 @@ falso "o erro de arquivo ausente não vaza para a tela (2>/dev/null antes do <)"
 saida=$(RAIZ=/nao/existe bash -c 'rev="$(tr -d "[:space:]" 2>/dev/null < "$RAIZ/.zapsales-revisao" || true)"; echo "[$rev]"' 2>&1)
 igual "sem o arquivo, a leitura da revisão não imprime nada além do vazio" "[]" "$saida"
 
+echo "diagnóstico do Auth/Storage — a causa chega à ficha, o segredo não"
+# Medido em 17/11/2026: um comprador falhou duas vezes em "O Auth/Storage não
+# criaram os schemas", e a ficha só guardou a linha de espera — o motivo ficou
+# no log da VPS dele, que ninguém alcança. O kit agora imprime estado e log dos
+# dois serviços ANTES do ✖, dentro das 20 linhas que o executor leva à ficha;
+# como essas linhas saem da VPS, todo segredo do .env é mascarado.
+(
+  # shellcheck source=/dev/null
+  . kit/lib/stack.sh
+  DENV="$TMP/diag.env"
+  printf 'POSTGRES_PASSWORD=s3nh4-d0-b4nc0\nJWT_SECRET=jwt-segredo-xyz\nSERVICE_ROLE_KEY=chave.de.servico\nDOMINIO=zap.exemplo.com\nVAZIA_KEY=\n' > "$DENV"
+  log='{"level":"fatal","msg":"failed to connect to postgres://supabase_auth_admin:s3nh4-d0-b4nc0@db:5432/postgres"}
+info boot jwt-segredo-xyz carregado
+token eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.abc_DEF-123 recusado
+dsn host=db password=outra-senha user=x
+servidor em zap.exemplo.com'
+  r="$(printf '%s\n' "$log" | redigir_log "$DENV")"
+  falso "senha do banco do .env não sai" grep -qF 's3nh4-d0-b4nc0' <<<"$r"
+  falso "JWT_SECRET do .env não sai" grep -qF 'jwt-segredo-xyz' <<<"$r"
+  falso "JWT solto não sai" grep -qF 'eyJhbGciOiJIUzI1NiJ9' <<<"$r"
+  falso "password= não sai" grep -qF 'outra-senha' <<<"$r"
+  verdade "a causa continua legível" grep -qF 'failed to connect to postgres://supabase_auth_admin:***@db:5432' <<<"$r"
+  verdade "valor que não é segredo fica" grep -qF 'zap.exemplo.com' <<<"$r"
+  igual "chave vazia não vira coringa (nenhuma linha some)" "5" "$(wc -l <<<"$r" | tr -d ' ')"
+  longa="$(printf 'x%.0s' $(seq 1 900))"
+  igual "linha longa é cortada em 300" "300" "$(printf '%s\n' "$longa" | redigir_log "$DENV" | awk '{print length}')"
+
+  # dc e docker de mentira: auth reiniciando com erro fatal, storage no ar.
+  dc() {
+    case "$1 $2" in
+      "ps -q") echo "id-$3" ;;
+      "logs --no-color") local s="${*: -1}"
+        if [ "$s" = auth ]; then
+          for i in $(seq 1 30); do echo "info linha $i"; done
+          echo '{"level":"fatal","msg":"running db migrations: password authentication failed for user supabase_auth_admin (s3nh4-d0-b4nc0)"}'
+          echo "info tentando de novo"
+        else
+          echo "storage ouvindo na 5000"
+        fi ;;
+    esac
+  }
+  docker() {
+    case "$*" in
+      *id-auth*) echo "restarting reinícios=7 saída=1" ;;
+      *id-storage*) echo "running reinícios=0 saída=0" ;;
+    esac
+  }
+  pino="$( { echo '{"level":50,"msg":"migrations falharam no storage"}'; for i in $(seq 1 9); do echo "info $i"; done; } | linhas_que_explicam)"
+  verdade "erro do pino (level 50, sem a palavra error) entra" grep -qF 'migrations falharam' <<<"$pino"
+  igual "da cauda comum só as 2 últimas" "3" "$(wc -l <<<"$pino" | tr -d ' ')"
+  d="$(diagnosticar_servicos "$DENV" auth storage 2>&1)"
+  verdade "estado do auth aparece" grep -qF 'auth: restarting reinícios=7 saída=1' <<<"$d"
+  verdade "estado do storage aparece" grep -qF 'storage: running' <<<"$d"
+  verdade "a linha fatal entra mesmo fora da cauda" grep -qF 'password authentication failed' <<<"$d"
+  falso "segredo não sai no diagnóstico" grep -qF 's3nh4-d0-b4nc0' <<<"$d"
+  n="$(wc -l <<<"$d" | tr -d ' ')"
+  verdade "cabe no trecho da ficha (≤ 14 linhas, sobram 6 para espera e ✖) — veio $n" test "$n" -le 14
+  verdade "sem dc/docker no ar, o diagnóstico não derruba o kit" \
+    bash -c '. kit/lib/comum.sh; . kit/lib/stack.sh; dc(){ return 1; }; docker(){ return 1; }; diagnosticar_servicos /nao/existe auth storage >/dev/null 2>&1'
+  exit "$fail"
+) || fail=1
+verdade "instalar.sh diagnostica antes de falhar nos schemas" \
+  grep -qE 'schemas_do_supabase_prontos.*\|\| *\{ *diagnosticar_servicos' kit/instalar.sh
+verdade "restaurar.sh diagnostica antes de falhar nos schemas" \
+  grep -qE 'schemas_do_supabase_prontos.*\|\| *\{ *diagnosticar_servicos' kit/restaurar.sh
+
 echo "roteiros do kit — sintaxe"
 for f in kit/*.sh kit/lib/*.sh; do
   verdade "bash -n $f" bash -n "$f"
