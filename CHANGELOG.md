@@ -8,6 +8,14 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.3.2] — 2026-11-17
+
+### Corrigido
+
+- **O acervo volta a mostrar quais agentes consultam cada material** Na tela **O que o agente sabe** (IA › Conhecimento), o campo **Consultado por** de cada material dizia sempre "nenhum assistente ainda", mesmo quando um agente publicado lia aquele material. A tela perguntava pelos agentes de um jeito que o banco recusava em silêncio. Agora cada cartão mostra o nome dos agentes que consultam o material, e arquivar deixa de ser um tiro no escuro.
+
+  Nada precisa ser feito no servidor.
+
 ## [1.3.1] — 2026-11-17
 
 ### Corrigido
@@ -273,7 +281,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...v1.2.1
