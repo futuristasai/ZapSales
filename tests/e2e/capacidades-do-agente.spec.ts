@@ -22,7 +22,7 @@ import * as path from "node:path";
 
 import { test, expect, type Page } from "./helpers/test";
 
-import { TETO_TOOLS_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_RECOMENDADO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
 
 import { loginComoAdmin } from "./helpers/login-admin";
 
@@ -64,12 +64,17 @@ const AGENTE = creds.capacidades!.agent_id;
 
 /** O que o seed deixa ligado — o cenário conhecido de onde os casos partem. */
 const TOOLS_DO_SEED = [
-  // As três originais primeiro: o caso do teto desliga `TOOLS_DO_SEED[2]` para
-  // liberar exatamente uma vaga, e a ordem é o que mantém esse índice válido.
+  // As três originais primeiro: o caso do recomendado desliga `TOOLS_DO_SEED[2]`
+  // para voltar exatamente ao recomendado, e a ordem é o que mantém o índice válido.
   "crm_get_lead",
   "crm_move_lead_stage",
   "crm_list_leads",
   // ⚠️ AS OITO ABAIXO NÃO SÃO ENFEITE: elas existem para o cenário ESTOURAR.
+  //
+  // Desde a #326 o que "estoura" é o RECOMENDADO, e estourar não recusa mais:
+  // liga e avisa. A conta abaixo continua valendo inteira, com a palavra trocada
+  // — 28 contra 27 é o clique que CRUZA o recomendado por uma, e desligar uma das
+  // oito volta a 27 e o aviso some. O histórico fica porque explica a conta.
   //
   // A jornada do teto (issue #162) só existe se a soma passar do teto: eram 3
   // do seed + 18 de "Atender" = 21 contra teto 20, e a tela recusava dizendo
@@ -215,6 +220,35 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await page
       .getByTestId("tool-picker")
       .screenshot({ path: path.join(EVIDENCIA, "w1-capacidades-por-jornada.png") });
+
+    // ── Capacidades parecidas de pacotes diferentes ganham aviso (#326) ──────
+    //
+    // Mora DENTRO deste caso, e não num caso próprio, pelo relógio: cada caso
+    // desta spec paga um login de admin com MFA, e a parte 2 do e2e fecha no fio
+    // do teto (medido no PR #329: cortada a 1369 s com tudo verde). Nada aqui é
+    // salvo — liga, confere e desliga.
+    // O seed tem "Marcar consulta"; "Reter" traz "Agendar um retorno". É o par de
+    // `lib/mcp/tools/sobreposicoes.ts` que este cenário alcança. "Encerrar o
+    // negócio" também é de "Reter", mas é crítica: o pacote não a liga, e por isso
+    // o par com "Mover oportunidade de etapa" (que está no seed) NÃO aparece —
+    // medido na vitrine, e é o que o caso cobra.
+    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
+    await page.getByTestId("switch-pacote-reter").click();
+    await expect(page.getByTestId("pacote-reter")).toHaveAttribute("data-estado", "ligado");
+
+    const aviso = page.getByTestId("aviso-sobreposicao");
+    await expect(aviso).toBeVisible();
+    await expect(
+      aviso.getByTestId("sobreposicao-crm_book_appointment-crm_schedule_followup"),
+    ).toContainText("Marcar consulta");
+    await expect(aviso.getByTestId("sobreposicao-crm_move_lead_stage-crm_close_demand")).toHaveCount(0);
+    await page
+      .getByTestId("tool-picker")
+      .screenshot({ path: path.join(EVIDENCIA, "326-sobreposicao.png") });
+
+    // Desligar o pacote tira o aviso — ele descreve o estado, não um histórico.
+    await page.getByTestId("switch-pacote-reter").click();
+    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
   });
 
   test("ligar uma jornada NÃO dá ao agente o direito de mandar WhatsApp", async ({ page }) => {
@@ -226,45 +260,33 @@ test.describe("Configurar o que o agente pode fazer", () => {
     // capacidades de agenda. Literal em asserção transforma decisão de produto
     // em quebra de CI, e faz a próxima pessoa "consertar" o teste em vez de ler
     // por que o número mudou.
-    expect(antes).toMatch(new RegExp(`de ${TETO_TOOLS_POR_AGENTE}$`));
+    expect(antes).toMatch(new RegExp(`de ${TETO_RECOMENDADO_POR_AGENTE}$`));
 
-    // O TETO ENTRA NA JORNADA (issue #162), e entra antes do clique.
+    // PASSAR DO RECOMENDADO LIGA E AVISA (issue #326).
     //
-    // "Atender" exige 17 vagas: 17 automáticas e nenhuma crítica — a única que
-    // ele tinha (o envio de WhatsApp) deixou de ser oferecida na #528, e com ela
-    // saiu uma vaga da conta. Com os 11 do seed (3 + 8) dá 28, acima do teto de 27.
+    // "Atender" exige 17 vagas. Com os 11 do seed (3 + 8) dá 28, uma acima do
+    // recomendado de 27. Até a #326 este clique era RECUSADO ("faltam 1 vaga");
+    // agora o pacote liga e a tela diz o que pode piorar e onde olhar.
     //
-    // ⚠️ AS 8 EXTRAS SÃO O QUE MANTÉM ESTE CASO VIVO. Eram 3, e 3 + 18 = 21
-    // estourava o teto de 20. A cada subida do teto (20 → 25 → 27, a última
-    // quando a proposta comercial entrou no `vender`) e a cada queda do pacote
-    // "Atender" (18 → 17, na #528), a mesma soma ameaçava caber de novo — e cada
-    // vez que isso acontece a recusa deixa de existir e o caso vira um clique que
-    // sempre dá certo, verde sem medir nada, o pior desfecho para um teste de
-    // recusa. As 8 (4 de agenda + 4 de leitura pura) estão FORA de "Atender", senão
-    // a união seria menor que a soma.
-    //
-    // Aritmética atual: 11 + 17 = 28 > 27, recusa por 1 vaga; desligar uma das
-    // oito deixa 10 + 17 = 27, o teto exato.
-    //
-    // Antes da correção a tela aceitava o pacote, chegava a 20 exatas e deixava
-    // o checkbox da crítica DESABILITADO — prometia uma escolha que o produto
-    // não permitia fazer, sem dizer por quê. Agora recusa e diz quantas vagas
-    // faltam, e o operador faz o que a própria tela manda.
+    // O aviso nasce DENTRO do cartão clicado, pela mesma razão que a recusa
+    // nascia lá: com a tela rolada até um pacote de baixo, o topo fica fora da
+    // vista e o clique parece não ter consequência nenhuma.
     await page.getByTestId("switch-pacote-atender").click();
-    await expect(page.getByTestId("aviso-teto")).toContainText(/faltam? 1 vaga/);
-    // O aviso nasce DENTRO do cartão clicado, não no topo do seletor: com a
-    // tela rolada até um pacote lá de baixo, o aviso do topo ficava fora da
-    // vista e o clique parecia não fazer nada.
+    await expect(page.getByTestId("pacote-atender")).toHaveAttribute("data-estado", "ligado");
     await expect(
-      page.getByTestId("pacote-atender").getByTestId("aviso-teto"),
-      "a recusa precisa aparecer onde a pessoa clicou",
+      page.getByTestId("pacote-atender").getByTestId("aviso-acima-do-recomendado"),
+      "o aviso precisa aparecer onde a pessoa clicou",
     ).toBeVisible();
-    await expect(
-      page.getByTestId("pacote-atender"),
-      "recusar significa NÃO aplicar: pacote meio-ligado seria o pior dos dois mundos",
-    ).not.toHaveAttribute("data-estado", "ligado");
+    await expect(page.getByTestId("aviso-acima-do-recomendado")).toContainText(
+      `28 capacidades, acima das ${TETO_RECOMENDADO_POR_AGENTE}`,
+    );
+    await expect(page.getByTestId("consumo-teto")).toHaveAttribute("data-acima", "sim");
+    await expect(page.getByTestId("aviso-teto"), "acima do recomendado não é recusa").toHaveCount(0);
+    await page
+      .getByTestId("tool-picker")
+      .screenshot({ path: path.join(EVIDENCIA, "326-acima-do-recomendado.png") });
 
-    // Libera a vaga desligando uma capacidade que o seed tinha ligado.
+    // Voltar ao recomendado tira o aviso: desligar uma do seed deixa 27 exatas.
     await page.getByTestId("toggle-avancado").click();
     await page.getByTestId("lista-avancada").waitFor({ state: "visible" });
     await page
@@ -272,8 +294,8 @@ test.describe("Configurar o que o agente pode fazer", () => {
       .locator("input[type=checkbox]")
       .click();
     await page.getByTestId("toggle-avancado").click();
-
-    await page.getByTestId("switch-pacote-atender").click();
+    await expect(page.getByTestId("consumo-teto")).toHaveAttribute("data-acima", "nao");
+    await expect(page.getByTestId("aviso-acima-do-recomendado")).toHaveCount(0);
 
     // As capacidades da jornada entraram…
     await expect(page.getByTestId("pacote-atender")).toHaveAttribute(
@@ -339,7 +361,7 @@ test.describe("Configurar o que o agente pode fazer", () => {
     // Espera a configuração CARREGAR. Ler o estado antes disso devolve lista
     // vazia, e um teste que compara vazio com vazio passa sem medir nada.
     await expect(page.getByTestId("consumo-teto")).toHaveText(
-      `${TOOLS_DO_SEED.length} de ${TETO_TOOLS_POR_AGENTE}`,
+      `${TOOLS_DO_SEED.length} de ${TETO_RECOMENDADO_POR_AGENTE}`,
     );
 
     await page.getByTestId("switch-pacote-vender").click();
@@ -361,7 +383,7 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await page.reload();
     await page.getByTestId("tool-picker").waitFor({ state: "visible" });
     await expect(page.getByTestId("consumo-teto")).toHaveText(
-      `${TOOLS_DO_SEED.length} de ${TETO_TOOLS_POR_AGENTE}`,
+      `${TOOLS_DO_SEED.length} de ${TETO_RECOMENDADO_POR_AGENTE}`,
     );
   });
 });

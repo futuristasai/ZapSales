@@ -30,7 +30,13 @@ interface Resposta {
   data: {
     janela_em_dias: number;
     versao_lida: { id: string; status: string } | null;
-    resumo: { usos: number; falhas: number; precisam_de_atencao: number };
+    resumo: {
+      usos: number;
+      falhas: number;
+      /** Ausente em servidor anterior à #326 — trate como zero. */
+      escolhas_duvidosas?: number;
+      precisam_de_atencao: number;
+    };
     capacidades: CapacidadeComUso[];
   };
 }
@@ -39,6 +45,14 @@ const SINAL: Record<SinalDeUso, { rotulo: string; classe: string }> = {
   so_falha: {
     rotulo: "falhando sempre",
     classe: "border-destructive/50 bg-destructive/10 text-destructive",
+  },
+  corrigida_por_pessoa: {
+    rotulo: "corrigida por uma pessoa",
+    classe: "border-destructive/40 text-destructive",
+  },
+  repetida_apos_falha: {
+    rotulo: "repetida depois de falhar",
+    classe: "border-warning/40 text-warning-fg",
   },
   falhando: {
     rotulo: "falhas",
@@ -127,6 +141,19 @@ export function UsoDasCapacidades({ agentId, active }: Props) {
                 {t(resumo.falhas === 1 ? "falha" : "falhas")}
               </>
             ) : null}
+            {(resumo.escolhas_duvidosas ?? 0) > 0 ? (
+              <>
+                {" · "}
+                <strong className="text-warning-fg" data-testid="uso-escolhas-duvidosas">
+                  {resumo.escolhas_duvidosas}
+                </strong>{" "}
+                {t(
+                  resumo.escolhas_duvidosas === 1
+                    ? "sinal de escolha errada"
+                    : "sinais de escolha errada",
+                )}
+              </>
+            ) : null}
           </p>
           <p className="text-xs text-muted-foreground">
             {resumo.precisam_de_atencao > 0
@@ -200,6 +227,21 @@ export function UsoDasCapacidades({ agentId, active }: Props) {
                   {t("em teste")} <strong className="text-foreground">{c.em_teste}</strong>
                 </span>
                 <span>{t("última vez")} {t(formatarData(c.ultima_vez, tagDoIdioma))}</span>
+                {/* Os indícios de escolha errada (#326) só aparecem quando existem:
+                    um "0" em toda linha seria ruído para as capacidades que nem
+                    têm como ser corrigidas. */}
+                {c.corrigidas_por_pessoa > 0 ? (
+                  <span data-testid={`uso-corrigidas-${c.name}`}>
+                    {t("corrigidas por pessoa")}{" "}
+                    <strong className="text-destructive">{c.corrigidas_por_pessoa}</strong>
+                  </span>
+                ) : null}
+                {c.repetidas_apos_falha > 0 ? (
+                  <span data-testid={`uso-repetidas-${c.name}`}>
+                    {t("repetidas depois de falhar")}{" "}
+                    <strong className="text-warning-fg">{c.repetidas_apos_falha}</strong>
+                  </span>
+                ) : null}
               </div>
             </li>
           ))}

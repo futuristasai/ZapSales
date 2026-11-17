@@ -1101,6 +1101,18 @@ jobs:
       # posição na lista NÃO decide a ordem de execução — no job 108983924934
       # ela rodou em 39º de 77, e a parte inteira passou (77 passed). Medido:
       # 16,1 s de caso.
+      #
+      # ⚠️ `capacidades-do-agente` NÃO VEM PARA CÁ — foi tentado e medido em
+      # 2026-11-17 (PR #329, run 44166465940, duas tentativas). A parte 2 tinha
+      # sido cortada pelo relógio com tudo verde (1369 s), e esta era a parte com
+      # folga. Com a spec aqui, os seis casos dela passaram e `etapa-pela-conversa`
+      # REPROVOU nas duas tentativas, no mesmo ponto: o clique em "Ficha completa"
+      # não abre a gaveta. O rastro mostra, 120 ms depois do clique, um
+      # `/api/v1/auth/interface` seguido de `/app/inbox?_rsc=…` novo e dos efeitos
+      # de montagem do casco de novo — a tela se refez e o estado da gaveta se
+      # perdeu. Por que isso só acontece com esta vizinha antes NÃO foi medido
+      # (issue aberta a partir do #329). A spec voltou para a PARTE_2, e o caso
+      # novo dela entrou dentro de um caso existente para não somar um login.
       SPECS_PARTE_5: >-
         extensoes-da-instalacao.spec.ts
         admin-credencial-google.spec.ts

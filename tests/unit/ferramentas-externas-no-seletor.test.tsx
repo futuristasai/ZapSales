@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IdiomaProvider } from "@/lib/i18n/IdiomaProvider";
 import { ToolPicker } from "@/app/app/ai/agents/[id]/_components/ToolPicker";
 import { passaDoTetoDeCapacidades } from "@/lib/ai/agents/validation";
-import { TETO_TOOLS_POR_AGENTE, excedeuTeto, vagasRestantes } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_MAXIMO_POR_AGENTE, TETO_RECOMENDADO_POR_AGENTE, excedeuTeto, vagasRestantes } from "@/lib/mcp/tools/selecao-por-pacote";
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
 vi.mock("@/lib/api/client", () => ({ apiClient: api }));
@@ -80,11 +80,12 @@ function abrir(props: { value?: string[]; externasMarcadas?: string[]; onExterna
 
 describe("o teto de capacidades soma as duas listas", () => {
   it("vagas e excesso contam as ferramentas externas", () => {
-    expect(vagasRestantes(["a", "b"], 3)).toBe(TETO_TOOLS_POR_AGENTE - 5);
-    expect(excedeuTeto(Array(25).fill("x"), 2)).toBe(false);
-    expect(excedeuTeto(Array(25).fill("x"), 3)).toBe(true);
-    expect(passaDoTetoDeCapacidades(Array(26).fill("x"), ["a"])).toBe(false);
-    expect(passaDoTetoDeCapacidades(Array(26).fill("x"), ["a", "b"])).toBe(true);
+    expect(vagasRestantes(["a", "b"], 3)).toBe(TETO_MAXIMO_POR_AGENTE - 5);
+    const quase = TETO_MAXIMO_POR_AGENTE - 2;
+    expect(excedeuTeto(Array(quase).fill("x"), 2)).toBe(false);
+    expect(excedeuTeto(Array(quase).fill("x"), 3)).toBe(true);
+    expect(passaDoTetoDeCapacidades(Array(TETO_MAXIMO_POR_AGENTE - 1).fill("x"), ["a"])).toBe(false);
+    expect(passaDoTetoDeCapacidades(Array(TETO_MAXIMO_POR_AGENTE - 1).fill("x"), ["a", "b"])).toBe(true);
     expect(passaDoTetoDeCapacidades(["a"], undefined)).toBe(false);
   });
 });
@@ -104,7 +105,7 @@ describe("ToolPicker — grupo Ferramentas externas", () => {
     const aoMudar = vi.fn();
     abrir({ value: ["crm_search_contacts"], externasMarcadas: [ATIVA.id], onExternas: aoMudar });
     await waitFor(() => expect(screen.getByTestId("grupo-ferramentas-externas")).toBeTruthy());
-    expect(screen.getByTestId("consumo-teto").textContent).toContain(`2 de ${TETO_TOOLS_POR_AGENTE}`);
+    expect(screen.getByTestId("consumo-teto").textContent).toContain(`2 de ${TETO_RECOMENDADO_POR_AGENTE}`);
     // Desmarcar a que está marcada.
     fireEvent.click(await screen.findByRole("checkbox", { name: "Consultar estoque" }));
     expect(aoMudar).toHaveBeenCalledWith([]);
@@ -131,7 +132,7 @@ describe("ToolPicker — grupo Ferramentas externas", () => {
 
   it("com o teto cheio, ligar mais uma é recusado com o aviso do teto", async () => {
     const aoMudar = vi.fn();
-    const cheio = Array.from({ length: TETO_TOOLS_POR_AGENTE }, (_, i) => `cap_${i}`);
+    const cheio = Array.from({ length: TETO_MAXIMO_POR_AGENTE }, (_, i) => `cap_${i}`);
     abrir({ value: cheio, onExternas: aoMudar });
     await waitFor(() => expect(screen.getByTestId(`ferramenta-externa-${ATIVA.id}`)).toBeTruthy());
     const caixa = screen.getByRole("checkbox", { name: "Consultar estoque" }) as HTMLInputElement;
@@ -163,5 +164,42 @@ describe("ToolPicker — grupo Ferramentas externas", () => {
     await waitFor(() => expect(screen.getByTestId("tool-picker")).toBeTruthy());
     expect(screen.queryByTestId("grupo-ferramentas-externas")).toBeNull();
     expect(api.get.mock.calls.some(([url]) => String(url).includes("external-tools"))).toBe(false);
+  });
+});
+
+describe("capacidade do harness na lista avançada (#326)", () => {
+  it("continua travada longe do teto, e o clique não a liga", async () => {
+    // Antes da #326 esta caixa só ficava travada porque o cenário comum batia o
+    // teto EXATO de 27: a lista avançada não olhava `marcavel`. Com o teto virando
+    // aviso, ela destravou — e foi o e2e que pegou. Aqui o seletor está quase vazio.
+    const HARNESS = {
+      ...CAPACIDADE,
+      id: "crm_send_whatsapp_message",
+      rotulo: "Enviar mensagem no WhatsApp",
+      risco: "critico",
+      marcavel: false,
+      motivo_nao_marcavel: "O sistema envia sozinho.",
+    };
+    api.get.mockImplementation(async (url: string) =>
+      url.includes("external-tools")
+        ? { data: [] }
+        : { data: { tools: [CAPACIDADE, HARNESS], desligadas_pela_organizacao: [] } },
+    );
+    const aoMudar = vi.fn();
+    render(
+      <IdiomaProvider locale="pt-BR">
+        <QueryClientProvider client={client}>
+          <ToolPicker value={["crm_search_contacts"]} onChange={aoMudar} />
+        </QueryClientProvider>
+      </IdiomaProvider>,
+    );
+    fireEvent.click(await screen.findByTestId("toggle-avancado"));
+    const caixas = screen.getAllByRole("checkbox", { name: "Enviar mensagem no WhatsApp" }) as HTMLInputElement[];
+    expect(caixas.length).toBeGreaterThan(0);
+    for (const caixa of caixas) {
+      expect(caixa.disabled).toBe(true);
+      fireEvent.click(caixa);
+    }
+    expect(aoMudar).not.toHaveBeenCalled();
   });
 });

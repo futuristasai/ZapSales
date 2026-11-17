@@ -16153,6 +16153,27 @@ export const DICIONARIO: Traducoes = {
   "Não consegui ler a fila de tarefas agora. Isso não quer dizer que ela parou: confira de novo daqui a pouco.": { es: "No pude leer la cola de tareas ahora. Eso no quiere decir que se haya detenido: compruebe de nuevo en un rato." },
   "Ativada em": { es: "Activada el" },
   "Ver a licença": { es: "Ver la licencia" },
+  // ── Capacidades do agente: teto recomendado, sobreposição e sinais (#326) ──
+  "Este agente está com": { es: "Este agente tiene" },
+  "capacidades, acima das": { es: "capacidades, por encima de las" },
+  "recomendadas. A IA pode escolher a capacidade errada com mais frequência. Acompanhe na aba Capacidades e desligue o que ele não usa.": { es: "recomendadas. La IA puede elegir la capacidad equivocada con más frecuencia. Síguelo en la pestaña Capacidades y desactiva lo que no usa." },
+  "capacidades recomendadas": { es: "capacidades recomendadas" },
+  "Limite máximo de": { es: "Límite máximo de" },
+  "atingido. Desligue algo para ligar outra coisa.": { es: "alcanzado. Desactiva algo para activar otra cosa." },
+  "Acima disso a tela deixa ligar, mas a IA pode escolher errado com mais frequência.": { es: "Por encima de esto puedes activar más, pero la IA puede elegir mal con más frecuencia." },
+  "Capacidades parecidas ligadas juntas": { es: "Capacidades parecidas activadas juntas" },
+  "Se a aba Capacidades mostrar que a IA usou uma no lugar da outra, desligue a que você usa menos.": { es: "Si la pestaña Capacidades muestra que la IA usó una en lugar de la otra, desactiva la que menos usas." },
+  "As duas marcam algo para depois. A IA pode reservar a agenda de alguém da equipe quando o cliente só pediu para ser procurado mais tarde — ou o contrário.": { es: "Las dos programan algo para después. La IA puede reservar la agenda de alguien del equipo cuando el cliente solo pidió que lo contacten más tarde, o al revés." },
+  "As duas podem levar o negócio para ganho ou perdido. Pela primeira, a perda pode ficar sem o motivo registrado.": { es: "Las dos pueden llevar el negocio a ganado o perdido. Con la primera, la pérdida puede quedar sin el motivo registrado." },
+  "As duas abrem um negócio. Se a IA criar do zero quando devia retomar um encerrado, o histórico daquele cliente fica separado.": { es: "Las dos abren un negocio. Si la IA crea uno desde cero cuando debía retomar uno cerrado, el historial de ese cliente queda separado." },
+  "corrigida por uma pessoa": { es: "corregida por una persona" },
+  "repetida depois de falhar": { es: "repetida después de fallar" },
+  "sinal de escolha errada": { es: "señal de elección equivocada" },
+  "sinais de escolha errada": { es: "señales de elección equivocada" },
+  "corrigidas por pessoa": { es: "corregidas por persona" },
+  "repetidas depois de falhar": { es: "repetidas después de fallar" },
+  "Uma vez, alguém da equipe moveu o mesmo negócio até 24 horas depois da IA. Pode ser que ela tenha escolhido a etapa ou a capacidade errada — abra as execuções e compare com o que a pessoa fez.": { es: "Una vez, alguien del equipo movió el mismo negocio hasta 24 horas después de la IA. Puede que haya elegido la etapa o la capacidad equivocada: abre las ejecuciones y compara con lo que hizo la persona." },
+  "Uma vez a IA chamou esta capacidade de novo logo depois de ela falhar, sinal de que preencheu algum dado errado. Abra a execução para ver o que ela tentou.": { es: "Una vez la IA volvió a llamar a esta capacidad justo después de que fallara, señal de que completó algún dato mal. Abre la ejecución para ver qué intentó." },
 };
 
 /**

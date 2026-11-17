@@ -743,7 +743,7 @@ travas **saíram** na 0552, e a proteção passou a ser o pedido de aprovação 
 | Onde | O quê |
 |---|---|
 | `agent_external_tools` (0551) | `organization_id` (FK cascade), `name`, `slug` (único por organização; o modelo vê `ext_<slug>`; **não muda** quando o nome muda), `when_to_use`, `url`, `parameters` (jsonb `[{nome, tipo, descricao, obrigatorio}]`, até 10), `effect`, `active`, `signing_secret_encrypted` (`fn_encrypt_oauth`) + `signing_secret_last4`. **Server-side only**: RLS sem policy, sem grant a `anon`/`authenticated`. A tela vê só os 4 últimos |
-| `ai_agent_versions.external_tool_ids uuid[]` | quais ferramentas **esta versão** pode chamar. Dado da versão (rascunho, diff, histórico, desfazer) e coberto pela trava de imutabilidade. A existência, a organização e o efeito são conferidos no servidor (`validarEscopoDaVersao`); o teto de **27 capacidades** vale para `tool_ids` + `external_tool_ids` (`passaDoTetoDeCapacidades`) |
+| `ai_agent_versions.external_tool_ids uuid[]` | quais ferramentas **esta versão** pode chamar. Dado da versão (rascunho, diff, histórico, desfazer) e coberto pela trava de imutabilidade. A existência, a organização e o efeito são conferidos no servidor (`validarEscopoDaVersao`); o máximo de **100 capacidades** vale para `tool_ids` + `external_tool_ids` (`passaDoTetoDeCapacidades`); acima de **27** (o recomendado) a tela só avisa — issue #326 |
 | `agent_inbox_items.kind = 'external_tool_failed'` | a falha de uma chamada. Um aberto por ferramenta (o título leva o nome); destino geral: a tela das ferramentas |
 
 **Rotas** (`/api/v1/ai/external-tools`, manager+): `GET` lista (nunca a chave) · `POST` cadastra (a chave
@@ -892,7 +892,7 @@ com `mcp_server_id` (FK composta `(organization_id, mcp_server_id)`: nunca o ser
 por escrita direta com a service key) e `mcp_tool_name` (o nome NO servidor). `mcp_definition_hash` guarda a
 impressão de descrição + esquema que o administrador viu; `mcp_hint_read_only` guarda o `readOnlyHint` do
 servidor — **só uma dica para a tela**. Herda tudo da #94/#95: o seletor do agente (grupo «Ferramentas externas»),
-`external_tool_ids` da versão publicada (imutável), o **teto de 27**, a chave `require_approval` (nula = padrão do
+`external_tool_ids` da versão publicada (imutável), o **máximo de 100** (27 é só o recomendado, #326), a chave `require_approval` (nula = padrão do
 efeito), o modo Assistido, o pedido, a execução única, a expiração e a Central.
 
 **Risco.** `effect` nasce **`altera`** e só o administrador troca para `consulta`. A dica do servidor não decide

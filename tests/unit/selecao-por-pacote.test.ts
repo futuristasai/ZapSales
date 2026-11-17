@@ -16,7 +16,9 @@ import { describe, expect, it } from "vitest";
 import { TOOL_CATALOG } from "@/lib/mcp/tools/catalog";
 import { PACOTES, type ToolBundle } from "@/lib/mcp/tools/pacotes";
 import {
-  TETO_TOOLS_POR_AGENTE,
+  TETO_MAXIMO_POR_AGENTE,
+  TETO_RECOMENDADO_POR_AGENTE,
+  acimaDoRecomendado,
   capacidadesAutomaticasDoPacote,
   capacidadesCriticasDoPacote,
   desligarPacote,
@@ -133,15 +135,43 @@ describe("o que sobra ao desligar um pacote", () => {
   });
 });
 
-describe("o teto de capacidades", () => {
-  it("conta as vagas que sobram", () => {
-    expect(vagasRestantes(["a", "b"])).toBe(TETO_TOOLS_POR_AGENTE - 2);
+describe("o teto de capacidades (#326: recomendado avisa, máximo recusa)", () => {
+  it("conta as vagas que sobram até o MÁXIMO", () => {
+    expect(vagasRestantes(["a", "b"])).toBe(TETO_MAXIMO_POR_AGENTE - 2);
   });
 
-  it("acusa quando passa do teto", () => {
-    const cheio = Array.from({ length: TETO_TOOLS_POR_AGENTE }, (_, i) => `t${i}`);
+  it("acusa quando passa do máximo", () => {
+    const cheio = Array.from({ length: TETO_MAXIMO_POR_AGENTE }, (_, i) => `t${i}`);
     expect(excedeuTeto(cheio)).toBe(false);
     expect(excedeuTeto([...cheio, "estourou"])).toBe(true);
+  });
+
+  it("passar do recomendado é outra pergunta: avisa, não recusa", () => {
+    const noRecomendado = Array.from({ length: TETO_RECOMENDADO_POR_AGENTE }, (_, i) => `t${i}`);
+    expect(acimaDoRecomendado(noRecomendado)).toBe(false);
+    expect(acimaDoRecomendado([...noRecomendado, "mais"])).toBe(true);
+    expect(excedeuTeto([...noRecomendado, "mais"])).toBe(false);
+    // As externas contam no mesmo prompt, então contam no aviso também.
+    expect(acimaDoRecomendado(noRecomendado.slice(1), 2)).toBe(true);
+  });
+
+  it("o recomendado fica abaixo do máximo — senão o aviso nunca apareceria", () => {
+    expect(TETO_RECOMENDADO_POR_AGENTE).toBeLessThan(TETO_MAXIMO_POR_AGENTE);
+  });
+
+  it("o catálogo inteiro cabe no máximo: 'ligar tudo' é uma escolha possível", () => {
+    // A decisão do dono do produto na #326 foi poder ligar tudo e medir. Se o
+    // catálogo crescer além do máximo, essa promessa quebra calada — a tela
+    // passaria a recusar a última jornada. Ou o máximo sobe (respeitando o limite
+    // de ferramentas por chamada do provedor), ou se decide outra coisa.
+    expect(TOOL_CATALOG.length).toBeLessThanOrEqual(TETO_MAXIMO_POR_AGENTE);
+  });
+
+  it("o máximo deixa folga para as nativas do turno abaixo do limite da OpenAI", () => {
+    // A OpenAI recusa a chamada com mais de 128 ferramentas, e o turno soma
+    // cerca de 12 nativas às do catálogo. Subir o máximo além disto quebra o
+    // agente de quem usa OpenAI na primeira mensagem.
+    expect(TETO_MAXIMO_POR_AGENTE + 12).toBeLessThanOrEqual(128);
   });
 });
 
@@ -179,8 +209,8 @@ describe("o catálogo real — a fixture prova a função, isto prova o produto"
       const ligadas = ligarPacote([], TOOL_CATALOG, pacote);
       expect(
         ligadas.length,
-        `pacote "${pacote}" liga ${ligadas.length} capacidades e o teto é ${TETO_TOOLS_POR_AGENTE}`,
-      ).toBeLessThanOrEqual(TETO_TOOLS_POR_AGENTE);
+        `pacote "${pacote}" liga ${ligadas.length} capacidades e o recomendado é ${TETO_RECOMENDADO_POR_AGENTE}`,
+      ).toBeLessThanOrEqual(TETO_RECOMENDADO_POR_AGENTE);
     }
   });
 });

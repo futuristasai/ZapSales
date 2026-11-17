@@ -79,8 +79,31 @@ import { entraPorPacote, type ToolBundle, type ToolRisk } from "./pacotes";
  * argumento (a heurística de degradação) que ninguém mediu, que é exatamente o
  * que o bloco ⚠️ acima diz. O dia em que o `evoluir` exigir 28, o passo volta a
  * ser ele.
+ *
+ * ═══ 27 deixa de ser bloqueio (issue #326) ═════════════════════════════════════
+ *
+ * Toda a história acima subiu o número sem medir, e cada subida resolveu um caso
+ * concreto deixando o próximo para depois. O dono do produto decidiu o contrário:
+ * liberar e medir AO MESMO TEMPO. Então o número virou dois:
+ *
+ *  - `TETO_RECOMENDADO_POR_AGENTE` (27): acima dele a tela AVISA e deixa ligar.
+ *    É a heurística acima, com a mesma honestidade: ninguém a mediu, e o aviso
+ *    manda o dono olhar "Uso das capacidades", onde os sinais de escolha errada
+ *    (`fn_agent_tool_signals`) passam a existir justamente para medi-la;
+ *  - `TETO_MAXIMO_POR_AGENTE` (100): o que o servidor RECUSA. Não é heurística de
+ *    qualidade, é limite de transporte: a OpenAI recusa a chamada com mais de 128
+ *    ferramentas, e o turno soma ~12 nativas às do catálogo. 100 deixa folga para
+ *    elas e cabe o catálogo inteiro (cercado em `tests/unit/selecao-por-pacote.test.ts`)
+ *    com espaço para ferramentas externas.
+ *
+ * Os testes que perguntavam "o pacote cabe?" mediam a heurística, e continuam
+ * contra o recomendado: o pacote que a casa oferece não deve nascer acima do
+ * aviso que a própria casa dá.
  */
-export const TETO_TOOLS_POR_AGENTE = 27;
+export const TETO_RECOMENDADO_POR_AGENTE = 27;
+
+/** O que o servidor recusa. Ver o bloco acima para o porquê de 100. */
+export const TETO_MAXIMO_POR_AGENTE = 100;
 
 /** O mínimo que a regra precisa saber de uma capacidade. */
 export interface CapacidadeSelecionavel {
@@ -228,13 +251,20 @@ export function vagasExigidasPeloPacote(
 /**
  * `externas` é quantas ferramentas externas (webhook de consulta, #94) o agente já
  * tem: elas contam no MESMO teto, porque ocupam o mesmo prompt do modelo.
+ *
+ * Vagas até o MÁXIMO — o que de fato impede ligar.
  */
 export function vagasRestantes(selecionadas: ReadonlyArray<string>, externas = 0): number {
-  return TETO_TOOLS_POR_AGENTE - selecionadas.length - externas;
+  return TETO_MAXIMO_POR_AGENTE - selecionadas.length - externas;
 }
 
 export function excedeuTeto(selecionadas: ReadonlyArray<string>, externas = 0): boolean {
-  return selecionadas.length + externas > TETO_TOOLS_POR_AGENTE;
+  return selecionadas.length + externas > TETO_MAXIMO_POR_AGENTE;
+}
+
+/** Passou do recomendado: a tela avisa, mas não impede (issue #326). */
+export function acimaDoRecomendado(selecionadas: ReadonlyArray<string>, externas = 0): boolean {
+  return selecionadas.length + externas > TETO_RECOMENDADO_POR_AGENTE;
 }
 
 /**

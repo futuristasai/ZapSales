@@ -13,7 +13,7 @@ import {
   historicoDoTesteSchema,
 } from "@/lib/ai/agents/teste-em-varias-trocas";
 import { VALID_TOOL_IDS } from "@/lib/mcp/tools/catalog";
-import { TETO_TOOLS_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_MAXIMO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
 
 import { IDS_DE_PROVEDOR } from "@/lib/ai/pontos/provedores";
 import {
@@ -32,7 +32,7 @@ export function passaDoTetoDeCapacidades(
   toolIds: readonly string[],
   externalToolIds: readonly string[] | undefined,
 ): boolean {
-  return toolIds.length + (externalToolIds?.length ?? 0) > TETO_TOOLS_POR_AGENTE;
+  return toolIds.length + (externalToolIds?.length ?? 0) > TETO_MAXIMO_POR_AGENTE;
 }
 
 /**
@@ -162,9 +162,9 @@ const versionShapeSchema = z
     credential_id: UUID.nullable(),
     tool_ids: z
       .array(z.string().min(1).max(80))
-      // O mesmo teto que a tela mostra ("13 de 20") é o que o servidor recusa —
+      // O MÁXIMO que a tela respeita é o que o servidor recusa; o recomendado (27) só avisa —
       // ver `lib/mcp/tools/selecao-por-pacote.ts` para o porquê do número.
-      .max(TETO_TOOLS_POR_AGENTE)
+      .max(TETO_MAXIMO_POR_AGENTE)
       .default([])
       .refine(
         (ids) => ids.every((id) => (VALID_TOOL_IDS as readonly string[]).includes(id)),
@@ -244,7 +244,7 @@ const versionShapeSchema = z
     // `lib/mcp/tools/selecao-por-pacote.ts`, junto da constante.
     operator_tool_ids: z
       .array(z.string().min(1).max(80))
-      .max(TETO_TOOLS_POR_AGENTE)
+      .max(TETO_MAXIMO_POR_AGENTE)
       .default([])
       .refine(
         (ids) => ids.every((id) => (VALID_TOOL_IDS as readonly string[]).includes(id)),
@@ -280,7 +280,7 @@ const versionShapeSchema = z
      * ferramenta é linha de tabela, e quem confere que existe, é desta organização e é
      * uma CONSULTA é o servidor (`validarEscopoDaVersao`).
      */
-    external_tool_ids: z.array(z.string().uuid()).max(TETO_TOOLS_POR_AGENTE).default([]),
+    external_tool_ids: z.array(z.string().uuid()).max(TETO_MAXIMO_POR_AGENTE).default([]),
     // ── Perfil guiado (#89) ──────────────────────────────────────────────────
     // `null` = campo não preenchido; perfil todo nulo = agente sem perfil, que
     // recebe só o prompt livre, exatamente como antes. Texto vazio vira `null`

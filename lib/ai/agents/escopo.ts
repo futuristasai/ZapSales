@@ -18,7 +18,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { conferirFerramentasDaVersao } from "@/lib/ai/ferramentas-externas/repositorio";
-import { TETO_TOOLS_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_MAXIMO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
 
 export interface EscopoDaVersao {
   pipeline_ids?: string[];
@@ -82,7 +82,7 @@ export async function validarEscopoDaVersao(
     const conferida = await conferirFerramentasDaVersao(supabase, organizationId, externas);
     if (!conferida.ok) return { ok: false, campo: "external_tool_ids", ausentes: conferida.ausentes };
   }
-  if ((escopo.tool_ids?.length ?? 0) + externas.length > TETO_TOOLS_POR_AGENTE) {
+  if ((escopo.tool_ids?.length ?? 0) + externas.length > TETO_MAXIMO_POR_AGENTE) {
     return { ok: false, campo: "teto_de_capacidades", ausentes: [] };
   }
 
@@ -97,7 +97,7 @@ export function mensagemDoEscopo(r: Extract<ResultadoDoEscopo, { ok: false }>): 
     case "external_tool_ids":
       return "Uma das ferramentas externas marcadas não existe mais. Recarregue a página e marque de novo.";
     case "teto_de_capacidades":
-      return `Cada agente tem no máximo ${TETO_TOOLS_POR_AGENTE} capacidades, somando as do sistema e as ferramentas externas. Desligue alguma antes de ligar outra.`;
+      return `Cada agente tem no máximo ${TETO_MAXIMO_POR_AGENTE} capacidades, somando as do sistema e as ferramentas externas. Desligue alguma antes de ligar outra.`;
     case "knowledge_source_ids":
       return `Um dos materiais marcados não existe mais, ou foi arquivado (${r.ausentes.length}). Recarregue a página e marque de novo.`;
   }
