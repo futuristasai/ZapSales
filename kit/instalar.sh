@@ -544,8 +544,10 @@ subir_stack() {
   dc up -d db
   esperar "Banco" 180 banco_aceita_conexao || falha "O banco não subiu: docker compose logs db"
   dc up -d auth rest storage realtime
-  esperar "Schemas do Auth e do Storage" 240 schemas_do_supabase_prontos \
-    || falha "O Auth/Storage não criaram os schemas: docker compose logs auth storage"
+  # O motivo vai para a tela (e, no instalador guiado, para a ficha) antes do ✖:
+  # "rode docker compose logs" não serve a quem instalou por uma página.
+  esperar "Schemas do Auth e do Storage" 240 schemas_do_supabase_prontos || { diagnosticar_servicos "$ENV_ARQ" auth storage
+    falha "O Auth/Storage não criaram os schemas: docker compose logs auth storage"; }
 
   passo "Aplicando o schema do ZapSales (supabase/baseline.sql)"
   local primeira=0
