@@ -220,6 +220,35 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await page
       .getByTestId("tool-picker")
       .screenshot({ path: path.join(EVIDENCIA, "w1-capacidades-por-jornada.png") });
+
+    // ── Capacidades parecidas de pacotes diferentes ganham aviso (#326) ──────
+    //
+    // Mora DENTRO deste caso, e não num caso próprio, pelo relógio: cada caso
+    // desta spec paga um login de admin com MFA, e a parte 2 do e2e fecha no fio
+    // do teto (medido no PR #329: cortada a 1369 s com tudo verde). Nada aqui é
+    // salvo — liga, confere e desliga.
+    // O seed tem "Marcar consulta"; "Reter" traz "Agendar um retorno". É o par de
+    // `lib/mcp/tools/sobreposicoes.ts` que este cenário alcança. "Encerrar o
+    // negócio" também é de "Reter", mas é crítica: o pacote não a liga, e por isso
+    // o par com "Mover oportunidade de etapa" (que está no seed) NÃO aparece —
+    // medido na vitrine, e é o que o caso cobra.
+    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
+    await page.getByTestId("switch-pacote-reter").click();
+    await expect(page.getByTestId("pacote-reter")).toHaveAttribute("data-estado", "ligado");
+
+    const aviso = page.getByTestId("aviso-sobreposicao");
+    await expect(aviso).toBeVisible();
+    await expect(
+      aviso.getByTestId("sobreposicao-crm_book_appointment-crm_schedule_followup"),
+    ).toContainText("Marcar consulta");
+    await expect(aviso.getByTestId("sobreposicao-crm_move_lead_stage-crm_close_demand")).toHaveCount(0);
+    await page
+      .getByTestId("tool-picker")
+      .screenshot({ path: path.join(EVIDENCIA, "326-sobreposicao.png") });
+
+    // Desligar o pacote tira o aviso — ele descreve o estado, não um histórico.
+    await page.getByTestId("switch-pacote-reter").click();
+    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
   });
 
   test("ligar uma jornada NÃO dá ao agente o direito de mandar WhatsApp", async ({ page }) => {
@@ -305,33 +334,6 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await page.getByTestId("switch-pacote-atender").click();
     await expect.poll(() => estaMarcada(page, ENVIO), { timeout: 5_000 }).toBe(false);
     await expect.poll(() => estaMarcada(page, LEITURA), { timeout: 5_000 }).toBe(false);
-  });
-
-  test("capacidades parecidas de pacotes diferentes ganham aviso (#326)", async ({ page }) => {
-    await abrirConfiguracao(page);
-
-    // O seed tem "Marcar consulta"; "Reter" traz "Agendar um retorno". É o par de
-    // `lib/mcp/tools/sobreposicoes.ts` que este cenário alcança. "Encerrar o
-    // negócio" também é de "Reter", mas é crítica: o pacote não a liga, e por isso
-    // o par com "Mover oportunidade de etapa" (que está no seed) NÃO aparece —
-    // medido na vitrine, e é o que o caso cobra.
-    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
-    await page.getByTestId("switch-pacote-reter").click();
-    await expect(page.getByTestId("pacote-reter")).toHaveAttribute("data-estado", "ligado");
-
-    const aviso = page.getByTestId("aviso-sobreposicao");
-    await expect(aviso).toBeVisible();
-    await expect(
-      aviso.getByTestId("sobreposicao-crm_book_appointment-crm_schedule_followup"),
-    ).toContainText("Marcar consulta");
-    await expect(aviso.getByTestId("sobreposicao-crm_move_lead_stage-crm_close_demand")).toHaveCount(0);
-    await page
-      .getByTestId("tool-picker")
-      .screenshot({ path: path.join(EVIDENCIA, "326-sobreposicao.png") });
-
-    // Desligar o pacote tira o aviso — ele descreve o estado, não um histórico.
-    await page.getByTestId("switch-pacote-reter").click();
-    await expect(page.getByTestId("aviso-sobreposicao")).toHaveCount(0);
   });
 
   test("o modo avançado revela a ficha e o nome técnico", async ({ page }) => {
