@@ -18,7 +18,7 @@ import { expect, test } from "./helpers/test";
 
 import { PONTOS_DE_IA } from "@/lib/ai/pontos/registro";
 
-import { lerCreds, loginComoAdmin, type CredsE2E } from "./helpers/login-admin";
+import { lerCreds, loginUmaVezPorArquivo, type CredsE2E } from "./helpers/login-admin";
 
 /**
  * Entra como ADMIN, com MFA — e não é detalhe de teste.
@@ -53,8 +53,12 @@ test.beforeAll(() => {
   creds = lerCreds();
 });
 
+// O primeiro caso loga pela tela, com o segundo fator — é o admin que passa pelo 2FA que esta
+// spec prova. Os seguintes reaproveitam a sessão dele: os oito logins custavam 240 s de espera
+// pela janela do TOTP (ver `loginUmaVezPorArquivo`). O teto de 90 s acima segue valendo para o
+// caso que loga de verdade.
 test.beforeEach(async ({ page }) => {
-  creds = await loginComoAdmin(page, creds);
+  creds = await loginUmaVezPorArquivo(page, creds);
 });
 
 test("F0/F1 — o painel abre agrupado, explica os pontos e diz a origem", async ({ page }) => {

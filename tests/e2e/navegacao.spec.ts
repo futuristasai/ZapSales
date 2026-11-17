@@ -13,7 +13,7 @@ import * as path from "node:path";
 
 import { test, expect, type Page } from "./helpers/test";
 
-import { lerCreds, loginComoAdmin } from "./helpers/login-admin";
+import { lerCreds, loginUmaVezPorArquivo } from "./helpers/login-admin";
 import { menuExpandido, menuRecolhido } from "./helpers/menu-expandido";
 import { afirmarAdminDeTenantPuro } from "./utils/precondicao";
 
@@ -44,8 +44,11 @@ async function login(page: Page, email: string): Promise<void> {
   await page.waitForURL(/\/app\//);
 }
 
+// O primeiro caso loga pela tela, com o segundo fator; os seguintes reaproveitam a sessão. Esta
+// spec mede o MENU, não o login — e cada login a mais custava ~30 s parados esperando a janela do
+// TOTP virar: 28 logins, 838 s, dois terços da parte 2 (ver `loginUmaVezPorArquivo`).
 async function loginAdmin(page: Page): Promise<void> {
-  creds = await loginComoAdmin(page, creds);
+  creds = await loginUmaVezPorArquivo(page, creds);
 }
 
 const sidebar = (page: Page) => page.getByRole("navigation", { name: "Navegação principal" });
@@ -73,7 +76,8 @@ async function expectSemOverflowHorizontal(page: Page, contexto: string): Promis
   ).toBeLessThanOrEqual(m.clientWidth + 1);
 }
 
-// `loginComoAdmin` espera a virada da janela TOTP entre logins consecutivos
+// O login de verdade (o primeiro de cada arquivo, e o de quem cai no caminho de volta de
+// `loginUmaVezPorArquivo`) espera a virada da janela TOTP entre logins consecutivos
 // (o servidor recusa código repetido), e essa espera sozinha pode consumir os
 // 30 s do teto global do playwright.config.ts. Toda spec da casa que usa o
 // helper sobe o teto — 240 s em `agente-novo-e-uso`, `agente-papeis-operador`,

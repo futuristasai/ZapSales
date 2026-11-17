@@ -29,7 +29,7 @@
  */
 import { expect, test } from "./helpers/test";
 
-import { lerCreds, loginComoAdmin } from "./helpers/login-admin";
+import { lerCreds, loginUmaVezPorArquivo } from "./helpers/login-admin";
 
 const CAMPO_DE_BUSCA = "Buscar conversas";
 
@@ -48,8 +48,11 @@ const CAMPO_DE_BUSCA = "Buscar conversas";
  */
 test.describe.configure({ timeout: 60_000 });
 
+// O primeiro caso loga pela tela, com MFA; os seguintes reaproveitam a sessão — sete esperas de
+// ~30 s pela janela do TOTP a menos (ver `loginUmaVezPorArquivo`). O teto de 60 s acima segue
+// valendo para o caso que loga de verdade.
 test.beforeEach(async ({ page }) => {
-  await loginComoAdmin(page, lerCreds());
+  await loginUmaVezPorArquivo(page, lerCreds());
   await page.goto("/app/inbox");
   await expect(page.getByLabel(CAMPO_DE_BUSCA)).toBeVisible();
 });
