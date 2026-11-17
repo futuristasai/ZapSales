@@ -60,3 +60,6 @@ dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo
 dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:100
 dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:109
 dbad12f59ccb93e6976645febd9290fbde2f61e4:tests/fixtures/licenca/selos-de-exemplo.json:jwt:118
+# 2026-11-17: JWT FALSO ({"alg":"HS256"}.{"role":"anon"}.assinatura inventada) no teste do
+# mascaramento do diagnóstico do kit (PR #323). Já publicado; o literal saiu no commit seguinte.
+819a1ff09744f554c17ab53f7b094dc5424fd54a:tests/shell/kit-funcoes.test.sh:jwt:316

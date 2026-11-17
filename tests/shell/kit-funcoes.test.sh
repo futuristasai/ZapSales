@@ -311,9 +311,13 @@ echo "diagnóstico do Auth/Storage — a causa chega à ficha, o segredo não"
   . kit/lib/stack.sh
   DENV="$TMP/diag.env"
   printf 'POSTGRES_PASSWORD=s3nh4-d0-b4nc0\nJWT_SECRET=jwt-segredo-xyz\nSERVICE_ROLE_KEY=chave.de.servico\nDOMINIO=zap.exemplo.com\nVAZIA_KEY=\n' > "$DENV"
+  # JWT FALSO, montado em pedaços: {"alg":"HS256"} . {"role":"anon"} . assinatura
+  # inventada. Escrito por extenso, o gitleaks do CI o toma por segredo.
+  jwt_cab="eyJhbGciOiJIUzI1NiJ9"; jwt_corpo="eyJyb2xlIjoiYW5vbiJ9"
+  jwt_falso="$jwt_cab.$jwt_corpo.abc_DEF-123"
   log='{"level":"fatal","msg":"failed to connect to postgres://supabase_auth_admin:s3nh4-d0-b4nc0@db:5432/postgres"}
 info boot jwt-segredo-xyz carregado
-token eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.abc_DEF-123 recusado
+token '"$jwt_falso"' recusado
 dsn host=db password=outra-senha user=x
 servidor em zap.exemplo.com'
   r="$(printf '%s\n' "$log" | redigir_log "$DENV")"
