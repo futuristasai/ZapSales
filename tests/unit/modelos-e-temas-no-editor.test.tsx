@@ -301,7 +301,7 @@ describe("restringir temas no editor do agente", () => {
       target: { value: Array.from({ length: 21 }, (_, i) => `assunto ${i}`).join("\n") },
     });
     fireEvent.click(screen.getByRole("button", { name: /salvar rascunho/i }));
-    await waitFor(() => expect(screen.getByText(/no máximo 20 assuntos/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/no máximo 20 assuntos/i, { selector: "p" })).toBeInTheDocument());
     expect(acoes.salvar).not.toHaveBeenCalled();
   });
 });

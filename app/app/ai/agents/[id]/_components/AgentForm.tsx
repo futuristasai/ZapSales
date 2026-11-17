@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { TokenCounter } from "@/lib/ui/TokenCounter";
 import {
+  ArrowRight,
   Brain,
   ChatsCircle,
   HandCoins,
@@ -143,6 +144,18 @@ export type { ChannelSessionLite };
  * ouve o motivo junto do rótulo, sem depender de hover.
  */
 const ID_DO_MOTIVO_DO_PUBLICAR = "motivo-do-publicar";
+
+/**
+ * O id que liga o botão "Salvar rascunho" ao TEXTO que diz por que ele está
+ * desabilitado — o mesmo contrato do "Publicar", pelo mesmo motivo.
+ *
+ * Aqui o silêncio era pior: o campo que reprova quase nunca é o que a pessoa
+ * acabou de mudar. Relato de produção: agente publicado com mais capacidades do
+ * que o máximo; o dono ligou "Responder em áudio", a barra disse "Alterações
+ * não salvas" e o botão seguiu apagado. O aviso existia, mas embaixo do seletor
+ * de capacidades, quatro partes abaixo — fora da tela de quem olha a barra.
+ */
+const ID_DO_MOTIVO_DO_SALVAR = "motivo-do-salvar";
 
 interface BaseProps {
   credentials: CredentialRow[];
@@ -925,6 +938,23 @@ export function AgentForm(props: Props) {
     return porSecao;
   }, [validation]);
 
+  /**
+   * Por que "Salvar rascunho" está apagado — só quando HÁ o que salvar.
+   *
+   * Sem mudança, o botão está apagado porque não há o que guardar, e acusar um
+   * campo ali seria ruído em toda abertura da tela. Com mudança, o primeiro
+   * campo que reprova vira frase na barra, com o nome da parte onde ele mora:
+   * a barra fica grudada no topo, o campo pode estar várias partes abaixo.
+   */
+  const bloqueioDeSalvar = React.useMemo(() => {
+    if (!isEdit || !dirty || isValid) return null;
+    const primeiro = Object.entries(validation)[0];
+    if (!primeiro) return null;
+    const [campo, mensagem] = primeiro;
+    const secao = SECAO_DO_CAMPO[campo] ?? null;
+    return { mensagem, secao, parte: SECOES.find((s) => s.id === secao)?.indice ?? null };
+  }, [isEdit, dirty, isValid, validation]);
+
   /** Uma linha por seção no índice: como ela está AGORA, sem precisar abrir. */
   const resumoDaSecao: Record<IdDaSecao, string> = (() => {
     const capacidades = form.tool_ids.length + form.external_tool_ids.length;
@@ -1229,6 +1259,7 @@ export function AgentForm(props: Props) {
             variant={isEdit ? "outline" : "default"}
             onClick={handleSave}
             disabled={(!dirty && isEdit) || disabled || !isValid}
+            aria-describedby={bloqueioDeSalvar ? ID_DO_MOTIVO_DO_SALVAR : undefined}
           >
             {saving ? t("Salvando…") : isEdit ? t("Salvar rascunho") : t("Criar agente")}
           </Button>
@@ -1251,6 +1282,35 @@ export function AgentForm(props: Props) {
             </span>
           ) : null}
         </div>
+
+        {/*
+          O MOTIVO DO SALVAR, na barra e em palavras: o campo que reprova pode
+          estar fora de vista, e botão apagado sem explicação lê como defeito.
+          O "Ver onde corrigir" abre a parte do formulário onde o campo mora.
+        */}
+        {bloqueioDeSalvar ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-sm text-destructive"
+          >
+            <span id={ID_DO_MOTIVO_DO_SALVAR} data-testid={ID_DO_MOTIVO_DO_SALVAR}>
+              {bloqueioDeSalvar.parte
+                ? `${t("Para salvar, corrija em")} «${t(bloqueioDeSalvar.parte)}»: ${bloqueioDeSalvar.mensagem}`
+                : `${t("Para salvar, corrija:")} ${bloqueioDeSalvar.mensagem}`}
+            </span>
+            {bloqueioDeSalvar.secao ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => bloqueioDeSalvar.secao && irParaSecao(bloqueioDeSalvar.secao)}
+              >
+                {t("Ver onde corrigir")}
+                <ArrowRight size={16} aria-hidden />
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
 
         {/*
           O MOTIVO NA TELA, não só no `title` (issue #951).
