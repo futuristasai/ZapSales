@@ -61,9 +61,16 @@ export default async function AcervoPage({
       // Quem consulta o quê. A tela precisa disto para responder "se eu arquivar
       // este material, quem para de saber dele?" — sem essa resposta, arquivar é
       // um tiro no escuro.
+      //
+      // ⚠️ A CHAVE ESTRANGEIRA VAI NOMEADA. Entre `ai_agents` e
+      // `ai_agent_versions` há DUAS relações (`ai_agent_versions.agent_id` e
+      // `ai_agents.published_version_id`), e o embed sem nome era recusado pelo
+      // PostgREST com PGRST201 (relação ambígua). O erro não era lido, a lista
+      // vinha vazia e todo cartão dizia "Consultado por: nenhum assistente
+      // ainda" — inclusive o material que o agente publicado consulta.
       supabase
         .from("ai_agents")
-        .select("id, name, published_version_id, ai_agent_versions!inner(id, knowledge_source_ids)")
+        .select("id, name, publicada:ai_agent_versions!ai_agents_published_version_id_fkey(id, knowledge_source_ids)")
         .eq("organization_id", activeOrg.orgId)
         .is("archived_at", null),
       montarEstadoDaChave(supabase, activeOrg.orgId),
@@ -74,17 +81,13 @@ export default async function AcervoPage({
   const agentes: AgenteQueUsa[] = ((agentesRaw ?? []) as unknown as Array<{
     id: string;
     name: string;
-    published_version_id: string | null;
-    ai_agent_versions: Array<{ id: string; knowledge_source_ids: string[] | null }>;
+    publicada: { id: string; knowledge_source_ids: string[] | null } | null;
   }>)
-    .map((a) => {
-      const publicada = a.ai_agent_versions.find((v) => v.id === a.published_version_id);
-      return {
-        id: a.id,
-        nome: a.name,
-        materiais: publicada?.knowledge_source_ids ?? [],
-      };
-    })
+    .map((a) => ({
+      id: a.id,
+      nome: a.name,
+      materiais: a.publicada?.knowledge_source_ids ?? [],
+    }))
     .filter((a) => a.materiais.length > 0);
 
   return (
