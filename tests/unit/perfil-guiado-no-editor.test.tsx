@@ -225,7 +225,7 @@ describe("perfil guiado no editor do agente", () => {
     const { campo } = abrirEditor();
     fireEvent.change(campo("temperature"), { target: { value: "1.5" } });
     fireEvent.click(screen.getByRole("button", { name: /salvar rascunho/i }));
-    await waitFor(() => expect(screen.getByText(/temperatura vai de 0 a 1/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/temperatura vai de 0 a 1/i, { selector: "p" })).toBeInTheDocument());
     expect(acoes.salvar).not.toHaveBeenCalled();
   });
 });

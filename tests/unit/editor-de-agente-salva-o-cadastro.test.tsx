@@ -222,7 +222,7 @@ describe("editor de agente — a tela", () => {
     fireEvent.change(campo("priority"), { target: { value: "5000" } });
     fireEvent.click(screen.getByRole("button", { name: /salvar rascunho/i }));
     await waitFor(() =>
-      expect(screen.getByText(/ordem de preferência vai de 0 a 1000/i)).toBeInTheDocument(),
+      expect(screen.getByText(/ordem de preferência vai de 0 a 1000/i, { selector: "p" })).toBeInTheDocument(),
     );
     expect(acoes.salvar, "mandou um valor que o servidor recusa").not.toHaveBeenCalled();
   });
