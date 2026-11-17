@@ -8,6 +8,17 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.3.1] — 2026-11-17
+
+### Corrigido
+
+- **A instalação mostra por que o login e os arquivos não subiram** Quando o login ou o armazenamento de arquivos não terminavam de preparar o banco,
+  a instalação parava dizendo só para rodar `docker compose logs auth storage`, e o
+  motivo ficava escondido na VPS. Agora, antes de parar, ela mostra na tela a
+  situação dos dois serviços e as linhas do log que explicam a falha, com senhas e
+  chaves mascaradas. No instalador guiado, essas linhas vão junto para a ficha da
+  instalação, e o suporte enxerga a causa sem pedir acesso à máquina.
+
 ## [1.3.0] — 2026-11-16
 
 ### Adicionado
@@ -262,7 +273,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/futuristasai/ZapSales/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/futuristasai/ZapSales/compare/v1.1.0...v1.2.0
