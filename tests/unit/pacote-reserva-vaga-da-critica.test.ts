@@ -5,7 +5,7 @@
  *
  * A regra deliberada de `selecao-por-pacote.ts` é que **capacidade `critico`
  * nunca entra por pacote** — o humano tem de marcar à mão, e a tela diz isso
- * ("o pacote não liga por você"). O teto (`TETO_TOOLS_POR_AGENTE`) existe por
+ * ("o pacote não liga por você"). O teto (`TETO_RECOMENDADO_POR_AGENTE`) existe por
  * outro motivo, também escrito: prompt com capacidade demais degrada a escolha
  * do modelo. O número dele já mudou uma vez (20 → 25) e por isso não se repete
  * aqui: quem precisar do valor de hoje lê a constante.
@@ -29,7 +29,7 @@ import { describe, expect, it } from "vitest";
 import { PACOTE_PADRAO_DO_ONBOARDING } from "@/lib/ai/agents/capacidades-padrao";
 import { TOOL_CATALOG } from "@/lib/mcp/tools/catalogo";
 import {
-  TETO_TOOLS_POR_AGENTE,
+  TETO_RECOMENDADO_POR_AGENTE,
   capacidadesAutomaticasDoPacote,
   capacidadesCriticasDoPacote,
   ligarPacote,
@@ -114,13 +114,13 @@ describe("ligar pacote reserva a vaga das próprias críticas", () => {
       pacote: p,
       vagas: vagasExigidasPeloPacote(doOnboarding, CATALOGO as never, p as never),
     }));
-    const cabem = exigencias.filter((e) => e.vagas <= TETO_TOOLS_POR_AGENTE);
+    const cabem = exigencias.filter((e) => e.vagas <= TETO_RECOMENDADO_POR_AGENTE);
 
     expect(
       cabem.map((e) => e.pacote),
       `nenhuma jornada nova cabe depois do agente nascer: ` +
         exigencias.map((e) => `${e.pacote} exige ${e.vagas}`).join(", ") +
-        `, contra o teto de ${TETO_TOOLS_POR_AGENTE}. O dono liga o primeiro pacote e o ` +
+        `, contra o teto de ${TETO_RECOMENDADO_POR_AGENTE}. O dono liga o primeiro pacote e o ` +
         "produto passa a recusar todos os outros — foi o beco do defeito D3 da v1.7.0. " +
         "Ou o teto sobe, ou o catálogo encolhe: não é caso para afrouxar a asserção.",
     ).not.toEqual([]);
@@ -139,8 +139,8 @@ describe("ligar pacote reserva a vaga das próprias críticas", () => {
     for (const pacote of COM_CRITICA) {
       expect(
         vagasExigidasPeloPacote([], CATALOGO as never, pacote as never),
-        `o pacote ${pacote} sozinho já não cabe em ${TETO_TOOLS_POR_AGENTE} — reservar não resolve, o teto é que precisa de decisão`,
-      ).toBeLessThanOrEqual(TETO_TOOLS_POR_AGENTE);
+        `o pacote ${pacote} sozinho já não cabe em ${TETO_RECOMENDADO_POR_AGENTE} — reservar não resolve, o teto é que precisa de decisão`,
+      ).toBeLessThanOrEqual(TETO_RECOMENDADO_POR_AGENTE);
     }
   });
 });

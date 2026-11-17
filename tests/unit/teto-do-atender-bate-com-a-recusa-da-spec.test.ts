@@ -1,5 +1,11 @@
 /**
- * A RECUSA DA SPEC EM SEGUNDOS, NÃO EM 20 MINUTOS (issue #1692).
+ * A CONTA DA SPEC EM SEGUNDOS, NÃO EM 20 MINUTOS (issue #1692).
+ *
+ * ⚠️ Desde a #326 o clique deixou de ser recusado: passar do RECOMENDADO liga e
+ * avisa. A conta abaixo continua inteira — o caso da spec agora prova o aviso
+ * ao CRUZAR o recomendado por uma e o aviso sumindo ao voltar a ele, e cruzar
+ * por 0 o faria verde sem medir nada. Onde o texto antigo diz "teto" e
+ * "recusa", leia "recomendado" e "aviso".
  *
  * ## O defeito que este teste encurta
  *
@@ -27,7 +33,7 @@ import { describe, expect, it } from "vitest";
 import { TOOL_CATALOG, deModuloDesligado } from "@/lib/mcp/tools/catalogo";
 import { IDS_DO_HARNESS } from "@/lib/mcp/tools/ferramentas-do-harness";
 import {
-  TETO_TOOLS_POR_AGENTE,
+  TETO_RECOMENDADO_POR_AGENTE,
   vagasExigidasPeloPacote,
 } from "@/lib/mcp/tools/selecao-por-pacote";
 
@@ -79,7 +85,7 @@ const EM_ATENDER = CATALOGO_DA_TELA.filter((c) => c.pacotes.includes("atender"))
   (c) => c.name,
 );
 
-describe("ligar Atender com o seed da spec excede o teto em exatamente uma vaga", () => {
+describe("ligar Atender com o seed da spec passa do recomendado em exatamente uma", () => {
   it("leu o seed da spec (guarda de vacuidade)", () => {
     // Um seed vazio faria a conta abaixo medir só o pacote — verde sobre nada.
     expect(SEED.length, "o seed da spec foi lido vazio").toBeGreaterThan(0);
@@ -107,15 +113,15 @@ describe("ligar Atender com o seed da spec excede o teto em exatamente uma vaga"
     }
   });
 
-  it("o excedente é 1 — o número que a tela mostra e a e2e cobra", () => {
+  it("o excedente é 1 — o aviso aparece com 28 e some com 27, como a e2e cobra", () => {
     const exigidas = vagasExigidasPeloPacote(SEED, CATALOGO_DA_TELA, "atender");
-    const excedente = exigidas - TETO_TOOLS_POR_AGENTE;
+    const excedente = exigidas - TETO_RECOMENDADO_POR_AGENTE;
     expect(
       excedente,
-      "a spec da e2e espera /faltam? 1 vaga/. Se virou 2, uma ferramenta nova entrou em " +
+      "a spec da e2e espera 28 contra o recomendado e o aviso sumindo ao desligar UMA. Se virou 2, uma ferramenta nova entrou em " +
         '"atender" (a #1684 fez isso), ou uma do harness voltou a ser marcável: ajuste o ' +
         "seed da spec ou mova a ferramenta de pacote — o e2e de ~20 min agradece. Se virou " +
-        "0 ou menos, a recusa sumiu e o caso da spec morreu em verde.",
+        "0 ou menos, o aviso nunca aparece e o caso da spec morreu em verde.",
     ).toBe(1);
   });
 });

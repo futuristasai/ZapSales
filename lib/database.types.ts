@@ -10472,6 +10472,14 @@ export type Database = {
         }
         Returns: string
       }
+      fn_agent_tool_signals: {
+        Args: { p_agent_id: string; p_organization_id: string; p_since: string }
+        Returns: {
+          corrigidas_por_pessoa: number
+          repetidas_apos_falha: number
+          tool_name: string
+        }[]
+      }
       fn_agent_tool_usage: {
         Args: { p_agent_id: string; p_organization_id: string; p_since: string }
         Returns: {

@@ -12,7 +12,7 @@ import type { IdiomaDoAgente } from "./perfil";
 
 /**
  * Um pacote por modelo, e nunca dois: nenhum par de pacotes cabe no teto por agente
- * (`TETO_TOOLS_POR_AGENTE`). A agenda mora dentro do pacote `vender`, então Agendamento e
+ * (`TETO_RECOMENDADO_POR_AGENTE`). A agenda mora dentro do pacote `vender`, então Agendamento e
  * Vendas ligam o mesmo; Suporte e Atendimento ligam `atender`, que consulta e organiza a
  * conversa mas não cria lead nem move card.
  */

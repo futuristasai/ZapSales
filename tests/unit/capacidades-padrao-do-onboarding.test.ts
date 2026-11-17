@@ -16,7 +16,7 @@ import {
 } from "@/lib/ai/agents/capacidades-padrao";
 import { BLOCKED_TOOL_IDS } from "@/lib/agent-engine/edge/crm/mcp-tools";
 import { TOOL_CATALOG } from "@/lib/mcp/tools/catalog";
-import { TETO_TOOLS_POR_AGENTE, estadoDoPacote } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_RECOMENDADO_POR_AGENTE, estadoDoPacote } from "@/lib/mcp/tools/selecao-por-pacote";
 
 const IDS = capacidadesPadraoDoOnboarding();
 const CATALOGO = catalogoComHandler();
@@ -30,7 +30,7 @@ describe("capacidades padrão do onboarding", () => {
   });
 
   it("cabe no teto por agente", () => {
-    expect(IDS.length).toBeLessThanOrEqual(TETO_TOOLS_POR_AGENTE);
+    expect(IDS.length).toBeLessThanOrEqual(TETO_RECOMENDADO_POR_AGENTE);
   });
 
   it("todas existem no catálogo — nenhuma id inventada", () => {

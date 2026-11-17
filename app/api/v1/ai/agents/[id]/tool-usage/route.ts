@@ -29,10 +29,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   montarUsoDeCapacidades,
   resumirUso,
+  type LinhaDeSinal,
   type LinhaDeUso,
 } from "@/lib/ai/agents/uso-de-capacidades";
 import { TOOL_CATALOG } from "@/lib/mcp/tools/catalog";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +112,18 @@ export async function GET(req: NextRequest, ctx: Ctx): Promise<Response> {
     return fail("internal_error", "Erro ao ler o uso das capacidades.", 500, { requestId });
   }
 
+  // Indícios de escolha errada (#326, migration 0570). Falhar aqui NÃO derruba o
+  // painel: sem os indícios ele continua dizendo o que dizia antes, e a ausência
+  // vai para o log em vez de virar 500 numa aba que já funcionava.
+  const { data: indicios, error: erroIndicios } = await admin.rpc("fn_agent_tool_signals", {
+    p_organization_id: activeOrg.orgId,
+    p_agent_id: id,
+    p_since: desde,
+  });
+  if (erroIndicios) {
+    logger.warn("tool_usage.sinais_indisponiveis", { requestId, code: erroIndicios.code });
+  }
+
   const capacidades = montarUsoDeCapacidades({
     ligadas,
     catalogo: TOOL_CATALOG.map((t) => ({
@@ -124,6 +138,11 @@ export async function GET(req: NextRequest, ctx: Ctx): Promise<Response> {
       falhas: Number(l.falhas),
       em_teste: Number(l.em_teste),
       ultima_vez: l.ultima_vez,
+    })),
+    sinais: ((indicios ?? []) as LinhaDeSinal[]).map((l) => ({
+      tool_name: l.tool_name,
+      corrigidas_por_pessoa: Number(l.corrigidas_por_pessoa),
+      repetidas_apos_falha: Number(l.repetidas_apos_falha),
     })),
     janelaEmDias,
     // Sem isto, uma configuração feita agora recebe "nunca usada nos últimos 30

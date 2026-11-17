@@ -31,7 +31,9 @@ import {
   type ToolRisk,
 } from "@/lib/mcp/tools/pacotes";
 import {
-  TETO_TOOLS_POR_AGENTE,
+  TETO_MAXIMO_POR_AGENTE,
+  TETO_RECOMENDADO_POR_AGENTE,
+  acimaDoRecomendado,
   capacidadesAutomaticasDoPacote,
   capacidadesCriticasDoPacote,
   desligarPacote,
@@ -42,6 +44,7 @@ import {
   vagasRestantes,
   type CapacidadeSelecionavel,
 } from "@/lib/mcp/tools/selecao-por-pacote";
+import { sobreposicoesLigadas } from "@/lib/mcp/tools/sobreposicoes";
 
 /** O que a rota `/api/v1/mcp/tools` serve (snake_case no wire). */
 export interface McpToolMeta extends CapacidadeSelecionavel {
@@ -74,8 +77,8 @@ interface Props {
   ocultar?: readonly string[];
   /**
    * As ferramentas EXTERNAS do agente (webhook de consulta, #94). Presente só para o
-   * Conversador — o papel Operador não as recebe. Elas ocupam as MESMAS 27 vagas:
-   * o consumo mostrado e a recusa por teto somam as duas listas.
+   * Conversador — o papel Operador não as recebe. Elas ocupam o MESMO prompt: o
+   * consumo mostrado, o aviso do recomendado e a recusa do máximo somam as duas listas.
    */
   externas?: { value: string[]; onChange: (ids: string[]) => void };
 }
@@ -189,6 +192,34 @@ function AvisoTeto({ texto }: { texto: string }) {
   );
 }
 
+/**
+ * Acima do recomendado (issue #326): a tela DEIXA ligar e diz o que pode piorar
+ * e onde olhar. `role="status"`, não `alert`: nada foi recusado, é informação.
+ * Aparece no topo enquanto durar e, no momento do clique, também dentro do
+ * cartão do pacote clicado — pela mesma razão da recusa: lá embaixo, com a tela
+ * rolada, o aviso do topo fica fora da vista.
+ */
+function AvisoAcimaDoRecomendado({ total, rolar }: { total: number; rolar?: boolean }) {
+  const t = useT();
+  const ref = React.useRef<HTMLParagraphElement>(null);
+  React.useEffect(() => {
+    if (rolar) ref.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }, [rolar, total]);
+  return (
+    <p
+      ref={ref}
+      role="status"
+      data-testid="aviso-acima-do-recomendado"
+      className="rounded-md border border-warning/40 bg-warning-bg p-3 text-sm text-warning-fg"
+    >
+      {t("Este agente está com")} {total} {t("capacidades, acima das")} {TETO_RECOMENDADO_POR_AGENTE}{" "}
+      {t(
+        "recomendadas. A IA pode escolher a capacidade errada com mais frequência. Acompanhe na aba Capacidades e desligue o que ele não usa.",
+      )}
+    </p>
+  );
+}
+
 export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, externas }: Props) {
   const t = useT();
   const value = React.useMemo(
@@ -203,6 +234,8 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
   const [recusa, setRecusa] = React.useState<{ texto: string; pacote: ToolBundle | null } | null>(
     null,
   );
+  /** O pacote cujo clique passou do recomendado — o aviso aparece dentro dele. */
+  const [passouNoPacote, setPassouNoPacote] = React.useState<ToolBundle | null>(null);
 
   const query = useQuery({
     queryKey: ["mcp", "tools"],
@@ -246,6 +279,9 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
   const qtdExternas = externas?.value.length ?? 0;
   const vagas = vagasRestantes(value, qtdExternas);
   const cheio = vagas <= 0;
+  const totalLigadas = value.length + qtdExternas;
+  const acima = acimaDoRecomendado(value, qtdExternas);
+  const sobrepostas = sobreposicoesLigadas(value);
 
   /** Ids salvos que o servidor não oferece mais — some da tela seria mentir. */
   const orfas = value.filter((id) => !porNome.has(id) && !desligadasPelaOrg.has(id));
@@ -269,11 +305,18 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
     vagasExigidas = proximo.length,
     pacote: ToolBundle | null = null,
   ) {
-    if (vagasExigidas + qtdExternas > TETO_TOOLS_POR_AGENTE) {
+    if (vagasExigidas + qtdExternas > TETO_MAXIMO_POR_AGENTE) {
       setRecusa({ texto: motivoSeRecusar, pacote });
       return;
     }
     setRecusa(null);
+    // Só o clique de pacote que CRUZOU o recomendado ganha o aviso no cartão;
+    // quem já estava acima vê o aviso do topo, e não um a cada clique.
+    const cruzou =
+      pacote !== null &&
+      !acimaDoRecomendado(value, qtdExternas) &&
+      acimaDoRecomendado(proximo, qtdExternas);
+    setPassouNoPacote(cruzou ? pacote : null);
     onChange(proximo);
   }
 
@@ -286,10 +329,10 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
       // por quê. Ou cabe inteiro, com a vaga da crítica guardada, ou não liga
       // e a tela diz quantas faltam.
       const exigidas = vagasExigidasPeloPacote(value, catalogo, pacote);
-      const excedente = exigidas + qtdExternas - TETO_TOOLS_POR_AGENTE;
+      const excedente = exigidas + qtdExternas - TETO_MAXIMO_POR_AGENTE;
       aplicar(
         proximo,
-        `${t("Ligar este pacote passaria de")} ${TETO_TOOLS_POR_AGENTE} ${t("capacidades (faltam")} ${excedente} ${
+        `${t("Ligar este pacote passaria de")} ${TETO_MAXIMO_POR_AGENTE} ${t("capacidades (faltam")} ${excedente} ${
           excedente === 1 ? t("vaga") : t("vagas")
         }${t("). Desligue um pacote que você usa menos antes.")}`,
         exigidas,
@@ -297,6 +340,7 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
       );
     } else {
       setRecusa(null);
+      setPassouNoPacote(null);
       onChange(desligarPacote(value, catalogo, pacote, TODOS_OS_PACOTES));
     }
   }
@@ -304,6 +348,7 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
   function alternarCapacidade(name: string) {
     if (value.includes(name)) {
       setRecusa(null);
+      setPassouNoPacote(null);
       onChange(value.filter((x) => x !== name));
       return;
     }
@@ -311,7 +356,7 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
       [...catalogo.map((c) => c.name), ...orfas].filter(
         (n) => value.includes(n) || n === name,
       ),
-      `${t("Você já ligou")} ${TETO_TOOLS_POR_AGENTE} ${t("capacidades. Desligue uma antes de ligar outra.")}`,
+      `${t("Você já ligou")} ${TETO_MAXIMO_POR_AGENTE} ${t("capacidades. Desligue uma antes de ligar outra.")}`,
     );
   }
 
@@ -328,22 +373,49 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
 
   return (
     <div className="space-y-4" data-testid="tool-picker">
-      {/* Consumo do teto — o número que impede a surpresa no salvar. */}
+      {/* Consumo — contra o RECOMENDADO, que é o número que pede atenção. O
+          máximo só aparece quando chega: até lá ele não muda decisão nenhuma. */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/30 p-3">
         <p className="text-sm">
-          <strong data-testid="consumo-teto">
-            {value.length + qtdExternas} {t("de")} {TETO_TOOLS_POR_AGENTE}
+          <strong data-testid="consumo-teto" data-acima={acima ? "sim" : "nao"}>
+            {totalLigadas} {t("de")} {TETO_RECOMENDADO_POR_AGENTE}
           </strong>{" "}
-          {t("capacidades ligadas")}
+          {t("capacidades recomendadas")}
         </p>
         <p className="text-xs text-muted-foreground">
           {cheio
-            ? t("Limite atingido. Desligue algo para ligar outra coisa.")
-            : t("Acima disso o agente erra na hora de escolher o que usar.")}
+            ? `${t("Limite máximo de")} ${TETO_MAXIMO_POR_AGENTE} ${t("atingido. Desligue algo para ligar outra coisa.")}`
+            : t("Acima disso a tela deixa ligar, mas a IA pode escolher errado com mais frequência.")}
         </p>
       </div>
 
+      {acima && passouNoPacote === null ? <AvisoAcimaDoRecomendado total={totalLigadas} /> : null}
+
       {recusa && recusa.pacote === null ? <AvisoTeto texto={recusa.texto} /> : null}
+
+      {/* Sobreposição (issue #326): duas capacidades de pacotes diferentes que
+          fazem quase a mesma coisa. Não manda desligar — diz o que observar. */}
+      {sobrepostas.length > 0 ? (
+        <div
+          data-testid="aviso-sobreposicao"
+          className="space-y-2 rounded-md border border-warning/40 bg-warning-bg p-3 text-sm text-warning-fg"
+        >
+          <p className="font-medium">{t("Capacidades parecidas ligadas juntas")}</p>
+          <ul className="list-disc space-y-1 pl-5 text-xs">
+            {sobrepostas.map((s) => (
+              <li key={`${s.a}+${s.b}`} data-testid={`sobreposicao-${s.a}-${s.b}`}>
+                <strong>{t(porNome.get(s.a)?.rotulo ?? s.a)}</strong> {t("e")}{" "}
+                <strong>{t(porNome.get(s.b)?.rotulo ?? s.b)}</strong>. {t(s.risco)}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs">
+            {t(
+              "Se a aba Capacidades mostrar que a IA usou uma no lugar da outra, desligue a que você usa menos.",
+            )}
+          </p>
+        </div>
+      ) : null}
 
       {/* Caminho padrão: pacotes por jornada. */}
       <div className="grid gap-3">
@@ -401,6 +473,9 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
               </div>
 
               {recusa && recusa.pacote === pacote.id ? <AvisoTeto texto={recusa.texto} /> : null}
+              {acima && passouNoPacote === pacote.id ? (
+                <AvisoAcimaDoRecomendado total={totalLigadas} rolar />
+              ) : null}
 
               {/* Crítico nunca entra por pacote: exige o dedo do humano. */}
               {criticas.length > 0 ? (
@@ -439,14 +514,15 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
           value={externas.value}
           onChange={(ids) => {
             // Marcar mais uma só passa se ainda há vaga; desmarcar sempre passa.
-            if (ids.length > externas.value.length && value.length + ids.length > TETO_TOOLS_POR_AGENTE) {
+            if (ids.length > externas.value.length && value.length + ids.length > TETO_MAXIMO_POR_AGENTE) {
               setRecusa({
-                texto: `${t("Você já ligou")} ${TETO_TOOLS_POR_AGENTE} ${t("capacidades. Desligue uma antes de ligar outra.")}`,
+                texto: `${t("Você já ligou")} ${TETO_MAXIMO_POR_AGENTE} ${t("capacidades. Desligue uma antes de ligar outra.")}`,
                 pacote: null,
               });
               return;
             }
             setRecusa(null);
+            setPassouNoPacote(null);
             externas.onChange(ids);
           }}
           semVagas={cheio}
@@ -524,6 +600,7 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
             disabled={disabled}
             onClick={() => {
               setRecusa(null);
+              setPassouNoPacote(null);
               onChange(value.filter((id) => porNome.has(id)));
             }}
             className="font-medium underline underline-offset-4 disabled:opacity-50"

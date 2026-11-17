@@ -14,6 +14,7 @@ import {
   montarUsoDeCapacidades,
   resumirUso,
   type CapacidadeConhecida,
+  type LinhaDeSinal,
   type LinhaDeUso,
 } from "@/lib/ai/agents/uso-de-capacidades";
 
@@ -167,6 +168,7 @@ describe("o resumo do topo", () => {
     expect(resumirUso(linhas)).toEqual({
       usos: 14,
       falhas: 4,
+      escolhas_duvidosas: 0,
       precisam_de_atencao: 2,
     });
   });
@@ -231,5 +233,81 @@ describe("configuração recém-feita não pede decisão nenhuma", () => {
       agora: AGORA,
     });
     expect(linhas.map((l) => l.sinal)).toEqual(["so_falha", "recem_ligada"]);
+  });
+});
+
+describe("sinais de escolha errada (#326)", () => {
+  function comSinais(ligadas: string[], linhas: LinhaDeUso[], sinais: LinhaDeSinal[]) {
+    return montarUsoDeCapacidades({
+      ligadas,
+      catalogo: CATALOGO,
+      linhas,
+      sinais,
+      janelaEmDias: 30,
+      configuradaEm: CONFIG_ANTIGA,
+      agora: AGORA,
+    });
+  }
+  const sinal = (p: Partial<LinhaDeSinal> & { tool_name: string }): LinhaDeSinal => ({
+    corrigidas_por_pessoa: 0,
+    repetidas_apos_falha: 0,
+    ...p,
+  });
+
+  it("corrigida por uma pessoa vence 'saudável' e diz quantas vezes", () => {
+    const [linha] = comSinais(
+      ["crm_mover"],
+      [uso({ tool_name: "crm_mover", total: 6 })],
+      [sinal({ tool_name: "crm_mover", corrigidas_por_pessoa: 2 })],
+    );
+    expect(linha!.sinal).toBe("corrigida_por_pessoa");
+    expect(linha!.corrigidas_por_pessoa).toBe(2);
+    expect(linha!.recomendacao).toContain("2 vezes alguém da equipe moveu o mesmo negócio");
+  });
+
+  it("repetida depois de falhar vence 'falhando': o padrão nomeado diz o que olhar", () => {
+    const [linha] = comSinais(
+      ["crm_mover"],
+      [uso({ tool_name: "crm_mover", total: 5, falhas: 2 })],
+      [sinal({ tool_name: "crm_mover", repetidas_apos_falha: 1 })],
+    );
+    expect(linha!.sinal).toBe("repetida_apos_falha");
+    expect(linha!.recomendacao).toContain("Uma vez a IA chamou esta capacidade de novo");
+  });
+
+  it("falha total continua em primeiro: nenhum indício esconde o que quebrou", () => {
+    const [linha] = comSinais(
+      ["crm_mover"],
+      [uso({ tool_name: "crm_mover", total: 3, falhas: 3 })],
+      [sinal({ tool_name: "crm_mover", corrigidas_por_pessoa: 1, repetidas_apos_falha: 2 })],
+    );
+    expect(linha!.sinal).toBe("so_falha");
+    // Os números seguem na linha, mesmo quando outro sinal venceu.
+    expect(linha!.repetidas_apos_falha).toBe(2);
+  });
+
+  it("correção vence repetição quando as duas existem", () => {
+    const [linha] = comSinais(
+      ["crm_mover"],
+      [uso({ tool_name: "crm_mover", total: 8, falhas: 1 })],
+      [sinal({ tool_name: "crm_mover", corrigidas_por_pessoa: 1, repetidas_apos_falha: 1 })],
+    );
+    expect(linha!.sinal).toBe("corrigida_por_pessoa");
+  });
+
+  it("sem a lista de sinais o painel diz o mesmo que dizia antes (servidor sem a 0570)", () => {
+    const [linha] = montar(["crm_mover"], [uso({ tool_name: "crm_mover", total: 6 })]);
+    expect(linha!.sinal).toBe("saudavel");
+    expect(linha!.corrigidas_por_pessoa).toBe(0);
+    expect(linha!.repetidas_apos_falha).toBe(0);
+  });
+
+  it("o resumo soma os indícios e conta a capacidade como pendente de decisão", () => {
+    const linhas = comSinais(
+      ["crm_ler", "crm_mover"],
+      [uso({ tool_name: "crm_ler", total: 10 }), uso({ tool_name: "crm_mover", total: 4, falhas: 1 })],
+      [sinal({ tool_name: "crm_mover", corrigidas_por_pessoa: 1, repetidas_apos_falha: 1 })],
+    );
+    expect(resumirUso(linhas)).toMatchObject({ escolhas_duvidosas: 2, precisam_de_atencao: 1 });
   });
 });

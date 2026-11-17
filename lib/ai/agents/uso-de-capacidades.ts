@@ -20,6 +20,18 @@ export interface LinhaDeUso {
   ultima_vez: string | null;
 }
 
+/**
+ * Uma linha como `fn_agent_tool_signals` devolve (migration 0570, issue #326):
+ * INDÍCIOS de escolha errada, não prova. Ninguém rotula uma chamada como errada;
+ * o que se conta é o que o audit já mostra — uma pessoa desfazendo o que a IA
+ * fez, ou a IA tentando de novo logo depois de errar.
+ */
+export interface LinhaDeSinal {
+  tool_name: string;
+  corrigidas_por_pessoa: number;
+  repetidas_apos_falha: number;
+}
+
 /** O mínimo do catálogo que a projeção precisa. */
 export interface CapacidadeConhecida {
   name: string;
@@ -31,6 +43,8 @@ export interface CapacidadeConhecida {
 export type SinalDeUso =
   | "fora_da_configuracao"
   | "so_falha"
+  | "corrigida_por_pessoa"
+  | "repetida_apos_falha"
   | "falhando"
   | "nunca_usada"
   | "recem_ligada"
@@ -43,6 +57,10 @@ export interface CapacidadeComUso extends CapacidadeConhecida {
   falhas: number;
   em_teste: number;
   ultima_vez: string | null;
+  /** Vezes em que uma pessoa moveu o mesmo negócio até 24 h depois da IA. */
+  corrigidas_por_pessoa: number;
+  /** Vezes em que a IA chamou esta de novo logo depois de ela falhar. */
+  repetidas_apos_falha: number;
   sinal: SinalDeUso;
   /** O "e daí?" — o que o humano faz com este número. */
   recomendacao: string;
@@ -56,19 +74,26 @@ export interface CapacidadeComUso extends CapacidadeConhecida {
  */
 const GRAVIDADE: Record<SinalDeUso, number> = {
   so_falha: 0,
-  falhando: 1,
-  fora_da_configuracao: 2,
-  nunca_usada: 3,
-  so_em_teste: 4,
-  saudavel: 5,
+  // Os dois sinais de escolha errada (#326) vêm antes de "falhando": repetir
+  // depois de falhar É uma falha, só que com o padrão nomeado — e o nome é o que
+  // diz ao dono o que olhar. Correção por pessoa vem antes de tudo que não seja
+  // falha total, porque é a única evidência de que o efeito chegou e estava errado.
+  corrigida_por_pessoa: 1,
+  repetida_apos_falha: 2,
+  falhando: 3,
+  fora_da_configuracao: 4,
+  nunca_usada: 5,
+  so_em_teste: 6,
+  saudavel: 7,
   // Recém-ligada não pede decisão nenhuma: vai para o fim da lista.
-  recem_ligada: 6,
+  recem_ligada: 8,
 };
 
 function classificar(
   ligada: boolean,
   uso: LinhaDeUso | undefined,
   configuracaoRecente: boolean,
+  sinal: LinhaDeSinal | undefined,
 ): SinalDeUso {
   const total = uso?.total ?? 0;
   const falhas = uso?.falhas ?? 0;
@@ -81,6 +106,8 @@ function classificar(
   // depois de criadas.
   if (total === 0) return configuracaoRecente ? "recem_ligada" : "nunca_usada";
   if (falhas === total) return "so_falha";
+  if ((sinal?.corrigidas_por_pessoa ?? 0) > 0) return "corrigida_por_pessoa";
+  if ((sinal?.repetidas_apos_falha ?? 0) > 0) return "repetida_apos_falha";
   if (falhas > 0) return "falhando";
   if (!ligada) return "fora_da_configuracao";
   if (emTeste === total) return "so_em_teste";
@@ -89,7 +116,13 @@ function classificar(
 
 function recomendar(
   sinal: SinalDeUso,
-  uso: { total: number; falhas: number; em_teste: number },
+  uso: {
+    total: number;
+    falhas: number;
+    em_teste: number;
+    corrigidas_por_pessoa: number;
+    repetidas_apos_falha: number;
+  },
   janelaEmDias: number,
 ): string {
   if (sinal === "recem_ligada") {
@@ -100,6 +133,14 @@ function recomendar(
       return uso.total === 1
         ? "A única tentativa falhou. Abra a execução para ver o motivo — enquanto isso o agente tenta e não consegue."
         : `Todas as ${uso.total} tentativas falharam. Abra as execuções para ver o motivo — enquanto isso o agente tenta e não consegue.`;
+    case "corrigida_por_pessoa":
+      return uso.corrigidas_por_pessoa === 1
+        ? "Uma vez, alguém da equipe moveu o mesmo negócio até 24 horas depois da IA. Pode ser que ela tenha escolhido a etapa ou a capacidade errada — abra as execuções e compare com o que a pessoa fez."
+        : `${uso.corrigidas_por_pessoa} vezes alguém da equipe moveu o mesmo negócio até 24 horas depois da IA. Pode ser que ela esteja escolhendo a etapa ou a capacidade errada — abra as execuções e compare com o que a pessoa fez.`;
+    case "repetida_apos_falha":
+      return uso.repetidas_apos_falha === 1
+        ? "Uma vez a IA chamou esta capacidade de novo logo depois de ela falhar, sinal de que preencheu algum dado errado. Abra a execução para ver o que ela tentou."
+        : `${uso.repetidas_apos_falha} vezes a IA chamou esta capacidade de novo logo depois de ela falhar, sinal de que está preenchendo algum dado errado. Abra as execuções para ver o que ela tentou.`;
     case "falhando":
       return `${uso.falhas} de ${uso.total} tentativas falharam. Vale abrir as execuções e entender o que a impede.`;
     case "fora_da_configuracao":
@@ -124,6 +165,8 @@ export interface MontarUsoInput {
   ligadas: ReadonlyArray<string>;
   catalogo: ReadonlyArray<CapacidadeConhecida>;
   linhas: ReadonlyArray<LinhaDeUso>;
+  /** O que `fn_agent_tool_signals` devolveu. Ausente = nenhum indício contado. */
+  sinais?: ReadonlyArray<LinhaDeSinal>;
   janelaEmDias: number;
   /**
    * Quando esta configuração passou a valer (ISO). Se ela é mais nova que a
@@ -150,6 +193,7 @@ export function montarUsoDeCapacidades(input: MontarUsoInput): CapacidadeComUso[
     agora - new Date(configuradaEm).getTime() < janelaEmDias * 86_400_000;
 
   const usoPorNome = new Map(linhas.map((l) => [l.tool_name, l]));
+  const sinalPorNome = new Map((input.sinais ?? []).map((l) => [l.tool_name, l]));
   const ligadasSet = new Set(ligadas);
 
   const nomes = new Set<string>([...ligadas, ...linhas.map((l) => l.tool_name)]);
@@ -160,10 +204,13 @@ export function montarUsoDeCapacidades(input: MontarUsoInput): CapacidadeComUso[
     const uso = usoPorNome.get(name);
     const ligada = ligadasSet.has(name);
     const conhecida = porNome.get(name);
-    const sinal = classificar(ligada, uso, configuracaoRecente);
+    const indicio = sinalPorNome.get(name);
+    const sinal = classificar(ligada, uso, configuracaoRecente, indicio);
     const total = uso?.total ?? 0;
     const falhas = uso?.falhas ?? 0;
     const emTeste = uso?.em_teste ?? 0;
+    const corrigidas = indicio?.corrigidas_por_pessoa ?? 0;
+    const repetidas = indicio?.repetidas_apos_falha ?? 0;
 
     resultado.push({
       name,
@@ -177,10 +224,18 @@ export function montarUsoDeCapacidades(input: MontarUsoInput): CapacidadeComUso[
       falhas,
       em_teste: emTeste,
       ultima_vez: uso?.ultima_vez ?? null,
+      corrigidas_por_pessoa: corrigidas,
+      repetidas_apos_falha: repetidas,
       sinal,
       recomendacao: recomendar(
         sinal,
-        { total, falhas, em_teste: emTeste },
+        {
+          total,
+          falhas,
+          em_teste: emTeste,
+          corrigidas_por_pessoa: corrigidas,
+          repetidas_apos_falha: repetidas,
+        },
         janelaEmDias,
       ),
     });
@@ -198,14 +253,25 @@ export function montarUsoDeCapacidades(input: MontarUsoInput): CapacidadeComUso[
 export function resumirUso(capacidades: ReadonlyArray<CapacidadeComUso>): {
   usos: number;
   falhas: number;
+  /** Soma dos dois indícios de escolha errada (#326), para o topo do painel. */
+  escolhas_duvidosas: number;
   precisam_de_atencao: number;
 } {
   return {
     usos: capacidades.reduce((acc, c) => acc + c.total, 0),
     falhas: capacidades.reduce((acc, c) => acc + c.falhas, 0),
+    escolhas_duvidosas: capacidades.reduce(
+      (acc, c) => acc + c.corrigidas_por_pessoa + c.repetidas_apos_falha,
+      0,
+    ),
     // `recem_ligada` fica de fora de propósito: ela não pede decisão nenhuma.
     precisam_de_atencao: capacidades.filter(
-      (c) => c.sinal === "so_falha" || c.sinal === "falhando" || c.sinal === "nunca_usada",
+      (c) =>
+        c.sinal === "so_falha" ||
+        c.sinal === "corrigida_por_pessoa" ||
+        c.sinal === "repetida_apos_falha" ||
+        c.sinal === "falhando" ||
+        c.sinal === "nunca_usada",
     ).length,
   };
 }

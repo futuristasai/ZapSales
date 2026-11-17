@@ -75,7 +75,7 @@ import {
 import { aplicarModelo, type IdDoModelo } from "@/lib/ai/agents/modelos";
 import Link from "next/link";
 
-import { TETO_TOOLS_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
+import { TETO_MAXIMO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
 import { PROVEDORES } from "@/lib/ai/pontos/provedores";
 
 import { ModelPicker, useModelMeta } from "./ModelPicker";
@@ -897,7 +897,7 @@ export function AgentForm(props: Props) {
     // Quem cobra o número é `bloqueioDePublicacao` (logo abaixo): sem ele o
     // agente não vai ao ar, e o botão "Publicar" explica o que falta.
     if (passaDoTetoDeCapacidades(form.tool_ids, form.external_tool_ids))
-      errors.tool_ids = `${t("Máximo de")} ${TETO_TOOLS_POR_AGENTE} ${t("capacidades por agente.")}`;
+      errors.tool_ids = `${t("Máximo de")} ${TETO_MAXIMO_POR_AGENTE} ${t("capacidades por agente.")}`;
 
     // Tenta o schema completo:
     if (Object.keys(errors).length === 0) {

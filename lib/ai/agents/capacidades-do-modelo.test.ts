@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { IDIOMAS } from "@/lib/i18n/idiomas";
-import { ligarPacote, TETO_TOOLS_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
+import { ligarPacote, TETO_RECOMENDADO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
 
 import { capacidadesPadraoDoOnboarding, catalogoComHandler } from "./capacidades-padrao";
 import {
@@ -51,7 +51,7 @@ describe("capacidades de cada modelo de agente", () => {
         ids.filter((n) => criticas.has(n)),
         id,
       ).toEqual([]);
-      expect(ids.length, id).toBeLessThanOrEqual(TETO_TOOLS_POR_AGENTE);
+      expect(ids.length, id).toBeLessThanOrEqual(TETO_RECOMENDADO_POR_AGENTE);
       expect(PACOTE_DO_MODELO[id]).toMatch(/^(vender|atender)$/);
     }
   });

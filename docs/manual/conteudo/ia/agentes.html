@@ -138,7 +138,7 @@
 </figure>
 <ol class="legenda">
   <li><strong>O que o agente pode fazer.</strong> O agente só consegue fazer o que estiver ligado aqui — e o que estiver ligado, ele fará sozinho durante o atendimento.</li>
-  <li><strong>Contador de capacidades.</strong> “8 de 27 capacidades ligadas”. O teto é <strong>27</strong>: acima disso o agente erra na hora de escolher o que usar.</li>
+  <li><strong>Contador de capacidades.</strong> “8 de 27 capacidades recomendadas”. <strong>27</strong> é o recomendado, não um limite: acima disso a tela deixa ligar e mostra um aviso amarelo, porque com muitas capacidades a IA pode escolher a errada com mais frequência. O limite que o sistema recusa é <strong>100</strong>. Quando duas capacidades de pacotes diferentes fazem quase a mesma coisa (por exemplo, <em>Marcar consulta</em> e <em>Agendar um retorno</em>), a tela avisa com o quadro <span class="ui">Capacidades parecidas ligadas juntas</span>.</li>
   <li><strong>Um pacote.</strong> Agrupa capacidades por jornada de trabalho: <em>Atender e responder, Vender e mover o funil, Não perder o cliente, Passar para um humano, Organizar a operação, Aprender e evoluir</em>. O interruptor liga o pacote; embaixo, “5 de 17 capacidades ligadas” diz quantas do pacote já estão no ar.</li>
   <li><strong>Selo “parcial”.</strong> Só parte das capacidades do pacote está ligada.</li>
   <li><strong>Selo “Recomendado”.</strong> O produto sugere este pacote para quem atende clientes.</li>
@@ -147,7 +147,7 @@
   <li><strong>Selo de risco.</strong> Aqui, <em>Efeito que não dá para desfazer</em> (algo que sai do sistema ou não volta, como falar com o cliente de verdade). Os outros selos são <em>Só consulta</em> (apenas lê) e <em>Altera dados</em> (muda algo; dá para ver e desfazer).</li>
 </ol>
 <p>No fim da lista de pacotes, <strong>Escolher uma a uma (modo avançado)</strong> mostra a lista completa de capacidades, cada uma com a explicação do que faz e do que toca.</p>
-<p>Abaixo dos pacotes há o grupo <strong>Ferramentas externas</strong>: as consultas e ações em outros sistemas que você cadastrou (<a href="#agente-ferramenta-webhook">webhooks</a> e <a href="#agente-servidores-mcp">servidores MCP</a>) e que este agente pode usar. Elas contam no mesmo teto de 27 capacidades, e ações que alteram dados <a href="#agente-aprovacao-de-acoes">esperam a sua aprovação</a>. Se uma capacidade já salva deixou de existir, a tela avisa e oferece <span class="ui">Desligar</span>.</p>
+<p>Abaixo dos pacotes há o grupo <strong>Ferramentas externas</strong>: as consultas e ações em outros sistemas que você cadastrou (<a href="#agente-ferramenta-webhook">webhooks</a> e <a href="#agente-servidores-mcp">servidores MCP</a>) e que este agente pode usar. Elas contam no mesmo total de capacidades (27 recomendadas, 100 no máximo), e ações que alteram dados <a href="#agente-aprovacao-de-acoes">esperam a sua aprovação</a>. Se uma capacidade já salva deixou de existir, a tela avisa e oferece <span class="ui">Desligar</span>.</p>
 <p>Duas capacidades aparecem bloqueadas, com o motivo em azul: <em>Enviar mensagem no WhatsApp</em> e <em>Chamar um atendente humano</em>. O agente já faz as duas por conta própria, pelo caminho seguro do sistema (com opt-out e regra anti-banimento); não há nada a ligar.</p>
 
 <figure class="print">
@@ -254,10 +254,10 @@
   <li><strong>Resumo.</strong> Quantos usos e falhas nos últimos 30 dias, e quantas capacidades pedem uma decisão sua.</li>
   <li><strong>Atualizar.</strong></li>
   <li><strong>Um cartão por capacidade</strong> (ligada ou já usada).</li>
-  <li><strong>Selo de sinal.</strong> Do mais grave ao mais leve: <em>falhando sempre, falhas, usada sem estar ligada, nunca usada, só em teste, funcionando, ligada agora</em>.</li>
+  <li><strong>Selo de sinal.</strong> Do mais grave ao mais leve: <em>falhando sempre, corrigida por uma pessoa, repetida depois de falhar, falhas, usada sem estar ligada, nunca usada, só em teste, funcionando, ligada agora</em>. <em>Corrigida por uma pessoa</em> aparece quando a IA moveu ou encerrou um negócio e alguém da equipe moveu o mesmo negócio em até 24 horas; <em>repetida depois de falhar</em>, quando a IA chamou a mesma capacidade de novo logo depois de ela falhar. São sinais de que a IA pode estar escolhendo errado, não certeza: abra as execuções e compare.</li>
   <li><strong>Recomendação.</strong> O que fazer, em palavras simples.</li>
-  <li><strong>Números.</strong> Usos, falhas, usos em teste e a última vez.</li>
-  <li><strong>“Nunca usada”.</strong> Ligada há mais de 30 dias e sem uso: ocupa uma das 27 vagas e atrapalha a escolha do agente. Considere desligar.</li>
+  <li><strong>Números.</strong> Usos, falhas, usos em teste e a última vez. Quando existem, aparecem também as correções feitas por pessoas e as repetições depois de falhar.</li>
+  <li><strong>“Nunca usada”.</strong> Ligada há mais de 30 dias e sem uso: ocupa espaço na lista que a IA lê e atrapalha a escolha do agente. Considere desligar.</li>
 </ol>
 
 <h3>Execuções</h3>
