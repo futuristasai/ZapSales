@@ -20,7 +20,7 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Cookie, type Page } from "@playwright/test";
 
 import { generateTotp, msUntilNextTotpWindow } from "../utils/totp";
 
@@ -161,5 +161,89 @@ export async function loginComoPapel(
     false,
     "MFA falhou mesmo depois de re-semear as credenciais — o problema não é o fator rotacionado",
   ).toBe(true);
+  return atuais;
+}
+
+/**
+ * UM LOGIN DE VERDADE POR ARQUIVO; os casos seguintes reaproveitam a sessão.
+ *
+ * ─── Por que existe ─────────────────────────────────────────────────────────
+ *
+ * Cada login com MFA depois do primeiro custa ~30 s parados: o servidor aceita
+ * cada código TOTP uma vez só, então dois logins seguidos esperam a janela
+ * virar (ver o topo deste arquivo). Uma spec que loga no começo de cada caso
+ * paga isso por caso, e a conta cresce com a spec — medido no run 44156327406
+ * (main, todo verde), relógio de cada caso:
+ *
+ *     navegacao                              28 logins  → 838 s  (67% da parte 2)
+ *     prova-painel-provedores                 8 logins  → 240 s
+ *     inbox-busca-e-filtros-dizem-a-verdade   8 logins  → 217 s
+ *
+ * Em 17/11/2026 as partes 2 e 6 foram cortadas pelo relógio CINCO vezes num dia
+ * de runner lento, todas sem caso vermelho (issue #332). O que estourava não era
+ * a partição: era espera de relógio, repetida.
+ *
+ * ─── O que ela faz ──────────────────────────────────────────────────────────
+ *
+ * O primeiro caso do arquivo loga pela tela, com senha e segundo fator, como
+ * sempre. Os cookies que ESSE login criou ficam guardados; os casos seguintes
+ * os recebem no contexto novo e abrem a mesma tela em que o login cai.
+ *
+ * Só entram os cookies que o login criou. O que o caso pôs no contexto antes de
+ * logar (`menuExpandido`, `menuRecolhido`) é do caso, e levá-lo adiante faria um
+ * caso herdar a preferência de menu de outro.
+ *
+ * A chave é o ARQUIVO da spec: cada spec continua provando o próprio login, e
+ * nenhuma herda sessão de vizinha. Se a sessão guardada deixou de valer (alguém
+ * saiu, o fator foi trocado, as credenciais foram re-semeadas), o caso volta ao
+ * login completo — o reaproveitamento é atalho, nunca precondição.
+ *
+ * ─── Quando NÃO usar ────────────────────────────────────────────────────────
+ *
+ * Em spec que mede o próprio login, a saída, o segundo fator ou algo que mora
+ * no token da sessão (`user_metadata`, papel recém-trocado): ali a sessão nova
+ * É o que se mede. Essas seguem com `loginComoAdmin` / `loginComoDono`.
+ */
+interface SessaoGuardada {
+  email: string;
+  segredo: string;
+  cookies: Cookie[];
+  /** Caminho em que o login caiu — o caso seguinte abre o mesmo. */
+  destino: string;
+}
+
+const sessoesPorArquivo = new Map<string, SessaoGuardada>();
+
+export async function loginUmaVezPorArquivo(
+  page: Page,
+  creds: CredsE2E,
+  papel: PapelDeLogin = "admin",
+): Promise<CredsE2E> {
+  const chave = `${test.info().file}|${papel}`;
+  const usuario = papel === "dono" ? creds.users.dono : creds.users.admin;
+  const fator = papel === "dono" ? creds.dono_totp : creds.admin_totp;
+  const contexto = page.context();
+
+  const guardada = sessoesPorArquivo.get(chave);
+  if (guardada && guardada.email === usuario?.email && guardada.segredo === fator?.secret) {
+    await contexto.addCookies(guardada.cookies);
+    await page.goto(guardada.destino);
+    if (new URL(page.url()).pathname.startsWith("/app/")) return creds;
+    // A sessão guardada não vale mais. Tira só o que ela pôs e loga de verdade.
+    for (const c of guardada.cookies) await contexto.clearCookies({ name: c.name });
+  }
+  sessoesPorArquivo.delete(chave);
+
+  const jaEstavam = new Set((await contexto.cookies()).map((c) => c.name));
+  const atuais = await loginComoPapel(page, creds, papel);
+  const url = new URL(page.url());
+  const usuarioAtual = papel === "dono" ? atuais.users.dono : atuais.users.admin;
+  const fatorAtual = papel === "dono" ? atuais.dono_totp : atuais.admin_totp;
+  sessoesPorArquivo.set(chave, {
+    email: usuarioAtual!.email,
+    segredo: fatorAtual!.secret,
+    cookies: (await contexto.cookies()).filter((c) => !jaEstavam.has(c.name)),
+    destino: url.pathname + url.search,
+  });
   return atuais;
 }
