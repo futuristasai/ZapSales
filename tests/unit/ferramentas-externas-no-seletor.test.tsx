@@ -166,3 +166,40 @@ describe("ToolPicker — grupo Ferramentas externas", () => {
     expect(api.get.mock.calls.some(([url]) => String(url).includes("external-tools"))).toBe(false);
   });
 });
+
+describe("capacidade do harness na lista avançada (#326)", () => {
+  it("continua travada longe do teto, e o clique não a liga", async () => {
+    // Antes da #326 esta caixa só ficava travada porque o cenário comum batia o
+    // teto EXATO de 27: a lista avançada não olhava `marcavel`. Com o teto virando
+    // aviso, ela destravou — e foi o e2e que pegou. Aqui o seletor está quase vazio.
+    const HARNESS = {
+      ...CAPACIDADE,
+      id: "crm_send_whatsapp_message",
+      rotulo: "Enviar mensagem no WhatsApp",
+      risco: "critico",
+      marcavel: false,
+      motivo_nao_marcavel: "O sistema envia sozinho.",
+    };
+    api.get.mockImplementation(async (url: string) =>
+      url.includes("external-tools")
+        ? { data: [] }
+        : { data: { tools: [CAPACIDADE, HARNESS], desligadas_pela_organizacao: [] } },
+    );
+    const aoMudar = vi.fn();
+    render(
+      <IdiomaProvider locale="pt-BR">
+        <QueryClientProvider client={client}>
+          <ToolPicker value={["crm_search_contacts"]} onChange={aoMudar} />
+        </QueryClientProvider>
+      </IdiomaProvider>,
+    );
+    fireEvent.click(await screen.findByTestId("toggle-avancado"));
+    const caixas = screen.getAllByRole("checkbox", { name: "Enviar mensagem no WhatsApp" }) as HTMLInputElement[];
+    expect(caixas.length).toBeGreaterThan(0);
+    for (const caixa of caixas) {
+      expect(caixa.disabled).toBe(true);
+      fireEvent.click(caixa);
+    }
+    expect(aoMudar).not.toHaveBeenCalled();
+  });
+});

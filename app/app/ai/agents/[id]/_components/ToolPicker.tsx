@@ -352,6 +352,9 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
       onChange(value.filter((x) => x !== name));
       return;
     }
+    // A regra mora aqui também, não só no `disabled` da caixa: ligar o que o
+    // motor descarta é prometer o que não acontece, venha o clique de onde vier.
+    if (porNome.get(name)?.marcavel === false) return;
     aplicar(
       [...catalogo.map((c) => c.name), ...orfas].filter(
         (n) => value.includes(n) || n === name,
@@ -559,7 +562,10 @@ export function ToolPicker({ value: valorSalvo, onChange, disabled, ocultar, ext
                   key={capacidade.name}
                   capacidade={capacidade}
                   marcada={marcada}
-                  bloqueada={!marcada && cheio}
+                  // `marcavel` aqui também, e não só nas críticas (#326): esta caixa
+                  // ficava travada só porque o cenário comum batia o teto exato, e
+                  // com o teto virando aviso a capacidade do harness destravou.
+                  bloqueada={!marcada && (cheio || !capacidade.marcavel)}
                   onToggle={() => alternarCapacidade(capacidade.name)}
                   disabled={disabled}
                   mostrarNomeTecnico
