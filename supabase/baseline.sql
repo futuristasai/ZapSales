@@ -46814,6 +46814,88 @@ returns boolean language sql stable set search_path = public, pg_temp as $$
 $$;
 revoke execute on function public.fn_extensions_core_update_in_progress() from public, anon, authenticated, service_role;
 
+-- ---- sinais de escolha errada por capacidade (migration 0570, issue #326) ----
+-- Instrumento do teto de 27, que deixou de bloquear: conta, a partir do audit,
+-- quando uma pessoa moveu o mesmo negócio até 24 h depois da IA, e quando a IA
+-- repetiu uma capacidade logo depois de ela falhar. O porquê de cada sinal está
+-- no cabeçalho da migration 0570. Idempotente (`create or replace`).
+create or replace function public.fn_agent_tool_signals(
+  p_organization_id uuid,
+  p_agent_id        uuid,
+  p_since           timestamptz
+)
+returns table (
+  tool_name             text,
+  corrigidas_por_pessoa bigint,
+  repetidas_apos_falha  bigint
+)
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  with chamadas as (
+    select
+      a.metadata->>'tool_name' as tool_name,
+      a.metadata->>'success'   as sucesso,
+      a.created_at,
+      r.is_dry_run,
+      case
+        when a.metadata->'args'->>'lead_id'
+             ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        then (a.metadata->'args'->>'lead_id')::uuid
+      end                                                   as lead_id,
+      lag(a.metadata->>'tool_name') over w                  as tool_anterior,
+      lag(a.metadata->>'success')   over w                  as sucesso_anterior,
+      lag(a.metadata->>'desfecho')  over w                  as desfecho_anterior
+    from public.ai_agent_runs r
+    join public.api_audit_log a
+      on  a.request_id      = r.id::text
+      and a.action          = 'mcp.tool_called'
+      and a.organization_id = p_organization_id
+      and a.created_at     >= p_since
+    where r.organization_id = p_organization_id
+      and r.agent_id        = p_agent_id
+      and r.started_at     >= p_since
+      and a.metadata->>'tool_name' is not null
+    window w as (partition by r.id order by a.created_at, a.id)
+  )
+  select
+    c.tool_name,
+    count(*) filter (
+      where not c.is_dry_run
+        and c.sucesso = 'true'
+        and c.tool_name in ('crm_move_lead_stage', 'crm_close_demand')
+        and c.lead_id is not null
+        and exists (
+          select 1
+            from public.api_audit_log h
+           where h.organization_id = p_organization_id
+             and h.action          = 'lead.moved'
+             and h.actor_user_id  is not null
+             and h.resource_type   = 'crm_lead'
+             and h.resource_id     = c.lead_id
+             and h.created_at      > c.created_at
+             and h.created_at     <= c.created_at + interval '24 hours'
+        )
+    )::bigint as corrigidas_por_pessoa,
+    count(*) filter (
+      where c.tool_anterior = c.tool_name
+        and c.sucesso_anterior = 'false'
+        and coalesce(c.desfecho_anterior, '') <> 'sem_resultado'
+    )::bigint as repetidas_apos_falha
+  from chamadas c
+  group by 1
+$$;
+
+comment on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) is
+  'Indícios de escolha errada por capacidade de um agente (#326): corrigidas por pessoa (lead.moved humano até 24 h depois de crm_move_lead_stage/crm_close_demand) e repetidas logo após falhar na mesma execução. Mesma janela e elo audit<->run da fn_agent_tool_usage.';
+
+revoke execute on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) from public, anon;
+grant  execute on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) to authenticated, service_role;
+
+notify pgrst, 'reload schema';
+
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
 -- ⚠️ DE PROPÓSITO, NENHUMA FUNÇÃO É CRIADA DEPOIS DESTE BLOCO. Apêndice que cria
@@ -49529,84 +49611,3 @@ update public.ai_models set is_default_for_provider = false
 update public.ai_models set is_default_for_provider = true
  where provider = 'anthropic' and model_id = 'claude-sonnet-5-5';
 
--- ---- sinais de escolha errada por capacidade (migration 0570, issue #326) ----
--- Instrumento do teto de 27, que deixou de bloquear: conta, a partir do audit,
--- quando uma pessoa moveu o mesmo negócio até 24 h depois da IA, e quando a IA
--- repetiu uma capacidade logo depois de ela falhar. O porquê de cada sinal está
--- no cabeçalho da migration 0570. Idempotente (`create or replace`).
-create or replace function public.fn_agent_tool_signals(
-  p_organization_id uuid,
-  p_agent_id        uuid,
-  p_since           timestamptz
-)
-returns table (
-  tool_name             text,
-  corrigidas_por_pessoa bigint,
-  repetidas_apos_falha  bigint
-)
-language sql
-stable
-security invoker
-set search_path = public
-as $$
-  with chamadas as (
-    select
-      a.metadata->>'tool_name' as tool_name,
-      a.metadata->>'success'   as sucesso,
-      a.created_at,
-      r.is_dry_run,
-      case
-        when a.metadata->'args'->>'lead_id'
-             ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-        then (a.metadata->'args'->>'lead_id')::uuid
-      end                                                   as lead_id,
-      lag(a.metadata->>'tool_name') over w                  as tool_anterior,
-      lag(a.metadata->>'success')   over w                  as sucesso_anterior,
-      lag(a.metadata->>'desfecho')  over w                  as desfecho_anterior
-    from public.ai_agent_runs r
-    join public.api_audit_log a
-      on  a.request_id      = r.id::text
-      and a.action          = 'mcp.tool_called'
-      and a.organization_id = p_organization_id
-      and a.created_at     >= p_since
-    where r.organization_id = p_organization_id
-      and r.agent_id        = p_agent_id
-      and r.started_at     >= p_since
-      and a.metadata->>'tool_name' is not null
-    window w as (partition by r.id order by a.created_at, a.id)
-  )
-  select
-    c.tool_name,
-    count(*) filter (
-      where not c.is_dry_run
-        and c.sucesso = 'true'
-        and c.tool_name in ('crm_move_lead_stage', 'crm_close_demand')
-        and c.lead_id is not null
-        and exists (
-          select 1
-            from public.api_audit_log h
-           where h.organization_id = p_organization_id
-             and h.action          = 'lead.moved'
-             and h.actor_user_id  is not null
-             and h.resource_type   = 'crm_lead'
-             and h.resource_id     = c.lead_id
-             and h.created_at      > c.created_at
-             and h.created_at     <= c.created_at + interval '24 hours'
-        )
-    )::bigint as corrigidas_por_pessoa,
-    count(*) filter (
-      where c.tool_anterior = c.tool_name
-        and c.sucesso_anterior = 'false'
-        and coalesce(c.desfecho_anterior, '') <> 'sem_resultado'
-    )::bigint as repetidas_apos_falha
-  from chamadas c
-  group by 1
-$$;
-
-comment on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) is
-  'Indícios de escolha errada por capacidade de um agente (#326): corrigidas por pessoa (lead.moved humano até 24 h depois de crm_move_lead_stage/crm_close_demand) e repetidas logo após falhar na mesma execução. Mesma janela e elo audit<->run da fn_agent_tool_usage.';
-
-revoke execute on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) from public, anon;
-grant  execute on function public.fn_agent_tool_signals(uuid, uuid, timestamptz) to authenticated, service_role;
-
-notify pgrst, 'reload schema';
