@@ -220,7 +220,7 @@ test.describe("o wizard monta um funcionário", () => {
     await expect(page.getByRole("heading", { name: /treine seu funcionário/i })).toBeVisible();
     // As duas listas que não pedem configuração nenhuma.
     await expect(page.getByText(/ele já vem sabendo/i)).toBeVisible();
-    await expect(page.getByText(/e nunca vai fazer/i)).toBeVisible();
+    await expect(page.getByText(/e sempre confere antes de enviar/i)).toBeVisible();
 
     await page.locator("#name").fill("Bia");
     await page.locator("#regras_da_casa").fill("Horário: 8h às 18h. Nunca prometa desconto.");

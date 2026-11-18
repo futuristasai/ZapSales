@@ -39,7 +39,10 @@ export default async function ConnectWhatsappPage() {
       )}
     >
       <p className="text-sm text-muted-foreground">
-        {traduzir("Novos canais começam em modo de teste. Após concluir a configuração, abra Conexões para autorizar seus números de teste ou liberar o público.", idioma)}
+        {traduzir(
+          "Depois de conectado, o número começa em modo de teste: seu funcionário só responde os números que você autorizar. Para ele atender todos os clientes, libere o número em Canais › Conexões.",
+          idioma,
+        )}
       </p>
       <ConnectWhatsappClient
         wahaConfigured={wahaConfigured}

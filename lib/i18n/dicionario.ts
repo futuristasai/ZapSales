@@ -820,7 +820,7 @@ export const DICIONARIO: Traducoes = {
   "Nenhum número autorizado — a IA não responde ninguém neste canal.": {
     es: "Ningún número autorizado — la IA no responde a nadie en este canal.",
   },
-  "Novos canais começam em modo de teste. Após concluir a configuração, abra Conexões para autorizar seus números de teste ou liberar o público.": { es: "Los canales nuevos empiezan en modo de prueba. Al terminar la configuración, abre Conexiones para autorizar tus números de prueba o habilitar al público." },
+  "Depois de conectado, o número começa em modo de teste: seu funcionário só responde os números que você autorizar. Para ele atender todos os clientes, libere o número em Canais › Conexões.": { es: "Una vez conectado, el número empieza en modo de prueba: tu empleado solo responde a los números que autorices. Para que atienda a todos los clientes, habilita el número en Canales › Conexiones." },
   "IA em modo de teste": { es: "IA en modo de prueba" },
   "IA aberta ao público": { es: "IA abierta al público" },
   "IA restrita por origem": { es: "IA restringida por origen" },
@@ -7156,8 +7156,8 @@ export const DICIONARIO: Traducoes = {
   "Você cadastrou o número na Meta e tem as credenciais em mãos. Não usa o celular para conectar.": {
     es: "Registraste el número en Meta y tienes las credenciales a la mano. No usas el celular para conectar.",
   },
-  "Este servidor ainda não está pronto para RECEBER por este caminho.": {
-    es: "Este servidor todavía no está listo para RECIBIR por este camino.",
+  "Por este caminho, este servidor ainda não recebe as respostas dos clientes.": {
+    es: "Por este camino, este servidor todavía no recibe las respuestas de los clientes.",
   },
   "Dá para conectar e já enviar, mas as respostas do cliente não vão chegar até quem administra a instalação cadastrar o App da Meta, em Admin › API Oficial (Meta). Se você quer atender hoje, o caminho do código com o celular funciona agora — e dá para trocar depois, sem perder nada.": {
     es: "Puedes conectar y enviar desde ya, pero las respuestas de los clientes no llegarán hasta que quien administra la instalación registre la App de Meta en Admin › API Oficial (Meta). Si quieres atender hoy mismo, la opción del código con el celular funciona ahora, y puedes cambiar después sin perder nada.",
@@ -7218,9 +7218,9 @@ export const DICIONARIO: Traducoes = {
     es: "Lo que aplica en cualquier atención de tu empresa. Puedes dejarlo en blanco por ahora y escribirlo después: con el tiempo aprende de ti.",
   },
   "Ele já vem sabendo": { es: "Ya sabe desde el inicio" },
-  "E nunca vai fazer": { es: "Y nunca va a hacer" },
-  "Essas conferências acontecem antes de cada mensagem sair, e não têm interruptor.": {
-    es: "Estas verificaciones se hacen antes de que salga cada mensaje y no se pueden desactivar.",
+  "E sempre confere antes de enviar": { es: "Y siempre revisa antes de enviar" },
+  "O sistema confere cada mensagem antes de ela sair. Essas proteções valem sempre e não dá para desligar.": {
+    es: "El sistema revisa cada mensaje antes de que salga. Estas protecciones valen siempre y no se pueden desactivar.",
   },
   "O atendente foi criado, mas as": { es: "El agente se creó, pero las" },
   "regras da casa": { es: "reglas de la casa" },
@@ -7566,17 +7566,17 @@ export const DICIONARIO: Traducoes = {
   "Ver ficha do cliente": { es: "Ver ficha del cliente" },
   "Ver as etapas de um funil": { es: "Ver las etapas de un embudo" },
 
-  // ─── Onboarding: conferências de saída (guardrails), "E nunca vai fazer" ───
+  // ─── Onboarding: conferências de saída (guardrails), "E sempre confere antes de enviar" ───
   "Respeitar quem pediu para parar": { es: "Respetar a quien pidió parar" },
-  "Respeitar dados apagados e a base legal": { es: "Respetar datos borrados y la base legal" },
-  "Segurar o ritmo de envio": { es: "Controlar el ritmo de envío" },
-  "Respeitar a janela do WhatsApp": { es: "Respetar la ventana de WhatsApp" },
-  "Variar o texto das mensagens iguais": { es: "Variar el texto de los mensajes iguales" },
+  "Cumprir a LGPD, a lei de proteção de dados": { es: "Cumplir la LGPD, la ley de protección de datos" },
+  "Espaçar os envios para o número não ser bloqueado": { es: "Espaciar los envíos para que el número no sea bloqueado" },
+  "Respeitar o prazo de 24 horas do WhatsApp": { es: "Respetar el plazo de 24 horas de WhatsApp" },
+  "Variar o texto quando a mesma mensagem vai para muita gente": { es: "Variar el texto cuando el mismo mensaje va a mucha gente" },
   "Não prometer preço ou prazo por conta própria": { es: "No prometer precio o plazo por cuenta propia" },
   "Conferir promessas em texto livre": { es: "Verificar promesas en texto libre" },
   "Não prometer atendimento humano que não existe": { es: "No prometer atención humana que no existe" },
-  "Não falar a nossa língua com o seu cliente": { es: "No hablar nuestro idioma con tu cliente" },
-  "Dizer que é um assistente quando perguntam": { es: "Decir que es un asistente cuando preguntan" },
+  "Não mostrar termos técnicos do sistema ao cliente": { es: "No mostrar términos técnicos del sistema al cliente" },
+  "Admitir que é um assistente virtual quando perguntam": { es: "Admitir que es un asistente virtual cuando preguntan" },
   "Detectar tentativa de manipular o assistente": { es: "Detectar intento de manipular al asistente" },
 
   // ─── Onboarding: welcome/_form.tsx — cidades do fuso horário ───

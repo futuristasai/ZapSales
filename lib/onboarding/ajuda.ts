@@ -260,7 +260,7 @@ export const AJUDA_DOS_PASSOS: Readonly<Record<string, PassoComAjuda>> = {
           {
             pergunta: "Existe algo que ele não pode fazer?",
             resposta:
-              "As conferências que rodam antes de cada mensagem sair estão listadas no fim desta tela. Elas valem sempre e não têm interruptor.",
+              "Existe. No fim desta tela está a lista do que o sistema confere em toda mensagem antes de ela sair — por exemplo, nunca escrever para quem pediu para parar. Essas proteções valem sempre e não dá para desligar.",
           },
         ],
         seDeixarParaDepois:
@@ -288,9 +288,9 @@ export const AJUDA_DOS_PASSOS: Readonly<Record<string, PassoComAjuda>> = {
               "Es una contraseña que conecta el sistema con la empresa de IA que le da el cerebro al empleado. Queda guardada con seguridad, y la pantalla solo muestra el final.",
           },
           {
-            pergunta: "¿Qué nunca va a hacer?",
+            pergunta: "¿Hay algo que no pueda hacer?",
             resposta:
-              "Las verificaciones que se ejecutan antes de cada mensaje están listadas al final de esta pantalla. Valen siempre y no tienen interruptor.",
+              "Sí. Al final de esta pantalla está la lista de lo que el sistema revisa en cada mensaje antes de que salga — por ejemplo, nunca escribir a quien pidió parar. Estas protecciones valen siempre y no se pueden desactivar.",
           },
         ],
         seDeixarParaDepois:
@@ -318,9 +318,9 @@ export const AJUDA_DOS_PASSOS: Readonly<Record<string, PassoComAjuda>> = {
               "It is a password that connects the system to the AI company that gives the employee a brain. It is stored securely, and the screen only shows its last characters.",
           },
           {
-            pergunta: "What will they never do?",
+            pergunta: "Is there anything they can't do?",
             resposta:
-              "The checks that run before every message goes out are listed at the bottom of this screen. They always apply and have no off switch.",
+              "Yes. At the bottom of this screen is the list of what the system checks in every message before it goes out — for example, never writing to someone who asked to stop. These protections always apply and can't be turned off.",
           },
         ],
         seDeixarParaDepois:

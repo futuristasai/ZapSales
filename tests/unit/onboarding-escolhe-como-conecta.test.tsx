@@ -166,7 +166,7 @@ describe("o passo do telefone pergunta como a pessoa já usa o número", () => {
     // recém-feita este é o estado NORMAL, e a hora de dizer isso é antes de a
     // pessoa ir buscar três credenciais no painel — não depois de conectar.
     await waitFor(() =>
-      expect(screen.getByText(/ainda não está pronto para RECEBER/i)).toBeTruthy(),
+      expect(screen.getByText(/ainda não recebe as respostas dos clientes/i)).toBeTruthy(),
     );
   });
 
@@ -176,6 +176,6 @@ describe("o passo do telefone pergunta como a pessoa já usa o número", () => {
     fireEvent.click(screen.getByTestId("forma-oficial").querySelector("input")!);
 
     await waitFor(() => expect(screen.getByTestId("dublê-oficial")).toBeTruthy());
-    expect(screen.queryByText(/ainda não está pronto para RECEBER/i)).toBeNull();
+    expect(screen.queryByText(/ainda não recebe as respostas dos clientes/i)).toBeNull();
   });
 });
