@@ -8,6 +8,25 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.4.0] — 2026-11-18
+
+### Alterado
+
+- **O agente pode ligar mais de 27 capacidades, com aviso e sinais de escolha errada** Em **O que o agente pode fazer**, 27 capacidades deixou de ser um limite. Agora é o **recomendado**: acima disso a tela deixa ligar outro pacote inteiro (por exemplo, "Atender e responder" junto com "Vender e mover o funil") e mostra um aviso amarelo dizendo que a IA pode escolher a capacidade errada com mais frequência. O limite que o sistema recusa passou a ser **100**, e cabe o catálogo inteiro. Capacidade de risco crítico continua exigindo marcação uma a uma: o pacote nunca a liga por você.
+
+  - **Capacidades parecidas:** quando duas capacidades de pacotes diferentes fazem quase a mesma coisa e estão ligadas juntas (por exemplo, "Marcar consulta" e "Agendar um retorno"), a tela avisa e diz o que observar.
+  - **Sinais de escolha errada na aba Capacidades:** o painel passa a contar quando **alguém da equipe moveu o mesmo negócio até 24 horas depois da IA** (ao mover de etapa ou encerrar o negócio) e quando a **IA chamou a mesma capacidade de novo logo depois de ela falhar**. São indícios, não certeza, e servem para decidir o que desligar.
+
+  **No servidor:** nada a fazer. A atualização normal aplica a mudança no banco.
+
+### Corrigido
+
+- **O editor do agente diz por que "Salvar rascunho" está apagado** No editor do agente, quando algum campo estava inválido, o botão "Salvar
+  rascunho" ficava apagado sem explicação — mesmo com a barra dizendo
+  "Alterações não salvas". O aviso existia só embaixo do campo, que podia estar
+  várias partes abaixo de onde a pessoa estava mexendo. Agora a barra de salvar
+  diz o que corrigir, nomeia a parte do formulário e traz um atalho "Ver onde corrigir".
+
 ## [1.3.2] — 2026-11-17
 
 ### Corrigido
@@ -281,7 +300,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/futuristasai/ZapSales/compare/v1.2.1...v1.3.0
