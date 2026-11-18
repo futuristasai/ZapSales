@@ -8,6 +8,14 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.1] — 2026-11-18
+
+### Corrigido
+
+- **Next.js atualizado para a 16.4.6, com as correções de segurança da versão** O sistema passou a rodar sobre o Next.js 16.4.6 (antes, 16.4.3). A atualização traz
+  as correções de segurança publicadas pelo Next.js para essa linha de versão. Nada
+  muda nas telas nem na forma de usar, e a atualização da instalação é a de sempre.
+
 ## [1.5.0] — 2026-11-18
 
 ### Alterado
@@ -320,7 +328,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/futuristasai/ZapSales/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/futuristasai/ZapSales/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...v1.3.2
