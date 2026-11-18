@@ -185,6 +185,17 @@ export function markdownParaTextoSimples(texto: string): string {
     .map((linha) => {
       let l = linha.replace(/^#{1,6}\s+/, "");
       l = l.replace(/^[-*]\s+/, "• ");
+      // Item no formato `- **título** corpo` (o que `montar-secao.ts` escreve):
+      // no Markdown o negrito separa os dois, mas no texto simples eles grudam
+      // ("…em aberto Atualizamos…"). Quando o corpo começa uma frase nova
+      // (maiúscula) e o título não termina em pontuação, entra um ponto.
+      // Corpo em minúscula é continuação da frase ("**Agentes de IA** que
+      // atendem…") e fica como está.
+      l = l.replace(
+        /^(•\s+)\*\*([^*]+)\*\*(\s+)(?=(?:\*\*)?[«"“'(]?\p{Lu})/u,
+        (_m, marca: string, titulo: string, espaco: string) =>
+          `${marca}${/[.!?:;…]$/.test(titulo.trimEnd()) ? titulo : `${titulo.trimEnd()}.`}${espaco}`,
+      );
       l = l.replace(/\*\*([^*]+)\*\*/g, "$1");
       l = l.replace(/__([^_]+)__/g, "$1");
       l = l.replace(/`([^`]+)`/g, "$1");

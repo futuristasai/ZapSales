@@ -179,6 +179,43 @@ describe("markdownParaTextoSimples", () => {
     expect(limpo).toMatch(/•\s+Multi-tenancy/);
   });
 
+  it("item `- **título** corpo` ganha ponto entre título e corpo (não gruda no texto simples)", () => {
+    // Visto na tela /admin/atualizacao da 1.5.2: "…em aberto Atualizamos as bibliotecas…".
+    expect(
+      markdownParaTextoSimples(
+        "- **Bibliotecas internas atualizadas, sem nenhuma vulnerabilidade conhecida em aberto** Atualizamos as bibliotecas",
+      ),
+    ).toBe(
+      "• Bibliotecas internas atualizadas, sem nenhuma vulnerabilidade conhecida em aberto. Atualizamos as bibliotecas",
+    );
+    expect(markdownParaTextoSimples("- **O quadro ganhou um botão** «Trocar de funil» fica ao lado")).toBe(
+      "• O quadro ganhou um botão. «Trocar de funil» fica ao lado",
+    );
+    // Corpo que também abre com negrito (CHANGELOG real, 1.4.x).
+    expect(markdownParaTextoSimples("- **O gasto passa a aparecer em Uso de IA** **Limite por contato.** A IA")).toBe(
+      "• O gasto passa a aparecer em Uso de IA. Limite por contato. A IA",
+    );
+  });
+
+  it("não põe ponto quando o título já termina em pontuação ou o corpo continua a frase", () => {
+    expect(markdownParaTextoSimples("- **A primeira versão publicada do ZapSales.** Um CRM")).toBe(
+      "• A primeira versão publicada do ZapSales. Um CRM",
+    );
+    expect(markdownParaTextoSimples("- **Atendimento pelos dois caminhos:** a API Oficial")).toBe(
+      "• Atendimento pelos dois caminhos: a API Oficial",
+    );
+    expect(markdownParaTextoSimples("- **Agentes de IA** que atendem e qualificam")).toBe(
+      "• Agentes de IA que atendem e qualificam",
+    );
+    expect(markdownParaTextoSimples("- **Follow-ups automáticos**, agenda e equipe")).toBe(
+      "• Follow-ups automáticos, agenda e equipe",
+    );
+    // Negrito no meio da frase não é título de item.
+    expect(markdownParaTextoSimples("Na tela **Riscos de Perda** Agora mostra")).toBe(
+      "Na tela Riscos de Perda Agora mostra",
+    );
+  });
+
   it("não mexe em texto sem marcação nenhuma", () => {
     expect(markdownParaTextoSimples("texto normal, sem markdown.")).toBe(
       "texto normal, sem markdown.",
