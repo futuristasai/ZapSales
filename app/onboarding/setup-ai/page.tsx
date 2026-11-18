@@ -7,7 +7,7 @@ import { SetupAiForm } from "./_form";
 import { InteligenciaDele } from "./_inteligencia";
 import { capacidadesPadraoDoOnboarding } from "@/lib/ai/agents/capacidades-padrao";
 import { TOOL_CATALOG } from "@/lib/mcp/tools/catalog";
-import { CONFERENCIAS_DE_SAIDA } from "@/lib/ai/guardrails/lista-de-conferencia";
+import { CONFERENCIAS_SEMPRE_LIGADAS } from "@/lib/ai/guardrails/lista-de-conferencia";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { Passo } from "../_components/Passo";
 
@@ -20,7 +20,8 @@ export const dynamic = "force-dynamic";
  * sistema e passa a treinar alguém. Além do nome e do jeito de falar, agora
  * pergunta as REGRAS DA CASA — que vão para a memória da organização, valendo
  * para qualquer agente, e não para o prompt deste — e mostra, sem pedir
- * configuração nenhuma, o que ele já vem sabendo fazer e o que nunca vai fazer.
+ * configuração nenhuma, o que ele já vem sabendo fazer e o que o sistema confere
+ * em toda mensagem antes de ela sair.
  *
  * As duas listas saem das MESMAS fontes que o runtime usa: as capacidades do
  * pacote que o agente recebe ligado, e as conferências que rodam antes de cada
@@ -42,7 +43,8 @@ export default async function SetupAiPage() {
     .filter((r): r is string => Boolean(r))
     .map((r) => traduzir(r, idioma));
 
-  const conferencias = CONFERENCIAS_DE_SAIDA.map((c) => traduzir(c.rotulo, idioma));
+  // Só as que não se desligam: o rodapé da lista diz "não dá para desligar".
+  const conferencias = CONFERENCIAS_SEMPRE_LIGADAS.map((c) => traduzir(c.rotulo, idioma));
 
   return (
     <Passo

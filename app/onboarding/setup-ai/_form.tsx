@@ -25,9 +25,9 @@ import {
   Handshake,
   Headset,
   Lightning,
+  ShieldCheck,
   Smiley,
   Sparkle,
-  X,
 } from "@/lib/ui/icons";
 import { useIdioma } from "@/lib/i18n/IdiomaProvider";
 import { exemploDoJeito, rotulosDaEscolha } from "@/lib/onboarding/ajuda";
@@ -324,17 +324,30 @@ export function SetupAiForm({ capacidades, conferencias }: Props) {
           </ul>
         </section>
         <section className="rounded-xl border border-border bg-surface p-4 shadow-xs">
-          <h3 className="text-sm font-semibold">{t("E nunca vai fazer")}</h3>
+          {/*
+            Era "E nunca vai fazer" com um X vermelho em cada linha — e as linhas
+            são proteções ("Respeitar quem pediu para parar"). Lido de cima para
+            baixo, dizia que ele NUNCA respeita quem pediu para parar. O título
+            agora diz o que a lista é, e o ícone é de proteção, não de proibição.
+          */}
+          <h3 className="text-sm font-semibold">{t("E sempre confere antes de enviar")}</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {conferencias.map((c) => (
               <li key={c} className="flex items-start gap-2 leading-snug">
-                <X aria-hidden size={16} weight="bold" className="mt-0.5 shrink-0 text-error" />
+                <ShieldCheck
+                  aria-hidden
+                  size={16}
+                  weight="bold"
+                  className="mt-0.5 shrink-0 text-success"
+                />
                 <span>{c}</span>
               </li>
             ))}
           </ul>
           <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
-            {t("Essas conferências acontecem antes de cada mensagem sair, e não têm interruptor.")}
+            {t(
+              "O sistema confere cada mensagem antes de ela sair. Essas proteções valem sempre e não dá para desligar.",
+            )}
           </p>
         </section>
       </div>

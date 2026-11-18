@@ -362,7 +362,7 @@ export function ConnectWhatsappClient({
         {!oficialPodeReceber && (
           <div className="rounded-md border border-warning/60 bg-warning-bg p-4 text-sm text-warning-fg">
             <p className="font-medium">
-              {t("Este servidor ainda não está pronto para RECEBER por este caminho.")}
+              {t("Por este caminho, este servidor ainda não recebe as respostas dos clientes.")}
             </p>
             <p className="mt-1">
               {t(

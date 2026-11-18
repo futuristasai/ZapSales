@@ -80,7 +80,7 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "lgpd",
-    rotulo: "Respeitar dados apagados e a base legal",
+    rotulo: "Cumprir a LGPD, a lei de proteção de dados",
     oQueProtege:
       "Contato anonimizado a pedido não recebe mensagem, e prospecção sem base legal não sai.",
     escolha: null,
@@ -89,7 +89,7 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "pacing",
-    rotulo: "Segurar o ritmo de envio",
+    rotulo: "Espaçar os envios para o número não ser bloqueado",
     oQueProtege:
       "Espaça as mensagens para o seu número não parecer robô e ser bloqueado pelo WhatsApp.",
     escolha: null,
@@ -98,7 +98,7 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "messaging_window",
-    rotulo: "Respeitar a janela do WhatsApp",
+    rotulo: "Respeitar o prazo de 24 horas do WhatsApp",
     oQueProtege:
       "Fora da janela de 24 horas, só modelo aprovado sai — é o que o próprio WhatsApp permite.",
     escolha: null,
@@ -108,7 +108,7 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "spinning",
-    rotulo: "Variar o texto das mensagens iguais",
+    rotulo: "Variar o texto quando a mesma mensagem vai para muita gente",
     oQueProtege:
       "Evita mandar a mesma frase idêntica para muita gente, que é o padrão que denuncia disparo em massa.",
     escolha: null,
@@ -146,7 +146,7 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "internal_vocabulary",
-    rotulo: "Não falar a nossa língua com o seu cliente",
+    rotulo: "Não mostrar termos técnicos do sistema ao cliente",
     oQueProtege:
       "Barra nome de ferramenta, nome de tabela e código de erro na mensagem que o cliente lê.",
     escolha: null,
@@ -168,13 +168,24 @@ export const CONFERENCIAS_DE_SAIDA: readonly ConferenciaDeSaida[] = [
   },
   {
     nome: "disclosure",
-    rotulo: "Dizer que é um assistente quando perguntam",
+    rotulo: "Admitir que é um assistente virtual quando perguntam",
     oQueProtege: "Se o cliente pergunta se está falando com um robô, a resposta não pode enganar.",
     escolha: null,
     porQueNaoSeDesliga: "Esconder que é um assistente é enganar o cliente.",
      camada: null,
   },
 ];
+
+/**
+ * As que valem SEMPRE — sem interruptor em lugar nenhum.
+ *
+ * É o recorte que o onboarding mostra sob "E sempre confere antes de enviar", com
+ * o rodapé "não dá para desligar". A conferência com escolha fica de fora porque
+ * pode estar desligada nesta instalação, e a tela prometeria uma proteção que
+ * talvez não rode.
+ */
+export const CONFERENCIAS_SEMPRE_LIGADAS: readonly ConferenciaDeSaida[] =
+  CONFERENCIAS_DE_SAIDA.filter((c) => c.escolha === null);
 
 /**
  * A conferência de ENTRADA, que não está na cadeia de saída.
