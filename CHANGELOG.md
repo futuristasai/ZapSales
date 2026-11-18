@@ -8,6 +8,26 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.0] — 2026-11-18
+
+### Alterado
+
+- **«O que o agente pode fazer» ficou organizado, e as ferramentas externas ganharam seção própria** No editor do agente, cada pacote de capacidades agora abre e mostra as capacidades
+  dele separadas pelo tamanho do efeito (só consulta, altera dados, sem volta). Cada
+  uma traz a explicação, um exemplo de conversa que mostra quando ela entra em ação, a
+  parte do sistema em que mexe e quantas vezes foi usada nos últimos 30 dias. Uma busca
+  acha qualquer capacidade pelo nome e substitui o antigo "modo avançado".
+
+  Os avisos de "acima do recomendado" e de "capacidades parecidas" ficaram numa faixa
+  só, junto da contagem, com um botão que abre direto a aba de uso. Essa aba passou a
+  se chamar **Uso das capacidades**, para não ser confundida com a seção.
+
+  As ferramentas externas saíram do meio das capacidades e viraram a parte
+  **Ferramentas externas** do editor. Quando a empresa ainda não tem nenhuma, a seção
+  explica para que servem e traz os botões "Cadastrar uma ferramenta externa" e
+  "Conectar um servidor MCP", que abrem em outra aba para não perder o que estava
+  sendo editado.
+
 ## [1.4.0] — 2026-11-18
 
 ### Alterado
@@ -300,7 +320,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.4.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/futuristasai/ZapSales/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/futuristasai/ZapSales/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/futuristasai/ZapSales/compare/v1.3.0...v1.3.1
