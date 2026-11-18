@@ -8,6 +8,25 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.4] — 2026-11-18
+
+### Corrigido
+
+- **O passo de treinar o funcionário não diz mais o contrário do que ele faz** No passo «Treine seu funcionário», o quadro das proteções se chamava «E nunca vai
+  fazer» e marcava cada linha com um X vermelho — só que as linhas eram proteções,
+  como «Respeitar quem pediu para parar». Lido de cima para baixo, o quadro dizia que o
+  funcionário nunca respeita quem pediu para parar. Agora ele se chama «E sempre confere
+  antes de enviar», com um ícone de escudo, e lista só as proteções que de fato não se
+  desligam: a segunda leitura de promessas, que tem interruptor, continua no painel de
+  segurança do agente.
+
+  Os nomes das proteções ficaram em palavras do dia a dia, também no painel de segurança
+  do agente: «Cumprir a LGPD, a lei de proteção de dados», «Respeitar o prazo de 24 horas
+  do WhatsApp», «Não mostrar termos técnicos do sistema ao cliente», entre outros. E o
+  passo de conectar o WhatsApp explica o modo de teste numa frase só: depois de
+  conectado, o funcionário responde apenas os números que você autorizar, até você
+  liberar o número em Canais › Conexões.
+
 ## [1.5.3] — 2026-11-18
 
 ### Corrigido
@@ -347,7 +366,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.3...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...HEAD
+[1.5.4]: https://github.com/futuristasai/ZapSales/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/futuristasai/ZapSales/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/futuristasai/ZapSales/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/futuristasai/ZapSales/compare/v1.5.0...v1.5.1
