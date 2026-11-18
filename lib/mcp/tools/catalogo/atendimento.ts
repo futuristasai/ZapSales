@@ -94,7 +94,7 @@ export const TOOLS_ATENDIMENTO = declararTools([
     // candidata a voltar numa revisão dos pacotes.
     //
     // Fica em "vender", que tem folga, e continua alcançável em qualquer jornada
-    // pelo modo avançado. Quando o teto ou o tamanho do pacote for revisto, esta
+    // pela busca do seletor. Quando o teto ou o tamanho do pacote for revisto, esta
     // linha é candidata natural a voltar.
     pacotes: ["vender"],
   },

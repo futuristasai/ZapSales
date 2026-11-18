@@ -28,7 +28,7 @@
       "lane": "ui",
       "col": 2,
       "type": "frontend",
-      "label": "Editor do agente › grupo \"Ferramentas externas\" (conta no teto de 27)"
+      "label": "Editor do agente › seção \"Ferramentas externas\" (própria, com cadastro à vista; conta no limite das capacidades)"
     },
     {
       "id": "abaTeste",

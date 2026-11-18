@@ -11,7 +11,7 @@
  *      dele mora em `TETO_RECOMENDADO_POR_AGENTE` e ja mudou uma vez (20 -> 25), por
  *      isso nao se repete aqui.
  *   2. tela — 60 checkboxes destroem a configuracao para um leigo.
- * O checkbox por tool continua existindo em "modo avancado"; o pacote e o
+ * O checkbox por tool continua existindo dentro de cada pacote aberto (e na busca da tela); o pacote e o
  * caminho padrao.
  *
  * Este modulo e CLIENT-SAFE: zero import de zod, supabase ou next/headers.
