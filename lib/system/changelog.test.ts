@@ -198,8 +198,8 @@ describe("markdownParaTextoSimples", () => {
   });
 
   it("não põe ponto quando o título já termina em pontuação ou o corpo continua a frase", () => {
-    expect(markdownParaTextoSimples("- **A primeira versão publicada do ZapSales.** Um CRM")).toBe(
-      "• A primeira versão publicada do ZapSales. Um CRM",
+    expect(markdownParaTextoSimples("- **A primeira versão publicada do produto.** Um CRM")).toBe(
+      "• A primeira versão publicada do produto. Um CRM",
     );
     expect(markdownParaTextoSimples("- **Atendimento pelos dois caminhos:** a API Oficial")).toBe(
       "• Atendimento pelos dois caminhos: a API Oficial",
