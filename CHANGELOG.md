@@ -8,6 +8,16 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.2] — 2026-11-18
+
+### Corrigido
+
+- **Bibliotecas internas atualizadas, sem nenhuma vulnerabilidade conhecida em aberto** Atualizamos as bibliotecas que tinham avisos de segurança publicados: o `hono` e o
+  `@hono/node-server` (usados pelo servidor MCP), o Sentry (registro de erros) e as
+  ferramentas de verificação de código. A auditoria de dependências passou a não acusar
+  nenhuma vulnerabilidade conhecida. Nada muda nas telas nem na forma de usar, e a
+  atualização da instalação é a de sempre.
+
 ## [1.5.1] — 2026-11-18
 
 ### Corrigido
@@ -328,7 +338,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.1...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/futuristasai/ZapSales/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/futuristasai/ZapSales/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/futuristasai/ZapSales/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/futuristasai/ZapSales/compare/v1.3.2...v1.4.0
