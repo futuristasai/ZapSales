@@ -41,6 +41,7 @@ import {
   Info,
   PaperPlaneTilt,
   PuzzlePiece,
+  Plugs,
   ShieldCheck,
   SlidersHorizontal,
   Smiley,
@@ -85,6 +86,7 @@ import { rotuloDoEstadoDoCanal } from "@/lib/channels/estado";
 import { bloqueioDePublicacao } from "@/lib/ai/agents/bloqueio-de-publicacao";
 import { mesmoRascunho } from "@/lib/ai/agents/mesmo-rascunho";
 import { ToolPicker } from "./ToolPicker";
+import { FerramentasExternasDoAgente } from "./FerramentasExternasDoAgente";
 import { TriggerEditor, type TriggerValue } from "./TriggerEditor";
 import { HandoffKeywordsInput } from "./HandoffKeywordsInput";
 import { FollowupFlowPicker } from "./FollowupFlowPicker";
@@ -563,6 +565,7 @@ type IdDaSecao =
   | "respostas"
   | "conhecimento"
   | "capacidades"
+  | "externas"
   | "onde"
   | "pessoas"
   | "vendas"
@@ -587,6 +590,7 @@ const SECOES: ReadonlyArray<{ id: IdDaSecao; indice: string; Icone: Icon }> = [
   { id: "personalidade", indice: "Personalidade", Icone: Smiley },
   { id: "respostas", indice: "Jeito de responder", Icone: ChatsCircle },
   { id: "capacidades", indice: "O que ele faz", Icone: PuzzlePiece },
+  { id: "externas", indice: "Ferramentas externas", Icone: Plugs },
   { id: "onde", indice: "Onde e quando atende", Icone: WhatsappLogo },
   { id: "pessoas", indice: "Passar para uma pessoa", Icone: PassagemParaHumano },
   { id: "vendas", indice: "Propostas e retornos", Icone: HandCoins },
@@ -613,6 +617,7 @@ const SECAO_DO_CAMPO: Record<string, IdDaSecao> = {
   off_topic_reply: "personalidade",
   split_max_chars: "respostas",
   tool_ids: "capacidades",
+  external_tool_ids: "externas",
   channel_session_id: "onde",
   trigger_config: "onde",
   model: "inteligencia",
@@ -957,7 +962,8 @@ export function AgentForm(props: Props) {
 
   /** Uma linha por seção no índice: como ela está AGORA, sem precisar abrir. */
   const resumoDaSecao: Record<IdDaSecao, string> = (() => {
-    const capacidades = form.tool_ids.length + form.external_tool_ids.length;
+    const capacidades = form.tool_ids.length;
+    const externas = form.external_tool_ids.length;
     const materiais = form.knowledge_source_ids.length;
     const tom: Record<string, string> = {
       formal: t("Tom formal"),
@@ -982,6 +988,10 @@ export function AgentForm(props: Props) {
         capacidades === 0
           ? t("Nenhuma ação ligada")
           : `${capacidades} ${capacidades === 1 ? t("ação ligada") : t("ações ligadas")}`,
+      externas:
+        externas === 0
+          ? t("Nenhuma ligada")
+          : `${externas} ${externas === 1 ? t("ligada") : t("ligadas")}`,
       onde: channelSession?.display_name ?? t("Sem número"),
       pessoas: form.handoff_tool_enabled
         ? t("Chama a equipe quando precisa")
@@ -1005,6 +1015,7 @@ export function AgentForm(props: Props) {
     temBoasVindas: form.profile_welcome.trim() !== "",
     materiais: form.knowledge_source_ids.length,
     acoes: form.tool_ids.length + form.external_tool_ids.length,
+    ferramentasExternas: form.external_tool_ids.length,
     numeroEscolhido: form.channel_session_id !== "",
     chamaPessoa: form.handoff_tool_enabled,
     followupLigado: form.followup.enabled,
@@ -1818,20 +1829,34 @@ export function AgentForm(props: Props) {
               id="capacidades"
               estado={estadoDaSecao.capacidades}
               titulo={t("O que o agente pode fazer")}
-              explicacao={t("Ligue por jornada de trabalho. O agente só consegue fazer o que estiver ligado aqui — e o que estiver ligado, ele fará sozinho durante o atendimento.")}
+              explicacao={t("Ligue por jornada de trabalho. O que estiver ligado, ele fará sozinho durante o atendimento. Abra um pacote para ver cada capacidade, com um exemplo de quando ela entra na conversa.")}
             >
               <ToolPicker
                 value={form.tool_ids}
                 onChange={(ids) => patch({ tool_ids: ids })}
-                externas={{
-                  value: form.external_tool_ids,
-                  onChange: (ids) => patch({ external_tool_ids: ids }),
-                }}
+                qtdExternas={form.external_tool_ids.length}
+                agentId={props.mode === "edit" ? props.agent.id : null}
                 disabled={disabled}
               />
               {validation.tool_ids ? (
                 <p className="text-xs text-destructive">{validation.tool_ids}</p>
               ) : null}
+            </SecaoDoAgente>
+
+            {/* Seção própria (e não um grupo no fim das capacidades): é o que o agente alcança
+                FORA do sistema, e só existe depois que alguém cadastra a conexão. */}
+            <SecaoDoAgente
+              id="externas"
+              estado={estadoDaSecao.externas}
+              titulo={t("Ferramentas externas")}
+              explicacao={t("Outros sistemas que o agente consulta ou aciona durante a conversa: estoque, planilha, sistema de gestão, loja virtual. A conexão é cadastrada uma vez; aqui você escolhe quais este agente pode usar.")}
+            >
+              <FerramentasExternasDoAgente
+                value={form.external_tool_ids}
+                onChange={(ids) => patch({ external_tool_ids: ids })}
+                capacidadesLigadas={form.tool_ids.length}
+                disabled={disabled}
+              />
             </SecaoDoAgente>
 
             <SecaoDoAgente

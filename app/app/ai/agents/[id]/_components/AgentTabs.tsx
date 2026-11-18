@@ -20,6 +20,7 @@ import type { FunilDaResposta } from "@/hooks/pipelines/usePipelines";
 import { TestPanel } from "./TestPanel";
 import { RunsTable } from "./RunsTable";
 import { UsoDasCapacidades } from "./UsoDasCapacidades";
+import { AbrirAbaDoAgente, type AbaAbrivelDoAgente } from "./abrir-aba";
 import { VersionHistory } from "./VersionHistory";
 import { ProposalsPanel } from "./ProposalsPanel";
 import type { AgentRow } from "@/hooks/ai/useAgent";
@@ -69,7 +70,9 @@ const ABAS: ReadonlyArray<{ id: Aba; nome: string; Icone: typeof ChatsCircle; fr
   },
   {
     id: "capacidades",
-    nome: "Capacidades",
+    // "Uso das capacidades", e não só "Capacidades": com o mesmo nome da seção "O que o
+    // agente pode fazer", o aviso que mandava olhar aqui era lido como a lista da seção.
+    nome: "Uso das capacidades",
     Icone: PuzzlePiece,
     frase: "Se as ações que você ligou estão funcionando: o que ele usa, o que falha e o que nunca foi usado.",
   },
@@ -100,14 +103,21 @@ export function AgentTabs(props: Props) {
   );
   const hasVersion = !!(props.draft || props.published);
   const atual = ABAS.find((a) => a.id === tab) ?? ABAS[0]!;
+  const listaDeAbas = React.useRef<HTMLDivElement>(null);
+  /** Um aviso de dentro do formulário pede outra aba: troca e leva a pessoa até ela. */
+  const abrirAba = React.useCallback((aba: AbaAbrivelDoAgente) => {
+    setTab(aba);
+    requestAnimationFrame(() => listaDeAbas.current?.scrollIntoView?.({ block: "start", behavior: "smooth" }));
+  }, []);
 
   return (
+    <AbrirAbaDoAgente.Provider value={abrirAba}>
     <Tabs
       value={tab}
       onValueChange={(v) => setTab(v as Aba)}
       className="flex flex-col gap-3"
     >
-      <div className="space-y-2">
+      <div ref={listaDeAbas} className="scroll-mt-40 space-y-2">
         <TabsList className="h-auto justify-start self-start">
           {ABAS.map((aba) => (
             <TabsTrigger
@@ -179,5 +189,6 @@ export function AgentTabs(props: Props) {
         />
       </TabsContent>
     </Tabs>
+    </AbrirAbaDoAgente.Provider>
   );
 }

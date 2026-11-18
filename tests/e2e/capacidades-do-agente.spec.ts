@@ -143,6 +143,20 @@ async function abrirConfiguracao(page: Page): Promise<void> {
   await page.getByTestId("tool-picker").waitFor({ state: "visible", timeout: 90_000 });
 }
 
+/**
+ * Procura uma capacidade pela busca do seletor — o caminho que substituiu o antigo
+ * "modo avançado". Deixa o resultado na tela; `limparBusca` volta aos pacotes.
+ */
+async function buscarCapacidade(page: Page, termo: string): Promise<void> {
+  await page.getByTestId("busca-capacidade").fill(termo);
+  await page.getByTestId("resultado-da-busca").waitFor({ state: "visible" });
+}
+
+async function limparBusca(page: Page): Promise<void> {
+  await page.getByTestId("busca-capacidade").fill("");
+  await page.getByTestId("resultado-da-busca").waitFor({ state: "detached" });
+}
+
 /** Marcada ou não, lido do atributo que o componente publica. */
 function capacidade(page: Page, name: string) {
   return page.getByTestId(`capacidade-${name}`).first();
@@ -236,6 +250,9 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await page.getByTestId("switch-pacote-reter").click();
     await expect(page.getByTestId("pacote-reter")).toHaveAttribute("data-estado", "ligado");
 
+    // A faixa de atenção nasce fechada e ABRE SOZINHA quando o clique cria um ponto
+    // novo: acender o par parecido sem mostrar nada seria a surpresa que o #326 tirou.
+    await expect(page.getByTestId("toggle-atencao")).toHaveAttribute("aria-expanded", "true");
     const aviso = page.getByTestId("aviso-sobreposicao");
     await expect(aviso).toBeVisible();
     await expect(
@@ -286,14 +303,15 @@ test.describe("Configurar o que o agente pode fazer", () => {
       .getByTestId("tool-picker")
       .screenshot({ path: path.join(EVIDENCIA, "326-acima-do-recomendado.png") });
 
-    // Voltar ao recomendado tira o aviso: desligar uma do seed deixa 27 exatas.
-    await page.getByTestId("toggle-avancado").click();
-    await page.getByTestId("lista-avancada").waitFor({ state: "visible" });
+    // Voltar ao recomendado tira o aviso: desligar uma do seed deixa 27 exatas. A
+    // capacidade se acha pela busca, pelo nome técnico, que a busca também lê.
+    await buscarCapacidade(page, TOOLS_DO_SEED[2]!);
     await page
+      .getByTestId("resultado-da-busca")
       .getByTestId(`capacidade-${TOOLS_DO_SEED[2]}`)
       .locator("input[type=checkbox]")
       .click();
-    await page.getByTestId("toggle-avancado").click();
+    await limparBusca(page);
     await expect(page.getByTestId("consumo-teto")).toHaveAttribute("data-acima", "nao");
     await expect(page.getByTestId("aviso-acima-do-recomendado")).toHaveCount(0);
 
@@ -302,20 +320,22 @@ test.describe("Configurar o que o agente pode fazer", () => {
       "data-estado",
       "ligado",
     );
-    // …e para conferir UMA A UMA é preciso abrir o modo avançado: no caminho
-    // padrão a tela mostra o pacote, não as fichas. As únicas fichas visíveis
-    // fora dele são as críticas — que é exatamente o ponto do desenho.
-    await page.getByTestId("toggle-avancado").click();
-    await page.getByTestId("lista-avancada").waitFor({ state: "visible" });
+    // …e para conferir UMA A UMA basta abrir o pacote: as fichas moram dentro dele,
+    // separadas pelo tamanho do efeito.
+    await page.getByTestId("abrir-pacote-atender").click();
+    await page.getByTestId("capacidades-do-pacote-atender").waitFor({ state: "visible" });
     await expect.poll(() => estaMarcada(page, LEITURA), { timeout: 5_000 }).toBe(true);
 
     // …e a que fala com o cliente de verdade, não — e desde a #528 nem poderia:
     // ela deixou de ser oferecível, por clique ou por pacote.
     expect(await estaMarcada(page, ENVIO)).toBe(false);
 
-    // Sem crítica oferecível não há bloco de crítica. Ele existia porque o envio
-    // ERA a crítica do pacote — que o pacote oferecia para o motor descartar.
-    await expect(page.getByTestId("criticas-atender")).toHaveCount(0);
+    // O envio mora no grupo "sem volta" do pacote — mas não conta como crítica a
+    // ligar (o pacote não diz "1 sem volta, que o pacote não liga") porque não é
+    // oferecível: ele existia como crítica do pacote só para o motor descartar.
+    await expect(
+      page.getByTestId("grupo-atender-critico").getByTestId(`capacidade-${ENVIO}`),
+    ).toBeVisible();
 
     // Mas a capacidade continua NA TELA, com o motivo escrito e o checkbox
     // travado: sumir com ela esconderia do dono um caminho que ele já viu na
@@ -336,23 +356,41 @@ test.describe("Configurar o que o agente pode fazer", () => {
     await expect.poll(() => estaMarcada(page, LEITURA), { timeout: 5_000 }).toBe(false);
   });
 
-  test("o modo avançado revela a ficha e o nome técnico", async ({ page }) => {
+  test("o pacote abre com a ficha de cada capacidade, e a busca acha pelo nome", async ({ page }) => {
     await abrirConfiguracao(page);
 
-    // Antes de abrir, o nome técnico não está na tela do leigo.
-    await expect(page.getByTestId("lista-avancada")).toHaveCount(0);
+    // Fechado, o pacote mostra a jornada, não as fichas — e o nome técnico não está
+    // na tela do leigo.
+    await expect(page.getByTestId("capacidades-do-pacote-vender")).toHaveCount(0);
+    await expect(page.getByTestId("tool-picker")).not.toContainText("crm_book_appointment");
 
-    await page.getByTestId("toggle-avancado").click();
-    const lista = page.getByTestId("lista-avancada");
-    await expect(lista).toBeVisible();
-    await expect(lista).toContainText(ENVIO);
-    await expect(lista).toContainText("Enviar mensagem no WhatsApp");
-    await expect(lista).toContainText("Efeito que não dá para desfazer");
+    // Aberto, cada capacidade traz o que faz, um exemplo de conversa e o que toca,
+    // agrupada pelo tamanho do efeito.
+    await page.getByTestId("abrir-pacote-vender").click();
+    const vender = page.getByTestId("capacidades-do-pacote-vender");
+    await expect(vender).toBeVisible();
+    await expect(page.getByTestId("grupo-vender-seguro")).toBeVisible();
+    await expect(page.getByTestId("grupo-vender-atencao")).toBeVisible();
+    await expect(page.getByTestId("grupo-vender-critico")).toContainText("Efeito que não dá para desfazer");
+    const marcar = vender.getByTestId("capacidade-crm_book_appointment");
+    await expect(marcar).toContainText("Marcar consulta ou sessão");
+    await expect(marcar).toContainText("Mexe em: Agenda da equipe");
+    await expect(vender.getByTestId("exemplo-crm_book_appointment")).toContainText("reserva");
+    const alturaDoPacote = await vender.evaluate((el) => el.getBoundingClientRect().height);
+    expect(alturaDoPacote).toBeGreaterThan(400);
+    await page
+      .getByTestId("pacote-vender")
+      .screenshot({ path: path.join(EVIDENCIA, "pacote-aberto-com-exemplos.png") });
 
-    const alturaDaLista = await lista.evaluate((el) => el.getBoundingClientRect().height);
-    expect(alturaDaLista).toBeGreaterThan(200);
-
-    await lista.screenshot({ path: path.join(EVIDENCIA, "w1-modo-avancado.png") });
+    // A busca substitui o antigo "modo avançado": acha por palavra, sem acento, e ali
+    // mostra o nome técnico para quem integra por fora.
+    await buscarCapacidade(page, "whatsapp");
+    const resultado = page.getByTestId("resultado-da-busca");
+    await expect(resultado).toContainText(ENVIO);
+    await expect(resultado).toContainText("Enviar mensagem no WhatsApp");
+    await expect(resultado).toContainText("Efeito que não dá para desfazer");
+    await resultado.screenshot({ path: path.join(EVIDENCIA, "busca-de-capacidade.png") });
+    await limparBusca(page);
   });
 
   test("a escolha sobrevive ao salvar e recarregar", async ({ page }) => {

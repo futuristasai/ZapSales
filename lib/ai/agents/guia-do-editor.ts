@@ -1,7 +1,7 @@
 /**
  * O GUIA DO EDITOR COMPLETO: quão pronto o agente está e o que mais ajudaria agora.
  *
- * O editor tem nove partes e, até aqui, só dizia o que estava escrito em cada uma. Quem
+ * O editor tem dez partes e, até aqui, só dizia o que estava escrito em cada uma. Quem
  * configura um agente (dono de clínica, de loja) precisa de outra resposta: "está bom para
  * publicar?" e "o que eu faço a seguir?". Este módulo responde às duas, em funções puras
  * sobre fatos do formulário, sem texto de tela: o editor traduz os ids em frases com `t()`.
@@ -20,6 +20,7 @@ export const IDS_DE_SECAO_DO_GUIA = [
   "respostas",
   "conhecimento",
   "capacidades",
+  "externas",
   "onde",
   "pessoas",
   "vendas",
@@ -38,6 +39,11 @@ export interface FatosDoAgente {
   materiais: number;
   /** Capacidades ligadas, as de ferramenta externa incluídas. */
   acoes: number;
+  /**
+   * Só as ferramentas externas ligadas — a parte própria delas no editor. Opcional porque
+   * quem não fala da seção (os testes de força, por exemplo) não precisa saber dela.
+   */
+  ferramentasExternas?: number;
   numeroEscolhido: boolean;
   chamaPessoa: boolean;
   followupLigado: boolean;
@@ -126,7 +132,7 @@ export function faixaDaForca(percentual: number): FaixaDaForca {
 /**
  * - `pronto`: a parte está preenchida ou tem um padrão bom;
  * - `revisar`: falta algo que o agente precisa para atender bem;
- * - `opcional`: dá para publicar sem ela (hoje, só a parte de retornos, e só desligada).
+ * - `opcional`: dá para publicar sem ela (hoje, a de retornos desligada e a de ferramentas externas sem nenhuma ligada).
  */
 export type EstadoDaSecao = "pronto" | "revisar" | "opcional";
 
@@ -139,6 +145,9 @@ export function estadoDasSecoes(f: FatosDoAgente): Record<IdDaSecaoDoGuia, Estad
     respostas: "pronto",
     conhecimento: ok(feito("materiais", f)),
     capacidades: ok(feito("acoes", f)),
+    // Ferramenta externa depende de outro sistema que nem toda empresa tem: sem nenhuma
+    // ligada, a parte é opcional, nunca "falta".
+    externas: (f.ferramentasExternas ?? 0) > 0 ? "pronto" : "opcional",
     onde: ok(feito("numero", f)),
     pessoas: ok(feito("pessoa", f)),
     vendas: f.followupLigado ? "pronto" : "opcional",

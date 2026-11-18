@@ -96,8 +96,8 @@ test.describe("Lote 12 — #942 a capacidade na tela do agente", () => {
     const secao = page.getByText("O que o agente pode fazer");
     await expect(secao).toBeVisible({ timeout: 60_000 });
 
-    // O caminho padrão da tela é o PACOTE. A capacidade individual mora atrás
-    // de "Escolher uma a uma (modo avançado)" — um leigo clicaria aqui.
+    // O caminho padrão da tela é o PACOTE. A capacidade individual mora DENTRO
+    // dele: um leigo abre "Vender e mover o funil" para ver cada uma.
     const pacote = page.locator('[data-testid="pacote-vender"]');
     registra(`#942 · o pacote "Vender e mover o funil" está na tela = ${await pacote.count()}`);
     if (await pacote.count()) {
@@ -105,10 +105,10 @@ test.describe("Lote 12 — #942 a capacidade na tela do agente", () => {
     }
     await captura(page, "942-00-pacotes-do-agente");
 
-    const avancado = page.locator('[data-testid="toggle-avancado"]');
-    await expect(avancado).toBeVisible({ timeout: 30_000 });
-    registra(`#942 · rótulo do avançado = "${await avancado.innerText()}"`);
-    await avancado.click();
+    const abrir = page.locator('[data-testid="abrir-pacote-vender"]');
+    await expect(abrir).toBeVisible({ timeout: 30_000 });
+    registra(`#942 · botão que abre o pacote = "${await abrir.innerText()}"`);
+    await abrir.click();
 
     const caixa = page.getByRole("checkbox", { name: ROTULO });
     const quantas = await caixa.count();

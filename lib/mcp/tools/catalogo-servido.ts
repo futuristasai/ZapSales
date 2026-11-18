@@ -16,6 +16,7 @@
 import type { McpToolCatalogEntry } from "./catalogo";
 import type { ToolBundle, ToolRisk } from "./pacotes";
 import { IDS_DO_HARNESS, motivoDoHarness } from "./ferramentas-do-harness";
+import { exemploDeConversa } from "./exemplos-de-conversa";
 
 /** Só o que a junção precisa de um handler — mantém a função testável sem zod. */
 export interface HandlerDeclarado {
@@ -49,6 +50,11 @@ export interface CapacidadeServida {
   marcavel: boolean;
   /** Por que não é marcável, em pt-BR para a tela. `null` quando é marcável. */
   motivo_nao_marcavel: string | null;
+  /**
+   * Uma conversa curta que mostra QUANDO a capacidade entra em ação, em pt-BR (a tela
+   * traduz). Vem de `exemplos-de-conversa.ts`; `null` só para capacidade sem exemplo.
+   */
+  exemplo: string | null;
 }
 
 export function juntarCatalogoComHandlers(
@@ -78,6 +84,7 @@ export function juntarCatalogoComHandlers(
       pacotes: entrada.pacotes,
       marcavel: !IDS_DO_HARNESS.has(handler.name),
       motivo_nao_marcavel: motivoDoHarness(handler.name),
+      exemplo: exemploDeConversa(handler.name),
     };
   });
 }

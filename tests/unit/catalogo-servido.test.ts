@@ -58,6 +58,8 @@ describe("juntar as duas metades do catálogo", () => {
       pacotes: ["atender"],
       marcavel: true,
       motivo_nao_marcavel: null,
+      // A capacidade de mentira não tem exemplo de conversa; a tela só omite a linha.
+      exemplo: null,
     });
   });
 

@@ -29,6 +29,7 @@ const COMPLETO: FatosDoAgente = {
   temBoasVindas: true,
   materiais: 2,
   acoes: 22,
+  ferramentasExternas: 1,
   numeroEscolhido: true,
   chamaPessoa: true,
   followupLigado: true,
@@ -84,7 +85,7 @@ describe("faixaDaForca", () => {
 });
 
 describe("estadoDasSecoes", () => {
-  it("devolve as nove partes do editor", () => {
+  it("devolve as dez partes do editor", () => {
     expect(Object.keys(estadoDasSecoes(VAZIO)).sort()).toEqual([...IDS_DE_SECAO_DO_GUIA].sort());
   });
 
@@ -97,6 +98,8 @@ describe("estadoDasSecoes", () => {
     expect(e.quem).toBe("revisar");
     expect(e.conhecimento).toBe("revisar");
     expect(e.capacidades).toBe("revisar");
+    // Ferramenta externa depende de outro sistema: sem nenhuma, a parte é opcional, nunca "falta".
+    expect(e.externas).toBe("opcional");
     expect(e.onde).toBe("revisar");
     expect(e.pessoas).toBe("revisar");
     expect(e.respostas).toBe("pronto");
