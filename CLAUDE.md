@@ -652,6 +652,28 @@ Processo padrão (siga sempre):
     *"o banco faz"*. As duas perguntas divergem sempre que há apêndice — e
     apêndice é o mecanismo padrão desta casa.
 
+11. **Policy e gatilho entram por `fn_garantir_policy` / `fn_garantir_gatilho` — nunca por
+    `drop … if exists` + `create …` soltos** (migration 0572, issue #361). O baseline é
+    reaplicado inteiro em toda atualização, com a equipe logada, e o par solto derruba e
+    recria o objeto **toda vez**, com ACCESS EXCLUSIVE na tabela (e, no Supabase, travando
+    também as tabelas de login). As funções recebem o `create …` como texto e só refazem o
+    objeto quando o texto mudou ou alguém mexeu nele por fora:
+
+    ```sql
+    do $zps$ begin perform public.fn_garantir_policy('public.tabela', 'nome_da_policy', $zps_def$
+    create policy nome_da_policy on public.tabela
+      for select using (organization_id in (select public.fn_user_org_ids()));
+    $zps_def$); end $zps$;
+    ```
+
+    (`fn_garantir_gatilho` para `create trigger`.) Para **mudar** uma policy ou um gatilho
+    que já existe, edite o texto da ÚLTIMA definição dele no baseline — é ela que vale; se
+    acrescentar uma definição nova mais abaixo, a anterior passa a levar `, true` no fim da
+    chamada (só cria se o objeto faltar). Para **remover**, `drop … if exists` e apague a
+    chamada. Quem cobra a forma: `tests/unit/baseline-garante-em-vez-de-recriar.test.ts`;
+    quem mede que a segunda aplicação não recria nada (o `oid` não muda):
+    `tests/invariants/atualizacao-nao-recria-policy-nem-gatilho.test.ts`.
+
 **Resumo do fluxo de uma mudança de schema:** arquivo em `migrations/` (fonte da verdade p/ Supabase CLI) **+** apêndice idempotente no `baseline.sql` (p/ a instalação) **+** linha `-- manifest:` no cabeçalho do `.sql`. Os dois artefatos de schema andam juntos. Nunca edite migrations já aplicadas — corrija com uma "forward-fix" nova (e mais um apêndice no baseline).
 
 ---

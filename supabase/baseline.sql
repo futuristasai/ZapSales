@@ -2880,133 +2880,382 @@ CREATE UNIQUE INDEX IF NOT EXISTS "uniq_crm_stages_pipeline_won" ON "public"."cr
 
 CREATE INDEX IF NOT EXISTS "webhook_events_log_dlq_idx" ON "public"."webhook_events_log" USING "btree" ("organization_id", "provider") WHERE ("status" = 'dead'::"text");
 
+-- ---- policy e gatilho só são refeitos quando a definição mudou (migration 0572, issue #361) ----
+--
+-- Até a 0572 este arquivo fazia `drop policy if exists` + `create policy` (e o par
+-- igual de gatilho) em TODA aplicação. Medido num banco com o schema de uma
+-- instalação real: 228 policies e 169 gatilhos derrubados e recriados a cada
+-- atualização, com a equipe logada — e, no Supabase, cada comando de policy do
+-- papel `postgres` ainda trava as tabelas de login (o `supautils` pede ACCESS
+-- EXCLUSIVE em `auth.users`, `auth.sessions`, `storage.objects`…).
+--
+-- Daqui para baixo, policy e gatilho entram por:
+--
+--     do $zps$ begin perform public.fn_garantir_policy('public.tabela', 'nome', $zps_def$
+--     create policy nome on public.tabela …;
+--     $zps_def$); end $zps$;
+--
+-- (`fn_garantir_gatilho` para `create trigger`.) A função compara DUAS impressões
+-- com as que anotou em `private.baseline_objetos` na última vez: a do TEXTO que
+-- recebeu e a da forma que o CATÁLOGO guarda hoje. Iguais as duas, não faz nada
+-- — nenhum DROP, nenhum CREATE, nenhuma trava. Diferente qualquer uma (o texto
+-- mudou neste arquivo, ou alguém mexeu no objeto por fora, ou ele não existe),
+-- derruba, recria com o texto e anota de novo. O registro não é fonte de verdade:
+-- sem a linha dele, o objeto só é refeito uma vez.
+--
+-- O texto do CREATE fica INTEIRO dentro do `$zps_def$`: quem lê o arquivo (e os
+-- testes que o leem) encontra a definição como ela sempre esteve. Cobrado por
+-- tests/unit/baseline-garante-em-vez-de-recriar.test.ts (forma nova obrigatória
+-- para bloco novo) e por tests/invariants/atualizacao-nao-recria-policy-nem-gatilho.test.ts
+-- (o `oid` de cada policy e gatilho é o mesmo depois de uma segunda aplicação).
+--
+-- A definição mora AQUI, antes do primeiro uso, e não no fim do apêndice.
+
+create schema if not exists private;
+
+create table if not exists private.baseline_objetos (
+  tipo        text        not null check (tipo in ('policy', 'trigger')),
+  tabela      text        not null,
+  nome        text        not null,
+  fonte       text        not null,
+  catalogo    text        not null,
+  aplicado_em timestamptz not null default now(),
+  primary key (tipo, tabela, nome)
+);
+
+comment on table private.baseline_objetos is
+  'Registro do que o baseline já aplicou de policy e de gatilho (migration 0572): a impressão do texto aplicado (fonte) e a da forma que o catálogo guardou (catalogo). fn_garantir_policy e fn_garantir_gatilho só refazem o objeto quando uma das duas mudou. Não é fonte de verdade de nada: apagar uma linha só faz o objeto ser refeito na próxima aplicação.';
+
+-- A forma do objeto NO CATÁLOGO, como texto. `search_path = pg_catalog` de
+-- propósito: `pg_get_expr` e `pg_get_triggerdef` qualificam os nomes conforme o
+-- caminho de quem pergunta, e a impressão tem de ser a mesma seja quem for.
+-- Devolve null quando o objeto não existe.
+create or replace function public.fn_forma_no_catalogo(p_tipo text, p_tabela oid, p_nome text)
+returns text
+language sql
+stable
+set search_path = pg_catalog
+as $f$
+  select case p_tipo
+    when 'policy' then (
+      select p.polcmd::text
+             || '|' || p.polpermissive::text
+             || '|' || coalesce((select string_agg(x.papel, ',' order by x.papel)
+                                   from (select case when r = 0 then 'public'
+                                                     else (select rolname::text from pg_roles where oid = r) end as papel
+                                           from unnest(p.polroles) as r) x), '')
+             || '|' || coalesce(pg_get_expr(p.polqual, p.polrelid), '')
+             || '|' || coalesce(pg_get_expr(p.polwithcheck, p.polrelid), '')
+        from pg_policy p
+       where p.polrelid = p_tabela and p.polname = p_nome)
+    when 'trigger' then (
+      select t.tgenabled::text || '|' || pg_get_triggerdef(t.oid)
+        from pg_trigger t
+       where t.tgrelid = p_tabela and t.tgname = p_nome and not t.tgisinternal)
+  end;
+$f$;
+
+-- O miolo das duas funções de baixo: decide se há o que fazer e, havendo, troca
+-- o objeto e anota. `search_path = public, extensions` é o caminho que o próprio
+-- baseline fixa para o apêndice inteiro (`set_config('search_path', 'public,
+-- extensions', false)`): o texto recebido é executado com os nomes resolvendo
+-- exatamente como no `create policy`/`create trigger` solto que a chamada
+-- substitui — e do mesmo jeito para quem chamar de fora do baseline (a
+-- provisionadora de um módulo, uma migration), seja qual for o caminho da sessão.
+create or replace function public.fn_garantir_objeto_do_baseline(p_tipo text, p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean)
+returns void
+language plpgsql
+set search_path = public, extensions
+as $f$
+declare
+  v_rel      oid := to_regclass(p_tabela);
+  v_chave    text;
+  v_fonte    text := md5(p_definicao);
+  v_forma    text;
+  v_anotado  record;
+begin
+  if p_tipo not in ('policy', 'trigger') then
+    raise exception 'fn_garantir_objeto_do_baseline: tipo desconhecido: %', p_tipo;
+  end if;
+  if v_rel is null then
+    raise exception 'fn_garantir_%: a tabela % não existe', p_tipo, p_tabela using errcode = '42P01';
+  end if;
+  -- A definição é texto executado: só passa o comando que o nome da função diz.
+  if p_tipo = 'policy' and p_definicao !~* '^\s*create\s+policy\s' then
+    raise exception 'fn_garantir_policy(%, %): a definição não é um CREATE POLICY', p_tabela, p_nome;
+  end if;
+  if p_tipo = 'trigger' and p_definicao !~* '^\s*create\s+(or\s+replace\s+)?(constraint\s+)?trigger\s' then
+    raise exception 'fn_garantir_gatilho(%, %): a definição não é um CREATE TRIGGER', p_tabela, p_nome;
+  end if;
+
+  select n.nspname || '.' || c.relname into v_chave
+    from pg_catalog.pg_class c join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+   where c.oid = v_rel;
+
+  v_forma := public.fn_forma_no_catalogo(p_tipo, v_rel, p_nome);
+
+  -- DEFINIÇÃO QUE NÃO É A ÚLTIMA DO ARQUIVO (`p_so_se_ausente`). Este arquivo
+  -- define alguns objetos mais de uma vez: a forma antiga lá em cima, a que vale
+  -- mais abaixo. A de cima só serve à instalação nova, para o objeto existir até
+  -- a de baixo chegar. Numa atualização o objeto já está na forma final, e voltar
+  -- à antiga seria derrubá-lo duas vezes por aplicação — e deixar a forma velha
+  -- valendo no intervalo. Existe? Não toca, e não anota.
+  if p_so_se_ausente then
+    if v_forma is null then
+      execute p_definicao;
+      if public.fn_forma_no_catalogo(p_tipo, v_rel, p_nome) is null then
+        raise exception 'fn_garantir_%(%, %): a definição não criou esse objeto nessa tabela — o nome ou a tabela do texto não batem com os argumentos', p_tipo, p_tabela, p_nome;
+      end if;
+    end if;
+    return;
+  end if;
+
+  -- Já está como este texto o deixou? Então não há o que fazer — e não fazer é
+  -- o ponto: nenhum DROP, nenhum CREATE, nenhuma trava de tabela.
+  if v_forma is not null then
+    select fonte, catalogo into v_anotado
+      from private.baseline_objetos
+     where tipo = p_tipo and tabela = v_chave and nome = p_nome;
+    if found and v_anotado.fonte = v_fonte and v_anotado.catalogo = md5(v_forma) then
+      return;
+    end if;
+  end if;
+
+  if p_tipo = 'policy' then
+    execute format('drop policy if exists %I on %s', p_nome, v_rel::regclass);
+  else
+    execute format('drop trigger if exists %I on %s', p_nome, v_rel::regclass);
+  end if;
+  execute p_definicao;
+
+  v_forma := public.fn_forma_no_catalogo(p_tipo, v_rel, p_nome);
+  if v_forma is null then
+    raise exception 'fn_garantir_%(%, %): a definição não criou esse objeto nessa tabela — o nome ou a tabela do texto não batem com os argumentos', p_tipo, p_tabela, p_nome;
+  end if;
+
+  insert into private.baseline_objetos (tipo, tabela, nome, fonte, catalogo, aplicado_em)
+  values (p_tipo, v_chave, p_nome, v_fonte, md5(v_forma), now())
+  on conflict (tipo, tabela, nome)
+  do update set fonte = excluded.fonte, catalogo = excluded.catalogo, aplicado_em = excluded.aplicado_em;
+end $f$;
+
+create or replace function public.fn_garantir_policy(p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean default false)
+returns void
+language sql
+set search_path = ''
+as $f$
+  select public.fn_garantir_objeto_do_baseline('policy', p_tabela, p_nome, p_definicao, p_so_se_ausente);
+$f$;
+
+create or replace function public.fn_garantir_gatilho(p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean default false)
+returns void
+language sql
+set search_path = ''
+as $f$
+  select public.fn_garantir_objeto_do_baseline('trigger', p_tabela, p_nome, p_definicao, p_so_se_ausente);
+$f$;
+
+-- Só quem aplica o schema (o dono das tabelas) as chama; nenhuma é `security
+-- definer`. EXECUTE sai das duas origens e dos papéis que o default ACL do
+-- Supabase alcança: uma função que executa texto não fica ao alcance da REST.
+revoke execute on function public.fn_forma_no_catalogo(text, oid, text) from public, anon, authenticated, service_role;
+revoke execute on function public.fn_garantir_objeto_do_baseline(text, text, text, text, boolean) from public, anon, authenticated, service_role;
+revoke execute on function public.fn_garantir_policy(text, text, text, boolean) from public, anon, authenticated, service_role;
+revoke execute on function public.fn_garantir_gatilho(text, text, text, boolean) from public, anon, authenticated, service_role;
+revoke all on table private.baseline_objetos from public, anon, authenticated, service_role;
 
 
+
+
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_faq_items', 'ai_faq_items_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "ai_faq_items_updated_at" BEFORE UPDATE ON "public"."ai_faq_items" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.incidents', 'incidents_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "incidents_updated_at" BEFORE UPDATE ON "public"."incidents" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_runs', 'trg_ai_agent_runs_audit', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_agent_runs_audit" AFTER INSERT OR DELETE OR UPDATE ON "public"."ai_agent_runs" FOR EACH ROW EXECUTE FUNCTION "public"."fn_audit_log_row"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_audit', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_agent_versions_audit" AFTER INSERT OR DELETE OR UPDATE ON "public"."ai_agent_versions" FOR EACH ROW EXECUTE FUNCTION "public"."fn_audit_log_row"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agents', 'trg_ai_agents_audit', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_agents_audit" AFTER INSERT OR DELETE OR UPDATE ON "public"."ai_agents" FOR EACH ROW EXECUTE FUNCTION "public"."fn_audit_log_row"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agents', 'trg_ai_agents_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_agents_updated_at" BEFORE UPDATE ON "public"."ai_agents" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_budgets', 'trg_ai_budgets_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_budgets_updated_at" BEFORE UPDATE ON "public"."ai_budgets" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_invocations', 'trg_ai_invocations_budget', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_invocations_budget" AFTER INSERT ON "public"."ai_invocations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_update_budget_consumption"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_knowledge_sources', 'trg_ai_knowledge_sources_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_knowledge_sources_updated_at" BEFORE UPDATE ON "public"."ai_knowledge_sources" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_provider_credentials', 'trg_ai_provider_credentials_audit', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_ai_provider_credentials_audit" AFTER INSERT OR DELETE OR UPDATE ON "public"."ai_provider_credentials" FOR EACH ROW EXECUTE FUNCTION "public"."fn_audit_log_row"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.api_tokens', 'trg_api_tokens_touch', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_api_tokens_touch" BEFORE UPDATE ON "public"."api_tokens" FOR EACH ROW EXECUTE FUNCTION "public"."fn_touch_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.channel_sessions', 'trg_channel_sessions_status_audit', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_channel_sessions_status_audit" AFTER UPDATE OF "status" ON "public"."channel_sessions" FOR EACH ROW WHEN (("old"."status" IS DISTINCT FROM "new"."status")) EXECUTE FUNCTION "public"."fn_emit_channel_session_status_changed"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.channel_sessions', 'trg_channel_sessions_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_channel_sessions_updated_at" BEFORE UPDATE ON "public"."channel_sessions" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_contacts_updated_at" BEFORE UPDATE ON "public"."contacts" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_conversations_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_conversations_updated_at" BEFORE UPDATE ON "public"."conversations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_crm_lead_close_on_stage', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_crm_lead_close_on_stage" BEFORE INSERT OR UPDATE OF "stage_id" ON "public"."crm_leads" FOR EACH ROW EXECUTE FUNCTION "public"."fn_crm_lead_close_on_stage"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_crm_leads_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_crm_leads_updated_at" BEFORE UPDATE ON "public"."crm_leads" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_pipelines', 'trg_crm_pipelines_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_crm_pipelines_updated_at" BEFORE UPDATE ON "public"."crm_pipelines" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_stages', 'trg_crm_stages_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_crm_stages_updated_at" BEFORE UPDATE ON "public"."crm_stages" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_emit_event_on_lead_change', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_emit_event_on_lead_change" AFTER INSERT OR UPDATE ON "public"."crm_leads" FOR EACH ROW EXECUTE FUNCTION "public"."fn_emit_event_on_lead_change"();
+$zps_def$, true); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.event_log', 'trg_event_log_touch', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_event_log_touch" BEFORE UPDATE ON "public"."event_log" FOR EACH ROW EXECUTE FUNCTION "public"."fn_touch_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.lgpd_requests', 'trg_lgpd_requests_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_lgpd_requests_updated_at" BEFORE UPDATE ON "public"."lgpd_requests" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_messages_emit_event', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_messages_emit_event" AFTER INSERT ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."fn_emit_message_event"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_messages_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_messages_updated_at" BEFORE UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.orders', 'trg_orders_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_orders_updated_at" BEFORE UPDATE ON "public"."orders" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.organizations', 'trg_organizations_touch', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_organizations_touch" BEFORE UPDATE ON "public"."organizations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_touch_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.organizations', 'trg_seed_default_pipeline_for_org', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_seed_default_pipeline_for_org" AFTER INSERT ON "public"."organizations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_seed_default_pipeline_for_org"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.tenant_integrations', 'trg_tenant_integrations_updated_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_tenant_integrations_updated_at" BEFORE UPDATE ON "public"."tenant_integrations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_set_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_lead_activities', 'trg_update_last_activity_at', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_update_last_activity_at" AFTER INSERT ON "public"."crm_lead_activities" FOR EACH ROW EXECUTE FUNCTION "public"."fn_update_last_activity_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.user_organizations', 'trg_user_orgs_touch', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_user_orgs_touch" BEFORE UPDATE ON "public"."user_organizations" FOR EACH ROW EXECUTE FUNCTION "public"."fn_touch_updated_at"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_lead_activities', 'trg_validate_activity_lead_org', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_validate_activity_lead_org" BEFORE INSERT ON "public"."crm_lead_activities" FOR EACH ROW EXECUTE FUNCTION "public"."fn_validate_activity_lead_org"();
+$zps_def$); end $zps$;
 
 
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_validate_lost_reason_required', $zps_def$
 CREATE OR REPLACE TRIGGER "trg_validate_lost_reason_required" BEFORE INSERT OR UPDATE OF "status", "lost_reason" ON "public"."crm_leads" FOR EACH ROW EXECUTE FUNCTION "public"."fn_validate_lost_reason_required"();
+$zps_def$); end $zps$;
 
 
 
@@ -4702,7 +4951,7 @@ values (
 )
 on conflict (id) do nothing;
 
-drop policy if exists "tenant_read_ai_policy" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'tenant_read_ai_policy', $zps_def$
 create policy "tenant_read_ai_policy" on storage.objects for select
   using (
     bucket_id = 'ai-policy'
@@ -4713,8 +4962,9 @@ create policy "tenant_read_ai_policy" on storage.objects for select
         and uo.organization_id = (split_part(name, '/', 1))::uuid
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "tenant_write_ai_policy" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'tenant_write_ai_policy', $zps_def$
 create policy "tenant_write_ai_policy" on storage.objects for insert
   with check (
     bucket_id = 'ai-policy'
@@ -4725,8 +4975,9 @@ create policy "tenant_write_ai_policy" on storage.objects for insert
         and uo.organization_id = (split_part(name, '/', 1))::uuid
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "tenant_delete_ai_policy" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'tenant_delete_ai_policy', $zps_def$
 create policy "tenant_delete_ai_policy" on storage.objects for delete
   using (
     bucket_id = 'ai-policy'
@@ -4737,6 +4988,7 @@ create policy "tenant_delete_ai_policy" on storage.objects for delete
         and uo.organization_id = (split_part(name, '/', 1))::uuid
     )
   );
+$zps_def$); end $zps$;
 
 -- ---- storage: bucket lgpd-exports + policy (migration 0017) ----
 
@@ -4750,7 +5002,7 @@ values (
 )
 on conflict (id) do nothing;
 
-drop policy if exists "tenant_read_lgpd_exports" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'tenant_read_lgpd_exports', $zps_def$
 create policy "tenant_read_lgpd_exports" on storage.objects for select
   using (
     bucket_id = 'lgpd-exports'
@@ -4761,6 +5013,7 @@ create policy "tenant_read_lgpd_exports" on storage.objects for select
         and uo.organization_id = (split_part(name, '/', 1))::uuid
     )
   );
+$zps_def$); end $zps$;
 
 -- ---- bucket de assets de skills (migration 0068) ----
 insert into storage.buckets (id, name, public, file_size_limit)
@@ -4769,7 +5022,7 @@ on conflict (id) do nothing;
 
 -- Leitura por org (path {org_id}/...) OU plataforma (path platform/...) por qualquer
 -- usuário autenticado (assets de plataforma são públicos p/ tenants; conteúdo é curado).
-drop policy if exists "skill_assets_read" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'skill_assets_read', $zps_def$
 create policy "skill_assets_read" on storage.objects for select to authenticated
   using (
     bucket_id = 'skill-assets'
@@ -4782,6 +5035,7 @@ create policy "skill_assets_read" on storage.objects for select to authenticated
       )
     )
   );
+$zps_def$); end $zps$;
 -- Escrita/DELETE de assets é sempre via service role (rota de import) — sem policy de write.
 
 -- ---- realtime: inbox (messages/conversations), kanban (crm_leads) e IA ----
@@ -4956,15 +5210,17 @@ grant execute on function public.fn_mark_conversation_message(uuid, text, text, 
 -- org-flat, escrita agent+ FOR ALL) fazia cada update.sh reabri-la até a 0035.
 
 drop policy if exists "tenant_isolation_crm_pipelines_all" on public.crm_pipelines;
-drop policy if exists "crm_pipelines_select" on public.crm_pipelines;
-drop policy if exists "crm_pipelines_manager_write" on public.crm_pipelines;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.crm_pipelines', 'crm_pipelines_select', $zps_def$
 create policy "crm_pipelines_select" on public.crm_pipelines
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.crm_pipelines', 'crm_pipelines_manager_write', $zps_def$
 create policy "crm_pipelines_manager_write" on public.crm_pipelines
   using (
     public.fn_is_platform_admin()
@@ -4976,17 +5232,20 @@ create policy "crm_pipelines_manager_write" on public.crm_pipelines
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 drop policy if exists "tenant_isolation_crm_stages_all" on public.crm_stages;
-drop policy if exists "crm_stages_select" on public.crm_stages;
-drop policy if exists "crm_stages_manager_write" on public.crm_stages;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.crm_stages', 'crm_stages_select', $zps_def$
 create policy "crm_stages_select" on public.crm_stages
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.crm_stages', 'crm_stages_manager_write', $zps_def$
 create policy "crm_stages_manager_write" on public.crm_stages
   using (
     public.fn_is_platform_admin()
@@ -4998,6 +5257,7 @@ create policy "crm_stages_manager_write" on public.crm_stages
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 drop policy if exists "conversations_tenant_isolation_all" on public.conversations;
 drop policy if exists "conversations_agent_write" on public.conversations;
@@ -5313,23 +5573,25 @@ revoke execute on function public.fn_can_view_conversation(uuid, uuid) from anon
 grant execute on function public.fn_can_view_conversation(uuid, uuid)
   to authenticated, service_role;
 
-drop policy if exists "conversations_select" on public.conversations;
+do $zps$ begin perform public.fn_garantir_policy('public.conversations', 'conversations_select', $zps_def$
 create policy "conversations_select" on public.conversations
   for select using (
     public.fn_can_view_conversation(organization_id, assigned_to_user_id)
   );
+$zps_def$); end $zps$;
 
 drop policy if exists "conversations_agent_write" on public.conversations;
-drop policy if exists "conversations_agent_insert" on public.conversations;
-drop policy if exists "conversations_agent_update" on public.conversations;
-drop policy if exists "conversations_agent_delete" on public.conversations;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.conversations', 'conversations_agent_insert', $zps_def$
 create policy "conversations_agent_insert" on public.conversations
   for insert with check (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.conversations', 'conversations_agent_update', $zps_def$
 create policy "conversations_agent_update" on public.conversations
   for update using (
     public.fn_is_platform_admin_full()
@@ -5340,19 +5602,21 @@ create policy "conversations_agent_update" on public.conversations
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.conversations', 'conversations_agent_delete', $zps_def$
 create policy "conversations_agent_delete" on public.conversations
   for delete using (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 drop policy if exists "messages_tenant_isolation_all" on public.messages;
-drop policy if exists "messages_select" on public.messages;
-drop policy if exists "messages_insert" on public.messages;
-drop policy if exists "messages_update" on public.messages;
-drop policy if exists "messages_delete" on public.messages;
 
+
+
+do $zps$ begin perform public.fn_garantir_policy('public.messages', 'messages_select', $zps_def$
 create policy "messages_select" on public.messages
   for select using (
     public.fn_is_platform_admin()
@@ -5361,16 +5625,20 @@ create policy "messages_select" on public.messages
       where c.id = messages.conversation_id
     )
   );
+$zps_def$); end $zps$;
 
 -- Gravar exige `agent` ou acima (migration 0560, #268): é o papel que toda rota
 -- que grava mensagem com a sessão do usuário já exige. Antes a policy só
 -- perguntava pela organização, e um `viewer` gravava falando direto com o banco.
+do $zps$ begin perform public.fn_garantir_policy('public.messages', 'messages_insert', $zps_def$
 create policy "messages_insert" on public.messages
   for insert with check (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.messages', 'messages_update', $zps_def$
 create policy "messages_update" on public.messages
   for update using (
     public.fn_is_platform_admin_full()
@@ -5381,12 +5649,15 @@ create policy "messages_update" on public.messages
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.messages', 'messages_delete', $zps_def$
 create policy "messages_delete" on public.messages
   for delete using (
     public.fn_is_platform_admin_full()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 -- Forward-fix do G4-01: fn_conversation_assign (0031/0032) passa a SECURITY
 -- DEFINER. Com o SELECT de conversations visibility-aware, o `update ... returning
@@ -5505,16 +5776,17 @@ grant execute on function public.fn_can_view_lead(uuid, uuid)
   to authenticated, service_role;
 
 drop policy if exists "tenant_isolation_crm_leads_all" on public.crm_leads;
-drop policy if exists "crm_leads_select" on public.crm_leads;
-drop policy if exists "crm_leads_insert" on public.crm_leads;
-drop policy if exists "crm_leads_update" on public.crm_leads;
-drop policy if exists "crm_leads_delete" on public.crm_leads;
 
+
+
+do $zps$ begin perform public.fn_garantir_policy('public.crm_leads', 'crm_leads_select', $zps_def$
 create policy "crm_leads_select" on public.crm_leads
   for select using (
     public.fn_can_view_lead(organization_id, owner_user_id)
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.crm_leads', 'crm_leads_insert', $zps_def$
 create policy "crm_leads_insert" on public.crm_leads
   for insert with check (
     public.fn_is_platform_admin_full()
@@ -5523,6 +5795,8 @@ create policy "crm_leads_insert" on public.crm_leads
         and (public.fn_role_at_least(organization_id, 'manager')
              or public.fn_can_view_lead(organization_id, owner_user_id)))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_leads', 'crm_leads_update', $zps_def$
 create policy "crm_leads_update" on public.crm_leads
   for update using (
     public.fn_is_platform_admin_full()
@@ -5537,6 +5811,8 @@ create policy "crm_leads_update" on public.crm_leads
         and (public.fn_role_at_least(organization_id, 'manager')
              or public.fn_can_view_lead(organization_id, owner_user_id)))
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_leads', 'crm_leads_delete', $zps_def$
 create policy "crm_leads_delete" on public.crm_leads
   for delete using (
     public.fn_is_platform_admin_full()
@@ -5545,6 +5821,7 @@ create policy "crm_leads_delete" on public.crm_leads
         and (public.fn_role_at_least(organization_id, 'manager')
              or public.fn_can_view_lead(organization_id, owner_user_id)))
   );
+$zps_def$); end $zps$;
 
 
 -- ---- métricas por responsável: índices + fn_attendant_metrics (migration 0037) ----
@@ -5730,15 +6007,17 @@ alter table public.webhook_sources enable row level security;
 alter table public.automation_rules enable row level security;
 alter table public.automation_rule_runs enable row level security;
 
-drop policy if exists "webhook_sources_select" on public.webhook_sources;
-drop policy if exists "webhook_sources_manager_write" on public.webhook_sources;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.webhook_sources', 'webhook_sources_select', $zps_def$
 create policy "webhook_sources_select" on public.webhook_sources
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.webhook_sources', 'webhook_sources_manager_write', $zps_def$
 create policy "webhook_sources_manager_write" on public.webhook_sources
   using (
     public.fn_is_platform_admin()
@@ -5750,16 +6029,19 @@ create policy "webhook_sources_manager_write" on public.webhook_sources
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "automation_rules_select" on public.automation_rules;
-drop policy if exists "automation_rules_manager_write" on public.automation_rules;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.automation_rules', 'automation_rules_select', $zps_def$
 create policy "automation_rules_select" on public.automation_rules
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.automation_rules', 'automation_rules_manager_write', $zps_def$
 create policy "automation_rules_manager_write" on public.automation_rules
   using (
     public.fn_is_platform_admin()
@@ -5771,14 +6053,16 @@ create policy "automation_rules_manager_write" on public.automation_rules
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "automation_rule_runs_select" on public.automation_rule_runs;
 
+do $zps$ begin perform public.fn_garantir_policy('public.automation_rule_runs', 'automation_rule_runs_select', $zps_def$
 create policy "automation_rule_runs_select" on public.automation_rule_runs
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- ---- disponibilidade/horário por atendente: attendant_availability (migration 0039) ----
 -- spec 13 §3.4/§5. Persiste o <AttendantStatusToggle> (spec 04 §8): is_available,
@@ -5804,14 +6088,15 @@ create index if not exists idx_attendant_availability_available
 
 alter table public.attendant_availability enable row level security;
 
-drop policy if exists "attendant_availability_select" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_select', $zps_def$
 create policy "attendant_availability_select" on public.attendant_availability
   for select using (
     public.fn_is_platform_admin()
     or organization_id in (select public.fn_user_org_ids())
   );
+$zps_def$, true); end $zps$;
 
-drop policy if exists "attendant_availability_insert" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_insert', $zps_def$
 create policy "attendant_availability_insert" on public.attendant_availability
   for insert with check (
     public.fn_is_platform_admin()
@@ -5819,8 +6104,9 @@ create policy "attendant_availability_insert" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$, true); end $zps$;
 
-drop policy if exists "attendant_availability_update" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_update', $zps_def$
 create policy "attendant_availability_update" on public.attendant_availability
   for update using (
     public.fn_is_platform_admin()
@@ -5833,8 +6119,9 @@ create policy "attendant_availability_update" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$, true); end $zps$;
 
-drop policy if exists "attendant_availability_delete" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_delete', $zps_def$
 create policy "attendant_availability_delete" on public.attendant_availability
   for delete using (
     public.fn_is_platform_admin()
@@ -5842,6 +6129,7 @@ create policy "attendant_availability_delete" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$, true); end $zps$;
 
 -- ---- roteamento: disponibilidade/horário por atendente (migration 0039) ----
 -- spec 13 §3.4/§5. attendant_availability (1 linha por org×user): toggle
@@ -5868,14 +6156,15 @@ create index if not exists idx_attendant_availability_available
 
 alter table public.attendant_availability enable row level security;
 
-drop policy if exists "attendant_availability_select" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_select', $zps_def$
 create policy "attendant_availability_select" on public.attendant_availability
   for select using (
     public.fn_is_platform_admin()
     or organization_id in (select public.fn_user_org_ids())
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "attendant_availability_insert" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_insert', $zps_def$
 create policy "attendant_availability_insert" on public.attendant_availability
   for insert with check (
     public.fn_is_platform_admin()
@@ -5883,8 +6172,9 @@ create policy "attendant_availability_insert" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "attendant_availability_update" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_update', $zps_def$
 create policy "attendant_availability_update" on public.attendant_availability
   for update using (
     public.fn_is_platform_admin()
@@ -5897,8 +6187,9 @@ create policy "attendant_availability_update" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "attendant_availability_delete" on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_policy('public.attendant_availability', 'attendant_availability_delete', $zps_def$
 create policy "attendant_availability_delete" on public.attendant_availability
   for delete using (
     public.fn_is_platform_admin()
@@ -5906,6 +6197,7 @@ create policy "attendant_availability_delete" on public.attendant_availability
         and (user_id = auth.uid()
              or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$); end $zps$;
 
 
 -- ---- roteamento: emissão de conversation.routing_requested (migration 0040) ----
@@ -5934,12 +6226,13 @@ $$;
 
 alter function public.fn_emit_conversation_routing() owner to postgres;
 
-drop trigger if exists trg_conversation_routing_requested on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_conversation_routing_requested', $zps_def$
 create trigger trg_conversation_routing_requested
   after insert on public.conversations
   for each row
   when (new.assigned_to_user_id is null and new.status in ('open', 'pending'))
   execute function public.fn_emit_conversation_routing();
+$zps_def$); end $zps$;
 
 
 -- ---- cifragem at-rest dos secrets de webhooks (migration 0041) ----
@@ -6124,10 +6417,11 @@ begin
 end$$;
 
 -- INSERT não emite mais nada — dispara só em UPDATE.
-drop trigger if exists trg_emit_event_on_lead_change on public.crm_leads;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_emit_event_on_lead_change', $zps_def$
 create trigger trg_emit_event_on_lead_change
   after update on public.crm_leads
   for each row execute function public.fn_emit_event_on_lead_change();
+$zps_def$); end $zps$;
 
 -- Backlog morto: duplicatas antigas do trigger nunca terão consumer.
 update public.event_log
@@ -6149,9 +6443,9 @@ update public.event_log
 
 drop policy if exists "tenant_isolation_crm_lead_activities_select" on public.crm_lead_activities;
 drop policy if exists "tenant_isolation_crm_lead_activities_insert" on public.crm_lead_activities;
-drop policy if exists "crm_lead_activities_select" on public.crm_lead_activities;
-drop policy if exists "crm_lead_activities_insert" on public.crm_lead_activities;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_activities', 'crm_lead_activities_select', $zps_def$
 create policy "crm_lead_activities_select" on public.crm_lead_activities
   for select using (
     exists (
@@ -6160,19 +6454,21 @@ create policy "crm_lead_activities_select" on public.crm_lead_activities
         and public.fn_can_view_lead(l.organization_id, l.owner_user_id)
     )
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_activities', 'crm_lead_activities_insert', $zps_def$
 create policy "crm_lead_activities_insert" on public.crm_lead_activities
   for insert with check (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 drop policy if exists "tenant_isolation_crm_lead_links_all" on public.crm_lead_links;
-drop policy if exists "crm_lead_links_select" on public.crm_lead_links;
-drop policy if exists "crm_lead_links_insert" on public.crm_lead_links;
-drop policy if exists "crm_lead_links_update" on public.crm_lead_links;
-drop policy if exists "crm_lead_links_delete" on public.crm_lead_links;
 
+
+
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_links', 'crm_lead_links_select', $zps_def$
 create policy "crm_lead_links_select" on public.crm_lead_links
   for select using (
     exists (
@@ -6181,12 +6477,16 @@ create policy "crm_lead_links_select" on public.crm_lead_links
         and public.fn_can_view_lead(l.organization_id, l.owner_user_id)
     )
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_links', 'crm_lead_links_insert', $zps_def$
 create policy "crm_lead_links_insert" on public.crm_lead_links
   for insert with check (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_links', 'crm_lead_links_update', $zps_def$
 create policy "crm_lead_links_update" on public.crm_lead_links
   for update using (
     (organization_id in (select public.fn_user_org_ids()))
@@ -6195,11 +6495,14 @@ create policy "crm_lead_links_update" on public.crm_lead_links
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_links', 'crm_lead_links_delete', $zps_def$
 create policy "crm_lead_links_delete" on public.crm_lead_links
   for delete using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 
 -- ---- user_organizations SELECT org-wide para manager+ (migration 0044) ----
@@ -6207,13 +6510,14 @@ create policy "crm_lead_links_delete" on public.crm_lead_links
 -- team=org:read a manager). Antes: só admin org-wide, manager caía no self-read
 -- e GET /api/v1/team devolvia 1 linha. Self-read preservado p/ todos; WRITE
 -- inalterado (insert/update/delete = admin). Idempotente e auto-curativo.
-drop policy if exists "user_orgs_select" on public.user_organizations;
+do $zps$ begin perform public.fn_garantir_policy('public.user_organizations', 'user_orgs_select', $zps_def$
 create policy "user_orgs_select" on public.user_organizations
   for select using (
     (user_id = auth.uid())
     or public.fn_role_at_least(organization_id, 'manager')
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- ============================================================================
 -- Dumps do Supabase zeram o search_path (set_config('search_path','',false));
@@ -6367,10 +6671,11 @@ create table if not exists playbook_versions (
   check ((layer = 'platform') = (organization_id is null))
 );
 
-drop trigger if exists trg_playbook_versions_immutable on playbook_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.playbook_versions', 'trg_playbook_versions_immutable', $zps_def$
 create trigger trg_playbook_versions_immutable
   before update on playbook_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 -- Ponteiro → versão ativa por escopo. SEM cascade no version_id: versão apontada
 -- não pode sumir debaixo do ponteiro.
@@ -6627,10 +6932,11 @@ create table if not exists reentry_template_versions (
   created_at timestamptz not null default now()
 );
 
-drop trigger if exists trg_reentry_template_versions_immutable on reentry_template_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.reentry_template_versions', 'trg_reentry_template_versions_immutable', $zps_def$
 create trigger trg_reentry_template_versions_immutable
   before update on reentry_template_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists reentry_template_pointers (
   organization_id uuid primary key references organizations(id) on delete cascade,
@@ -6679,10 +6985,11 @@ create table if not exists skill_versions (
   created_at timestamptz not null default now()
 );
 
-drop trigger if exists trg_skill_versions_immutable on skill_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.skill_versions', 'trg_skill_versions_immutable', $zps_def$
 create trigger trg_skill_versions_immutable
   before update on skill_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists skill_pointers (
   organization_id uuid references organizations(id) on delete cascade, -- NULL = plataforma (global)
@@ -6708,10 +7015,11 @@ create table if not exists promise_table_versions (
   created_at timestamptz not null default now()
 );
 
-drop trigger if exists trg_promise_table_versions_immutable on promise_table_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.promise_table_versions', 'trg_promise_table_versions_immutable', $zps_def$
 create trigger trg_promise_table_versions_immutable
   before update on promise_table_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists promise_table_pointers (
   organization_id uuid not null references organizations(id) on delete cascade,
@@ -6733,10 +7041,11 @@ create table if not exists disclosure_template_versions (
   created_at timestamptz not null default now()
 );
 
-drop trigger if exists trg_disclosure_template_versions_immutable on disclosure_template_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.disclosure_template_versions', 'trg_disclosure_template_versions_immutable', $zps_def$
 create trigger trg_disclosure_template_versions_immutable
   before update on disclosure_template_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists disclosure_template_pointers (
   organization_id uuid not null references organizations(id) on delete cascade,
@@ -6848,10 +7157,11 @@ create table if not exists reentry_knob_versions (
   created_at timestamptz not null default now()
 );
 
-drop trigger if exists trg_reentry_knob_versions_immutable on reentry_knob_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.reentry_knob_versions', 'trg_reentry_knob_versions_immutable', $zps_def$
 create trigger trg_reentry_knob_versions_immutable
   before update on reentry_knob_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists reentry_knob_pointers (
   organization_id uuid primary key references organizations(id) on delete cascade,
@@ -7001,10 +7311,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 
 -- APÊNDICE 0052_republish_fn_uppercase_fix — re-assenta a fn de publish correta (anti-drift).
@@ -7371,10 +7682,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 -- ---- followup enrollment: 1 vivo por lead ORG-WIDE + agent_id (migration 0064) ----
 -- Dedup ANTES de trocar o índice (self-host-safe: o update.sh re-aplica sem
@@ -7454,7 +7766,7 @@ create index if not exists idx_message_templates_org on message_templates (organ
 
 alter table message_templates enable row level security;
 
-drop policy if exists "message_templates_select" on message_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.message_templates', 'message_templates_select', $zps_def$
 create policy "message_templates_select" on message_templates
   for select using (
     (
@@ -7463,8 +7775,9 @@ create policy "message_templates_select" on message_templates
     )
     or fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "message_templates_write" on message_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.message_templates', 'message_templates_write', $zps_def$
 create policy "message_templates_write" on message_templates
   for all using (
     organization_id in (select fn_user_org_ids())
@@ -7480,6 +7793,7 @@ create policy "message_templates_write" on message_templates
       or (owner_user_id is null and fn_role_at_least(organization_id, 'manager'))
     )
   );
+$zps_def$); end $zps$;
 
 -- ---- snooze por conversa (migration 0062) ----
 alter table conversations
@@ -7562,9 +7876,10 @@ alter table agent_case_events enable row level security;
 -- A policy `for all` não nasce mais aqui desde a 0279: quem escreve caso é o
 -- motor, e a leitura ganhou policy própria (`tenant_isolation_agent_cases_select`).
 -- O par drop+create mora no bloco da 0279, colado, pelo motivo escrito acima.
-drop policy if exists tenant_isolation_agent_case_events_select on agent_case_events;
+do $zps$ begin perform public.fn_garantir_policy('public.agent_case_events', 'tenant_isolation_agent_case_events_select', $zps_def$
 create policy tenant_isolation_agent_case_events_select on agent_case_events
   for select using (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 -- A policy de INSERT não nasce mais aqui desde a 0279 (mesmo motivo da tabela
 -- mãe); quem a derruba no clone que já a tem é o bloco da 0279. A de SELECT,
 -- logo acima, fica: a tela e o MCP leem.
@@ -7617,10 +7932,11 @@ create table if not exists org_memory_versions (
   unique (organization_id, version_number)
 );
 
-drop trigger if exists trg_org_memory_versions_immutable on org_memory_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.org_memory_versions', 'trg_org_memory_versions_immutable', $zps_def$
 create trigger trg_org_memory_versions_immutable
   before update on org_memory_versions
   for each row execute function fn_agent_versions_immutable();
+$zps_def$); end $zps$;
 
 create table if not exists org_memory_pointers (
   organization_id uuid not null unique references organizations(id) on delete cascade,
@@ -7685,12 +8001,14 @@ do $$ begin perform public.fn_proteger_tabelas_de_organizacao(); end $$;
 
 -- Catálogo do marketplace: qualquer usuário autenticado LÊ as skills de plataforma
 -- (organization_id null). Só SELECT; escrita de plataforma continua service-role.
-drop policy if exists catalog_read_skill_versions on skill_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.skill_versions', 'catalog_read_skill_versions', $zps_def$
 create policy catalog_read_skill_versions on skill_versions for select
   to authenticated using (organization_id is null);
-drop policy if exists catalog_read_skill_pointers on skill_pointers;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.skill_pointers', 'catalog_read_skill_pointers', $zps_def$
 create policy catalog_read_skill_pointers on skill_pointers for select
   to authenticated using (organization_id is null);
+$zps_def$); end $zps$;
 
 -- ---- seed de skills de plataforma: catálogo inicial do marketplace (migration 0069) ----
 -- 0069: seed de skills de plataforma (organization_id null) — catálogo inicial do
@@ -8199,10 +8517,11 @@ begin
   return new;
 end$$;
 
-drop trigger if exists trg_stamp_stage_changed_at on public.crm_leads;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_stamp_stage_changed_at', $zps_def$
 create trigger trg_stamp_stage_changed_at
   before insert or update on public.crm_leads
   for each row execute function public.fn_stamp_stage_changed_at();
+$zps_def$); end $zps$;
 
 comment on column public.crm_leads.stage_changed_at is
   'Quando o lead entrou no estágio atual. Carimbado por trigger. É o relógio de "tempo no estágio" do card — distinto de last_activity_at, que é "tempo sem resposta".';
@@ -8404,11 +8723,12 @@ comment on column public.crm_lead_scores.ai_probability_band is
 -- ---- tenancy ----
 alter table public.crm_lead_scores enable row level security;
 
-drop policy if exists tenant_isolation_crm_lead_scores_all on public.crm_lead_scores;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_scores', 'tenant_isolation_crm_lead_scores_all', $zps_def$
 create policy tenant_isolation_crm_lead_scores_all on public.crm_lead_scores
   for all
   using (organization_id in (select fn_user_org_ids()))
   with check (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 create index if not exists idx_crm_lead_scores_org_band
   on public.crm_lead_scores (organization_id, ai_probability_band);
@@ -8507,11 +8827,12 @@ alter table public.crm_lead_risk_states
 
 alter table public.crm_lead_risk_states enable row level security;
 
-drop policy if exists tenant_isolation_crm_lead_risk_states_all on public.crm_lead_risk_states;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_risk_states', 'tenant_isolation_crm_lead_risk_states_all', $zps_def$
 create policy tenant_isolation_crm_lead_risk_states_all on public.crm_lead_risk_states
   for all
   using (organization_id in (select fn_user_org_ids()))
   with check (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- O radar lê "quem está em risco nesta org", nesta ordem.
 create index if not exists idx_crm_lead_risk_states_org_bucket
@@ -8674,11 +8995,12 @@ end$function$;
 comment on function public.fn_carimba_detected_at() is
   'detected_at é quando o BANCO percebeu, nunca quando o processo achou que percebeu. Ver migration 0081: com o valor vindo do cliente, a deriva de relógio violava o CHECK since <= detected_at e derrubava o worker inteiro.';
 
-drop trigger if exists trg_crm_lead_risk_states_detected_at on public.crm_lead_risk_states;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_lead_risk_states', 'trg_crm_lead_risk_states_detected_at', $zps_def$
 create trigger trg_crm_lead_risk_states_detected_at
   before insert or update on public.crm_lead_risk_states
   for each row
   execute function public.fn_carimba_detected_at();
+$zps_def$); end $zps$;
 
 -- ---- proposta de reativação com prazo (migration 0082) ----
 -- 0082 — a proposta de reativação, com PRAZO e destino
@@ -8770,11 +9092,12 @@ create index if not exists idx_crm_lead_reactivations_vencendo
 
 alter table public.crm_lead_reactivations enable row level security;
 
-drop policy if exists tenant_isolation_crm_lead_reactivations_all on public.crm_lead_reactivations;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_lead_reactivations', 'tenant_isolation_crm_lead_reactivations_all', $zps_def$
 create policy tenant_isolation_crm_lead_reactivations_all on public.crm_lead_reactivations
   for all
   using (organization_id in (select fn_user_org_ids()))
   with check (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- `proposed_at` e `updated_at` são do banco, como na 0081.
 create or replace function public.fn_carimba_reativacao()
@@ -8790,11 +9113,12 @@ begin
   return new;
 end$function$;
 
-drop trigger if exists trg_crm_lead_reactivations_carimbo on public.crm_lead_reactivations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_lead_reactivations', 'trg_crm_lead_reactivations_carimbo', $zps_def$
 create trigger trg_crm_lead_reactivations_carimbo
   before insert or update on public.crm_lead_reactivations
   for each row
   execute function public.fn_carimba_reativacao();
+$zps_def$); end $zps$;
 
 -- DENTRO da publicação de realtime, pela mesma regra da 0078: proposta nascendo
 -- ou vencendo é MUDANÇA DE ESTADO que o card precisa mostrar sem reload —
@@ -9003,23 +9327,27 @@ alter table conversations add column if not exists active_intent text;
 alter table conversations add column if not exists active_agent_set_at timestamptz;
 
 -- Triggers: audit de mutação + updated_at (padrão de ai_agents).
-drop trigger if exists trg_ai_routers_audit on ai_routers;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_routers', 'trg_ai_routers_audit', $zps_def$
 create trigger trg_ai_routers_audit
   after insert or update or delete on ai_routers
   for each row execute function fn_audit_log_row();
-drop trigger if exists trg_ai_routers_updated_at on ai_routers;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_routers', 'trg_ai_routers_updated_at', $zps_def$
 create trigger trg_ai_routers_updated_at
   before update on ai_routers
   for each row execute function fn_set_updated_at();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_ai_router_members_audit on ai_router_members;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_router_members', 'trg_ai_router_members_audit', $zps_def$
 create trigger trg_ai_router_members_audit
   after insert or update or delete on ai_router_members
   for each row execute function fn_audit_log_row();
-drop trigger if exists trg_ai_router_members_updated_at on ai_router_members;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_router_members', 'trg_ai_router_members_updated_at', $zps_def$
 create trigger trg_ai_router_members_updated_at
   before update on ai_router_members
   for each row execute function fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- RLS ligada e `anon` revogado nas três tabelas; as policies vêm logo abaixo
 -- (ai_router_decisions) e na 0150 (ai_routers, ai_router_members).
@@ -9036,10 +9364,11 @@ end $$;
 -- ai_routers e ai_router_members têm policies por papel desde a 0150, que
 -- derruba a ampla delas; recriá-la aqui fazia cada update.sh (em autocommit)
 -- reabrir escrita a qualquer membro da organização até aquele drop.
-drop policy if exists tenant_isolation_ai_router_decisions_all on public.ai_router_decisions;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_router_decisions', 'tenant_isolation_ai_router_decisions_all', $zps_def$
 create policy tenant_isolation_ai_router_decisions_all on public.ai_router_decisions for all
   using (organization_id in (select * from public.fn_user_org_ids()))
   with check (organization_id in (select * from public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- ---- knowledge_searches: telemetria de busca de conhecimento (migration 0086) ----
 
@@ -9077,11 +9406,12 @@ create index if not exists idx_knowledge_searches_org_created
 
 alter table knowledge_searches enable row level security;
 
-drop policy if exists tenant_isolation_knowledge_searches_all on knowledge_searches;
+do $zps$ begin perform public.fn_garantir_policy('public.knowledge_searches', 'tenant_isolation_knowledge_searches_all', $zps_def$
 create policy tenant_isolation_knowledge_searches_all on knowledge_searches
   for all
   using (organization_id in (select fn_user_org_ids()))
   with check (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- Defesa em profundidade, mesmo contrato da 0085: a policy já devolve zero linha
 -- para JWT anônimo (auth.uid() null => fn_user_org_ids() vazio), mas o grant que
@@ -9329,11 +9659,12 @@ create index if not exists meta_templates_org_status_idx
 
 alter table public.meta_templates enable row level security;
 
-drop policy if exists tenant_isolation_meta_templates_all on public.meta_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.meta_templates', 'tenant_isolation_meta_templates_all', $zps_def$
 create policy tenant_isolation_meta_templates_all on public.meta_templates
   for all
   using (organization_id in (select public.fn_user_org_ids()))
   with check (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- ---- message type: template (migration 0091) ----
 -- Espelho idempotente. Racional completo no arquivo da migration: `template` NAO
@@ -9392,10 +9723,11 @@ comment on column public.system_version.has_known_release is
 -- O gatilho de consumo existia só em ai_invocations (workers legados); o
 -- agent-engine grava em llm_calls, então o contador ficava zerado e o alarme
 -- de 80% / pausa em 100% nunca disparavam. Idempotente.
-drop trigger if exists trg_llm_calls_budget on public.llm_calls;
+do $zps$ begin perform public.fn_garantir_gatilho('public.llm_calls', 'trg_llm_calls_budget', $zps_def$
 create trigger trg_llm_calls_budget
   after insert on public.llm_calls
   for each row execute function public.fn_update_budget_consumption();
+$zps_def$); end $zps$;
 
 -- ESTE RECOMPUTO NÃO É O QUE VALE, e não dá para consertá-lo aqui. Desde a 0130
 -- as linhas de `ai_invocations` são copiadas para `llm_calls`, então somar as
@@ -9467,10 +9799,11 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_seed_org_llm_defaults on public.organizations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.organizations', 'trg_seed_org_llm_defaults', $zps_def$
 create trigger trg_seed_org_llm_defaults
   before insert on public.organizations
   for each row execute function public.fn_seed_org_llm_defaults();
+$zps_def$); end $zps$;
 
 -- ---- limiar do RAG calibrado (migration 0097) ----
 -- 0.72 descartava toda parafrase; medido: relevante 0.49-0.85, irrelevante 0.27.
@@ -10300,17 +10633,19 @@ create index if not exists idx_demanda_conversas_conv
 alter table public.demandas enable row level security;
 alter table public.demanda_conversas enable row level security;
 
-drop policy if exists tenant_isolation_demandas_all on public.demandas;
+do $zps$ begin perform public.fn_garantir_policy('public.demandas', 'tenant_isolation_demandas_all', $zps_def$
 create policy tenant_isolation_demandas_all on public.demandas
   for all
   using (organization_id in (select * from public.fn_user_org_ids()))
   with check (organization_id in (select * from public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_demanda_conversas_all on public.demanda_conversas;
+do $zps$ begin perform public.fn_garantir_policy('public.demanda_conversas', 'tenant_isolation_demanda_conversas_all', $zps_def$
 create policy tenant_isolation_demanda_conversas_all on public.demanda_conversas
   for all
   using (organization_id in (select * from public.fn_user_org_ids()))
   with check (organization_id in (select * from public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- Passo 2 de 4: derivar o passado por REGRA EXPLÍCITA, nunca por adivinhação.
@@ -10760,10 +11095,11 @@ $$;
 revoke all     on function public.fn_demanda_abre_no_inbound() from public;
 revoke execute on function public.fn_demanda_abre_no_inbound() from anon, authenticated;
 
-drop trigger if exists trg_demanda_abre_no_inbound on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_demanda_abre_no_inbound', $zps_def$
 create trigger trg_demanda_abre_no_inbound
   after insert on public.messages
   for each row execute function public.fn_demanda_abre_no_inbound();
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- Fechamento. Sem ele a demanda nunca termina e o denominador do índice (que
@@ -10811,10 +11147,12 @@ $$;
 revoke all     on function public.fn_demanda_fecha_com_conversa() from public;
 revoke execute on function public.fn_demanda_fecha_com_conversa() from anon, authenticated;
 
-drop trigger if exists trg_demanda_fecha_com_conversa on public.conversations;
-create trigger trg_demanda_fecha_com_conversa
-  after update of status on public.conversations
-  for each row execute function public.fn_demanda_fecha_com_conversa();
+-- (O gatilho `trg_demanda_fecha_com_conversa` nascia aqui e é derrubado mais
+-- abaixo, sem volta — quem fecha a demanda hoje é o carimbo de serviço. Criá-lo
+-- em toda aplicação travava `conversations` duas vezes por atualização e o
+-- deixava VALENDO entre os dois pontos do arquivo. O `create` saiu na 0572; o
+-- `drop trigger if exists` de baixo segue tirando o gatilho de clone antigo, e a
+-- função fica, sem quem a chame. Issue #361.)
 
 
 notify pgrst, 'reload schema';
@@ -10980,10 +11318,11 @@ end $$;
 revoke execute on function public.fn_liberar_leads_do_agente() from public, anon, authenticated;
 grant  execute on function public.fn_liberar_leads_do_agente() to service_role;
 
-drop trigger if exists trg_liberar_leads_do_agente on public.ai_agents;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agents', 'trg_liberar_leads_do_agente', $zps_def$
 create trigger trg_liberar_leads_do_agente
   before delete on public.ai_agents
   for each row execute function public.fn_liberar_leads_do_agente();
+$zps_def$); end $zps$;
 
 comment on function public.fn_liberar_leads_do_agente() is
   'Migration 0115: desfaz a atribuição de leads antes de o agente ser apagado. '
@@ -11059,10 +11398,11 @@ alter table public.ai_purpose_bindings
 alter table public.ai_purpose_bindings enable row level security;
 
 drop policy if exists tenant_isolation_ai_purpose_bindings_all on public.ai_purpose_bindings;
-drop trigger if exists ai_purpose_bindings_updated_at on public.ai_purpose_bindings;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_purpose_bindings', 'ai_purpose_bindings_updated_at', $zps_def$
 create trigger ai_purpose_bindings_updated_at
   before update on public.ai_purpose_bindings
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 comment on table public.ai_purpose_bindings is
   'Migration 0126: qual provedor/credencial/modelo cada ponto do sistema que usa IA deve usar, por organização. O catálogo dos pontos vive em lib/ai/pontos/registro.ts e o par é vigiado por tests/unit/pontos-de-ia-completude.test.ts.';
@@ -11574,11 +11914,12 @@ create index if not exists idx_contact_field_proposals_vencendo
 
 alter table public.contact_field_proposals enable row level security;
 
-drop policy if exists tenant_isolation_contact_field_proposals_all on public.contact_field_proposals;
+do $zps$ begin perform public.fn_garantir_policy('public.contact_field_proposals', 'tenant_isolation_contact_field_proposals_all', $zps_def$
 create policy tenant_isolation_contact_field_proposals_all on public.contact_field_proposals
   for all
   using (organization_id in (select public.fn_user_org_ids()))
   with check (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 revoke all on public.contact_field_proposals from anon;
 
@@ -11598,11 +11939,12 @@ end$$;
 
 revoke all on function public.fn_carimba_proposta_de_dado() from public, anon;
 
-drop trigger if exists trg_contact_field_proposals_carimbo on public.contact_field_proposals;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contact_field_proposals', 'trg_contact_field_proposals_carimbo', $zps_def$
 create trigger trg_contact_field_proposals_carimbo
   before insert or update on public.contact_field_proposals
   for each row
   execute function public.fn_carimba_proposta_de_dado();
+$zps_def$); end $zps$;
 
 -- ---- LGPD: anonimizar o contato apaga as propostas dele ----
 --
@@ -11636,12 +11978,13 @@ revoke all on function public.fn_apaga_propostas_de_contato_anonimizado() from p
 revoke execute on function public.fn_apaga_propostas_de_contato_anonimizado() from anon;
 revoke execute on function public.fn_apaga_propostas_de_contato_anonimizado() from authenticated;
 
-drop trigger if exists trg_contacts_anonimizado_limpa_propostas on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_anonimizado_limpa_propostas', $zps_def$
 create trigger trg_contacts_anonimizado_limpa_propostas
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized = true and coalesce(old.is_anonymized, false) = false)
   execute function public.fn_apaga_propostas_de_contato_anonimizado();
+$zps_def$); end $zps$;
 
 
 -- ---- escopo de funil do agente (migration 0125) ----
@@ -11743,10 +12086,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -11795,15 +12139,17 @@ alter table public.org_guardrail_layers enable row level security;
 -- Auto-curativo: derruba a policy da 0142 por nome antes de criar as duas novas,
 -- então o `update.sh` de um clone que parou na 0142 fica correto sem passo manual.
 drop policy if exists tenant_isolation_org_guardrail_layers_all on public.org_guardrail_layers;
-drop policy if exists org_guardrail_layers_select on public.org_guardrail_layers;
-drop policy if exists org_guardrail_layers_admin_write on public.org_guardrail_layers;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.org_guardrail_layers', 'org_guardrail_layers_select', $zps_def$
 create policy org_guardrail_layers_select on public.org_guardrail_layers
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.org_guardrail_layers', 'org_guardrail_layers_admin_write', $zps_def$
 create policy org_guardrail_layers_admin_write on public.org_guardrail_layers
   using (
     public.fn_is_platform_admin()
@@ -11815,6 +12161,7 @@ create policy org_guardrail_layers_admin_write on public.org_guardrail_layers
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'admin'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.org_guardrail_layers from anon;
 
@@ -12139,23 +12486,25 @@ revoke execute on function public.fn_emit_agent_case_event() from anon, authenti
 
 -- ABERTURA: só os dois status que o código considera aberto
 -- (`OPEN_STATUSES` em lib/agent-engine/agent/human-cases.ts:75).
-drop trigger if exists trg_agent_case_opened on public.agent_cases;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_cases', 'trg_agent_case_opened', $zps_def$
 create trigger trg_agent_case_opened
   after insert on public.agent_cases
   for each row
   when (new.status in ('awaiting_human','awaiting_lead'))
   execute function public.fn_emit_agent_case_event();
+$zps_def$); end $zps$;
 
 -- FECHAMENTO: os três status terminais. `escalated` entra porque o caso deixou
 -- de esperar o cliente — seguir cobrando quem já foi passado adiante é o mesmo
 -- defeito de cobrar quem já foi resolvido.
-drop trigger if exists trg_agent_case_closed on public.agent_cases;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_cases', 'trg_agent_case_closed', $zps_def$
 create trigger trg_agent_case_closed
   after update of status on public.agent_cases
   for each row
   when (old.status is distinct from new.status
         and new.status in ('resolved','escalated','cancelled'))
   execute function public.fn_emit_agent_case_event();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -12333,13 +12682,14 @@ notify pgrst, 'reload schema';
 -- ---- canais ----
 drop policy if exists channel_sessions_tenant_isolation_all on public.channel_sessions;
 
-drop policy if exists channel_sessions_tenant_select on public.channel_sessions;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_sessions', 'channel_sessions_tenant_select', $zps_def$
 create policy channel_sessions_tenant_select on public.channel_sessions
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists channel_sessions_tenant_write on public.channel_sessions;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_sessions', 'channel_sessions_tenant_write', $zps_def$
 create policy channel_sessions_tenant_write on public.channel_sessions
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -12350,17 +12700,19 @@ create policy channel_sessions_tenant_write on public.channel_sessions
       and public.fn_role_at_least(organization_id, 'admin'))
     or public.fn_is_platform_admin_full()
   );
+$zps_def$); end $zps$;
 
 -- ---- agentes de IA ----
 drop policy if exists tenant_isolation_ai_agents_all on public.ai_agents;
 
-drop policy if exists tenant_isolation_ai_agents_select on public.ai_agents;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_agents', 'tenant_isolation_ai_agents_select', $zps_def$
 create policy tenant_isolation_ai_agents_select on public.ai_agents
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_agents_write on public.ai_agents;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_agents', 'tenant_isolation_ai_agents_write', $zps_def$
 create policy tenant_isolation_ai_agents_write on public.ai_agents
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -12371,15 +12723,17 @@ create policy tenant_isolation_ai_agents_write on public.ai_agents
       and public.fn_role_at_least(organization_id, 'admin'))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- ---- versões de agente ----
 drop policy if exists tenant_isolation_ai_agent_versions_all on public.ai_agent_versions;
 
-drop policy if exists tenant_isolation_ai_agent_versions_select on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_agent_versions', 'tenant_isolation_ai_agent_versions_select', $zps_def$
 create policy tenant_isolation_ai_agent_versions_select on public.ai_agent_versions
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_agent_versions_write on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_agent_versions', 'tenant_isolation_ai_agent_versions_write', $zps_def$
 create policy tenant_isolation_ai_agent_versions_write on public.ai_agent_versions
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -12388,17 +12742,19 @@ create policy tenant_isolation_ai_agent_versions_write on public.ai_agent_versio
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- ---- orçamento de IA ----
 drop policy if exists tenant_isolation_ai_budgets_all on public.ai_budgets;
 
-drop policy if exists tenant_isolation_ai_budgets_select on public.ai_budgets;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_budgets', 'tenant_isolation_ai_budgets_select', $zps_def$
 create policy tenant_isolation_ai_budgets_select on public.ai_budgets
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_budgets_write on public.ai_budgets;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_budgets', 'tenant_isolation_ai_budgets_write', $zps_def$
 create policy tenant_isolation_ai_budgets_write on public.ai_budgets
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -12409,15 +12765,17 @@ create policy tenant_isolation_ai_budgets_write on public.ai_budgets
       and public.fn_role_at_least(organization_id, 'admin'))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- ---- roteadores de IA ----
 drop policy if exists tenant_isolation_ai_routers_all on public.ai_routers;
 
-drop policy if exists tenant_isolation_ai_routers_select on public.ai_routers;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_routers', 'tenant_isolation_ai_routers_select', $zps_def$
 create policy tenant_isolation_ai_routers_select on public.ai_routers
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_routers_write on public.ai_routers;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_routers', 'tenant_isolation_ai_routers_write', $zps_def$
 create policy tenant_isolation_ai_routers_write on public.ai_routers
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -12426,14 +12784,16 @@ create policy tenant_isolation_ai_routers_write on public.ai_routers
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_ai_router_members_all on public.ai_router_members;
 
-drop policy if exists tenant_isolation_ai_router_members_select on public.ai_router_members;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_router_members', 'tenant_isolation_ai_router_members_select', $zps_def$
 create policy tenant_isolation_ai_router_members_select on public.ai_router_members
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_router_members_write on public.ai_router_members;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_router_members', 'tenant_isolation_ai_router_members_write', $zps_def$
 create policy tenant_isolation_ai_router_members_write on public.ai_router_members
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -12442,14 +12802,16 @@ create policy tenant_isolation_ai_router_members_write on public.ai_router_membe
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_ai_purpose_bindings_all on public.ai_purpose_bindings;
 
-drop policy if exists tenant_isolation_ai_purpose_bindings_select on public.ai_purpose_bindings;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_purpose_bindings', 'tenant_isolation_ai_purpose_bindings_select', $zps_def$
 create policy tenant_isolation_ai_purpose_bindings_select on public.ai_purpose_bindings
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_purpose_bindings_write on public.ai_purpose_bindings;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_purpose_bindings', 'tenant_isolation_ai_purpose_bindings_write', $zps_def$
 create policy tenant_isolation_ai_purpose_bindings_write on public.ai_purpose_bindings
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -12458,6 +12820,7 @@ create policy tenant_isolation_ai_purpose_bindings_write on public.ai_purpose_bi
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- ---- credenciais de provedor de IA: remover a superfície, não negociá-la ----
 --
@@ -12472,10 +12835,13 @@ create policy tenant_isolation_ai_purpose_bindings_write on public.ai_purpose_bi
 -- bytes inúteis. O que ele não protege é o resto: `provider`, `label`,
 -- `api_key_last4`, `validation_error`. E, sobretudo, a linha continuava
 -- DELETÁVEL, que é o dano real.)
-drop policy if exists tenant_isolation_ai_provider_credentials_select on public.ai_provider_credentials;
+-- (A 0150 também derrubava aqui a `..._select`, que a issue #292 recriou mais
+-- abaixo com outra forma: o par derrubava e recriava a policy a cada aplicação.
+-- O `drop` saiu na 0572 — a definição de baixo passa por `fn_garantir_policy`,
+-- que troca a forma antiga pela nova num clone que ainda a tenha. Issue #361.)
 drop policy if exists tenant_isolation_ai_provider_credentials_modify on public.ai_provider_credentials;
 
-drop policy if exists tenant_isolation_ai_provider_credentials_write on public.ai_provider_credentials;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_provider_credentials', 'tenant_isolation_ai_provider_credentials_write', $zps_def$
 create policy tenant_isolation_ai_provider_credentials_write on public.ai_provider_credentials
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -12484,6 +12850,7 @@ create policy tenant_isolation_ai_provider_credentials_write on public.ai_provid
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- O SELECT sai por COLUNA, não pela tabela inteira, e a razão é a view:
 -- `ai_provider_credentials_safe` é `security_invoker=true` — de propósito, para
@@ -12523,9 +12890,10 @@ notify pgrst, 'reload schema';
 --
 -- Este bloco vem DEPOIS do da 0150 de propósito: lá em cima há um
 -- `drop policy if exists ..._select`, e inverter a ordem apagaria este conserto.
-drop policy if exists tenant_isolation_ai_provider_credentials_select on public.ai_provider_credentials;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_provider_credentials', 'tenant_isolation_ai_provider_credentials_select', $zps_def$
 create policy tenant_isolation_ai_provider_credentials_select on public.ai_provider_credentials
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -13471,7 +13839,7 @@ grant  execute on function public.fn_conversation_assign(uuid, uuid, uuid, text,
 -- Molde do `messages_select`: o `exists` sobre `conversations` já aplica a RLS de
 -- `conversations`, então o escopo é HERDADO em vez de reescrito — duas cópias da
 -- mesma regra divergem na primeira mudança de uma delas.
-drop policy if exists cae_select on public.conversation_assignment_events;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_assignment_events', 'cae_select', $zps_def$
 create policy cae_select on public.conversation_assignment_events
   for select using (
     public.fn_is_platform_admin()
@@ -13490,6 +13858,7 @@ create policy cae_select on public.conversation_assignment_events
       )
     )
   );
+$zps_def$); end $zps$;
 
 -- ---- LGPD alcança o histórico de captação: função + trigger (migration 0174) ----
 --
@@ -14439,10 +14808,11 @@ alter table public.platform_branding enable row level security;
 revoke all on public.platform_branding from anon, authenticated;
 grant select, insert, update on public.platform_branding to service_role;
 
-drop trigger if exists trg_platform_branding_touch on public.platform_branding;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_branding', 'trg_platform_branding_touch', $zps_def$
 create trigger trg_platform_branding_touch
   before update on public.platform_branding
   for each row execute function public.fn_touch_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -14920,7 +15290,7 @@ create index if not exists push_subscriptions_org_idx
 
 alter table public.push_subscriptions enable row level security;
 
-drop policy if exists push_subscriptions_own on public.push_subscriptions;
+do $zps$ begin perform public.fn_garantir_policy('public.push_subscriptions', 'push_subscriptions_own', $zps_def$
 create policy push_subscriptions_own on public.push_subscriptions
   for all
   using (
@@ -14933,6 +15303,7 @@ create policy push_subscriptions_own on public.push_subscriptions
     and user_id = auth.uid()
     and public.fn_role_at_least(organization_id, 'viewer')
   );
+$zps_def$); end $zps$;
 
 revoke all on public.push_subscriptions from anon, public;
 grant select, insert, update, delete on public.push_subscriptions to authenticated;
@@ -15032,22 +15403,24 @@ comment on column public.webhook_lead_captures.source_name is
 
 alter table public.webhook_lead_captures enable row level security;
 
-drop policy if exists "webhook_lead_captures_manager_read" on public.webhook_lead_captures;
+do $zps$ begin perform public.fn_garantir_policy('public.webhook_lead_captures', 'webhook_lead_captures_manager_read', $zps_def$
 create policy "webhook_lead_captures_manager_read" on public.webhook_lead_captures
   for select using (
     public.fn_is_platform_admin()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 -- O trigger vive aqui (e não com a função, no bloco de cima) porque só faz
 -- sentido depois que a tabela existe.
-drop trigger if exists trg_redigir_captacoes_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_captacoes_ao_anonimizar', $zps_def$
 create trigger trg_redigir_captacoes_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and old.is_anonymized is distinct from true)
   execute function public.fn_redigir_captacoes_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 
 -- ---- a automação precisa poder dizer "ainda não" (migration 0175) ----
@@ -15595,11 +15968,12 @@ begin
 end
 $$;
 
-drop trigger if exists trg_limpar_vinculos_do_agendamento on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_limpar_vinculos_do_agendamento', $zps_def$
 create trigger trg_limpar_vinculos_do_agendamento
   after delete on public.calendar_appointments
   for each row
   execute function public.fn_limpar_vinculos_do_agendamento();
+$zps_def$); end $zps$;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 9 · updated_at
@@ -15612,10 +15986,9 @@ begin
     'calendar_connections','calendar_connection_calendars','calendar_external_events'
   ]
   loop
-    execute format('drop trigger if exists trg_%s_updated_at on public.%I', t, t);
-    execute format(
+    perform public.fn_garantir_gatilho('public.' || t, format('trg_%s_updated_at', t), format(
       'create trigger trg_%s_updated_at before update on public.%I
-         for each row execute function public.fn_set_updated_at()', t, t);
+         for each row execute function public.fn_set_updated_at()', t, t));
   end loop;
 end
 $$;
@@ -15666,12 +16039,13 @@ $$;
 -- ─── os tipos de agendamento: configuração do negócio ─────────────────────
 alter table public.calendar_event_types enable row level security;
 drop policy if exists tenant_isolation_calendar_event_types_all on public.calendar_event_types;
-drop policy if exists calendar_event_types_select on public.calendar_event_types;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_event_types', 'calendar_event_types_select', $zps_def$
 create policy calendar_event_types_select on public.calendar_event_types
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
-drop policy if exists calendar_event_types_write on public.calendar_event_types;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_event_types', 'calendar_event_types_write', $zps_def$
 create policy calendar_event_types_write on public.calendar_event_types
   using (
     public.fn_is_platform_admin()
@@ -15683,17 +16057,19 @@ create policy calendar_event_types_write on public.calendar_event_types
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 revoke all on public.calendar_event_types from anon;
 
 -- ─── os compromissos: a operação do dia ───────────────────────────────────
 alter table public.calendar_appointments enable row level security;
 drop policy if exists tenant_isolation_calendar_appointments_all on public.calendar_appointments;
-drop policy if exists calendar_appointments_select on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_appointments', 'calendar_appointments_select', $zps_def$
 create policy calendar_appointments_select on public.calendar_appointments
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
-drop policy if exists calendar_appointments_write on public.calendar_appointments;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_appointments', 'calendar_appointments_write', $zps_def$
 create policy calendar_appointments_write on public.calendar_appointments
   using (
     public.fn_is_platform_admin()
@@ -15705,17 +16081,19 @@ create policy calendar_appointments_write on public.calendar_appointments
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 revoke all on public.calendar_appointments from anon;
 
 -- ─── as exceções: a agenda é de quem a vive ───────────────────────────────
 alter table public.calendar_availability_exceptions enable row level security;
 drop policy if exists tenant_isolation_calendar_availability_exceptions_all on public.calendar_availability_exceptions;
-drop policy if exists calendar_availability_exceptions_select on public.calendar_availability_exceptions;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_availability_exceptions', 'calendar_availability_exceptions_select', $zps_def$
 create policy calendar_availability_exceptions_select on public.calendar_availability_exceptions
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
-drop policy if exists calendar_availability_exceptions_write on public.calendar_availability_exceptions;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_availability_exceptions', 'calendar_availability_exceptions_write', $zps_def$
 create policy calendar_availability_exceptions_write on public.calendar_availability_exceptions
   using (
     public.fn_is_platform_admin()
@@ -15727,12 +16105,13 @@ create policy calendar_availability_exceptions_write on public.calendar_availabi
     or ((organization_id in (select public.fn_user_org_ids()))
         and (user_id = auth.uid() or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$); end $zps$;
 revoke all on public.calendar_availability_exceptions from anon;
 
 -- ─── os calendários da conexão: herdam o escopo do pai ────────────────────
 alter table public.calendar_connection_calendars enable row level security;
 drop policy if exists tenant_isolation_calendar_connection_calendars_all on public.calendar_connection_calendars;
-drop policy if exists calendar_connection_calendars_select on public.calendar_connection_calendars;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_connection_calendars', 'calendar_connection_calendars_select', $zps_def$
 create policy calendar_connection_calendars_select on public.calendar_connection_calendars
   for select using (
     public.fn_is_platform_admin()
@@ -15744,28 +16123,31 @@ create policy calendar_connection_calendars_select on public.calendar_connection
                   or public.fn_role_at_least(c.organization_id, 'manager'))
         ))
   );
+$zps_def$); end $zps$;
 revoke all on public.calendar_connection_calendars from anon;
 
 -- ─── o espelho do Google: leitura de todos, escrita de ninguém ────────────
 alter table public.calendar_external_events enable row level security;
 drop policy if exists tenant_isolation_calendar_external_events_all on public.calendar_external_events;
-drop policy if exists calendar_external_events_select on public.calendar_external_events;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_external_events', 'calendar_external_events_select', $zps_def$
 create policy calendar_external_events_select on public.calendar_external_events
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 revoke all on public.calendar_external_events from anon;
 
 alter table public.calendar_connections enable row level security;
 
 drop policy if exists tenant_isolation_calendar_connections_all on public.calendar_connections;
-drop policy if exists calendar_connections_dono_ou_manager_read on public.calendar_connections;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_connections', 'calendar_connections_dono_ou_manager_read', $zps_def$
 create policy calendar_connections_dono_ou_manager_read on public.calendar_connections
   for select using (
     public.fn_is_platform_admin()
     or ((organization_id in (select public.fn_user_org_ids()))
         and (user_id = auth.uid() or public.fn_role_at_least(organization_id, 'manager')))
   );
+$zps_def$); end $zps$;
 
 -- Escrita não tem policy: quem conecta e desconecta é o callback do OAuth e o
 -- worker de renovação, ambos com service role, e ambos filtram organization_id
@@ -15907,12 +16289,13 @@ notify pgrst, 'reload schema';
 -- `contact_id`, e o único vínculo com a pessoa é o `title` copiado do Google.
 -- Alcançá-la exige uma decisão de produto — declarar que é espelho de terceiro,
 -- ou apagar a janela da conexão.
-drop trigger if exists trg_redigir_agenda_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_agenda_ao_anonimizar', $zps_def$
 create trigger trg_redigir_agenda_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and old.is_anonymized is distinct from true)
   execute function public.fn_redigir_agenda_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 comment on column public.calendar_appointments.notes is
   'Anotação livre do atendimento — numa clínica, queixa clínica. É dado pessoal: o trigger trg_redigir_agenda_ao_anonimizar (migration 0184) a apaga quando o contato é anonimizado, junto com title, description, location_details, meeting_url e cancellation_reason. Horário, status e dono são PRESERVADOS: o que aconteceu e quando é registro de operação.';
@@ -15932,11 +16315,12 @@ notify pgrst, 'reload schema';
 -- `on conflict do nothing` e nunca `do update`: o `update.sh` re-aplica este
 -- arquivo a cada atualização, e `do update` sobrescreveria em silêncio o tipo
 -- que o dono já editou. É a diferença entre semear e mandar.
-drop trigger if exists trg_semear_tipos_de_agendamento on public.organizations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.organizations', 'trg_semear_tipos_de_agendamento', $zps_def$
 create trigger trg_semear_tipos_de_agendamento
   after insert on public.organizations
   for each row
   execute function public.fn_semear_tipos_de_agendamento_na_org_nova();
+$zps_def$); end $zps$;
 
 -- Backfill: os clones que JÁ instalaram. Guardado por `not exists` para o
 -- `update.sh` poder re-aplicar sem duplicar e sem tocar em quem já editou.
@@ -16094,11 +16478,12 @@ revoke all on public.calendar_oauth_nonces from anon, authenticated;
 -- catálogo negação deliberada e negação esquecida são indistinguíveis — e é
 -- disso que o invariante de completude reclama, com razão. Não abre nada.
 drop policy if exists tenant_isolation_calendar_oauth_nonces_all on public.calendar_oauth_nonces;
-drop policy if exists calendar_oauth_nonces_ninguem_le on public.calendar_oauth_nonces;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_oauth_nonces', 'calendar_oauth_nonces_ninguem_le', $zps_def$
 create policy calendar_oauth_nonces_ninguem_le
   on public.calendar_oauth_nonces
   for select
   using (false);
+$zps_def$); end $zps$;
 
 -- A quarta poda do `data-retention`. Assinatura idêntica às três irmãs
 -- (`p_retencao_dias`, `p_limite`) para o mesmo laço de lotes servir sem caso
@@ -16439,10 +16824,11 @@ $fn$;
 revoke execute on function public.fn_adotar_tipos_de_agendamento_sem_dono() from public, anon, authenticated;
 grant  execute on function public.fn_adotar_tipos_de_agendamento_sem_dono() to service_role;
 
-drop trigger if exists trg_adotar_tipos_de_agendamento_sem_dono on public.user_organizations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.user_organizations', 'trg_adotar_tipos_de_agendamento_sem_dono', $zps_def$
 create trigger trg_adotar_tipos_de_agendamento_sem_dono
   after insert on public.user_organizations
   for each row execute function public.fn_adotar_tipos_de_agendamento_sem_dono();
+$zps_def$); end $zps$;
 
 -- Backfill: organizações que JÁ nasceram com os tipos órfãos e já têm membro. Adota o
 -- membro ATIVO mais antigo — o mesmo que o trigger teria escolhido se existisse na época.
@@ -16729,10 +17115,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 -- A busca que aceita VÁRIAS fontes. A antiga (`retrieve_top_k_chunks`) continua
 -- existindo: o worker legado e a capacidade MCP a chamam.
@@ -16829,13 +17216,14 @@ on conflict (provider, model_id) do update set
 -- PostgREST, com o JWT dele.
 drop policy if exists tenant_isolation_ai_knowledge_sources_all on public.ai_knowledge_sources;
 
-drop policy if exists tenant_isolation_ai_knowledge_sources_select on public.ai_knowledge_sources;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_knowledge_sources', 'tenant_isolation_ai_knowledge_sources_select', $zps_def$
 create policy tenant_isolation_ai_knowledge_sources_select on public.ai_knowledge_sources
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_knowledge_sources_write on public.ai_knowledge_sources;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_knowledge_sources', 'tenant_isolation_ai_knowledge_sources_write', $zps_def$
 create policy tenant_isolation_ai_knowledge_sources_write on public.ai_knowledge_sources
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -16846,14 +17234,16 @@ create policy tenant_isolation_ai_knowledge_sources_write on public.ai_knowledge
       and public.fn_role_at_least(organization_id, 'manager'))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_ai_faq_items_all on public.ai_faq_items;
 
-drop policy if exists tenant_isolation_ai_faq_items_select on public.ai_faq_items;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_faq_items', 'tenant_isolation_ai_faq_items_select', $zps_def$
 create policy tenant_isolation_ai_faq_items_select on public.ai_faq_items
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_faq_items_write on public.ai_faq_items;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_faq_items', 'tenant_isolation_ai_faq_items_write', $zps_def$
 create policy tenant_isolation_ai_faq_items_write on public.ai_faq_items
   for all using (
     organization_id in (select public.fn_user_org_ids())
@@ -16862,16 +17252,18 @@ create policy tenant_isolation_ai_faq_items_write on public.ai_faq_items
     organization_id in (select public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'manager')
   );
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_ai_kbv_all on public.ai_knowledge_versions;
 
-drop policy if exists tenant_isolation_ai_kbv_select on public.ai_knowledge_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_knowledge_versions', 'tenant_isolation_ai_kbv_select', $zps_def$
 create policy tenant_isolation_ai_kbv_select on public.ai_knowledge_versions
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_kbv_write on public.ai_knowledge_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_knowledge_versions', 'tenant_isolation_ai_kbv_write', $zps_def$
 create policy tenant_isolation_ai_kbv_write on public.ai_knowledge_versions
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -16882,16 +17274,18 @@ create policy tenant_isolation_ai_kbv_write on public.ai_knowledge_versions
       and public.fn_role_at_least(organization_id, 'admin'))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_ai_chunks_all on public.ai_chunks;
 
-drop policy if exists tenant_isolation_ai_chunks_select on public.ai_chunks;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_chunks', 'tenant_isolation_ai_chunks_select', $zps_def$
 create policy tenant_isolation_ai_chunks_select on public.ai_chunks
   for select using (
     organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists tenant_isolation_ai_chunks_write on public.ai_chunks;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_chunks', 'tenant_isolation_ai_chunks_write', $zps_def$
 create policy tenant_isolation_ai_chunks_write on public.ai_chunks
   for all using (
     (organization_id in (select public.fn_user_org_ids())
@@ -16902,16 +17296,18 @@ create policy tenant_isolation_ai_chunks_write on public.ai_chunks
       and public.fn_role_at_least(organization_id, 'admin'))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 revoke all on table public.ai_knowledge_sources  from anon;
 revoke all on table public.ai_knowledge_versions from anon;
 revoke all on table public.ai_chunks             from anon;
 revoke all on table public.ai_faq_items          from anon;
 
-drop trigger if exists trg_ai_knowledge_sources_audit on public.ai_knowledge_sources;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_knowledge_sources', 'trg_ai_knowledge_sources_audit', $zps_def$
 create trigger trg_ai_knowledge_sources_audit
   after insert or update or delete on public.ai_knowledge_sources
   for each row execute function public.fn_audit_log_row();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -17001,10 +17397,11 @@ $fn$;
 revoke execute on function public.fn_carimbar_ida_ao_google() from public, anon, authenticated;
 grant  execute on function public.fn_carimbar_ida_ao_google() to service_role;
 
-drop trigger if exists trg_calendar_appointments_carimbo_do_google on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_calendar_appointments_carimbo_do_google', $zps_def$
 create trigger trg_calendar_appointments_carimbo_do_google
   before insert or update on public.calendar_appointments
   for each row execute function public.fn_carimbar_ida_ao_google();
+$zps_def$); end $zps$;
 
 create index if not exists calendar_appointments_pendente_no_google_idx
   on public.calendar_appointments (starts_at)
@@ -17050,10 +17447,11 @@ alter table public.platform_google_oauth enable row level security;
 revoke all on public.platform_google_oauth from anon, authenticated;
 grant select, insert, update on public.platform_google_oauth to service_role;
 
-drop trigger if exists trg_platform_google_oauth_updated_at on public.platform_google_oauth;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_google_oauth', 'trg_platform_google_oauth_updated_at', $zps_def$
 create trigger trg_platform_google_oauth_updated_at
   before update on public.platform_google_oauth
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---- desnormaliza assigned_to_user_name em conversations (migration 0202) ----
 --
@@ -17352,13 +17750,14 @@ alter table public.catalog_products enable row level security;
 -- Leitura para a organização; ESCRITA só de `manager` para cima. É o molde da
 -- 0177 (`calendar_event_types`), e é o que a tabela da Nuvemshop não tem: preço
 -- de venda não se altera com papel de leitura.
-drop policy if exists catalog_products_select on public.catalog_products;
+do $zps$ begin perform public.fn_garantir_policy('public.catalog_products', 'catalog_products_select', $zps_def$
 create policy catalog_products_select on public.catalog_products
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists catalog_products_write on public.catalog_products;
+do $zps$ begin perform public.fn_garantir_policy('public.catalog_products', 'catalog_products_write', $zps_def$
 create policy catalog_products_write on public.catalog_products
   using (
     public.fn_is_platform_admin()
@@ -17370,6 +17769,7 @@ create policy catalog_products_write on public.catalog_products
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 -- `ALTER DEFAULT PRIVILEGES ... GRANT ALL ON TABLES TO anon` do baseline alcança
 -- TODA tabela criada depois dele — inclusive esta. Sem o revoke, o catálogo
@@ -17378,10 +17778,11 @@ revoke all on public.catalog_products from anon;
 grant select, insert, update, delete on public.catalog_products to authenticated;
 grant all on public.catalog_products to service_role;
 
-drop trigger if exists trg_catalog_products_updated_at on public.catalog_products;
+do $zps$ begin perform public.fn_garantir_gatilho('public.catalog_products', 'trg_catalog_products_updated_at', $zps_def$
 create trigger trg_catalog_products_updated_at
   before update on public.catalog_products
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 comment on table public.catalog_products is
   'O catálogo que a LOJA possui — uma linha por item vendável, com o preço que o agente de IA responde. Distinto de nuvemshop_products, que é ESPELHO de uma loja remota: aqui a loja é a fonte da verdade.';
@@ -18029,13 +18430,14 @@ create index if not exists crm_tasks_lead_idx
 
 alter table public.crm_tasks enable row level security;
 
-drop policy if exists crm_tasks_select on public.crm_tasks;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_tasks', 'crm_tasks_select', $zps_def$
 create policy crm_tasks_select on public.crm_tasks
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists crm_tasks_write on public.crm_tasks;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_tasks', 'crm_tasks_write', $zps_def$
 create policy crm_tasks_write on public.crm_tasks
   using (
     public.fn_is_platform_admin()
@@ -18047,6 +18449,7 @@ create policy crm_tasks_write on public.crm_tasks
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 -- `ALTER DEFAULT PRIVILEGES ... GRANT ALL ON TABLES TO anon` do baseline alcança
 -- TODA tabela criada depois dele — inclusive esta. Sem o revoke, as tarefas da
@@ -18055,10 +18458,11 @@ revoke all on public.crm_tasks from anon;
 grant select, insert, update, delete on public.crm_tasks to authenticated;
 grant all on public.crm_tasks to service_role;
 
-drop trigger if exists trg_crm_tasks_updated_at on public.crm_tasks;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_tasks', 'trg_crm_tasks_updated_at', $zps_def$
 create trigger trg_crm_tasks_updated_at
   before update on public.crm_tasks
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 comment on table public.crm_tasks is
   'Lembrete de trabalho INTERNO com prazo — "ligar de volta na terça". Distinto de calendar_appointments (0177), que é compromisso COM o cliente, com horário, local e confirmação.';
@@ -18111,12 +18515,13 @@ $$;
 revoke execute on function public.fn_redigir_tarefas_do_contato_anonimizado() from public, anon, authenticated;
 grant  execute on function public.fn_redigir_tarefas_do_contato_anonimizado() to service_role;
 
-drop trigger if exists trg_redigir_tarefas_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_tarefas_ao_anonimizar', $zps_def$
 create trigger trg_redigir_tarefas_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and old.is_anonymized is distinct from true)
   execute function public.fn_redigir_tarefas_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 comment on column public.crm_tasks.title is
   'Texto livre do operador — "Ligar para Fulano confirmar o orçamento". É dado pessoal quando a tarefa aponta para um contato: o trigger trg_redigir_tarefas_ao_anonimizar o substitui por "Tarefa anonimizada" e apaga a descrição quando o contato é anonimizado. Prazo, situação e prioridade são PRESERVADOS — que houve tarefa e quando ela venceu é registro de operação.';
@@ -18338,12 +18743,13 @@ revoke all on function public.fn_contato_anonimizado_limpa_campos_personalizados
 revoke execute on function public.fn_contato_anonimizado_limpa_campos_personalizados() from anon;
 revoke execute on function public.fn_contato_anonimizado_limpa_campos_personalizados() from authenticated;
 
-drop trigger if exists trg_contacts_anonimizado_limpa_custom_fields on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_anonimizado_limpa_custom_fields', $zps_def$
 create trigger trg_contacts_anonimizado_limpa_custom_fields
   before update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized = true and coalesce(old.is_anonymized, false) = false)
   execute function public.fn_contato_anonimizado_limpa_campos_personalizados();
+$zps_def$); end $zps$;
 
 
 -- ---- Organização e acesso atômicos (migration 0231; timestamp preservado 20260905120000) ----
@@ -18431,11 +18837,12 @@ grant execute on function public.fn_accept_team_invite(uuid, uuid, text, uuid, t
 -- Não fazemos backfill nem apagamos recibos: só a RPC abaixo produz confiança.
 -- Os namespaces LGPD/MCP continuam com o contrato de leitura/escrita original.
 alter table public.idempotency_keys add column if not exists tenant_creation_trusted boolean not null default false;
-drop policy if exists idempotency_platform_creation_server_only on public.idempotency_keys;
+do $zps$ begin perform public.fn_garantir_policy('public.idempotency_keys', 'idempotency_platform_creation_server_only', $zps_def$
 create policy idempotency_platform_creation_server_only on public.idempotency_keys
   as restrictive for all to anon, authenticated
   using (endpoint not like '/api/v1/admin/tenants:%' and not tenant_creation_trusted)
   with check (endpoint not like '/api/v1/admin/tenants:%' and not tenant_creation_trusted);
+$zps_def$); end $zps$;
 -- TRUNCATE ignora RLS; nenhum consumidor de idempotência precisa dele.
 revoke truncate on public.idempotency_keys from public, anon, authenticated;
 
@@ -18994,12 +19401,9 @@ revoke all on function public.fn_support_storage_write_allowed(text) from public
 grant execute on function public.fn_support_storage_write_allowed(text) to authenticated,service_role;
 do $f$ begin
  if to_regclass('storage.objects') is not null then
- execute 'drop policy if exists support_write_insert on storage.objects';
- execute 'create policy support_write_insert on storage.objects as restrictive for insert to authenticated with check (public.fn_support_storage_write_allowed(name))';
- execute 'drop policy if exists support_write_update on storage.objects';
- execute 'create policy support_write_update on storage.objects as restrictive for update to authenticated using (public.fn_support_storage_write_allowed(name)) with check (public.fn_support_storage_write_allowed(name))';
- execute 'drop policy if exists support_write_delete on storage.objects';
- execute 'create policy support_write_delete on storage.objects as restrictive for delete to authenticated using (public.fn_support_storage_write_allowed(name))';
+ perform public.fn_garantir_policy('storage.objects', 'support_write_insert', 'create policy support_write_insert on storage.objects as restrictive for insert to authenticated with check (public.fn_support_storage_write_allowed(name))');
+ perform public.fn_garantir_policy('storage.objects', 'support_write_update', 'create policy support_write_update on storage.objects as restrictive for update to authenticated using (public.fn_support_storage_write_allowed(name)) with check (public.fn_support_storage_write_allowed(name))');
+ perform public.fn_garantir_policy('storage.objects', 'support_write_delete', 'create policy support_write_delete on storage.objects as restrictive for delete to authenticated using (public.fn_support_storage_write_allowed(name))');
  end if;
 end $f$;
 notify pgrst, 'reload schema';
@@ -19338,8 +19742,9 @@ begin
  return new;
 end; $$;
 revoke execute on function public.fn_job_service_boundary() from public,anon,authenticated;
-drop trigger if exists trg_job_service_boundary on public.job_queue;
+do $zps$ begin perform public.fn_garantir_gatilho('public.job_queue', 'trg_job_service_boundary', $zps_def$
 create trigger trg_job_service_boundary before insert on public.job_queue for each row execute function public.fn_job_service_boundary();
+$zps_def$); end $zps$;
 
 -- Defesa para escritores legados de status: só a linha já bloqueada, nenhum
 -- advisory/lock de demanda adquirido DEPOIS dela. As APIs usam fn_service_status.
@@ -19364,9 +19769,10 @@ begin
  return new;
 end; $$;
 revoke execute on function public.fn_service_stamp_status() from public,anon,authenticated;
-drop trigger if exists trg_service_stamp_status on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_service_stamp_status', $zps_def$
 create trigger trg_service_stamp_status before update of status on public.conversations
  for each row execute function public.fn_service_stamp_status();
+$zps_def$); end $zps$;
 
 -- Caso guarda sua origem no snapshot já existente. Resposta humana não cria
 -- um atendimento novo nem herda a revisão que houver quando for respondido.
@@ -19382,8 +19788,9 @@ begin
  return new;
 end; $$;
 revoke execute on function public.fn_case_service_boundary() from public,anon,authenticated;
-drop trigger if exists trg_case_service_boundary on public.agent_cases;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_cases', 'trg_case_service_boundary', $zps_def$
 create trigger trg_case_service_boundary before insert on public.agent_cases for each row execute function public.fn_case_service_boundary();
+$zps_def$); end $zps$;
 
 -- Agregados não podem tornar mensagem atrasada um sinal operacional recente.
 -- Mesma ordem de mutex da transição, depois conversa e contato.
@@ -19413,10 +19820,11 @@ grant execute on function public.fn_mark_conversation_message(uuid,text,text,tim
 
 -- Reentrada em fila tem consumidor real em lib/routing/worker.ts. Só a
 -- transição terminal->fila emite; atribuições subsequentes não produzem eco.
-drop trigger if exists trg_service_reopened_routing on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_service_reopened_routing', $zps_def$
 create trigger trg_service_reopened_routing after update of status on public.conversations
  for each row when (old.status in ('closed','resolved','archived') and new.status in ('open','pending')
   and new.assigned_to_user_id is null) execute function public.fn_emit_conversation_routing();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_demanda_revision()
 returns trigger language plpgsql set search_path=public as $$
@@ -19428,8 +19836,9 @@ begin
  return new;
 end; $$;
 revoke execute on function public.fn_demanda_revision() from public,anon,authenticated;
-drop trigger if exists trg_demanda_revision on public.demandas;
+do $zps$ begin perform public.fn_garantir_gatilho('public.demandas', 'trg_demanda_revision', $zps_def$
 create trigger trg_demanda_revision before update on public.demandas for each row execute function public.fn_demanda_revision();
+$zps_def$); end $zps$;
 
 -- Snapshot atômico usado tanto pela origem quanto pelo sink.
 create or replace function public.fn_service_boundary(p_org uuid,p_conversation uuid)
@@ -19507,8 +19916,9 @@ begin
  return new;
 end; $$;
 revoke execute on function public.fn_message_service_lock() from public,anon,authenticated;
-drop trigger if exists trg_message_service_lock on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_message_service_lock', $zps_def$
 create trigger trg_message_service_lock before insert on public.messages for each row execute function public.fn_message_service_lock();
+$zps_def$); end $zps$;
 
 -- Mescla preserva autorização/support gate e adota a mesma ordem de mutex.
 CREATE OR REPLACE FUNCTION public.fn_mesclar_contatos(p_organization_id uuid, p_contato_principal uuid, p_contatos_secundarios uuid[])
@@ -20255,8 +20665,9 @@ begin
  return new;
 end; $$;
 revoke all on function public.fn_appointment_stamp() from public,anon,authenticated;
-drop trigger if exists trg_appointment_stamp on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_appointment_stamp', $zps_def$
 create trigger trg_appointment_stamp before insert or update on public.calendar_appointments for each row execute function public.fn_appointment_stamp();
+$zps_def$); end $zps$;
 
 -- A mudança observada e o evento estão no mesmo commit. Sem janela em que
 -- o desfecho ficou gravado e a recuperação nunca soube dele.
@@ -20325,8 +20736,9 @@ begin
  return new;
 end; $$;
 revoke all on function public.fn_appointment_inbound() from public,anon,authenticated;
-drop trigger if exists trg_appointment_inbound on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_appointment_inbound', $zps_def$
 create trigger trg_appointment_inbound after update of service_revision on public.messages for each row execute function public.fn_appointment_inbound();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_followup_revision()
 returns trigger language plpgsql security definer set search_path=public as $$
@@ -20355,8 +20767,9 @@ begin
  new.revision:=old.revision+1; return new;
 end; $$;
 revoke all on function public.fn_followup_revision() from public,anon,authenticated;
-drop trigger if exists trg_followup_revision on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.followup_enrollments', 'trg_followup_revision', $zps_def$
 create trigger trg_followup_revision before update on public.followup_enrollments for each row execute function public.fn_followup_revision();
+$zps_def$); end $zps$;
 
 -- Defaults também são validados no schema TS. Valores corrompidos de clone
 -- degradam para 10min/24h; não passam cast inseguro no sweep de toda instalação.
@@ -20538,10 +20951,12 @@ begin
  return new;
 end; $$;
 revoke all on function public.fn_followup_generation_write() from public,anon,authenticated;
-drop trigger if exists trg_followup_generation_job on public.job_queue;
+do $zps$ begin perform public.fn_garantir_gatilho('public.job_queue', 'trg_followup_generation_job', $zps_def$
 create trigger trg_followup_generation_job before insert or update or delete on public.job_queue for each row execute function public.fn_followup_generation_write();
-drop trigger if exists trg_followup_generation_event on public.followup_enrollment_events;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_gatilho('public.followup_enrollment_events', 'trg_followup_generation_event', $zps_def$
 create trigger trg_followup_generation_event before insert or update or delete on public.followup_enrollment_events for each row execute function public.fn_followup_generation_write();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_followup_job_current(p_org uuid,p_job uuid,p_enrollment uuid,p_node text)
 returns boolean language sql stable security definer set search_path=public as $$
@@ -20981,8 +21396,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_google_projection_stamp() from public,anon,authenticated;
-drop trigger if exists trg_google_projection_stamp on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_google_projection_stamp', $zps_def$
 create trigger trg_google_projection_stamp before insert or update on public.calendar_appointments for each row execute function public.fn_google_projection_stamp();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_appointment_change_core(p_org uuid,p_id uuid,p_revision bigint,p_patch jsonb,p_remote boolean,p_base jsonb)
 returns jsonb language plpgsql security definer set search_path=public as $$
@@ -21349,8 +21765,9 @@ begin
  end if;return new;
 end;$$;
 revoke all on function public.fn_google_redact_contact() from public,anon,authenticated;
-drop trigger if exists trg_google_redact_contact on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_google_redact_contact', $zps_def$
 create trigger trg_google_redact_contact after update of is_anonymized on public.contacts for each row when(new.is_anonymized is true) execute function public.fn_google_redact_contact();
+$zps_def$); end $zps$;
 -- Backlog sem consumer não era entrega. A revisão durável é a única pendência.
 update public.event_log set status='done',updated_at=now(),last_error='superseded: Google acompanha a revisão atual do compromisso'
  where event_type='agenda.appointment.push_to_google' and status in ('pending','processing');
@@ -21478,8 +21895,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_meet_stamp() from public,anon,authenticated;
-drop trigger if exists trg_zz_meet_stamp on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_zz_meet_stamp', $zps_def$
 create trigger trg_zz_meet_stamp before insert or update on public.calendar_appointments for each row execute function public.fn_meet_stamp();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_meet_observe(p_org uuid,p_id uuid,p_args jsonb)
 returns void language plpgsql security definer set search_path=public as $$
@@ -21691,8 +22109,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_meet_delivery_enqueue() from public,anon,authenticated;
-drop trigger if exists trg_meet_delivery_enqueue on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_meet_delivery_enqueue', $zps_def$
 create trigger trg_meet_delivery_enqueue after insert or update on public.calendar_appointments for each row execute function public.fn_meet_delivery_enqueue();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_meet_delivery_current(p_org uuid,p_job uuid,p_worker text,p_acquired_at timestamptz)
 returns boolean language sql stable security definer set search_path=public as $$
@@ -21844,8 +22263,7 @@ end;$$;
 revoke all on function public.fn_meet_minimize_runtime() from public,anon,authenticated;
 do $$ declare tab text;begin
  foreach tab in array array['lead_checkpoints','lead_state','lead_state_transitions','agent_cases','outbound_copies','conversations'] loop
-  execute format('drop trigger if exists trg_meet_minimize_runtime on public.%I',tab);
-  execute format('create trigger trg_meet_minimize_runtime before insert or update on public.%I for each row execute function public.fn_meet_minimize_runtime()',tab);
+  perform public.fn_garantir_gatilho('public.'||tab,'trg_meet_minimize_runtime',format('create trigger trg_meet_minimize_runtime before insert or update on public.%I for each row execute function public.fn_meet_minimize_runtime()',tab));
  end loop;
 end;$$;
 
@@ -21864,8 +22282,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_meet_redact_contact() from public,anon,authenticated;
-drop trigger if exists trg_meet_redact_contact on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_meet_redact_contact', $zps_def$
 create trigger trg_meet_redact_contact after update of is_anonymized on public.contacts for each row when(new.is_anonymized is true) execute function public.fn_meet_redact_contact();
+$zps_def$); end $zps$;
 notify pgrst,'reload schema';
 
 -- ---- autonomia e respostas revisadas (migration 0227) ----
@@ -21886,8 +22305,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_reply_agent_revision() from public,anon,authenticated;
-drop trigger if exists trg_reply_agent_revision on public.ai_agents;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agents', 'trg_reply_agent_revision', $zps_def$
 create trigger trg_reply_agent_revision before update on public.ai_agents for each row execute function public.fn_reply_agent_revision();
+$zps_def$); end $zps$;
 -- A unique persisted inbound changes the response context, independent of its
 -- provider timestamp. Duplicate deliveries never INSERT, hence never increment.
 -- This observer does not dispatch a turn: historical import is not live inbound.
@@ -21908,10 +22328,12 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_reply_conversation_revision() from public,anon,authenticated;
-drop trigger if exists trg_reply_conversation_revision on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_reply_conversation_revision', $zps_def$
 create trigger trg_reply_conversation_revision before update on public.conversations for each row execute function public.fn_reply_conversation_revision();
-drop trigger if exists trg_reply_inbound_revision on public.messages;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_reply_inbound_revision', $zps_def$
 create trigger trg_reply_inbound_revision after insert on public.messages for each row execute function public.fn_reply_inbound_revision();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_reply_channel_revision() returns trigger language plpgsql security definer set search_path=public as $$
 begin
@@ -21920,8 +22342,9 @@ begin
  end if;return new;
 end;$$;
 revoke all on function public.fn_reply_channel_revision() from public,anon,authenticated;
-drop trigger if exists trg_reply_channel_revision on public.channel_sessions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.channel_sessions', 'trg_reply_channel_revision', $zps_def$
 create trigger trg_reply_channel_revision after update on public.channel_sessions for each row execute function public.fn_reply_channel_revision();
+$zps_def$); end $zps$;
 
 create table if not exists public.ai_reply_drafts(
  id uuid primary key default gen_random_uuid(),organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -21941,9 +22364,10 @@ alter table public.ai_reply_drafts enable row level security;
 revoke all on public.ai_reply_drafts from anon,authenticated;
 grant select on public.ai_reply_drafts to authenticated;
 grant all on public.ai_reply_drafts to service_role;
-drop policy if exists tenant_isolation_ai_reply_drafts_all on public.ai_reply_drafts;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_reply_drafts', 'tenant_isolation_ai_reply_drafts_all', $zps_def$
 create policy tenant_isolation_ai_reply_drafts_all on public.ai_reply_drafts for select to authenticated
  using(organization_id in(select public.fn_user_org_ids()) and exists(select 1 from public.conversations c where c.organization_id=ai_reply_drafts.organization_id and c.id=conversation_id and public.fn_can_view_conversation(c.organization_id,c.assigned_to_user_id)));
+$zps_def$); end $zps$;
 create index if not exists ai_reply_drafts_conversation on public.ai_reply_drafts(organization_id,conversation_id,created_at desc);
 
 create or replace function public.fn_reply_begin(p_org uuid,p_conversation uuid,p_agent uuid,p_version uuid,p_token uuid)
@@ -22075,8 +22499,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_agent_legacy_published() from public,anon,authenticated;
-drop trigger if exists trg_agent_legacy_published on public.ai_agents;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agents', 'trg_agent_legacy_published', $zps_def$
 create trigger trg_agent_legacy_published after update of published_version_id on public.ai_agents for each row when(new.kind='rag_bot' and new.published_version_id is not null and new.published_version_id is distinct from old.published_version_id) execute function public.fn_agent_legacy_published();
+$zps_def$); end $zps$;
 
 -- Reconhecimento é atômico com as escritas locais. Não exige autoridade para
 -- um novo envio, mas mantém identidade, lease e redação até o commit.
@@ -22145,8 +22570,9 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_reply_redact() from public,anon,authenticated;
-drop trigger if exists trg_reply_redact on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_reply_redact', $zps_def$
 create trigger trg_reply_redact after update of is_anonymized on public.contacts for each row when(new.is_anonymized and not old.is_anonymized) execute function public.fn_reply_redact();
+$zps_def$); end $zps$;
 
 -- Last preparation/cut: same locks as snapshots, then atomic sending CAS.
 -- The following network attempt is irreversible; receipt reconciliation is not
@@ -22335,8 +22761,9 @@ begin
  end if;return new;
 end;$$;
 revoke all on function public.fn_agent_provisioning_origin() from public,anon,authenticated;
-drop trigger if exists trg_agent_provisioning_origin on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_agent_provisioning_origin', $zps_def$
 create trigger trg_agent_provisioning_origin before insert or update on public.ai_agent_versions for each row execute function public.fn_agent_provisioning_origin();
+$zps_def$); end $zps$;
 
 -- ---- conversões de anúncio: conexão + livro-razão (migration 0213) ----
 -- Idempotente e auto-curativo, como o kit exige: `update.sh` re-aplica este
@@ -22364,10 +22791,11 @@ alter table public.ad_platform_connections enable row level security;
 revoke all on public.ad_platform_connections from anon, authenticated;
 grant select, insert, update, delete on public.ad_platform_connections to service_role;
 
-drop trigger if exists trg_ad_platform_connections_updated_at on public.ad_platform_connections;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_platform_connections', 'trg_ad_platform_connections_updated_at', $zps_def$
 create trigger trg_ad_platform_connections_updated_at
   before update on public.ad_platform_connections
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create table if not exists public.ad_conversion_dispatches (
   id uuid primary key default gen_random_uuid(),
@@ -22406,10 +22834,11 @@ alter table public.ad_conversion_dispatches enable row level security;
 revoke all on public.ad_conversion_dispatches from anon, authenticated;
 grant select, insert, update, delete on public.ad_conversion_dispatches to service_role;
 
-drop trigger if exists trg_ad_conversion_dispatches_updated_at on public.ad_conversion_dispatches;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_conversion_dispatches', 'trg_ad_conversion_dispatches_updated_at', $zps_def$
 create trigger trg_ad_conversion_dispatches_updated_at
   before update on public.ad_conversion_dispatches
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---- o e-mail do convidado no compromisso (migration 0212) ----
 --
@@ -22482,10 +22911,11 @@ alter table public.ad_insights_connections enable row level security;
 revoke all on public.ad_insights_connections from anon, authenticated;
 grant select, insert, update, delete on public.ad_insights_connections to service_role;
 
-drop trigger if exists trg_ad_insights_connections_updated_at on public.ad_insights_connections;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_insights_connections', 'trg_ad_insights_connections_updated_at', $zps_def$
 create trigger trg_ad_insights_connections_updated_at
   before update on public.ad_insights_connections
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- O PostgREST guarda o schema em cache; sem isto a tabela nova só apareceria no
 -- próximo restart do serviço, e a doutrina de packaging proíbe pedir a quem
@@ -22529,12 +22959,14 @@ alter table public.channel_routing_policies enable row level security;
 alter table public.channel_routing_responsibles enable row level security;
 revoke all on public.channel_routing_policies,public.channel_routing_responsibles from public,anon,authenticated,service_role;
 grant select on public.channel_routing_policies,public.channel_routing_responsibles to authenticated,service_role;
-drop policy if exists tenant_isolation_channel_routing_policies_select on public.channel_routing_policies;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_routing_policies', 'tenant_isolation_channel_routing_policies_select', $zps_def$
 create policy tenant_isolation_channel_routing_policies_select on public.channel_routing_policies for select to authenticated
  using(organization_id in(select public.fn_user_org_ids()) or public.fn_is_platform_admin());
-drop policy if exists tenant_isolation_channel_routing_responsibles_select on public.channel_routing_responsibles;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_routing_responsibles', 'tenant_isolation_channel_routing_responsibles_select', $zps_def$
 create policy tenant_isolation_channel_routing_responsibles_select on public.channel_routing_responsibles for select to authenticated
  using(organization_id in(select public.fn_user_org_ids()) or public.fn_is_platform_admin());
+$zps_def$); end $zps$;
 
 -- Preserva história: apenas o evento pendente duplicado deixa de disputar consumo.
 with ranked as (
@@ -22662,18 +23094,20 @@ begin
 end;
 $$;
 revoke all on function public.fn_routing_member_revoked() from public,anon,authenticated;
-drop trigger if exists trg_routing_member_revoked on public.user_organizations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.user_organizations', 'trg_routing_member_revoked', $zps_def$
 create trigger trg_routing_member_revoked after update of revoked_at,role on public.user_organizations
  for each row when(old.revoked_at is distinct from new.revoked_at or old.role is distinct from new.role) execute function public.fn_routing_member_revoked();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_routing_availability_changed()
 returns trigger language plpgsql security definer set search_path=public as $$
 begin perform public.fn_wake_channel_routing(new.organization_id);return new;end;
 $$;
 revoke all on function public.fn_routing_availability_changed() from public,anon,authenticated;
-drop trigger if exists trg_routing_availability_changed on public.attendant_availability;
+do $zps$ begin perform public.fn_garantir_gatilho('public.attendant_availability', 'trg_routing_availability_changed', $zps_def$
 create trigger trg_routing_availability_changed after insert or update of is_available,capacity,schedule on public.attendant_availability
  for each row execute function public.fn_routing_availability_changed();
+$zps_def$); end $zps$;
 
 -- Um aviso por conversa, com histórico preservado entre acknowledge e resolução.
 create unique index if not exists agent_inbox_routing_unique on public.agent_inbox_items(organization_id,ref_id,kind)
@@ -22709,9 +23143,10 @@ begin
 end;
 $$;
 revoke all on function public.fn_routing_assignment_changed() from public,anon,authenticated;
-drop trigger if exists trg_routing_assignment_changed on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_routing_assignment_changed', $zps_def$
 create trigger trg_routing_assignment_changed after update of assigned_to_user_id,status on public.conversations
  for each row execute function public.fn_routing_assignment_changed();
+$zps_def$); end $zps$;
 
 -- Mesma porta pública e contrato; compatível com KEY SHARE das FKs inbound.
 CREATE OR REPLACE FUNCTION public.fn_conversation_assign(p_organization_id uuid, p_conversation_id uuid, p_to_user_id uuid, p_reason text, p_expected_assignee uuid DEFAULT NULL::uuid, p_enforce_expected boolean DEFAULT false)
@@ -23390,9 +23825,10 @@ begin
  return new;
 end;$$;
 revoke all on function public.fn_contact_redaction_lock() from public,anon,authenticated;
-drop trigger if exists trg_contact_redaction_lock on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contact_redaction_lock', $zps_def$
 create trigger trg_contact_redaction_lock before update on public.contacts
  for each row when(new.is_anonymized is true) execute function public.fn_contact_redaction_lock();
+$zps_def$); end $zps$;
 
 -- Passo 1 legado: mesma autoridade humana, apenas a escrita do contato.
 -- A retomada de leads/atividades segue na rota e usa o timestamp retornado aqui.
@@ -23636,15 +24072,16 @@ create unique index if not exists team_invites_um_pendente_por_email_idx
 
 alter table public.team_invites enable row level security;
 
-drop policy if exists team_invites_select on public.team_invites;
+do $zps$ begin perform public.fn_garantir_policy('public.team_invites', 'team_invites_select', $zps_def$
 create policy team_invites_select on public.team_invites
   for select using (
     public.fn_is_platform_admin()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists team_invites_write on public.team_invites;
+do $zps$ begin perform public.fn_garantir_policy('public.team_invites', 'team_invites_write', $zps_def$
 create policy team_invites_write on public.team_invites
   using (
     public.fn_is_platform_admin_full()
@@ -23656,15 +24093,17 @@ create policy team_invites_write on public.team_invites
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'admin'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.team_invites from anon;
 grant select, insert, update, delete on public.team_invites to authenticated;
 grant all on public.team_invites to service_role;
 
-drop trigger if exists trg_team_invites_updated_at on public.team_invites;
+do $zps$ begin perform public.fn_garantir_gatilho('public.team_invites', 'trg_team_invites_updated_at', $zps_def$
 create trigger trg_team_invites_updated_at
   before update on public.team_invites
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 comment on table public.team_invites is
   'Convite de time PENDENTE e seu histórico. O id da linha = invite_id do token HMAC; o aceite casa os dois e recusa convite revogado. Status é derivado, não coluna.';
@@ -23720,12 +24159,14 @@ alter table public.voice_calls enable row level security;
 -- select/write com papel; aqui ela já nasce com o papel para o caso de o
 -- apêndice ser aplicado parcialmente)
 drop policy if exists tenant_isolation_voice_calls_all on public.voice_calls;
-drop policy if exists voice_calls_select on public.voice_calls;
-drop policy if exists voice_calls_write on public.voice_calls;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.voice_calls', 'voice_calls_select', $zps_def$
 create policy voice_calls_select on public.voice_calls for select
   using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$, true); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.voice_calls', 'voice_calls_write', $zps_def$
 create policy voice_calls_write on public.voice_calls for all
   using (
     organization_id in (select public.fn_user_org_ids())
@@ -23735,11 +24176,13 @@ create policy voice_calls_write on public.voice_calls for all
     organization_id in (select public.fn_user_org_ids())
     and public.fn_role_at_least(organization_id, 'agent')
   );
+$zps_def$, true); end $zps$;
 
-drop trigger if exists trg_voice_calls_set_updated_at on public.voice_calls;
+do $zps$ begin perform public.fn_garantir_gatilho('public.voice_calls', 'trg_voice_calls_set_updated_at', $zps_def$
 create trigger trg_voice_calls_set_updated_at
   before update on public.voice_calls
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- Realtime (forward-fix da migration 0234): sem isto o frontend nunca recebe
 -- o INSERT/UPDATE que o worker grava em call-status/call-ended — achado
@@ -23789,12 +24232,14 @@ alter table public.voice_calls enable row level security;
 -- quem ESCREVE é quem pode atender (`agent` para cima), o mesmo papel que as
 -- rotas de voz exigem. Vigiado por `tests/invariants/rbac-config-ia-canais.test.ts`.
 drop policy if exists tenant_isolation_voice_calls_all on public.voice_calls;
-drop policy if exists voice_calls_select on public.voice_calls;
-drop policy if exists voice_calls_write on public.voice_calls;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.voice_calls', 'voice_calls_select', $zps_def$
 create policy voice_calls_select on public.voice_calls for select
   using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.voice_calls', 'voice_calls_write', $zps_def$
 create policy voice_calls_write on public.voice_calls for all
   using (
     organization_id in (select public.fn_user_org_ids())
@@ -23804,6 +24249,7 @@ create policy voice_calls_write on public.voice_calls for all
     organization_id in (select public.fn_user_org_ids())
     and public.fn_role_at_least(organization_id, 'agent')
   );
+$zps_def$); end $zps$;
 
 revoke all on public.voice_calls from anon;
 
@@ -24245,15 +24691,17 @@ create table if not exists public.org_voice_calls (
 
 alter table public.org_voice_calls enable row level security;
 
-drop policy if exists org_voice_calls_select on public.org_voice_calls;
-drop policy if exists org_voice_calls_admin_write on public.org_voice_calls;
 
+
+do $zps$ begin perform public.fn_garantir_policy('public.org_voice_calls', 'org_voice_calls_select', $zps_def$
 create policy org_voice_calls_select on public.org_voice_calls
   for select using (
     (organization_id in (select public.fn_user_org_ids()))
     or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
+do $zps$ begin perform public.fn_garantir_policy('public.org_voice_calls', 'org_voice_calls_admin_write', $zps_def$
 create policy org_voice_calls_admin_write on public.org_voice_calls
   using (
     public.fn_is_platform_admin()
@@ -24265,13 +24713,15 @@ create policy org_voice_calls_admin_write on public.org_voice_calls
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'admin'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.org_voice_calls from anon;
 
-drop trigger if exists trg_org_voice_calls_set_updated_at on public.org_voice_calls;
+do $zps$ begin perform public.fn_garantir_gatilho('public.org_voice_calls', 'trg_org_voice_calls_set_updated_at', $zps_def$
 create trigger trg_org_voice_calls_set_updated_at
   before update on public.org_voice_calls
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 
 -- ---- lembrete em degraus (migration 0254) ----
@@ -24452,11 +24902,12 @@ $$;
 revoke all on function public.fn_event_log_marca_registro() from public, anon;
 grant execute on function public.fn_event_log_marca_registro() to service_role;
 
-drop trigger if exists trg_event_log_marca_registro on public.event_log;
+do $zps$ begin perform public.fn_garantir_gatilho('public.event_log', 'trg_event_log_marca_registro', $zps_def$
 create trigger trg_event_log_marca_registro
   before insert on public.event_log
   for each row
   execute function public.fn_event_log_marca_registro();
+$zps_def$); end $zps$;
 
 -- Backfill do estoque: só os tipos da lista, e só `pending` — `processing`
 -- (claim perdido, dono é o reaper do drain) e `dead` (erro de consumidor) são
@@ -25618,7 +26069,7 @@ revoke execute on function public.fn_colunas_de_cliente_sao_do_sistema() from pu
 -- de valor — um `select *` que volta inteiro no UPDATE acordaria a guarda à toa.
 -- A WHEN compara VALORES, e o caso comum (nenhuma das quatro mudou) nem chama a
 -- função.
-drop trigger if exists trg_contato_colunas_de_cliente on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contato_colunas_de_cliente', $zps_def$
 create trigger trg_contato_colunas_de_cliente
   before update on public.contacts
   for each row
@@ -25627,6 +26078,7 @@ create trigger trg_contato_colunas_de_cliente
      or old.client_tag_by_system is distinct from new.client_tag_by_system
      or old.tags is distinct from new.tags)
   execute function public.fn_colunas_de_cliente_sao_do_sistema();
+$zps_def$); end $zps$;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 5 · os triggers — condicionais ao interruptor, em INSERT, UPDATE e DELETE
@@ -25707,14 +26159,15 @@ end $$;
 -- PRIVILEGES do baseline) não quebra nada.
 revoke execute on function public.fn_marcar_contato_como_cliente() from public, anon, authenticated;
 
-drop trigger if exists trg_agendamento_marca_cliente on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_agendamento_marca_cliente', $zps_def$
 create trigger trg_agendamento_marca_cliente
   after insert on public.calendar_appointments
   for each row
   when (new.contact_id is not null)
   execute function public.fn_marcar_contato_como_cliente();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_agendamento_recalcula_cliente on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_agendamento_recalcula_cliente', $zps_def$
 create trigger trg_agendamento_recalcula_cliente
   after update of status, starts_at, contact_id on public.calendar_appointments
   for each row
@@ -25722,17 +26175,19 @@ create trigger trg_agendamento_recalcula_cliente
         or old.starts_at is distinct from new.starts_at
         or old.contact_id is distinct from new.contact_id)
   execute function public.fn_marcar_contato_como_cliente();
+$zps_def$); end $zps$;
 
 -- Apagar o único horário que conta é o mesmo que cancelá-lo, para o contato.
 -- `contact_id` é `on delete restrict`, então este trigger nunca vê a cascata de
 -- um contato apagado; a de uma organização apagada chega aqui com a linha da
 -- organização já invisível, e o interruptor lê desligado.
-drop trigger if exists trg_agendamento_apagado_recalcula_cliente on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_agendamento_apagado_recalcula_cliente', $zps_def$
 create trigger trg_agendamento_apagado_recalcula_cliente
   after delete on public.calendar_appointments
   for each row
   when (old.contact_id is not null)
   execute function public.fn_marcar_contato_como_cliente();
+$zps_def$); end $zps$;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 6 · ligar e desligar — e classificar o histórico ao ligar
@@ -26902,19 +27357,21 @@ comment on column public.calendar_locations.address is
 
 alter table public.calendar_locations enable row level security;
 
-drop policy if exists calendar_locations_select on public.calendar_locations;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_locations', 'calendar_locations_select', $zps_def$
 create policy calendar_locations_select on public.calendar_locations
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists calendar_locations_insert on public.calendar_locations;
+do $zps$ begin perform public.fn_garantir_policy('public.calendar_locations', 'calendar_locations_insert', $zps_def$
 create policy calendar_locations_insert on public.calendar_locations
   for insert with check (
     public.fn_is_platform_admin()
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.calendar_locations from anon;
 
@@ -27476,11 +27933,11 @@ revoke all on public.extension_catalogs, public.extension_artifacts, public.exte
 grant select on public.extension_catalogs, public.extension_artifacts, public.extension_installations,
   public.organization_extensions, public.extension_operations to service_role;
 grant select on public.organization_extensions to authenticated;
-drop policy if exists tenant_isolation_organization_extensions_select on public.organization_extensions;
 -- fn_user_org_ids() inclui convite ainda não aceito e sessão de suporte ativa. O
 -- vínculo exige convite aceito de quem é membro e, sem exigir linha de membership,
 -- aceita a sessão de suporte ativa na organização atendida: sem isso, quem dá suporte
 -- via todas as extensões como "desativadas" enquanto o cliente as via ativas.
+do $zps$ begin perform public.fn_garantir_policy('public.organization_extensions', 'tenant_isolation_organization_extensions_select', $zps_def$
 create policy tenant_isolation_organization_extensions_select on public.organization_extensions
   for select to authenticated using (
     organization_id in (select public.fn_user_org_ids())
@@ -27491,6 +27948,7 @@ create policy tenant_isolation_organization_extensions_select on public.organiza
         where c.s->>'status' = 'active' and (c.s->>'organization_id')::uuid = organization_extensions.organization_id)
     )
   );
+$zps_def$); end $zps$;
 
 -- Helpers privados: EXECUTE fechado também porque o baseline concede defaults a anon.
 create or replace function public.fn_extensions_assert_actor(p_actor uuid, p_organization uuid default null)
@@ -28048,9 +28506,10 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists extensions_guard_core_update on public.system_update_runs;
+do $zps$ begin perform public.fn_garantir_gatilho('public.system_update_runs', 'extensions_guard_core_update', $zps_def$
 create trigger extensions_guard_core_update before insert or update of status on public.system_update_runs
   for each row execute function public.fn_extensions_guard_core_update();
+$zps_def$); end $zps$;
 
 revoke execute on function public.fn_extensions_assert_actor(uuid,uuid) from public,anon,authenticated,service_role;
 revoke execute on function public.fn_extensions_fingerprint(jsonb) from public,anon,authenticated,service_role;
@@ -28330,10 +28789,11 @@ grant execute on function public.fn_mark_conversation_message(uuid,text,text,tim
 -- ── agent_cases ─────────────────────────────────────────────────────────────
 revoke insert, update, delete, truncate on public.agent_cases from authenticated, anon;
 drop policy if exists tenant_isolation_agent_cases_all    on public.agent_cases;
-drop policy if exists tenant_isolation_agent_cases_select on public.agent_cases;
+do $zps$ begin perform public.fn_garantir_policy('public.agent_cases', 'tenant_isolation_agent_cases_select', $zps_def$
 create policy tenant_isolation_agent_cases_select on public.agent_cases
   for select to authenticated
   using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- ── agent_case_events ───────────────────────────────────────────────────────
 revoke insert, update, delete, truncate on public.agent_case_events from authenticated, anon;
@@ -28590,10 +29050,11 @@ alter table public.google_ads_landing_pages enable row level security;
 revoke all on public.google_ads_landing_pages from anon, authenticated;
 grant select, insert, update, delete on public.google_ads_landing_pages to service_role;
 
-drop trigger if exists trg_google_ads_landing_pages_updated_at on public.google_ads_landing_pages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.google_ads_landing_pages', 'trg_google_ads_landing_pages_updated_at', $zps_def$
 create trigger trg_google_ads_landing_pages_updated_at
   before update on public.google_ads_landing_pages
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create table if not exists public.google_ads_click_refs (
   id uuid primary key default gen_random_uuid(),
@@ -28651,10 +29112,11 @@ alter table public.meta_ads_landing_pages enable row level security;
 revoke all on public.meta_ads_landing_pages from anon, authenticated;
 grant select, insert, update, delete on public.meta_ads_landing_pages to service_role;
 
-drop trigger if exists trg_meta_ads_landing_pages_updated_at on public.meta_ads_landing_pages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_ads_landing_pages', 'trg_meta_ads_landing_pages_updated_at', $zps_def$
 create trigger trg_meta_ads_landing_pages_updated_at
   before update on public.meta_ads_landing_pages
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create table if not exists public.meta_ads_click_refs (
   id uuid primary key default gen_random_uuid(),
@@ -29232,7 +29694,7 @@ grant  all    on public.agent_case_chat_messages to service_role;
 -- leem tudo por desenho, que é a decisão do dono do produto. Policy POR COMANDO
 -- (`for select`), nunca `for all` — e aqui nem se trata disso: não existe
 -- caminho de escrita pelo PostgREST, porque o `revoke` acima o fechou.
-drop policy if exists tenant_isolation_agent_case_chat_messages_select on public.agent_case_chat_messages;
+do $zps$ begin perform public.fn_garantir_policy('public.agent_case_chat_messages', 'tenant_isolation_agent_case_chat_messages_select', $zps_def$
 create policy tenant_isolation_agent_case_chat_messages_select
   on public.agent_case_chat_messages
   for select to authenticated
@@ -29247,6 +29709,7 @@ create policy tenant_isolation_agent_case_chat_messages_select
          and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
 -- ── Retenção: a tabela nasce com dono de piso ─────────────────────────────
 create or replace function public.fn_expurgar_conversa_do_caso_vencida(
@@ -29919,7 +30382,7 @@ grant  all    on public.passagens_de_atendimento to service_role;
 --     predicado de `ai_reply_drafts`, e é a razão de `conversation_id` viver
 --     dentro desta tabela.
 drop policy if exists tenant_isolation_passagens_de_atendimento_all on public.passagens_de_atendimento;
-drop policy if exists tenant_isolation_passagens_de_atendimento_select on public.passagens_de_atendimento;
+do $zps$ begin perform public.fn_garantir_policy('public.passagens_de_atendimento', 'tenant_isolation_passagens_de_atendimento_select', $zps_def$
 create policy tenant_isolation_passagens_de_atendimento_select
   on public.passagens_de_atendimento
   for select to authenticated
@@ -29934,6 +30397,7 @@ create policy tenant_isolation_passagens_de_atendimento_select
          and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
 -- ── Retenção: a tabela nasce com dono de piso ─────────────────────────────
 create or replace function public.fn_expurgar_passagens_vencidas(
@@ -30547,10 +31011,11 @@ end;
 $$;
 revoke all on function public.fn_aviso_de_caso_coerente() from public, anon, authenticated;
 
-drop trigger if exists trg_aviso_de_caso_coerente on public.config_aviso_de_caso;
+do $zps$ begin perform public.fn_garantir_gatilho('public.config_aviso_de_caso', 'trg_aviso_de_caso_coerente', $zps_def$
 create trigger trg_aviso_de_caso_coerente
   before insert or update on public.config_aviso_de_caso
   for each row execute function public.fn_aviso_de_caso_coerente();
+$zps_def$); end $zps$;
 
 create table if not exists public.entregas_de_aviso_de_caso (
   id                  uuid primary key default gen_random_uuid(),
@@ -30633,10 +31098,11 @@ create index if not exists entregas_de_aviso_de_caso_org_idx
 -- agora" de "alguém morreu no meio". Por isso a entrega ganha o trigger e a
 -- CONFIGURAÇÃO não: lá o carimbo significa "alguém mexeu", e um contador de
 -- mensagem ignorada não é alguém mexendo.
-drop trigger if exists trg_entregas_de_aviso_de_caso_updated_at on public.entregas_de_aviso_de_caso;
+do $zps$ begin perform public.fn_garantir_gatilho('public.entregas_de_aviso_de_caso', 'trg_entregas_de_aviso_de_caso_updated_at', $zps_def$
 create trigger trg_entregas_de_aviso_de_caso_updated_at
   before update on public.entregas_de_aviso_de_caso
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 alter table public.config_aviso_de_caso      enable row level security;
 alter table public.entregas_de_aviso_de_caso enable row level security;
@@ -30655,7 +31121,7 @@ grant  all    on public.entregas_de_aviso_de_caso to service_role;
 
 -- Leitura da CONFIGURAÇÃO: `admin`. Ela carrega o telefone de um funcionário e
 -- o vínculo com a conexão — quem configura conexão neste produto é admin.
-drop policy if exists leitura_config_aviso_de_caso on public.config_aviso_de_caso;
+do $zps$ begin perform public.fn_garantir_policy('public.config_aviso_de_caso', 'leitura_config_aviso_de_caso', $zps_def$
 create policy leitura_config_aviso_de_caso
   on public.config_aviso_de_caso
   for select to authenticated
@@ -30663,11 +31129,12 @@ create policy leitura_config_aviso_de_caso
     organization_id in (select public.fn_user_org_ids())
     and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- Leitura do HISTÓRICO: `manager`. "O aviso está saindo?" é pergunta de quem
 -- opera o atendimento, e a linha não expõe o número inteiro para a tela (que o
 -- mascara) nem guarda texto nenhum.
-drop policy if exists leitura_entregas_de_aviso_de_caso on public.entregas_de_aviso_de_caso;
+do $zps$ begin perform public.fn_garantir_policy('public.entregas_de_aviso_de_caso', 'leitura_entregas_de_aviso_de_caso', $zps_def$
 create policy leitura_entregas_de_aviso_de_caso
   on public.entregas_de_aviso_de_caso
   for select to authenticated
@@ -30675,6 +31142,7 @@ create policy leitura_entregas_de_aviso_de_caso
     organization_id in (select public.fn_user_org_ids())
     and public.fn_role_at_least(organization_id, 'manager')
   );
+$zps_def$); end $zps$;
 
 -- ── A escrita da configuração: uma RPC, quatro guardas, uma transação ──────
 create or replace function public.fn_definir_aviso_de_caso(
@@ -31463,10 +31931,11 @@ $$;
 -- revogar só uma deixa a função alcançável com o gate verde.
 revoke all on function public.fn_passagem_reconhecida() from public, anon, authenticated;
 
-drop trigger if exists trg_passagem_reconhecida on public.conversation_assignment_events;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversation_assignment_events', 'trg_passagem_reconhecida', $zps_def$
 create trigger trg_passagem_reconhecida
   after insert on public.conversation_assignment_events
   for each row execute function public.fn_passagem_reconhecida();
+$zps_def$); end $zps$;
 
 -- ── A devolução ao automático: o episódio fechou sem ninguém assumir ────────
 --
@@ -32283,10 +32752,11 @@ alter table public.platform_smtp_settings enable row level security;
 revoke all on public.platform_smtp_settings from anon, authenticated;
 grant select, insert, update on public.platform_smtp_settings to service_role;
 
-drop trigger if exists trg_platform_smtp_settings_updated_at on public.platform_smtp_settings;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_smtp_settings', 'trg_platform_smtp_settings_updated_at', $zps_def$
 create trigger trg_platform_smtp_settings_updated_at
   before update on public.platform_smtp_settings
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---- ai_agents.channel + phone_numbers (migration 0347) ----
 -- ============================================================
@@ -32344,20 +32814,23 @@ create index if not exists idx_phone_numbers_active on public.phone_numbers(numb
 
 alter table public.phone_numbers enable row level security;
 
-drop policy if exists phone_numbers_isolation on public.phone_numbers;
+do $zps$ begin perform public.fn_garantir_policy('public.phone_numbers', 'phone_numbers_isolation', $zps_def$
 create policy phone_numbers_isolation on public.phone_numbers
   using (organization_id in (select fn_user_org_ids()))
   with check (organization_id in (select fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_phone_numbers_updated_at on public.phone_numbers;
+do $zps$ begin perform public.fn_garantir_gatilho('public.phone_numbers', 'trg_phone_numbers_updated_at', $zps_def$
 create trigger trg_phone_numbers_updated_at
   before update on public.phone_numbers
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_phone_numbers_audit on public.phone_numbers;
+do $zps$ begin perform public.fn_garantir_gatilho('public.phone_numbers', 'trg_phone_numbers_audit', $zps_def$
 create trigger trg_phone_numbers_audit
   after insert or update or delete on public.phone_numbers
   for each row execute function public.fn_audit_log_row();
+$zps_def$); end $zps$;
 
 -- Resolve org + config de roteamento a partir do número discado (DNIS).
 -- Usado pelo worker (service-role, ignora RLS).
@@ -32972,11 +33445,12 @@ alter table public.voip_trunk_settings enable row level security;
 -- Leitura: qualquer membro da org (a tela de originar chamada precisa saber
 -- SE existe trunk configurado). Escrita: só admin — são credenciais de um
 -- provedor SIP real, o mesmo nível de sensibilidade de ai_provider_credentials.
-drop policy if exists voip_trunk_settings_select on public.voip_trunk_settings;
+do $zps$ begin perform public.fn_garantir_policy('public.voip_trunk_settings', 'voip_trunk_settings_select', $zps_def$
 create policy voip_trunk_settings_select on public.voip_trunk_settings
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists voip_trunk_settings_admin_write on public.voip_trunk_settings;
+do $zps$ begin perform public.fn_garantir_policy('public.voip_trunk_settings', 'voip_trunk_settings_admin_write', $zps_def$
 create policy voip_trunk_settings_admin_write on public.voip_trunk_settings
   for all
   using (
@@ -32987,16 +33461,18 @@ create policy voip_trunk_settings_admin_write on public.voip_trunk_settings
     organization_id in (select public.fn_user_org_ids())
     and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- A anon key vai para o browser — sem isto, o GRANT ALL ON TABLES TO anon do
 -- baseline (que vale pra toda tabela nova) deixaria a tabela alcançável sem
 -- sessão nenhuma, RLS ou não.
 revoke all on public.voip_trunk_settings from anon;
 
-drop trigger if exists trg_voip_trunk_settings_set_updated_at on public.voip_trunk_settings;
+do $zps$ begin perform public.fn_garantir_gatilho('public.voip_trunk_settings', 'trg_voip_trunk_settings_set_updated_at', $zps_def$
 create trigger trg_voip_trunk_settings_set_updated_at
   before update on public.voip_trunk_settings
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- View segura: NUNCA expõe password_encrypted/iv/tag — mesmo padrão de
 -- ai_provider_credentials_safe. security_invoker=true: a view roda com o
@@ -33402,14 +33878,12 @@ begin
     -- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
     -- O papel estava só no WITH CHECK, e DELETE só avalia o USING: quem era da
     -- organização apagava sem o papel, falando direto com o banco.
-    execute format('drop policy if exists tenant_isolation_%I_read on public.%I', t, t);
-    execute format($f$
+    perform public.fn_garantir_policy('public.' || t, format('tenant_isolation_%s_read', t), format($f$
       create policy tenant_isolation_%I_read on public.%I
         for select
         using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
-    $f$, t, t);
-    execute format('drop policy if exists tenant_isolation_%I_all on public.%I', t, t);
-    execute format($f$
+    $f$, t, t));
+    perform public.fn_garantir_policy('public.' || t, format('tenant_isolation_%s_all', t), format($f$
       create policy tenant_isolation_%I_all on public.%I
         for all
         using (
@@ -33422,7 +33896,7 @@ begin
           or (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'))
         )
-    $f$, t, t);
+    $f$, t, t));
     execute format('revoke all on public.%I from anon', t);
   end loop;
 end $$;
@@ -33436,10 +33910,9 @@ declare t text;
 begin
   if exists (select 1 from pg_proc where proname = 'fn_touch_updated_at') then
     foreach t in array array['financial_accounts', 'payment_methods', 'account_plans'] loop
-      execute format('drop trigger if exists trg_%I_touch on public.%I', t, t);
-      execute format(
+      perform public.fn_garantir_gatilho('public.' || t, format('trg_%s_touch', t), format(
         'create trigger trg_%I_touch before update on public.%I for each row execute function public.fn_touch_updated_at()',
-        t, t);
+        t, t));
     end loop;
   end if;
 end $$;
@@ -33705,10 +34178,11 @@ begin
   return new;
 end $$;
 
-drop trigger if exists trg_financial_entries_imutavel on public.financial_entries;
+do $zps$ begin perform public.fn_garantir_gatilho('public.financial_entries', 'trg_financial_entries_imutavel', $zps_def$
 create trigger trg_financial_entries_imutavel
   before update on public.financial_entries
   for each row execute function public.fn_lancamento_pago_e_imutavel();
+$zps_def$); end $zps$;
 
 -- ─── a numeração que não reinicia ────────────────────────────────────────────
 -- ⚠️ `security invoker` (o default), e NÃO definer, de propósito. Ela só LÊ
@@ -33931,14 +34405,12 @@ begin
     -- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
     -- O papel estava só no WITH CHECK, e DELETE só avalia o USING: quem era da
     -- organização apagava sem o papel, falando direto com o banco.
-    execute format('drop policy if exists tenant_isolation_%I_read on public.%I', t, t);
-    execute format($f$
+    perform public.fn_garantir_policy('public.' || t, format('tenant_isolation_%s_read', t), format($f$
       create policy tenant_isolation_%I_read on public.%I
         for select
         using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin())
-    $f$, t, t);
-    execute format('drop policy if exists tenant_isolation_%I_all on public.%I', t, t);
-    execute format($f$
+    $f$, t, t));
+    perform public.fn_garantir_policy('public.' || t, format('tenant_isolation_%s_all', t), format($f$
       create policy tenant_isolation_%I_all on public.%I
         for all
         using (
@@ -33951,7 +34423,7 @@ begin
           or (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent'))
         )
-    $f$, t, t);
+    $f$, t, t));
     execute format('revoke all on public.%I from anon', t);
   end loop;
 end $$;
@@ -34282,11 +34754,12 @@ create unique index if not exists financial_entries_recorrencia_competencia_idx
 
 alter table public.recurring_entries enable row level security;
 -- Leitura à parte, escrita com o papel nos DOIS lados (migration 0560, #268).
-drop policy if exists tenant_isolation_recurring_entries_read on public.recurring_entries;
+do $zps$ begin perform public.fn_garantir_policy('public.recurring_entries', 'tenant_isolation_recurring_entries_read', $zps_def$
 create policy tenant_isolation_recurring_entries_read on public.recurring_entries
   for select
   using (organization_id in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
-drop policy if exists tenant_isolation_recurring_entries_all on public.recurring_entries;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.recurring_entries', 'tenant_isolation_recurring_entries_all', $zps_def$
 create policy tenant_isolation_recurring_entries_all on public.recurring_entries
   for all
   using (
@@ -34299,6 +34772,7 @@ create policy tenant_isolation_recurring_entries_all on public.recurring_entries
     or (organization_id in (select public.fn_user_org_ids())
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 revoke all on public.recurring_entries from anon;
 
 comment on table public.recurring_entries is
@@ -35148,9 +35622,10 @@ end;
 $$;
 revoke all on function public.fn_prospecting_refuse_erased_candidate() from public, anon, authenticated;
 grant execute on function public.fn_prospecting_refuse_erased_candidate() to service_role;
-drop trigger if exists prospecting_refuse_erased on public.prospecting_candidates;
+do $zps$ begin perform public.fn_garantir_gatilho('public.prospecting_candidates', 'prospecting_refuse_erased', $zps_def$
 create trigger prospecting_refuse_erased before insert on public.prospecting_candidates
   for each row execute function public.fn_prospecting_refuse_erased_candidate();
+$zps_def$); end $zps$;
 
 -- ---- as duas grafias do nono dígito, em UM lugar ----
 --
@@ -35808,10 +36283,11 @@ begin
 end;$$;
 revoke execute on function public.fn_remarcar_corrige_o_envio() from public, anon, authenticated;
 
-drop trigger if exists trg_remarcar_corrige_o_envio on public.calendar_appointments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.calendar_appointments', 'trg_remarcar_corrige_o_envio', $zps_def$
 create trigger trg_remarcar_corrige_o_envio
   before update on public.calendar_appointments
   for each row execute function public.fn_remarcar_corrige_o_envio();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_meet_delivery_enqueue()
 returns trigger language plpgsql security definer set search_path=public as $$
@@ -35915,10 +36391,11 @@ alter table public.ad_hierarchy_cache enable row level security;
 revoke all on public.ad_hierarchy_cache from anon, authenticated;
 grant select, insert, update, delete on public.ad_hierarchy_cache to service_role;
 
-drop trigger if exists trg_ad_hierarchy_cache_updated_at on public.ad_hierarchy_cache;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_hierarchy_cache', 'trg_ad_hierarchy_cache_updated_at', $zps_def$
 create trigger trg_ad_hierarchy_cache_updated_at
   before update on public.ad_hierarchy_cache
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---- campanhas (migration 0375) ----
 -- 0375 — CAMPANHAS (Sub-PRD 12 / Spec 12 / Spec 13)
@@ -36155,15 +36632,17 @@ create index if not exists idx_campaign_recipients_enviando
   on public.campaign_recipients (sending_at)
   where status = 'sending';
 
-drop trigger if exists trg_campaigns_updated_at on public.campaigns;
+do $zps$ begin perform public.fn_garantir_gatilho('public.campaigns', 'trg_campaigns_updated_at', $zps_def$
 create trigger trg_campaigns_updated_at
   before update on public.campaigns
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_campaign_recipients_updated_at on public.campaign_recipients;
+do $zps$ begin perform public.fn_garantir_gatilho('public.campaign_recipients', 'trg_campaign_recipients_updated_at', $zps_def$
 create trigger trg_campaign_recipients_updated_at
   before update on public.campaign_recipients
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ═══ Entregue/lido: o ack da mensagem chega ao destinatário ═══
 --
@@ -36232,12 +36711,13 @@ comment on function public.fn_campanha_sincroniza_ack() is
 revoke execute on function public.fn_campanha_sincroniza_ack() from public, anon, authenticated;
 grant execute on function public.fn_campanha_sincroniza_ack() to service_role;
 
-drop trigger if exists trg_messages_sincroniza_campanha on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_messages_sincroniza_campanha', $zps_def$
 create trigger trg_messages_sincroniza_campanha
   after update of status on public.messages
   for each row
   when (new.direction = 'outbound')
   execute function public.fn_campanha_sincroniza_ack();
+$zps_def$, true); end $zps$;
 
 -- ═══ LGPD: o contato anonimizado não deixa telefone nem texto para trás ═══
 --
@@ -36281,11 +36761,12 @@ $$;
 revoke execute on function public.fn_redigir_campanhas_do_contato_anonimizado() from public, anon, authenticated;
 grant execute on function public.fn_redigir_campanhas_do_contato_anonimizado() to service_role;
 
-drop trigger if exists trg_redigir_campanhas_anonimizado on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_campanhas_anonimizado', $zps_def$
 create trigger trg_redigir_campanhas_anonimizado
   after update of is_anonymized on public.contacts
   for each row
   execute function public.fn_redigir_campanhas_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 -- ═══ RLS ═══
 --
@@ -36298,13 +36779,14 @@ create trigger trg_redigir_campanhas_anonimizado
 alter table public.campaigns enable row level security;
 
 drop policy if exists tenant_isolation_campaigns_all on public.campaigns;
-drop policy if exists campaigns_select on public.campaigns;
+do $zps$ begin perform public.fn_garantir_policy('public.campaigns', 'campaigns_select', $zps_def$
 create policy campaigns_select on public.campaigns
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaigns_write on public.campaigns;
+do $zps$ begin perform public.fn_garantir_policy('public.campaigns', 'campaigns_write', $zps_def$
 create policy campaigns_write on public.campaigns
   using (
     public.fn_is_platform_admin()
@@ -36316,6 +36798,7 @@ create policy campaigns_write on public.campaigns
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaigns from anon, authenticated;
 grant select on public.campaigns to authenticated;
@@ -36324,13 +36807,14 @@ grant all on public.campaigns to service_role;
 alter table public.campaign_recipients enable row level security;
 
 drop policy if exists tenant_isolation_campaign_recipients_all on public.campaign_recipients;
-drop policy if exists campaign_recipients_select on public.campaign_recipients;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_recipients', 'campaign_recipients_select', $zps_def$
 create policy campaign_recipients_select on public.campaign_recipients
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaign_recipients_write on public.campaign_recipients;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_recipients', 'campaign_recipients_write', $zps_def$
 create policy campaign_recipients_write on public.campaign_recipients
   using (
     public.fn_is_platform_admin()
@@ -36342,6 +36826,7 @@ create policy campaign_recipients_write on public.campaign_recipients
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaign_recipients from anon, authenticated;
 grant select on public.campaign_recipients to authenticated;
@@ -36430,10 +36915,11 @@ comment on column public.campaign_suppressions.recipient_address_hash is
 create index if not exists idx_campaign_suppressions_org
   on public.campaign_suppressions (organization_id, created_at desc);
 
-drop trigger if exists trg_campaign_templates_updated_at on public.campaign_templates;
+do $zps$ begin perform public.fn_garantir_gatilho('public.campaign_templates', 'trg_campaign_templates_updated_at', $zps_def$
 create trigger trg_campaign_templates_updated_at
   before update on public.campaign_templates
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ═══ LGPD: anonimizar apaga o que APONTA para a pessoa, e preserva o veto ═══
 --
@@ -36467,24 +36953,26 @@ $$;
 revoke execute on function public.fn_redigir_exclusoes_do_contato_anonimizado() from public, anon, authenticated;
 grant execute on function public.fn_redigir_exclusoes_do_contato_anonimizado() to service_role;
 
-drop trigger if exists trg_redigir_exclusoes_anonimizado on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_exclusoes_anonimizado', $zps_def$
 create trigger trg_redigir_exclusoes_anonimizado
   after update of is_anonymized on public.contacts
   for each row
   execute function public.fn_redigir_exclusoes_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 -- ═══ RLS — mesmo padrão da 0375 ═══
 -- SELECT para o tenant; escrita a partir de `manager`. Policy `ALL` só-tenancy
 -- em tabela nova é reprovada por `rbac-config-ia-canais.test.ts`.
 alter table public.campaign_templates enable row level security;
 
-drop policy if exists campaign_templates_select on public.campaign_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_templates', 'campaign_templates_select', $zps_def$
 create policy campaign_templates_select on public.campaign_templates
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaign_templates_write on public.campaign_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_templates', 'campaign_templates_write', $zps_def$
 create policy campaign_templates_write on public.campaign_templates
   using (
     public.fn_is_platform_admin()
@@ -36496,6 +36984,7 @@ create policy campaign_templates_write on public.campaign_templates
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaign_templates from anon, authenticated;
 grant select on public.campaign_templates to authenticated;
@@ -36503,13 +36992,14 @@ grant all on public.campaign_templates to service_role;
 
 alter table public.campaign_suppressions enable row level security;
 
-drop policy if exists campaign_suppressions_select on public.campaign_suppressions;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_suppressions', 'campaign_suppressions_select', $zps_def$
 create policy campaign_suppressions_select on public.campaign_suppressions
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaign_suppressions_write on public.campaign_suppressions;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_suppressions', 'campaign_suppressions_write', $zps_def$
 create policy campaign_suppressions_write on public.campaign_suppressions
   using (
     public.fn_is_platform_admin()
@@ -36521,6 +37011,7 @@ create policy campaign_suppressions_write on public.campaign_suppressions
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaign_suppressions from anon, authenticated;
 grant select on public.campaign_suppressions to authenticated;
@@ -36615,13 +37106,14 @@ create index if not exists idx_campaign_recipients_por_numero
 -- ═══ RLS — o padrão da 0375/0376 ═══
 alter table public.campaign_channel_sessions enable row level security;
 
-drop policy if exists campaign_channel_sessions_select on public.campaign_channel_sessions;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_channel_sessions', 'campaign_channel_sessions_select', $zps_def$
 create policy campaign_channel_sessions_select on public.campaign_channel_sessions
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaign_channel_sessions_write on public.campaign_channel_sessions;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_channel_sessions', 'campaign_channel_sessions_write', $zps_def$
 create policy campaign_channel_sessions_write on public.campaign_channel_sessions
   using (
     public.fn_is_platform_admin()
@@ -36633,6 +37125,7 @@ create policy campaign_channel_sessions_write on public.campaign_channel_session
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'manager'))
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaign_channel_sessions from anon, authenticated;
 grant select on public.campaign_channel_sessions to authenticated;
@@ -37136,12 +37629,13 @@ revoke all on function public.fn_redigir_conversas_ao_anonimizar() from public;
 revoke execute on function public.fn_redigir_conversas_ao_anonimizar() from anon;
 revoke execute on function public.fn_redigir_conversas_ao_anonimizar() from authenticated;
 
-drop trigger if exists trg_redigir_conversas_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_conversas_ao_anonimizar', $zps_def$
 create trigger trg_redigir_conversas_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized = true and coalesce(old.is_anonymized, false) = false)
   execute function public.fn_redigir_conversas_ao_anonimizar();
+$zps_def$); end $zps$;
 
 -- Cura: contatos que JÁ foram anonimizados pelo botão antes deste gatilho. O
 -- gatilho só dispara na virada, e para eles a virada já passou. Cada comando só
@@ -37259,12 +37753,13 @@ revoke all on function public.fn_contato_anonimizado_encerra_roteiro() from publ
 revoke execute on function public.fn_contato_anonimizado_encerra_roteiro() from anon;
 revoke execute on function public.fn_contato_anonimizado_encerra_roteiro() from authenticated;
 
-drop trigger if exists trg_contato_anonimizado_encerra_roteiro on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contato_anonimizado_encerra_roteiro', $zps_def$
 create trigger trg_contato_anonimizado_encerra_roteiro
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized = true and coalesce(old.is_anonymized, false) = false)
   execute function public.fn_contato_anonimizado_encerra_roteiro();
+$zps_def$); end $zps$;
 
 -- A superfície e o status andam juntos, no BANCO. Quem cria enrollment pelo
 -- relógio (gatilhos de etapa, lead, caso, retorno, silêncio, o enroll manual) lê
@@ -37301,11 +37796,12 @@ revoke all on function public.fn_enrollment_superficie_coerente() from public;
 revoke execute on function public.fn_enrollment_superficie_coerente() from anon;
 revoke execute on function public.fn_enrollment_superficie_coerente() from authenticated;
 
-drop trigger if exists trg_enrollment_superficie_coerente on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_gatilho('public.followup_enrollments', 'trg_enrollment_superficie_coerente', $zps_def$
 create trigger trg_enrollment_superficie_coerente
   before insert or update of status, pointer_id on public.followup_enrollments
   for each row
   execute function public.fn_enrollment_superficie_coerente();
+$zps_def$); end $zps$;
 
 -- A superfície de um fluxo é IMUTÁVEL depois de criado, e roteiro de atendimento
 -- só tem gatilho manual (revisão adversarial do #1559). A policy de
@@ -37341,11 +37837,12 @@ revoke all on function public.fn_superficie_do_fluxo_imutavel() from public;
 revoke execute on function public.fn_superficie_do_fluxo_imutavel() from anon;
 revoke execute on function public.fn_superficie_do_fluxo_imutavel() from authenticated;
 
-drop trigger if exists trg_superficie_do_fluxo_imutavel on public.followup_flow_pointers;
+do $zps$ begin perform public.fn_garantir_gatilho('public.followup_flow_pointers', 'trg_superficie_do_fluxo_imutavel', $zps_def$
 create trigger trg_superficie_do_fluxo_imutavel
   before update of surface on public.followup_flow_pointers
   for each row
   execute function public.fn_superficie_do_fluxo_imutavel();
+$zps_def$); end $zps$;
 
 -- ---- o roteiro de atendimento encerra quando um humano assume, no opt-out e no prazo (migration 0397, #1130) ----
 -- Gatilho na virada false→true de `force_human`/`is_blocked` (um lugar para todos
@@ -37395,13 +37892,14 @@ revoke all on function public.fn_contato_encerra_roteiro_com_humano_ou_opt_out()
 revoke execute on function public.fn_contato_encerra_roteiro_com_humano_ou_opt_out() from anon;
 revoke execute on function public.fn_contato_encerra_roteiro_com_humano_ou_opt_out() from authenticated;
 
-drop trigger if exists trg_contato_encerra_roteiro_com_humano_ou_opt_out on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contato_encerra_roteiro_com_humano_ou_opt_out', $zps_def$
 create trigger trg_contato_encerra_roteiro_com_humano_ou_opt_out
   after update of force_human, is_blocked on public.contacts
   for each row
   when ((new.force_human = true and coalesce(old.force_human, false) = false)
      or (new.is_blocked = true and coalesce(old.is_blocked, false) = false))
   execute function public.fn_contato_encerra_roteiro_com_humano_ou_opt_out();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_encerrar_roteiros_vencidos(p_limite int default 200)
 returns int
@@ -37646,9 +38144,10 @@ end;
 $$;
 revoke execute on function public.fn_preservar_conversao_enviada() from public, anon, authenticated;
 grant execute on function public.fn_preservar_conversao_enviada() to service_role;
-drop trigger if exists trg_preservar_conversao_enviada on public.ad_conversion_dispatches;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_conversion_dispatches', 'trg_preservar_conversao_enviada', $zps_def$
 create trigger trg_preservar_conversao_enviada before update on public.ad_conversion_dispatches
   for each row execute function public.fn_preservar_conversao_enviada();
+$zps_def$); end $zps$;
 
 -- Só o backend autorizado alcança esta porta. O evento é exclusivo do consumidor
 -- de conversões: reprocessar venda não dispara notificações/follow-ups de lead.won.
@@ -37753,9 +38252,10 @@ end;
 $$;
 revoke execute on function public.fn_marcar_configuracao_qualificacao() from public, anon, authenticated;
 grant execute on function public.fn_marcar_configuracao_qualificacao() to service_role;
-drop trigger if exists trg_marcar_configuracao_qualificacao on public.ad_platform_connections;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_platform_connections', 'trg_marcar_configuracao_qualificacao', $zps_def$
 create trigger trg_marcar_configuracao_qualificacao before insert or update on public.ad_platform_connections
   for each row execute function public.fn_marcar_configuracao_qualificacao();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_preservar_conversao_enviada()
 returns trigger language plpgsql set search_path = public as $$
@@ -37890,10 +38390,11 @@ revoke execute on function public.fn_lead_so_liga_a_propria_empresa() from publi
 comment on function public.fn_lead_so_liga_a_propria_empresa() is
   'Gatilho de crm_leads (migration 0403): contact_id e owner_user_id só apontam para a própria organização. No UPDATE só confere o campo que mudou. Erro genérico PT404/PT422, sem dizer se o id existe noutra organização.';
 
-drop trigger if exists trg_lead_so_liga_a_propria_empresa on public.crm_leads;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_lead_so_liga_a_propria_empresa', $zps_def$
 create trigger trg_lead_so_liga_a_propria_empresa
   before insert or update of contact_id, owner_user_id, organization_id on public.crm_leads
   for each row execute function public.fn_lead_so_liga_a_propria_empresa();
+$zps_def$); end $zps$;
 
 -- ---- 0404 — `comando_da_conversa` deixa de reavaliar a RLS por conversa (issue #1571) ----
 --
@@ -38684,12 +39185,13 @@ revoke execute on function public.fn_teto_de_tokens_ativos() from public, anon, 
 comment on function public.fn_teto_de_tokens_ativos() is
   'Gatilho de api_tokens (migration 0415, issue #1448): recusa a INSERÇÃO quando a organização já tem o teto de tokens ATIVOS (sem revoked_at e não expirados). Mensagem própria em PT-BR com o limite e como revogar; SQLSTATE PT409, que a rota de emissão devolve como 409.';
 
-drop trigger if exists trg_teto_de_tokens_ativos on public.api_tokens;
 
+do $zps$ begin perform public.fn_garantir_gatilho('public.api_tokens', 'trg_teto_de_tokens_ativos', $zps_def$
 create trigger trg_teto_de_tokens_ativos
     before insert on public.api_tokens
     for each row
     execute function public.fn_teto_de_tokens_ativos();
+$zps_def$); end $zps$;
 
 -- ---- autoria "em nome de" na mensagem (migration 0416, issue #1613) ----
 --
@@ -38924,7 +39426,7 @@ grant select, insert, update on public.conversation_drafts to authenticated;
 grant all on public.conversation_drafts to service_role;
 
 drop policy if exists tenant_isolation_conversation_drafts_all on public.conversation_drafts;
-drop policy if exists conversation_drafts_select on public.conversation_drafts;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_drafts', 'conversation_drafts_select', $zps_def$
 create policy conversation_drafts_select
   on public.conversation_drafts
   for select to authenticated
@@ -38938,8 +39440,9 @@ create policy conversation_drafts_select
          and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists conversation_drafts_insert on public.conversation_drafts;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_drafts', 'conversation_drafts_insert', $zps_def$
 create policy conversation_drafts_insert
   on public.conversation_drafts
   for insert to authenticated
@@ -38954,8 +39457,9 @@ create policy conversation_drafts_insert
          and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists conversation_drafts_update on public.conversation_drafts;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_drafts', 'conversation_drafts_update', $zps_def$
 create policy conversation_drafts_update
   on public.conversation_drafts
   for update to authenticated
@@ -38976,6 +39480,7 @@ create policy conversation_drafts_update
     and consumed_at is not null
     and consumed_by_user_id = (select auth.uid())
   );
+$zps_def$); end $zps$;
 
 -- LGPD: a anonimização do contato apaga os rascunhos das conversas dele. O
 -- `body` é o texto escrito PARA a pessoa ("Oi Maria, seu boleto de R$ 320
@@ -39006,12 +39511,13 @@ $$;
 revoke execute on function public.fn_apagar_rascunhos_do_contato_anonimizado() from public, anon, authenticated;
 grant  execute on function public.fn_apagar_rascunhos_do_contato_anonimizado() to service_role;
 
-drop trigger if exists trg_apagar_rascunhos_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_apagar_rascunhos_ao_anonimizar', $zps_def$
 create trigger trg_apagar_rascunhos_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and old.is_anonymized is distinct from true)
   execute function public.fn_apagar_rascunhos_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 -- ---- as observações do Jev, tarefa a tarefa (migration 0421) ----
 --
@@ -39069,9 +39575,10 @@ create unique index if not exists jev_observacoes_uma_por_mensagem_idx
 -- pessoa); escrita só do servidor, que passa por cima da RLS. Sem policy ALL:
 -- `authenticated` não tem por que escrever aqui.
 alter table public.jev_observacoes enable row level security;
-drop policy if exists tenant_isolation_jev_observacoes_select on public.jev_observacoes;
+do $zps$ begin perform public.fn_garantir_policy('public.jev_observacoes', 'tenant_isolation_jev_observacoes_select', $zps_def$
 create policy tenant_isolation_jev_observacoes_select on public.jev_observacoes
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- O ALTER DEFAULT PRIVILEGES do baseline dá GRANT ALL em TABLES a `anon`: toda
 -- tabela nova nasce exposta e revoga por conta própria.
@@ -39159,9 +39666,10 @@ create unique index if not exists golden_candidates_uma_por_job_divergencia_idx
   where fonte = 'stage_classifier_divergence';
 
 alter table public.golden_candidates enable row level security;
-drop policy if exists tenant_isolation_golden_candidates_select on public.golden_candidates;
+do $zps$ begin perform public.fn_garantir_policy('public.golden_candidates', 'tenant_isolation_golden_candidates_select', $zps_def$
 create policy tenant_isolation_golden_candidates_select on public.golden_candidates
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 revoke all on public.golden_candidates from anon, authenticated;
 grant select on public.golden_candidates to authenticated;
@@ -39476,10 +39984,11 @@ alter table public.google_ads_conversion_rules enable row level security;
 revoke all on public.google_ads_conversion_rules from anon, authenticated;
 grant select, insert, update, delete on public.google_ads_conversion_rules to service_role;
 
-drop trigger if exists trg_google_ads_conversion_rules_updated_at on public.google_ads_conversion_rules;
+do $zps$ begin perform public.fn_garantir_gatilho('public.google_ads_conversion_rules', 'trg_google_ads_conversion_rules_updated_at', $zps_def$
 create trigger trg_google_ads_conversion_rules_updated_at
   before update on public.google_ads_conversion_rules
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_marcar_configuracao_regra_google()
 returns trigger language plpgsql set search_path = public as $$
@@ -39500,10 +40009,11 @@ $$;
 revoke execute on function public.fn_marcar_configuracao_regra_google() from public, anon, authenticated;
 grant execute on function public.fn_marcar_configuracao_regra_google() to service_role;
 
-drop trigger if exists trg_marcar_configuracao_regra_google on public.google_ads_conversion_rules;
+do $zps$ begin perform public.fn_garantir_gatilho('public.google_ads_conversion_rules', 'trg_marcar_configuracao_regra_google', $zps_def$
 create trigger trg_marcar_configuracao_regra_google
   before insert or update on public.google_ads_conversion_rules
   for each row execute function public.fn_marcar_configuracao_regra_google();
+$zps_def$); end $zps$;
 
 -- A qualificação que já existia vira a primeira regra, com o nome de evento de
 -- sempre. `on conflict do nothing`: reaplicar não duplica nem sobrescreve a
@@ -39586,9 +40096,10 @@ create table if not exists public.ad_tracking_links (
 alter table public.ad_tracking_links enable row level security;
 revoke all on public.ad_tracking_links from public, anon, authenticated;
 grant select, insert, update, delete on public.ad_tracking_links to service_role;
-drop trigger if exists trg_ad_tracking_links_updated_at on public.ad_tracking_links;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ad_tracking_links', 'trg_ad_tracking_links_updated_at', $zps_def$
 create trigger trg_ad_tracking_links_updated_at before update on public.ad_tracking_links
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 alter table public.google_ads_click_refs add column if not exists tracking_link_id uuid;
 alter table public.meta_ads_click_refs add column if not exists tracking_link_id uuid;
 alter table public.google_ads_click_refs drop constraint if exists google_click_tracking_link_org_fk;
@@ -39673,10 +40184,11 @@ alter function public.fn_emit_aviso_da_central() owner to postgres;
 revoke all     on function public.fn_emit_aviso_da_central() from public;
 revoke execute on function public.fn_emit_aviso_da_central() from anon, authenticated;
 
-drop trigger if exists trg_aviso_da_central_criado on public.agent_inbox_items;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_inbox_items', 'trg_aviso_da_central_criado', $zps_def$
 create trigger trg_aviso_da_central_criado
   after insert on public.agent_inbox_items
   for each row execute function public.fn_emit_aviso_da_central();
+$zps_def$); end $zps$;
 
 -- ---- configuracoes de propostas (migration 0462) ----
 update public.organizations
@@ -39801,10 +40313,11 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_crm_proposal_items_org_consistente on public.crm_proposal_items;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_proposal_items', 'trg_crm_proposal_items_org_consistente', $zps_def$
 create trigger trg_crm_proposal_items_org_consistente
   before insert or update on public.crm_proposal_items
   for each row execute function public.fn_verificar_org_do_item_da_proposta();
+$zps_def$); end $zps$;
 
 -- Função de gatilho: não é RPC, mas nasce com EXECUTE para public e anon
 -- como qualquer função em public (CLAUDE.md, Migrations item 9).
@@ -39825,21 +40338,23 @@ alter table public.crm_proposal_items enable row level security;
 -- Enviar, numerar e revisar são do servidor (service_role), nunca da sessão.
 -- SELECT tem o bypass de suporte da plataforma (molde de catalog_products);
 -- a escrita não tem, de propósito.
-drop policy if exists crm_proposals_select on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposals', 'crm_proposals_select', $zps_def$
 create policy crm_proposals_select on public.crm_proposals
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 drop policy if exists crm_proposals_write on public.crm_proposals;
-drop policy if exists crm_proposals_insert on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposals', 'crm_proposals_insert', $zps_def$
 create policy crm_proposals_insert on public.crm_proposals
   for insert
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent')
               and status = 'rascunho');
+$zps_def$); end $zps$;
 
-drop policy if exists crm_proposals_update on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposals', 'crm_proposals_update', $zps_def$
 create policy crm_proposals_update on public.crm_proposals
   for update
   using (organization_id in (select public.fn_user_org_ids())
@@ -39847,13 +40362,15 @@ create policy crm_proposals_update on public.crm_proposals
          and status in ('rascunho', 'enviada'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent'));
+$zps_def$); end $zps$;
 
-drop policy if exists crm_proposals_delete on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposals', 'crm_proposals_delete', $zps_def$
 create policy crm_proposals_delete on public.crm_proposals
   for delete
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager')
          and status = 'rascunho');
+$zps_def$); end $zps$;
 
 -- A sessão (PostgREST, papel `authenticated`) só faz o que uma rota faz. O
 -- servidor (`service_role`) e as funções `security definer` não passam por
@@ -39902,23 +40419,25 @@ end;
 $$;
 revoke execute on function public.fn_crm_proposals_transicao_da_sessao() from public, anon;
 
-drop trigger if exists trg_crm_proposals_transicao_da_sessao on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_proposals', 'trg_crm_proposals_transicao_da_sessao', $zps_def$
 create trigger trg_crm_proposals_transicao_da_sessao
   before insert or update on public.crm_proposals
   for each row execute function public.fn_crm_proposals_transicao_da_sessao();
+$zps_def$); end $zps$;
 
 -- organization_id direto na linha (não mais join com crm_proposals): mais
 -- simples, mais rápido, e é o que a trava de suporte (0274) precisa medir.
-drop policy if exists crm_proposal_items_select on public.crm_proposal_items;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposal_items', 'crm_proposal_items_select', $zps_def$
 create policy crm_proposal_items_select on public.crm_proposal_items
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- Item só se escreve em RASCUNHO (POST/PATCH/assistente, todos `agent`): o
 -- item de uma proposta enviada é o que o cliente recebeu, e a v2 é clonada
 -- pelo servidor. O `delete` do rascunho leva os itens pela FK, sem RLS.
-drop policy if exists crm_proposal_items_write on public.crm_proposal_items;
+do $zps$ begin perform public.fn_garantir_policy('public.crm_proposal_items', 'crm_proposal_items_write', $zps_def$
 create policy crm_proposal_items_write on public.crm_proposal_items
   for all
   using (organization_id in (select public.fn_user_org_ids())
@@ -39933,6 +40452,7 @@ create policy crm_proposal_items_write on public.crm_proposal_items
                            where p.id = crm_proposal_items.proposal_id
                              and p.organization_id = crm_proposal_items.organization_id
                              and p.status = 'rascunho'));
+$zps_def$); end $zps$;
 
 revoke all on public.crm_proposals from anon;
 revoke all on public.crm_proposal_items from anon;
@@ -39941,10 +40461,11 @@ grant select, insert, update, delete on public.crm_proposal_items to authenticat
 grant all on public.crm_proposals to service_role;
 grant all on public.crm_proposal_items to service_role;
 
-drop trigger if exists trg_crm_proposals_updated_at on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_proposals', 'trg_crm_proposals_updated_at', $zps_def$
 create trigger trg_crm_proposals_updated_at
   before update on public.crm_proposals
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 comment on table public.crm_proposals is
   'Documento comercial emitido para um contato: itens, valor, prazo. Desfecho volta ao funil.';
@@ -39983,12 +40504,13 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('propostas', 'propostas', false, 52428800, array['application/pdf'])
 on conflict (id) do nothing;
 
-drop policy if exists "propostas: leitura por organizacao" on storage.objects;
+do $zps$ begin perform public.fn_garantir_policy('storage.objects', 'propostas: leitura por organizacao', $zps_def$
 create policy "propostas: leitura por organizacao" on storage.objects
   for select using (
     bucket_id = 'propostas'
     and (split_part(name, '/', 1))::uuid in (select public.fn_user_org_ids())
   );
+$zps_def$); end $zps$;
 
 -- Sem policy de escrita: `service_role` ignora RLS (é o papel que faz bypass),
 -- então uma policy aqui seria decorativa — mesmo padrão dos outros buckets do
@@ -40039,11 +40561,12 @@ $$;
 
 revoke execute on function public.fn_verificar_org_da_proposta() from public, anon;
 
-drop trigger if exists trg_crm_proposals_org_consistente on public.crm_proposals;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_proposals', 'trg_crm_proposals_org_consistente', $zps_def$
 create trigger trg_crm_proposals_org_consistente
   before insert or update of organization_id, lead_id, contact_id, conversation_id
   on public.crm_proposals
   for each row execute function public.fn_verificar_org_da_proposta();
+$zps_def$); end $zps$;
 
 -- ---- C2: contador de propostas, estado enviando e sobrevivencia ao negocio (migration 0466) ----
 -- D9 — auditoria de produção (org 59914589, 19/09/2026): `fn_proposta_aloca_numero`
@@ -40137,10 +40660,11 @@ $$;
 revoke execute on function public.fn_cancelar_propostas_rascunho_do_lead() from public, anon;
 revoke execute on function public.fn_cancelar_propostas_rascunho_do_lead() from authenticated;
 
-drop trigger if exists trg_crm_leads_cancelar_propostas_rascunho on public.crm_leads;
+do $zps$ begin perform public.fn_garantir_gatilho('public.crm_leads', 'trg_crm_leads_cancelar_propostas_rascunho', $zps_def$
 create trigger trg_crm_leads_cancelar_propostas_rascunho
   before delete on public.crm_leads
   for each row execute function public.fn_cancelar_propostas_rascunho_do_lead();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -40342,11 +40866,12 @@ alter table public.proposal_templates enable row level security;
 
 drop policy if exists tenant_isolation_proposal_templates_all on public.proposal_templates;
 
-drop policy if exists proposal_templates_select on public.proposal_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.proposal_templates', 'proposal_templates_select', $zps_def$
 create policy proposal_templates_select on public.proposal_templates
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 -- proposal_templates_write nasce no bloco "modelos de proposta da empresa
 -- (migration 0476)", mais abaixo, já com o piso de 'manager' — o drop dela
@@ -40406,13 +40931,14 @@ comment on column public.proposal_templates.nome is
 comment on column public.proposal_templates.descricao is
   'Para que serve este modelo, em uma frase. Opcional.';
 
-drop policy if exists proposal_templates_write on public.proposal_templates;
+do $zps$ begin perform public.fn_garantir_policy('public.proposal_templates', 'proposal_templates_write', $zps_def$
 create policy proposal_templates_write on public.proposal_templates
   for all
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 -- ---- LGPD alcança a proposta comercial (migration 0477) ----
 -- Redefine `fn_lgpd_cascade_redact_contact` a partir da ÚLTIMA definição
@@ -41064,33 +41590,38 @@ create unique index if not exists companies_org_normalized_cnpj_uidx
 alter table public.companies enable row level security;
 
 drop policy if exists tenant_isolation_companies_all on public.companies;
-drop policy if exists companies_select on public.companies;
+do $zps$ begin perform public.fn_garantir_policy('public.companies', 'companies_select', $zps_def$
 create policy companies_select on public.companies
   for select using (organization_id in (select public.fn_user_org_ids()));
-drop policy if exists companies_insert on public.companies;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.companies', 'companies_insert', $zps_def$
 create policy companies_insert on public.companies
   for insert with check (organization_id in (select public.fn_user_org_ids())
                          and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists companies_update on public.companies;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.companies', 'companies_update', $zps_def$
 create policy companies_update on public.companies
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'agent'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent'));
-drop policy if exists companies_delete on public.companies;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.companies', 'companies_delete', $zps_def$
 create policy companies_delete on public.companies
   for delete using (organization_id in (select public.fn_user_org_ids())
                     and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 revoke all on table public.companies from anon;
 grant select, insert, update, delete on table public.companies to authenticated;
 grant all on table public.companies to service_role;
 
-drop trigger if exists trg_companies_set_updated_at on public.companies;
+do $zps$ begin perform public.fn_garantir_gatilho('public.companies', 'trg_companies_set_updated_at', $zps_def$
 create trigger trg_companies_set_updated_at
   before update on public.companies
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- 2. people
@@ -41117,33 +41648,38 @@ create index if not exists idx_people_org_updated
 alter table public.people enable row level security;
 
 drop policy if exists tenant_isolation_people_all on public.people;
-drop policy if exists people_select on public.people;
+do $zps$ begin perform public.fn_garantir_policy('public.people', 'people_select', $zps_def$
 create policy people_select on public.people
   for select using (organization_id in (select public.fn_user_org_ids()));
-drop policy if exists people_insert on public.people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.people', 'people_insert', $zps_def$
 create policy people_insert on public.people
   for insert with check (organization_id in (select public.fn_user_org_ids())
                          and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists people_update on public.people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.people', 'people_update', $zps_def$
 create policy people_update on public.people
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'agent'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent'));
-drop policy if exists people_delete on public.people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.people', 'people_delete', $zps_def$
 create policy people_delete on public.people
   for delete using (organization_id in (select public.fn_user_org_ids())
                     and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 revoke all on table public.people from anon;
 grant select, insert, update, delete on table public.people to authenticated;
 grant all on table public.people to service_role;
 
-drop trigger if exists trg_people_set_updated_at on public.people;
+do $zps$ begin perform public.fn_garantir_gatilho('public.people', 'trg_people_set_updated_at', $zps_def$
 create trigger trg_people_set_updated_at
   before update on public.people
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- 3. company_people
@@ -41175,33 +41711,38 @@ create index if not exists idx_company_people_company
 alter table public.company_people enable row level security;
 
 drop policy if exists tenant_isolation_company_people_all on public.company_people;
-drop policy if exists company_people_select on public.company_people;
+do $zps$ begin perform public.fn_garantir_policy('public.company_people', 'company_people_select', $zps_def$
 create policy company_people_select on public.company_people
   for select using (organization_id in (select public.fn_user_org_ids()));
-drop policy if exists company_people_insert on public.company_people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.company_people', 'company_people_insert', $zps_def$
 create policy company_people_insert on public.company_people
   for insert with check (organization_id in (select public.fn_user_org_ids())
                          and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists company_people_update on public.company_people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.company_people', 'company_people_update', $zps_def$
 create policy company_people_update on public.company_people
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'agent'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'agent'));
-drop policy if exists company_people_delete on public.company_people;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.company_people', 'company_people_delete', $zps_def$
 create policy company_people_delete on public.company_people
   for delete using (organization_id in (select public.fn_user_org_ids())
                     and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 revoke all on table public.company_people from anon;
 grant select, insert, update, delete on table public.company_people to authenticated;
 grant all on table public.company_people to service_role;
 
-drop trigger if exists trg_company_people_set_updated_at on public.company_people;
+do $zps$ begin perform public.fn_garantir_gatilho('public.company_people', 'trg_company_people_set_updated_at', $zps_def$
 create trigger trg_company_people_set_updated_at
   before update on public.company_people
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- Mesma organization entre vínculo, company e person (anti cross-tenant por FK).
 create or replace function public.fn_company_people_same_org()
@@ -41236,10 +41777,11 @@ $$;
 revoke execute on function public.fn_company_people_same_org() from public, anon;
 -- trigger functions are owned; no grant needed for callers
 
-drop trigger if exists trg_company_people_same_org on public.company_people;
+do $zps$ begin perform public.fn_garantir_gatilho('public.company_people', 'trg_company_people_same_org', $zps_def$
 create trigger trg_company_people_same_org
   before insert or update on public.company_people
   for each row execute function public.fn_company_people_same_org();
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- 4. contacts.person_id (aditivo, nullable)
@@ -41277,10 +41819,11 @@ $$;
 
 revoke execute on function public.fn_contacts_person_same_org() from public, anon;
 
-drop trigger if exists trg_contacts_person_same_org on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_person_same_org', $zps_def$
 create trigger trg_contacts_person_same_org
   before insert or update of person_id, organization_id on public.contacts
   for each row execute function public.fn_contacts_person_same_org();
+$zps_def$); end $zps$;
 
 -- ---------------------------------------------------------------------------
 -- 5. import_batches / import_rows
@@ -41311,33 +41854,38 @@ create index if not exists idx_import_batches_org_created
 alter table public.import_batches enable row level security;
 
 drop policy if exists tenant_isolation_import_batches_all on public.import_batches;
-drop policy if exists import_batches_select on public.import_batches;
+do $zps$ begin perform public.fn_garantir_policy('public.import_batches', 'import_batches_select', $zps_def$
 create policy import_batches_select on public.import_batches
   for select using (organization_id in (select public.fn_user_org_ids()));
-drop policy if exists import_batches_insert on public.import_batches;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_batches', 'import_batches_insert', $zps_def$
 create policy import_batches_insert on public.import_batches
   for insert with check (organization_id in (select public.fn_user_org_ids())
                          and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists import_batches_update on public.import_batches;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_batches', 'import_batches_update', $zps_def$
 create policy import_batches_update on public.import_batches
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists import_batches_delete on public.import_batches;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_batches', 'import_batches_delete', $zps_def$
 create policy import_batches_delete on public.import_batches
   for delete using (organization_id in (select public.fn_user_org_ids())
                     and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 revoke all on table public.import_batches from anon;
 grant select, insert, update, delete on table public.import_batches to authenticated;
 grant all on table public.import_batches to service_role;
 
-drop trigger if exists trg_import_batches_set_updated_at on public.import_batches;
+do $zps$ begin perform public.fn_garantir_gatilho('public.import_batches', 'trg_import_batches_set_updated_at', $zps_def$
 create trigger trg_import_batches_set_updated_at
   before update on public.import_batches
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create table if not exists public.import_rows (
   id uuid primary key default gen_random_uuid(),
@@ -41365,24 +41913,28 @@ create index if not exists idx_import_rows_org
 alter table public.import_rows enable row level security;
 
 drop policy if exists tenant_isolation_import_rows_all on public.import_rows;
-drop policy if exists import_rows_select on public.import_rows;
+do $zps$ begin perform public.fn_garantir_policy('public.import_rows', 'import_rows_select', $zps_def$
 create policy import_rows_select on public.import_rows
   for select using (organization_id in (select public.fn_user_org_ids()));
-drop policy if exists import_rows_insert on public.import_rows;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_rows', 'import_rows_insert', $zps_def$
 create policy import_rows_insert on public.import_rows
   for insert with check (organization_id in (select public.fn_user_org_ids())
                          and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists import_rows_update on public.import_rows;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_rows', 'import_rows_update', $zps_def$
 create policy import_rows_update on public.import_rows
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
-drop policy if exists import_rows_delete on public.import_rows;
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.import_rows', 'import_rows_delete', $zps_def$
 create policy import_rows_delete on public.import_rows
   for delete using (organization_id in (select public.fn_user_org_ids())
                     and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 revoke all on table public.import_rows from anon;
 grant select, insert, update, delete on table public.import_rows to authenticated;
@@ -41411,10 +41963,11 @@ $$;
 
 revoke execute on function public.fn_import_rows_same_org() from public, anon;
 
-drop trigger if exists trg_import_rows_same_org on public.import_rows;
+do $zps$ begin perform public.fn_garantir_gatilho('public.import_rows', 'trg_import_rows_same_org', $zps_def$
 create trigger trg_import_rows_same_org
   before insert or update on public.import_rows
   for each row execute function public.fn_import_rows_same_org();
+$zps_def$); end $zps$;
 
 -- ---- a anonimização (LGPD) alcança a pessoa e a linha de planilha (migration 0449) ----
 --
@@ -41460,12 +42013,13 @@ $$;
 revoke execute on function public.fn_redigir_b2b_do_contato_anonimizado() from public, anon, authenticated;
 grant  execute on function public.fn_redigir_b2b_do_contato_anonimizado() to service_role;
 
-drop trigger if exists trg_redigir_b2b_ao_anonimizar on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_redigir_b2b_ao_anonimizar', $zps_def$
 create trigger trg_redigir_b2b_ao_anonimizar
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and old.is_anonymized is distinct from true)
   execute function public.fn_redigir_b2b_do_contato_anonimizado();
+$zps_def$); end $zps$;
 
 -- ---- grupos de WhatsApp na inbox (migration 0482) ----
 -- Grupos de WhatsApp na inbox: histórico e resposta manual, IA nunca responde.
@@ -41524,16 +42078,18 @@ alter table public.channel_session_groups enable row level security;
 -- O `revoke` explícito é o que protege no Supabase real: o default ACL de
 -- tabelas em `public` concede tudo a anon/authenticated (ver CLAUDE.md, 0258).
 drop policy if exists tenant_isolation_channel_session_groups_all on public.channel_session_groups;
-drop policy if exists channel_session_groups_select on public.channel_session_groups;
 drop policy if exists channel_session_groups_write on public.channel_session_groups;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_session_groups', 'channel_session_groups_select', $zps_def$
 create policy channel_session_groups_select on public.channel_session_groups
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 revoke insert, update, delete, truncate on public.channel_session_groups from anon, authenticated;
 
-drop trigger if exists trg_channel_session_groups_updated_at on public.channel_session_groups;
+do $zps$ begin perform public.fn_garantir_gatilho('public.channel_session_groups', 'trg_channel_session_groups_updated_at', $zps_def$
 create trigger trg_channel_session_groups_updated_at
   before update on public.channel_session_groups
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- 3. Roteamento automático não atribui grupo (quebraria a visibilidade por "sem dono").
 create or replace function public.fn_request_channel_routing(p_org uuid,p_conversation uuid)
@@ -42816,12 +43372,13 @@ end $f$;
 
 revoke execute on function public.fn_lgpd_redigir_secoes_de_modulo() from public, anon, authenticated;
 
-drop trigger if exists trg_lgpd_secoes_de_modulo on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_lgpd_secoes_de_modulo', $zps_def$
 create trigger trg_lgpd_secoes_de_modulo
   after update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized and not old.is_anonymized)
   execute function public.fn_lgpd_redigir_secoes_de_modulo();
+$zps_def$); end $zps$;
 
 -- ---- Exclusão de contato com turno de follow-up: ficha inteira (migration 0488) ----
 -- Issue #1862: a rota apagava `messages`, `conversations` e `contacts` em três
@@ -42877,55 +43434,63 @@ notify pgrst, 'reload schema';
 
 drop policy if exists tenant_isolation_followup_enrollments_all on public.followup_enrollments;
 
-drop policy if exists followup_enrollments_select on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollments', 'followup_enrollments_select', $zps_def$
 create policy followup_enrollments_select on public.followup_enrollments
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_enrollments_insert on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollments', 'followup_enrollments_insert', $zps_def$
 create policy followup_enrollments_insert on public.followup_enrollments
   for insert
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_enrollments_update on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollments', 'followup_enrollments_update', $zps_def$
 create policy followup_enrollments_update on public.followup_enrollments
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_enrollments_delete on public.followup_enrollments;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollments', 'followup_enrollments_delete', $zps_def$
 create policy followup_enrollments_delete on public.followup_enrollments
   for delete
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_followup_flow_pointers_all on public.followup_flow_pointers;
 
-drop policy if exists followup_flow_pointers_select on public.followup_flow_pointers;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_pointers', 'followup_flow_pointers_select', $zps_def$
 create policy followup_flow_pointers_select on public.followup_flow_pointers
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_flow_pointers_insert on public.followup_flow_pointers;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_pointers', 'followup_flow_pointers_insert', $zps_def$
 create policy followup_flow_pointers_insert on public.followup_flow_pointers
   for insert
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_flow_pointers_update on public.followup_flow_pointers;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_pointers', 'followup_flow_pointers_update', $zps_def$
 create policy followup_flow_pointers_update on public.followup_flow_pointers
   for update
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'))
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_flow_pointers_delete on public.followup_flow_pointers;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_pointers', 'followup_flow_pointers_delete', $zps_def$
 create policy followup_flow_pointers_delete on public.followup_flow_pointers
   for delete
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 -- ---- followup_enrollment_events e followup_flow_versions: RLS por operação (migration 0490) ----
 -- A policy `for all` sem papel mínimo deixava `viewer` apagar ou reescrever a trilha de uma
@@ -42934,27 +43499,31 @@ create policy followup_flow_pointers_delete on public.followup_flow_pointers
 
 drop policy if exists tenant_isolation_followup_enrollment_events_all on public.followup_enrollment_events;
 
-drop policy if exists followup_enrollment_events_select on public.followup_enrollment_events;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollment_events', 'followup_enrollment_events_select', $zps_def$
 create policy followup_enrollment_events_select on public.followup_enrollment_events
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_enrollment_events_insert on public.followup_enrollment_events;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_enrollment_events', 'followup_enrollment_events_insert', $zps_def$
 create policy followup_enrollment_events_insert on public.followup_enrollment_events
   for insert
   with check (organization_id in (select public.fn_user_org_ids())
               and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 drop policy if exists tenant_isolation_followup_flow_versions_all on public.followup_flow_versions;
 
-drop policy if exists followup_flow_versions_select on public.followup_flow_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_versions', 'followup_flow_versions_select', $zps_def$
 create policy followup_flow_versions_select on public.followup_flow_versions
   for select using (organization_id in (select public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
-drop policy if exists followup_flow_versions_delete on public.followup_flow_versions;
+do $zps$ begin perform public.fn_garantir_policy('public.followup_flow_versions', 'followup_flow_versions_delete', $zps_def$
 create policy followup_flow_versions_delete on public.followup_flow_versions
   for delete
   using (organization_id in (select public.fn_user_org_ids())
          and public.fn_role_at_least(organization_id, 'manager'));
+$zps_def$); end $zps$;
 
 -- ---- org operante e suspensão tipada (migration 0501) ----
 -- A suspensão que suspende (spec cobrança do revendedor §2.1, §3.1). Corpo e
@@ -43030,10 +43599,11 @@ $$;
 
 revoke execute on function public.fn_organizacao_estado_so_pelo_servidor() from public, anon, authenticated;
 
-drop trigger if exists trg_organizacao_estado_so_pelo_servidor on public.organizations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.organizations', 'trg_organizacao_estado_so_pelo_servidor', $zps_def$
 create trigger trg_organizacao_estado_so_pelo_servidor
   before insert or update on public.organizations
   for each row execute function public.fn_organizacao_estado_so_pelo_servidor();
+$zps_def$); end $zps$;
 
 -- ── C0a. o turno de envio que sai sem rodar ─────────────────────────────────
 -- O turno de envio de uma inscrição parada num nó `action` saiu sem ter rodado.
@@ -44248,10 +44818,11 @@ begin
 end;
 $$;
 revoke all on function public.fn_fechar_avisos_do_jev_da_conversa() from public,anon,authenticated;
-drop trigger if exists trg_fechar_avisos_do_jev_da_conversa on public.conversations;
+do $zps$ begin perform public.fn_garantir_gatilho('public.conversations', 'trg_fechar_avisos_do_jev_da_conversa', $zps_def$
 create trigger trg_fechar_avisos_do_jev_da_conversa
  after update of assigned_to_user_id,status,bot_silenced_until,last_handoff_at on public.conversations
  for each row execute function public.fn_fechar_avisos_do_jev_da_conversa();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_fechar_aviso_do_jev_ao_bloquear()
 returns trigger language plpgsql security definer set search_path=public as $$
@@ -44264,11 +44835,12 @@ begin
 end;
 $$;
 revoke all on function public.fn_fechar_aviso_do_jev_ao_bloquear() from public,anon,authenticated;
-drop trigger if exists trg_fechar_aviso_do_jev_ao_bloquear on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_fechar_aviso_do_jev_ao_bloquear', $zps_def$
 create trigger trg_fechar_aviso_do_jev_ao_bloquear
  after update of is_blocked on public.contacts
  for each row when (new.is_blocked and old.is_blocked is distinct from true)
  execute function public.fn_fechar_aviso_do_jev_ao_bloquear();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -44327,10 +44899,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 -- ---- a recusa permanente do atendimento não pede repetição (migration 0514) ----
 -- `PT409` no lugar de `40001` em `service_stale` de `fn_service_status` (a
@@ -44521,10 +45094,11 @@ alter table public.meta_ads_conversion_rules enable row level security;
 revoke all on public.meta_ads_conversion_rules from anon, authenticated;
 grant select, insert, update, delete on public.meta_ads_conversion_rules to service_role;
 
-drop trigger if exists trg_meta_ads_conversion_rules_updated_at on public.meta_ads_conversion_rules;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_ads_conversion_rules', 'trg_meta_ads_conversion_rules_updated_at', $zps_def$
 create trigger trg_meta_ads_conversion_rules_updated_at
   before update on public.meta_ads_conversion_rules
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 create or replace function public.fn_marcar_configuracao_regra_meta()
 returns trigger language plpgsql set search_path = public as $$
@@ -44544,10 +45118,11 @@ $$;
 revoke execute on function public.fn_marcar_configuracao_regra_meta() from public, anon, authenticated;
 grant execute on function public.fn_marcar_configuracao_regra_meta() to service_role;
 
-drop trigger if exists trg_marcar_configuracao_regra_meta on public.meta_ads_conversion_rules;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_ads_conversion_rules', 'trg_marcar_configuracao_regra_meta', $zps_def$
 create trigger trg_marcar_configuracao_regra_meta
   before insert or update on public.meta_ads_conversion_rules
   for each row execute function public.fn_marcar_configuracao_regra_meta();
+$zps_def$); end $zps$;
 
 alter table public.ad_conversion_dispatches
   add column if not exists meta_event_name text;
@@ -44804,12 +45379,13 @@ end; $$;
 
 revoke execute on function public.fn_contato_herda_bsuid_na_fusao() from public, anon, authenticated;
 
-drop trigger if exists trg_contacts_herda_bsuid_na_fusao on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_herda_bsuid_na_fusao', $zps_def$
 create trigger trg_contacts_herda_bsuid_na_fusao
   after update of is_merged_into on public.contacts
   for each row
   when (old.is_merged_into is null and new.is_merged_into is not null and new.wa_bsuid is not null)
   execute function public.fn_contato_herda_bsuid_na_fusao();
+$zps_def$); end $zps$;
 
 -- ─── Anonimização apaga o BSUID ─────────────────────────────────────────────
 --
@@ -44825,12 +45401,13 @@ end; $$;
 
 revoke execute on function public.fn_contato_anonimizado_perde_bsuid() from public, anon, authenticated;
 
-drop trigger if exists trg_contacts_anonimizado_perde_bsuid on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contacts_anonimizado_perde_bsuid', $zps_def$
 create trigger trg_contacts_anonimizado_perde_bsuid
   before update of is_anonymized on public.contacts
   for each row
   when (new.is_anonymized is true and new.wa_bsuid is not null)
   execute function public.fn_contato_anonimizado_perde_bsuid();
+$zps_def$); end $zps$;
 
 -- ─── fn_upsert_meta_contact ─────────────────────────────────────────────────
 --
@@ -45115,12 +45692,13 @@ comment on function public.fn_campanha_sincroniza_ack() is
 revoke execute on function public.fn_campanha_sincroniza_ack() from public, anon, authenticated;
 grant execute on function public.fn_campanha_sincroniza_ack() to service_role;
 
-drop trigger if exists trg_messages_sincroniza_campanha on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_messages_sincroniza_campanha', $zps_def$
 create trigger trg_messages_sincroniza_campanha
   after update of status, delivered_at, read_at on public.messages
   for each row
   when (new.direction = 'outbound')
   execute function public.fn_campanha_sincroniza_ack();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -45342,10 +45920,11 @@ create table if not exists public.meta_pricing_rates (
 comment on table public.meta_pricing_rates is
   'Preço de UMA mensagem da Meta por país do destinatário e categoria (issue #10). Da instalação, editada em /admin/precos-da-meta. A semente é a tabela do Brasil vigente em 01/10/2026. O custo real de cada mensagem copia o preço do momento para meta_message_costs — editar a tabela muda as estimativas seguintes, nunca o que já foi registrado.';
 
-drop trigger if exists trg_meta_pricing_rates_updated_at on public.meta_pricing_rates;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_pricing_rates', 'trg_meta_pricing_rates_updated_at', $zps_def$
 create trigger trg_meta_pricing_rates_updated_at
   before update on public.meta_pricing_rates
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- A semente: só onde a linha não existe — reaplicar não desfaz a edição do painel.
 insert into public.meta_pricing_rates (country, dial_prefix, category, unit_price_cents, currency)
@@ -45407,17 +45986,19 @@ create index if not exists idx_meta_message_costs_atendimento
   on public.meta_message_costs (channel_session_id, created_at)
   where category = 'service';
 
-drop trigger if exists trg_meta_message_costs_updated_at on public.meta_message_costs;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_message_costs', 'trg_meta_message_costs_updated_at', $zps_def$
 create trigger trg_meta_message_costs_updated_at
   before update on public.meta_message_costs
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 alter table public.meta_message_costs enable row level security;
-drop policy if exists tenant_isolation_meta_message_costs_all on public.meta_message_costs;
+do $zps$ begin perform public.fn_garantir_policy('public.meta_message_costs', 'tenant_isolation_meta_message_costs_all', $zps_def$
 create policy tenant_isolation_meta_message_costs_all on public.meta_message_costs
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 revoke all on public.meta_message_costs from anon, authenticated;
 grant select on public.meta_message_costs to authenticated;
 grant all on public.meta_message_costs to service_role;
@@ -45693,12 +46274,13 @@ $$;
 
 revoke execute on function public.fn_midia_citada_sai_da_fila() from public, anon, authenticated;
 
-drop trigger if exists trg_messages_midia_citada on public.messages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.messages', 'trg_messages_midia_citada', $zps_def$
 create trigger trg_messages_midia_citada
   after insert or update of media_storage_path on public.messages
   for each row
   when (new.media_storage_path is not null)
   execute function public.fn_midia_citada_sai_da_fila();
+$zps_def$); end $zps$;
 
 -- ---- resposta em áudio: a chave de voz e a opção por agente (migration 0548) ----
 -- Tabela server-side only (RLS sem policies, grants só ao service_role, chave cifrada),
@@ -45731,10 +46313,11 @@ alter table public.voice_provider_credentials enable row level security;
 revoke all on public.voice_provider_credentials from anon, authenticated;
 grant select, insert, update, delete on public.voice_provider_credentials to service_role;
 
-drop trigger if exists trg_voice_provider_credentials_updated_at on public.voice_provider_credentials;
+do $zps$ begin perform public.fn_garantir_gatilho('public.voice_provider_credentials', 'trg_voice_provider_credentials_updated_at', $zps_def$
 create trigger trg_voice_provider_credentials_updated_at
   before update on public.voice_provider_credentials
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ─── Por agente ─────────────────────────────────────────────────────────────
 
@@ -45886,10 +46469,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -46000,10 +46584,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$, true); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -46061,10 +46646,11 @@ alter table public.agent_external_tools enable row level security;
 revoke all on public.agent_external_tools from anon, authenticated;
 grant select, insert, update, delete on public.agent_external_tools to service_role;
 
-drop trigger if exists trg_agent_external_tools_updated_at on public.agent_external_tools;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_external_tools', 'trg_agent_external_tools_updated_at', $zps_def$
 create trigger trg_agent_external_tools_updated_at
   before update on public.agent_external_tools
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ─── Por agente (dado da versão) ────────────────────────────────────────────
 
@@ -46137,10 +46723,11 @@ begin
 end;
 $fn$;
 
-drop trigger if exists trg_ai_agent_versions_content_immutable on public.ai_agent_versions;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_agent_versions', 'trg_ai_agent_versions_content_immutable', $zps_def$
 create trigger trg_ai_agent_versions_content_immutable
   before update on public.ai_agent_versions
   for each row execute function fn_ai_agent_version_content_immutable();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -46276,10 +46863,11 @@ alter table public.agent_external_tool_requests enable row level security;
 revoke all on public.agent_external_tool_requests from anon, authenticated;
 grant select, insert, update, delete on public.agent_external_tool_requests to service_role;
 
-drop trigger if exists trg_agent_external_tool_requests_updated_at on public.agent_external_tool_requests;
+do $zps$ begin perform public.fn_garantir_gatilho('public.agent_external_tool_requests', 'trg_agent_external_tool_requests_updated_at', $zps_def$
 create trigger trg_agent_external_tool_requests_updated_at
   before update on public.agent_external_tool_requests
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -46463,15 +47051,17 @@ $$;
 -- do baseline e o grant a PUBLIC que o Postgres dá ao criar). As duas saem.
 revoke execute on function public.fn_licenca_guarda_invariantes() from public, anon, authenticated;
 
-drop trigger if exists trg_platform_licenca_invariantes on public.platform_licenca;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_licenca', 'trg_platform_licenca_invariantes', $zps_def$
 create trigger trg_platform_licenca_invariantes
   before update on public.platform_licenca
   for each row execute function public.fn_licenca_guarda_invariantes();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_platform_licenca_touch on public.platform_licenca;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_licenca', 'trg_platform_licenca_touch', $zps_def$
 create trigger trg_platform_licenca_touch
   before update on public.platform_licenca
   for each row execute function public.fn_touch_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -46527,7 +47117,7 @@ revoke all on table public.storage_redaction_queue from anon, authenticated;
 --     o papel fica no WITH CHECK, e o USING da restritiva é `true`: a linha é
 --     alcançada, a guarda fala primeiro, e o que não é de `agent` para cima é
 --     recusado na conferência da linha nova.
-drop policy if exists "contacts_alterar_exige_atendente" on public.contacts;
+do $zps$ begin perform public.fn_garantir_policy('public.contacts', 'contacts_alterar_exige_atendente', $zps_def$
 create policy "contacts_alterar_exige_atendente" on public.contacts
   as restrictive
   for update
@@ -46537,8 +47127,9 @@ create policy "contacts_alterar_exige_atendente" on public.contacts
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "contacts_apagar_exige_atendente" on public.contacts;
+do $zps$ begin perform public.fn_garantir_policy('public.contacts', 'contacts_apagar_exige_atendente', $zps_def$
 create policy "contacts_apagar_exige_atendente" on public.contacts
   as restrictive
   for delete
@@ -46547,6 +47138,7 @@ create policy "contacts_apagar_exige_atendente" on public.contacts
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 -- Desbloquear quem pediu para sair é ato do admin, pela rota própria
 -- (`POST /contacts/{id}/unblock`), que grava com o cliente de serviço e audita.
@@ -46584,13 +47176,14 @@ revoke execute on function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao
   from public, anon, authenticated;
 
 -- A WHEN compara VALORES: o caso comum (nenhuma das duas mudou) nem chama a função.
-drop trigger if exists trg_contato_recusa_nao_se_desfaz on public.contacts;
+do $zps$ begin perform public.fn_garantir_gatilho('public.contacts', 'trg_contato_recusa_nao_se_desfaz', $zps_def$
 create trigger trg_contato_recusa_nao_se_desfaz
   before update on public.contacts
   for each row
   when (old.is_blocked is distinct from new.is_blocked
      or old.is_anonymized is distinct from new.is_anonymized)
   execute function public.fn_recusa_do_contato_nao_se_desfaz_pela_sessao();
+$zps_def$); end $zps$;
 
 -- ---- teto de atendimentos automáticos por contato (migration 0561) ----
 --
@@ -46626,7 +47219,7 @@ create index if not exists llm_calls_contato_idx
 -- já exige atendente ou acima — a regra copia a rota, nunca é mais dura. Quem
 -- grava com o cliente de serviço (formulário público, avisos do canal) ou por
 -- função `security definer` não passa por esta policy.
-drop policy if exists "contacts_criar_exige_atendente" on public.contacts;
+do $zps$ begin perform public.fn_garantir_policy('public.contacts', 'contacts_criar_exige_atendente', $zps_def$
 create policy "contacts_criar_exige_atendente" on public.contacts
   as restrictive
   for insert
@@ -46635,6 +47228,7 @@ create policy "contacts_criar_exige_atendente" on public.contacts
     or ((organization_id in (select public.fn_user_org_ids()))
         and public.fn_role_at_least(organization_id, 'agent'))
   );
+$zps_def$); end $zps$;
 
 -- ---- repetidos de captação por fonte (migration 0563) ----
 --
@@ -46756,10 +47350,11 @@ $$;
 
 revoke execute on function public.fn_regra_do_agente_nasce_proposta() from public, anon;
 
-drop trigger if exists trg_regra_do_agente_nasce_proposta on public.org_memory_entries;
+do $zps$ begin perform public.fn_garantir_gatilho('public.org_memory_entries', 'trg_regra_do_agente_nasce_proposta', $zps_def$
 create trigger trg_regra_do_agente_nasce_proposta
   before insert on public.org_memory_entries
   for each row execute function public.fn_regra_do_agente_nasce_proposta();
+$zps_def$); end $zps$;
 
 -- Só o servidor escreve na memória. Todo escritor do app usa o cliente de
 -- serviço (as rotas de Memória, a aplicação de proposta do sistema e a
@@ -47082,10 +47677,11 @@ alter table public.platform_settings enable row level security;
 revoke all on public.platform_settings from anon, authenticated;
 grant select, insert, update on public.platform_settings to service_role;
 
-drop trigger if exists trg_platform_settings_touch on public.platform_settings;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_settings', 'trg_platform_settings_touch', $zps_def$
 create trigger trg_platform_settings_touch
   before update on public.platform_settings
   for each row execute function public.fn_touch_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -47178,10 +47774,11 @@ alter table public.registration_requests enable row level security;
 revoke all on public.registration_requests from anon, authenticated;
 grant select, insert, update on public.registration_requests to service_role;
 
-drop trigger if exists trg_registration_requests_touch on public.registration_requests;
+do $zps$ begin perform public.fn_garantir_gatilho('public.registration_requests', 'trg_registration_requests_touch', $zps_def$
 create trigger trg_registration_requests_touch
   before update on public.registration_requests
   for each row execute function public.fn_touch_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -47225,10 +47822,11 @@ alter table public.platform_meta_app enable row level security;
 revoke all on public.platform_meta_app from anon, authenticated;
 grant select, insert, update on public.platform_meta_app to service_role;
 
-drop trigger if exists trg_platform_meta_app_updated_at on public.platform_meta_app;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_meta_app', 'trg_platform_meta_app_updated_at', $zps_def$
 create trigger trg_platform_meta_app_updated_at
   before update on public.platform_meta_app
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 -- ---- a regra de automação guarda a CONFIGURAÇÃO do gatilho (migration 0268) ----
 -- O gatilho de data do funil (#989) não nasce de evento: quem o emite é a
 -- varredura `cron/lead-date-field-due`, e ela só sabe onde olhar se a regra
@@ -47437,10 +48035,11 @@ alter table public.platform_config enable row level security;
 revoke all on public.platform_config from anon, authenticated;
 grant select, insert, update, delete on public.platform_config to service_role;
 
-drop trigger if exists trg_platform_config_touch on public.platform_config;
+do $zps$ begin perform public.fn_garantir_gatilho('public.platform_config', 'trg_platform_config_touch', $zps_def$
 create trigger trg_platform_config_touch
   before update on public.platform_config
   for each row execute function public.fn_touch_updated_at();
+$zps_def$); end $zps$;
 
 notify pgrst, 'reload schema';
 
@@ -47630,15 +48229,16 @@ create index if not exists external_db_connections_org_idx
 
 alter table public.external_db_connections enable row level security;
 
-drop policy if exists tenant_isolation_external_db_connections_select on public.external_db_connections;
+do $zps$ begin perform public.fn_garantir_policy('public.external_db_connections', 'tenant_isolation_external_db_connections_select', $zps_def$
 create policy tenant_isolation_external_db_connections_select on public.external_db_connections
   for select
   using (organization_id in (select * from public.fn_user_org_ids()));
+$zps_def$); end $zps$;
 
 -- Leitura: qualquer membro (D2). Escrita: `admin` também na RLS — a mesma regra
 -- na camada que sobrevive a uma rota nova.
 drop policy if exists tenant_isolation_external_db_connections_modify on public.external_db_connections;
-drop policy if exists tenant_isolation_external_db_connections_write on public.external_db_connections;
+do $zps$ begin perform public.fn_garantir_policy('public.external_db_connections', 'tenant_isolation_external_db_connections_write', $zps_def$
 create policy tenant_isolation_external_db_connections_write on public.external_db_connections
   for all
   using (
@@ -47649,6 +48249,7 @@ create policy tenant_isolation_external_db_connections_write on public.external_
     organization_id in (select * from public.fn_user_org_ids())
       and public.fn_role_at_least(organization_id, 'admin')
   );
+$zps_def$); end $zps$;
 
 -- O ALTER DEFAULT PRIVILEGES deste baseline dá GRANT ALL em TABLES a `anon`:
 -- toda tabela nova nasce exposta e precisa revogar por conta própria.
@@ -47667,15 +48268,17 @@ create view public.external_db_connections_safe
 revoke all on public.external_db_connections_safe from anon;
 grant select on public.external_db_connections_safe to authenticated;
 
-drop trigger if exists trg_external_db_connections_updated_at on public.external_db_connections;
+do $zps$ begin perform public.fn_garantir_gatilho('public.external_db_connections', 'trg_external_db_connections_updated_at', $zps_def$
 create trigger trg_external_db_connections_updated_at
   before update on public.external_db_connections
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
-drop trigger if exists trg_external_db_connections_audit on public.external_db_connections;
+do $zps$ begin perform public.fn_garantir_gatilho('public.external_db_connections', 'trg_external_db_connections_audit', $zps_def$
 create trigger trg_external_db_connections_audit
   after insert or update or delete on public.external_db_connections
   for each row execute function public.fn_audit_log_row();
+$zps_def$); end $zps$;
 
 -- ---- o banco externo vira módulo opcional da instalação (migration 0384) ----
 -- Doc 37: desligado por padrão, ligado em /admin/sistema. A chave é a linha
@@ -47753,70 +48356,89 @@ do $f$ begin perform public.fn_proteger_tabelas_de_organizacao(); end $f$;
 -- — support_readonly segue lendo, só não escreve mais.
 
 drop policy if exists "api_tokens_admin_only" on "public"."api_tokens";
-drop policy if exists "api_tokens_tenant_read" on "public"."api_tokens";
+do $zps$ begin perform public.fn_garantir_policy('public.api_tokens', 'api_tokens_tenant_read', $zps_def$
 create policy "api_tokens_tenant_read" on "public"."api_tokens" for select using (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin());
-drop policy if exists "api_tokens_admin_write" on "public"."api_tokens";
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.api_tokens', 'api_tokens_admin_write', $zps_def$
 create policy "api_tokens_admin_write" on "public"."api_tokens" for all using (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin_full()) with check (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
 drop policy if exists "platform_admin_only_incidents" on "public"."incidents";
-drop policy if exists "incidents_tenant_read" on "public"."incidents";
+do $zps$ begin perform public.fn_garantir_policy('public.incidents', 'incidents_tenant_read', $zps_def$
 create policy "incidents_tenant_read" on "public"."incidents" for select using (public.fn_is_platform_admin());
-drop policy if exists "incidents_admin_write" on "public"."incidents";
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.incidents', 'incidents_admin_write', $zps_def$
 create policy "incidents_admin_write" on "public"."incidents" for all using (public.fn_is_platform_admin_full()) with check (public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
 drop policy if exists "tenant_isolation_ai_invocations_all" on "public"."ai_invocations";
-drop policy if exists "tenant_isolation_ai_invocations_read" on "public"."ai_invocations";
+do $zps$ begin perform public.fn_garantir_policy('public.ai_invocations', 'tenant_isolation_ai_invocations_read', $zps_def$
 create policy "tenant_isolation_ai_invocations_read" on "public"."ai_invocations" for select using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
-drop policy if exists "tenant_isolation_ai_invocations_write" on "public"."ai_invocations";
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_invocations', 'tenant_isolation_ai_invocations_write', $zps_def$
 create policy "tenant_isolation_ai_invocations_write" on "public"."ai_invocations" for all using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full()) with check ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
 drop policy if exists "tenant_isolation_contacts_all" on "public"."contacts";
-drop policy if exists "tenant_isolation_contacts_read" on "public"."contacts";
+do $zps$ begin perform public.fn_garantir_policy('public.contacts', 'tenant_isolation_contacts_read', $zps_def$
 create policy "tenant_isolation_contacts_read" on "public"."contacts" for select using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
-drop policy if exists "tenant_isolation_contacts_write" on "public"."contacts";
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.contacts', 'tenant_isolation_contacts_write', $zps_def$
 create policy "tenant_isolation_contacts_write" on "public"."contacts" for all using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full()) with check ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
 drop policy if exists "warmup_tenant_isolation_all" on "public"."channel_session_warmup";
-drop policy if exists "warmup_tenant_isolation_read" on "public"."channel_session_warmup";
+do $zps$ begin perform public.fn_garantir_policy('public.channel_session_warmup', 'warmup_tenant_isolation_read', $zps_def$
 create policy "warmup_tenant_isolation_read" on "public"."channel_session_warmup" for select using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin());
-drop policy if exists "warmup_tenant_isolation_write" on "public"."channel_session_warmup";
+$zps_def$); end $zps$;
+do $zps$ begin perform public.fn_garantir_policy('public.channel_session_warmup', 'warmup_tenant_isolation_write', $zps_def$
 create policy "warmup_tenant_isolation_write" on "public"."channel_session_warmup" for all using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full()) with check ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
-drop policy if exists "orgs_write_platform_admin" on "public"."organizations";
-drop policy if exists "orgs_write_platform_admin" on "public"."organizations";
+
+do $zps$ begin perform public.fn_garantir_policy('public.organizations', 'orgs_write_platform_admin', $zps_def$
 create policy "orgs_write_platform_admin" on "public"."organizations" for all using (public.fn_is_platform_admin_full()) with check (public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
-drop policy if exists "audit_log_insert_tenant_member" on "public"."api_audit_log";
-drop policy if exists "audit_log_insert_tenant_member" on "public"."api_audit_log";
+
+do $zps$ begin perform public.fn_garantir_policy('public.api_audit_log', 'audit_log_insert_tenant_member', $zps_def$
 create policy "audit_log_insert_tenant_member" on "public"."api_audit_log" for insert to authenticated with check ((("organization_id" is null) or ("organization_id" in (select public.fn_user_org_ids())) or public.fn_is_platform_admin_full()));
+$zps_def$); end $zps$;
 
-drop policy if exists "lgpd_requests_admin_write" on "public"."lgpd_requests";
-drop policy if exists "lgpd_requests_admin_write" on "public"."lgpd_requests";
+
+do $zps$ begin perform public.fn_garantir_policy('public.lgpd_requests', 'lgpd_requests_admin_write', $zps_def$
 create policy "lgpd_requests_admin_write" on "public"."lgpd_requests" for all using (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'admin'))) with check (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'admin')));
+$zps_def$); end $zps$;
 
-drop policy if exists "merge_queue_manager_write" on "public"."merge_queue";
-drop policy if exists "merge_queue_manager_write" on "public"."merge_queue";
+
+do $zps$ begin perform public.fn_garantir_policy('public.merge_queue', 'merge_queue_manager_write', $zps_def$
 create policy "merge_queue_manager_write" on "public"."merge_queue" for all using (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'manager'))) with check (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'manager')));
+$zps_def$); end $zps$;
 
-drop policy if exists "tenant_integrations_admin_write" on "public"."tenant_integrations";
-drop policy if exists "tenant_integrations_admin_write" on "public"."tenant_integrations";
+
+do $zps$ begin perform public.fn_garantir_policy('public.tenant_integrations', 'tenant_integrations_admin_write', $zps_def$
 create policy "tenant_integrations_admin_write" on "public"."tenant_integrations" for all using (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'manager'))) with check (public.fn_is_platform_admin_full() or ("organization_id" in (select public.fn_user_org_ids()) and public.fn_role_at_least("organization_id",'manager')));
+$zps_def$); end $zps$;
 
-drop policy if exists "orders_tenant_write" on "public"."orders";
-drop policy if exists "orders_tenant_write" on "public"."orders";
+
+do $zps$ begin perform public.fn_garantir_policy('public.orders', 'orders_tenant_write', $zps_def$
 create policy "orders_tenant_write" on "public"."orders" for all using ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full()) with check ("organization_id" in (select public.fn_user_org_ids()) or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
-drop policy if exists "user_orgs_delete" on "public"."user_organizations";
-drop policy if exists "user_orgs_delete" on "public"."user_organizations";
+
+do $zps$ begin perform public.fn_garantir_policy('public.user_organizations', 'user_orgs_delete', $zps_def$
 create policy "user_orgs_delete" on "public"."user_organizations" for delete using (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
-drop policy if exists "user_orgs_insert" on "public"."user_organizations";
-drop policy if exists "user_orgs_insert" on "public"."user_organizations";
+
+do $zps$ begin perform public.fn_garantir_policy('public.user_organizations', 'user_orgs_insert', $zps_def$
 create policy "user_orgs_insert" on "public"."user_organizations" for insert with check (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
-drop policy if exists "user_orgs_update" on "public"."user_organizations";
-drop policy if exists "user_orgs_update" on "public"."user_organizations";
+
+do $zps$ begin perform public.fn_garantir_policy('public.user_organizations', 'user_orgs_update', $zps_def$
 create policy "user_orgs_update" on "public"."user_organizations" for update using (public.fn_role_at_least("organization_id",'admin') or public.fn_is_platform_admin_full());
+$zps_def$); end $zps$;
 
 -- ---- grants da função nova (espelha o bloco da fn_is_platform_admin) ----
 revoke execute on function public.fn_is_platform_admin_full() from public, anon;
@@ -48198,7 +48820,7 @@ comment on table public.conversation_notes is
 -- (21 usos) é quem implementa `visibility_mode`. Em `own_and_unassigned`, o
 -- atendente que não abria a conversa lia as notas dela, e quem perdeu a
 -- conversa continuava vendo. Molde: `tenant_isolation_ai_reply_drafts_all`.
-drop policy if exists "conversation_notes_select" on public.conversation_notes;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_notes', 'conversation_notes_select', $zps_def$
 create policy "conversation_notes_select" on public.conversation_notes
   for select using (
     organization_id in (select public.fn_user_org_ids())
@@ -48209,6 +48831,7 @@ create policy "conversation_notes_select" on public.conversation_notes
         and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
 -- ⚠️ A política de ESCRITA precisa da MESMA condição de visibilidade: policies
 -- são OR e `for all` concede SELECT junto — sem isto a policy nova de SELECT é
@@ -48221,7 +48844,7 @@ create policy "conversation_notes_select" on public.conversation_notes
 -- qualquer agent podia mexer na nota de um colega pelo PostgREST. Molde da
 -- rota DELETE, que já era autor+/manager+ no app.
 drop policy if exists "conversation_notes_write" on public.conversation_notes;
-drop policy if exists "conversation_notes_insert" on public.conversation_notes;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_notes', 'conversation_notes_insert', $zps_def$
 create policy "conversation_notes_insert" on public.conversation_notes
   for insert
   with check (
@@ -48235,8 +48858,9 @@ create policy "conversation_notes_insert" on public.conversation_notes
         and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "conversation_notes_update" on public.conversation_notes;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_notes', 'conversation_notes_update', $zps_def$
 create policy "conversation_notes_update" on public.conversation_notes
   for update
   using (
@@ -48261,8 +48885,9 @@ create policy "conversation_notes_update" on public.conversation_notes
         and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
-drop policy if exists "conversation_notes_delete" on public.conversation_notes;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_notes', 'conversation_notes_delete', $zps_def$
 create policy "conversation_notes_delete" on public.conversation_notes
   for delete
   using (
@@ -48276,12 +48901,14 @@ create policy "conversation_notes_delete" on public.conversation_notes
         and public.fn_can_view_conversation(c.organization_id, c.assigned_to_user_id)
     )
   );
+$zps_def$); end $zps$;
 
 -- O ramo `or fn_is_platform_admin()` da política antiga vira policy própria:
 -- o admin de plataforma não é membro de organização nenhuma por definição.
-drop policy if exists "conversation_notes_select_platform_admin" on public.conversation_notes;
+do $zps$ begin perform public.fn_garantir_policy('public.conversation_notes', 'conversation_notes_select_platform_admin', $zps_def$
 create policy "conversation_notes_select_platform_admin" on public.conversation_notes
   for select using (public.fn_is_platform_admin());
+$zps_def$); end $zps$;
 -- ---- busca humana na telemetria: author_kind (migration 0484) ----
 -- 0484 — a busca HUMANA do acervo entra na telemetria (F2 da #1869).
 -- `knowledge_searches` só recebia o caminho do agente; o grafico de
@@ -48647,10 +49274,11 @@ alter table public.map_provider_credentials enable row level security;
 revoke all on public.map_provider_credentials from anon, authenticated;
 grant select, insert, update, delete on public.map_provider_credentials to service_role;
 
-drop trigger if exists trg_map_provider_credentials_updated_at on public.map_provider_credentials;
+do $zps$ begin perform public.fn_garantir_gatilho('public.map_provider_credentials', 'trg_map_provider_credentials_updated_at', $zps_def$
 create trigger trg_map_provider_credentials_updated_at
   before update on public.map_provider_credentials
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ---- avisos do Security Advisor: search_path fixo e definer só do servidor (migration 0521) ----
 -- Cópia das instruções da migration 0521 (o porquê está no cabeçalho dela). Só ALTER/REVOKE:
@@ -49103,10 +49731,11 @@ alter table public.platform_settings
 -- ---- gatilho do cabeçalho citado (migration 0543) ----
 -- A função está antes da varredura de anon (nenhuma função nasce depois dela);
 -- o gatilho fica aqui porque `update of header_media` exige a coluna da 0537.
-drop trigger if exists trg_meta_templates_cabecalho_citado on public.meta_templates;
+do $zps$ begin perform public.fn_garantir_gatilho('public.meta_templates', 'trg_meta_templates_cabecalho_citado', $zps_def$
 create trigger trg_meta_templates_cabecalho_citado
   after insert or update of header_media on public.meta_templates
   for each row execute function public.fn_cabecalho_citado_sai_da_fila();
+$zps_def$); end $zps$;
 
 -- ---- a passagem guarda o agente de IA (migration 0545) ----
 -- Aditiva: o motor grava o agente que passou a conversa, e a Inbox o nomeia
@@ -49186,17 +49815,19 @@ create unique index if not exists ai_knowledge_source_pages_source_url_uk
 create index if not exists ai_knowledge_source_pages_org_idx
   on public.ai_knowledge_source_pages (organization_id);
 
-drop trigger if exists trg_ai_knowledge_source_pages_updated_at on public.ai_knowledge_source_pages;
+do $zps$ begin perform public.fn_garantir_gatilho('public.ai_knowledge_source_pages', 'trg_ai_knowledge_source_pages_updated_at', $zps_def$
 create trigger trg_ai_knowledge_source_pages_updated_at
   before update on public.ai_knowledge_source_pages
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 alter table public.ai_knowledge_source_pages enable row level security;
-drop policy if exists tenant_isolation_ai_knowledge_source_pages_all on public.ai_knowledge_source_pages;
+do $zps$ begin perform public.fn_garantir_policy('public.ai_knowledge_source_pages', 'tenant_isolation_ai_knowledge_source_pages_all', $zps_def$
 create policy tenant_isolation_ai_knowledge_source_pages_all on public.ai_knowledge_source_pages
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 revoke all on public.ai_knowledge_source_pages from anon, authenticated;
 grant select on public.ai_knowledge_source_pages to authenticated;
 grant all on public.ai_knowledge_source_pages to service_role;
@@ -49314,10 +49945,11 @@ alter table public.mcp_servers enable row level security;
 revoke all on public.mcp_servers from anon, authenticated;
 grant select, insert, update, delete on public.mcp_servers to service_role;
 
-drop trigger if exists trg_mcp_servers_updated_at on public.mcp_servers;
+do $zps$ begin perform public.fn_garantir_gatilho('public.mcp_servers', 'trg_mcp_servers_updated_at', $zps_def$
 create trigger trg_mcp_servers_updated_at
   before update on public.mcp_servers
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 -- ─── A ferramenta que vem de um servidor MCP entra no mesmo registro ───────
 
@@ -49448,25 +50080,28 @@ comment on table public.campaign_audience_lists is
 comment on table public.campaign_audience_list_members is
   'Pessoas de uma lista salva. Ponteiro para contacts: os vetos de envio (opt-out, anonimizado, sem telefone, já em campanha) valem na hora de usar a lista.';
 
-drop trigger if exists trg_campaign_audience_lists_updated_at on public.campaign_audience_lists;
+do $zps$ begin perform public.fn_garantir_gatilho('public.campaign_audience_lists', 'trg_campaign_audience_lists_updated_at', $zps_def$
 create trigger trg_campaign_audience_lists_updated_at
   before update on public.campaign_audience_lists
   for each row execute function public.fn_set_updated_at();
+$zps_def$); end $zps$;
 
 alter table public.campaign_audience_lists enable row level security;
 alter table public.campaign_audience_list_members enable row level security;
 
-drop policy if exists campaign_audience_lists_select on public.campaign_audience_lists;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_audience_lists', 'campaign_audience_lists_select', $zps_def$
 create policy campaign_audience_lists_select on public.campaign_audience_lists
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
-drop policy if exists campaign_audience_list_members_select on public.campaign_audience_list_members;
+do $zps$ begin perform public.fn_garantir_policy('public.campaign_audience_list_members', 'campaign_audience_list_members_select', $zps_def$
 create policy campaign_audience_list_members_select on public.campaign_audience_list_members
   for select using (
     (organization_id in (select public.fn_user_org_ids())) or public.fn_is_platform_admin()
   );
+$zps_def$); end $zps$;
 
 revoke all on public.campaign_audience_lists from anon, authenticated;
 revoke all on public.campaign_audience_list_members from anon, authenticated;
