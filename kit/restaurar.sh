@@ -90,7 +90,7 @@ restaurar_banco() {
   esperar "Banco" 180 banco_aceita_conexao || falha "O banco não subiu."
   dc up -d auth rest storage realtime
   esperar "Schemas do Auth e do Storage" 240 schemas_do_supabase_prontos || { diagnosticar_servicos "$RAIZ/.env" auth storage; falha "Auth/Storage não criaram os schemas."; }
-  aplicar_schema
+  aplicar_schema || falha "O baseline.sql falhou no banco novo; nada foi restaurado."
 
   passo "Restaurando os dados do dump"
   dc cp "$PREPARO/backup/preparo/banco/zapsales.dump" db:/tmp/restauro.dump >/dev/null
