@@ -14,7 +14,9 @@
 #      estava ok piora, e app/worker/agendador ficam saudáveis e sem reinício
 #      por OBSERVAR_S segundos (2 minutos);
 #   4. qualquer falha depois de tocar volta sozinha para a versão anterior —
-#      código, .env e imagens. O banco NÃO volta: o baseline é aditivo.
+#      código, .env e imagens. O banco NÃO volta (o baseline é aditivo), com uma
+#      exceção: se o baseline da versão nova parou NO MEIO, a volta reaplica o
+#      da versão anterior, para o banco não ficar entre duas versões (#360).
 #
 # ─── O contrato com quem chama ───────────────────────────────────────────────
 #
@@ -38,6 +40,7 @@
 # Saída: voltar() termina o processo com 3 (voltou) ou 4 (a volta falhou).
 
 TOCOU=0
+REG_KIT=""
 SAUDE_ANTES=""
 
 # curto ID — o jeito de mostrar uma versão: 7 caracteres de um sha, a tag inteira.
@@ -102,6 +105,8 @@ instalar() {
   # reescritos como etapa por titulos_do_kit.
   local reg_kit rc_arq
   reg_kit="$LOGS/${PREFIXO_DO_REGISTRO:-implantar}-$(date -u +%Y%m%dT%H%M%SZ)-$(curto "$ALVO")-kit.log"
+  # A volta lê este registro para saber POR QUE voltou (baseline_parou_no_meio).
+  REG_KIT="$reg_kit"
   rc_arq="$CORRIDA/$ALVO.kit"
   rm -f "$rc_arq"
   msg "  registro completo do kit (só na VPS): $reg_kit"
@@ -172,16 +177,85 @@ provar() {
   msg "  ${OBSERVAR_S}s sem reinício; tudo saudável."
 }
 
-# voltar MOTIVO — põe de volta código, .env e imagens da versão anterior. O
-# banco fica como está: o baseline é aditivo, e o código anterior roda sobre ele.
+# baseline_parou_no_meio REGISTRO_DO_KIT — o kit desta rodada disse que o
+# baseline falhou no meio? A frase é a do `falha` de kit/instalar.sh (o teste
+# tests/shell/kit-volta-reaplica-baseline.test.sh cobra que as duas pontas dizem
+# o mesmo). Sem registro, ou com falha em outro passo, a resposta é não.
+baseline_parou_no_meio() {
+  [ -n "${1:-}" ] && [ -f "$1" ] && grep -q 'O baseline.sql falhou no meio' "$1"
+}
+
+# Passadas e pausa da reaplicação (a pausa é variável para o teste não esperar).
+VOLTA_BASELINE_TENTATIVAS=3
+: "${ESPERA_DA_VOLTA_S:=5}"
+
+# reaplicar_baseline_da_volta — aplica o baseline que está em $RAIZ (o da versão
+# para a qual se volta) e reinicia o tempo real, como o kit faz depois de todo
+# baseline. A volta também roda com o app em uso, então deadlock ganha nova
+# passada; defeito, não. A saída do psql vai para um arquivo em $LOGS: o que a
+# implantação imprime vira log público.
+reaplicar_baseline_da_volta() {
+  local reg desta tentativa=1 codigo passageiro
+  reg="$LOGS/${PREFIXO_DO_REGISTRO:-implantar}-$(date -u +%Y%m%dT%H%M%SZ)-$(curto "$ATUAL")-volta-baseline.log"
+  msg "  registro da reaplicação (só na VPS): $reg"
+  # A saída de CADA passada vai primeiro para um arquivo só dela. Procurar o
+  # deadlock no registro acumulado repetiria um defeito de verdade só porque a
+  # passada anterior (ou outra volta, no mesmo segundo) tinha sido um deadlock.
+  desta="$(mktemp)"
+  while :; do
+    codigo=0
+    (cd "$RAIZ" && docker compose exec -T db psql -U postgres -h localhost -d postgres -v ON_ERROR_STOP=1 -q) \
+      < "$RAIZ/supabase/baseline.sql" > "$desta" 2>&1 || codigo=$?
+    passageiro=0
+    grep -q 'deadlock detected' "$desta" && passageiro=1
+    { printf '== passada %s ==\n' "$tentativa"; cat "$desta"; } >> "$reg"
+    [ "$codigo" = "0" ] && break
+    if [ "$tentativa" -ge "$VOLTA_BASELINE_TENTATIVAS" ] || [ "$passageiro" = "0" ]; then
+      rm -f "$desta"
+      return 1
+    fi
+    tentativa=$((tentativa + 1))
+    msg "  o banco interrompeu a reaplicação por disputa com o app em uso; de novo (passada $tentativa de $VOLTA_BASELINE_TENTATIVAS)."
+    sleep "$ESPERA_DA_VOLTA_S"
+  done
+  rm -f "$desta"
+  (cd "$RAIZ" && docker compose restart realtime) >> "$reg" 2>&1 || return 1
+}
+
+# voltar MOTIVO — põe de volta código, .env e imagens da versão anterior.
+#
+# O BANCO: fica como está quando o baseline da versão nova CHEGOU AO FIM — ele é
+# aditivo, e o código anterior roda sobre ele. Quando o kit disse que o baseline
+# parou NO MEIO, o banco não é o de versão nenhuma (o arquivo redefine a mesma
+# função mais de uma vez no caminho; foi esse meio do caminho que derrubou a
+# tela de Conversas em 19/11/2026), e a volta reaplica o baseline da versão
+# ANTERIOR, que é idempotente e leva cada objeto de volta à definição final
+# daquela versão. O que a versão nova tiver criado de novo antes de parar fica
+# (é aditivo). Só nesse caso: aplicar o arquivo antigo por cima de um schema
+# novo INTEIRO seria um rebaixamento que ninguém provou.
 voltar() {
   trap - ERR
   { _etapa ""; _etapa "✖ FALHOU: $*"; } >&2
   passo "Voltando para $(curto "$ATUAL")"
-  local ok=1
-  copiar_codigo "$ATUAL" || ok=0
+  local ok=1 codigo_voltou=1
+  copiar_codigo "$ATUAL" || { ok=0; codigo_voltou=0; }
   cp -p "$ESTADO/$ALVO/env.antes" "$ENV_ARQ" || ok=0
   chmod 600 "$ENV_ARQ" || true
+  # Antes de subir os serviços, e só com o código anterior de volta em $RAIZ:
+  # sem ele, o baseline que está lá pode ser o do alvo — o que acabou de falhar.
+  if baseline_parou_no_meio "${REG_KIT:-}"; then
+    if [ "$codigo_voltou" = "1" ]; then
+      msg "  o baseline de $(curto "$ALVO") parou no meio: reaplicando o de $(curto "$ATUAL") para o banco voltar a um estado inteiro."
+      if reaplicar_baseline_da_volta; then
+        msg "  baseline de $(curto "$ATUAL") reaplicado."
+      else
+        aviso "A reaplicação do baseline de $(curto "$ATUAL") falhou: o banco segue entre duas versões."
+        ok=0
+      fi
+    else
+      aviso "O baseline de $(curto "$ALVO") parou no meio e o código de $(curto "$ATUAL") não voltou: o banco segue entre duas versões."
+    fi
+  fi
   (cd "$RAIZ" && docker compose up -d --remove-orphans) || ok=0
   local cod=""
   for _ in $(seq 1 60); do

@@ -14,7 +14,9 @@
 #      estava ok piora, e app/worker/agendador ficam saudáveis e sem reinício
 #      por 2 minutos;
 #   4. qualquer falha depois de tocar volta sozinha para a versão anterior —
-#      código, .env e imagens. O banco NÃO volta: o baseline é aditivo.
+#      código, .env e imagens. O banco NÃO volta (o baseline é aditivo), com uma
+#      exceção: se o baseline da versão nova parou NO MEIO, a volta reaplica o
+#      da versão anterior, para o banco não ficar entre duas versões (#360).
 #
 # Três formas de chamar:
 #
