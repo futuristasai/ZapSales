@@ -127,16 +127,69 @@ servico_saudavel() { # NOME
   [ "$estado" = "healthy" ] || [ "$estado" = "running" ]
 }
 
+# erro_passageiro_do_banco ARQUIVO — verdadeiro quando a saída de erro do psql
+# diz que o banco DESISTIU por disputa com outra sessão, e não por defeito do
+# que foi pedido. Hoje é um caso só, o que foi medido: deadlock. A mensagem é a
+# do servidor, em inglês — a imagem do banco é a que o compose do kit fixa, e
+# ela nasce com `lc_messages` em inglês.
+erro_passageiro_do_banco() { grep -q 'deadlock detected' "$1"; }
+
+# Quantas passadas o baseline ganha quando o banco desiste por disputa, e a
+# pausa entre elas (a pausa é variável para o teste de shell não esperar).
+BASELINE_TENTATIVAS=3
+: "${BASELINE_ESPERA_S:=5}"
+
+# aplicar_baseline — o baseline.sql, de novo quando o banco desiste por disputa.
+#
+# Na atualização o baseline roda com o app EM USO, e ele troca policy em quase
+# toda tabela (`fn_aplicar_travas_de_suporte`): quando uma requisição do app
+# segura duas dessas tabelas na ordem contrária, o Postgres resolve o deadlock
+# derrubando uma das duas sessões — e pode ser esta. Parar ali deixa o schema
+# NO MEIO do arquivo, que não é o estado de versão nenhuma: o baseline redefine
+# a mesma função mais de uma vez no caminho, e o meio do caminho tem chamada
+# ambígua (19/11/2026: a caixa de conversas respondeu "Erro interno" por dez
+# horas). O arquivo é idempotente, então rodar de novo é o conserto.
+#
+# Só o erro passageiro ganha nova passada. Defeito do próprio arquivo se repete
+# igual, e repetir só triplicaria o erro na tela de quem instala.
+aplicar_baseline() {
+  local erros tentativa=1 codigo
+  erros="$(mktemp)"
+  while :; do
+    codigo=0
+    psql_db < "$RAIZ/supabase/baseline.sql" 2>"$erros" || codigo=$?
+    cat "$erros" >&2
+    if [ "$codigo" = "0" ]; then
+      rm -f "$erros"
+      return 0
+    fi
+    if [ "$tentativa" -ge "$BASELINE_TENTATIVAS" ] || ! erro_passageiro_do_banco "$erros"; then
+      rm -f "$erros"
+      return "$codigo"
+    fi
+    tentativa=$((tentativa + 1))
+    aviso "O banco interrompeu o baseline por disputa com o app em uso (deadlock). O arquivo é idempotente: aplicando de novo (passada $tentativa de $BASELINE_TENTATIVAS)."
+    sleep "$BASELINE_ESPERA_S"
+  done
+}
+
 # aplicar_schema — extensões + baseline.sql (o MESMO arquivo em instalação e
 # atualização: ele é idempotente, e o CI prova as duas passadas com
 # ON_ERROR_STOP=1) + semente da chave de cifra das integrações + papel do
 # worker. Mesmo roteiro do e2e (.github/workflows/e2e.yml).
+#
+# ⚠️ Cada passo termina em `|| return 1`, e não é enfeite. Quem chama escreve
+# `aplicar_schema || falha "…"`, e nesse contexto o bash DESLIGA o `set -e`
+# dentro da função: sem o `return`, o baseline falhava, os dois passos seguintes
+# davam certo, e a função devolvia o código do ÚLTIMO — zero. A atualização
+# seguia, subia o app sobre um schema pela metade e escrevia "Pronto".
+# Cobrado por tests/shell/kit-aplicar-schema.test.sh.
 aplicar_schema() {
   local chave_integracoes senha_worker
   chave_integracoes="$(env_ler "$RAIZ/.env" INTEGRATIONS_OAUTH_ENCRYPTION_KEY)"
   senha_worker="$(env_ler "$RAIZ/.env" AGENT_WORKER_DB_PASSWORD)"
 
-  psql_db <<'SQL'
+  psql_db <<'SQL' || return 1
 create schema if not exists extensions;
 create extension if not exists "uuid-ossp" with schema extensions;
 create extension if not exists pgcrypto with schema extensions;
@@ -144,17 +197,17 @@ create extension if not exists vector with schema public;
 create extension if not exists citext with schema public;
 create extension if not exists pg_trgm with schema public;
 SQL
-  psql_db < "$RAIZ/supabase/baseline.sql"
+  aplicar_baseline || return 1
 
   # Sem a chave, `fn_encrypt_oauth` recusa salvar qualquer segredo de
   # integração. `do nothing`: a chave de uma instalação existente nunca muda,
   # senão o que já foi cifrado vira lixo.
-  psql_db -v chave="$chave_integracoes" <<'SQL'
+  psql_db -v chave="$chave_integracoes" <<'SQL' || return 1
 insert into private.app_secrets (name, value) values ('integrations_oauth_key', :'chave')
 on conflict (name) do nothing;
 SQL
 
-  psql_admin -v senha="$senha_worker" < "$RAIZ/kit/sql/papel-do-worker.sql"
+  psql_admin -v senha="$senha_worker" < "$RAIZ/kit/sql/papel-do-worker.sql" || return 1
 }
 
 # O Realtime precisa reiniciar DEPOIS do baseline: ele lê a publication

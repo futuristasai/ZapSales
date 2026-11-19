@@ -559,9 +559,13 @@ subir_stack() {
     "$KIT/backup.sh" diario | sed 's/^/  /' || falha "O dump antes da atualização falhou; nada foi alterado no banco."
   fi
   # O baseline não roda numa transação única, então uma falha no meio deixa o
-  # schema parcialmente atualizado. O app e o worker antigos seguem de pé (o
-  # `up -d` ainda não rodou), e o dump acima é o caminho de volta.
-  aplicar_schema || falha "O baseline.sql falhou no meio. O app antigo segue no ar; o dump de antes da atualização está em $BACKUPS/db (kit/backup.sh status)."
+  # schema ENTRE duas versões — e o meio do caminho não serve a nenhuma: o app
+  # antigo segue de pé (o `up -d` ainda não rodou), mas telas dele podem dar
+  # erro até o baseline concluir. `aplicar_schema` repete sozinho o caso
+  # passageiro (deadlock com o app em uso) e DEVOLVE a falha — antes ela era
+  # engolida e o kit terminava em "Pronto" (kit/lib/stack.sh). O conserto de um
+  # baseline interrompido é rodá-lo de novo; o dump acima é a volta dos DADOS.
+  aplicar_schema || falha "O baseline.sql falhou no meio e o banco ficou entre duas versões: telas do app podem dar erro até ele concluir. Rode o kit de novo (o baseline é idempotente e recomeça do início). O dump de antes da atualização está em $BACKUPS/db (kit/backup.sh status)."
   reiniciar_realtime || falha "O Realtime não voltou depois do baseline: docker compose logs realtime"
 
   passo "Subindo o app, o worker, o agendador, o WhatsApp (WAHA) e o Redis"

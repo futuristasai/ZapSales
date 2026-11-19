@@ -155,7 +155,15 @@ metade confia na outra.
 
 **A volta** põe de volta o código, o `.env` e as imagens da versão anterior e confere o
 307 no domínio e, quando havia uma, a versão que `/api/v1/health` respondia antes. **O banco não
-volta**: o baseline é aditivo e o código anterior roda sobre ele. Também ficam como a versão nova
+volta**: o baseline é aditivo e o código anterior roda sobre ele — **desde que o baseline tenha
+chegado ao fim**. Um baseline interrompido no meio deixa o banco entre duas versões, e esse meio do
+caminho não serve a nenhuma (ele redefine a mesma função mais de uma vez; em 19/11/2026 um deadlock
+com o app em uso o parou ali, o kit engoliu a falha e a tela de Conversas respondeu "Erro interno"
+por dez horas). Hoje o kit repete sozinho o baseline quando o banco desiste por deadlock e devolve
+qualquer outra falha; se a causa da volta foi o baseline, o conserto é reaplicá-lo — rodar o kit de
+novo, ou só o arquivo: `cd /opt/zapsales && docker compose exec -T db psql -U postgres -h localhost
+-d postgres -v ON_ERROR_STOP=1 -q < supabase/baseline.sql`. Para saber se uma atualização passada
+parou no meio: `grep -l "ERROR:" /var/log/zapsales/*-kit.log`. Também ficam como a versão nova
 deixou: o bloco do proxy do sistema (igual entre versões), o próprio comando
 `zapsales-implantar` e arquivos que só a versão nova tinha (o código é sobreposto, não
 espelhado — o compose e o kit só leem o que a versão em vigor nomeia).
