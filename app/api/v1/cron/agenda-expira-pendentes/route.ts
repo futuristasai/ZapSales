@@ -131,10 +131,17 @@ async function handle(req: NextRequest): Promise<Response> {
   // aqui, o UPDATE não alcança a linha — e é isso que se quer. Cancelar um
   // compromisso que acabou de ser confirmado seria o pior desfecho possível
   // desta rota.
+  //
+  // `cancelled_at` vai JUNTO, e não é detalhe: o banco exige a data em toda linha
+  // `cancelled` (`calendar_appointments_cancelamento_coerente`). A tela cancela
+  // por uma função que carimba a data sozinha; esta rota escreve direto na
+  // tabela, e sem o campo o UPDATE inteiro era recusado — a cada 15 minutos,
+  // sem liberar horário nenhum (medido em produção em 19/11/2026).
   const { data: efetivados, error: erroUpdate } = await admin
     .from("calendar_appointments")
     .update({
       status: "cancelled",
+      cancelled_at: agora.toISOString(),
       cancellation_reason: "Pedido expirado: ninguém confirmou dentro do prazo.",
     })
     .in("id", expirados)

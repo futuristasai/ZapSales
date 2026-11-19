@@ -125,6 +125,31 @@ describe("agenda-expira-pendentes", () => {
     expect((capturado.patch as Record<string, string>).status).toBe("cancelled");
   });
 
+  it("o cancelamento leva a data: sem ela o banco recusa a linha inteira", async () => {
+    // `calendar_appointments_cancelamento_coerente` exige `cancelled_at` em toda
+    // linha `cancelled`. Esta rota escreve direto na tabela (não passa pela função
+    // que a tela usa, e que carimba a data sozinha), e o patch saía sem o campo:
+    // medido em produção em 19/11/2026, o UPDATE era recusado a cada 15 minutos
+    // desde o primeiro pedido vencido — nenhum horário pendente era liberado, e o
+    // banco de mentira deste arquivo dizia que estava tudo certo.
+    const capturado: Record<string, unknown> = {};
+    vi.mocked(createAdminClient).mockReturnValue(
+      admin(
+        [{ id: "a", organization_id: ORG_RAPIDA, created_at: hAtras(5), starts_at: hAtras(-48) }],
+        capturado,
+      ) as never,
+    );
+
+    const antes = Date.now();
+    const { POST } = await import("./route");
+    await POST(req());
+
+    const carimbo = Date.parse(String((capturado.patch as Record<string, unknown>).cancelled_at));
+    expect(Number.isNaN(carimbo)).toBe(false);
+    expect(carimbo).toBeGreaterThanOrEqual(antes - 1000);
+    expect(carimbo).toBeLessThanOrEqual(Date.now() + 1000);
+  });
+
   it("rodada que não expirou nada NÃO audita", async () => {
     const capturado: Record<string, unknown> = {};
     vi.mocked(createAdminClient).mockReturnValue(
