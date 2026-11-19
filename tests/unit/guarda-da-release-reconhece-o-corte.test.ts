@@ -156,7 +156,7 @@ function commit(mensagem: string, autor = "Alguém do time") {
  * `HEAD^2` primeiro, depois `HEAD^`, depois `HEAD`: a ordem importa, senão
  * `HEAD^2` viraria `<sha>^2` só pela metade.
  */
-function decisaoPara(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): string {
+function rodarGuarda(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): { saida: string; escrito: string } {
   const original = bashDaGuarda();
 
   // A versão vem do CHANGELOG por um script de TS que não existe no repo
@@ -212,7 +212,7 @@ function decisaoPara(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): stri
       stdio: ["ignore", "pipe", "pipe"],
     });
     const escrito = readFileSync(saidaDoGithub, "utf8");
-    return /cortar=(\w+)/.exec(`${escrito}\n${saida}`)?.[1] ?? "(nenhuma decisão)";
+    return { saida, escrito };
   } catch (err) {
     // `execFileSync` joga fora o stderr na mensagem padrão, e sem ele o CI
     // devolve só "Command failed: bash -c set -euo pipefail". Diagnóstico que
@@ -225,6 +225,18 @@ function decisaoPara(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): stri
     ].join("\n");
     throw new Error(`a guarda derrubou o passo para ${sha}\n${detalhe}`);
   }
+}
+
+/** A decisão da guarda para `sha`: `sim`, `nao` ou "(nenhuma decisão)". */
+function decisaoPara(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): string {
+  const { saida, escrito } = rodarGuarda(sha, respostaDaApi);
+  return /cortar=(\w+)/.exec(`${escrito}\n${saida}`)?.[1] ?? "(nenhuma decisão)";
+}
+
+/** Onde a guarda manda a tag nascer (`alvo=` no GITHUB_OUTPUT), e o que ela disse no log. */
+function alvoPara(sha: string): { alvo: string; saida: string } {
+  const { saida, escrito } = rodarGuarda(sha);
+  return { alvo: /alvo=(\w+)/.exec(escrito)?.[1] ?? "(nenhum alvo)", saida };
 }
 
 /**
@@ -248,6 +260,8 @@ function recusaPara(sha: string, respostaDaApi: string = RESPOSTA_DO_APP): { sta
 }
 
 let mergeDaReleaseComCorrida = "";
+let pontaDaRelease = "";
+let prConcorrente = "";
 let mergeDePrComum = "";
 let commitDeFeature = "";
 
@@ -275,12 +289,12 @@ beforeAll(() => {
   rmSync(join(repo, ".changes/a.md"));
   rmSync(join(repo, ".changes/b.md"));
   writeFileSync(join(repo, "CHANGELOG.md"), "# Changelog\n\n## [9.9.9]\n");
-  const pontaDaRelease = commit("release(9.9.9): a versão montada a partir dos fragmentos", BOT);
+  pontaDaRelease = commit("release(9.9.9): a versão montada a partir dos fragmentos", BOT);
 
   // ── A CORRIDA: um PR comum mergeia na main enquanto a release espera ─────
   git(["checkout", "-q", "main"]);
   fragmento("c.md");
-  const prConcorrente = commit("feat: o PR que chegou no meio");
+  prConcorrente = commit("feat: o PR que chegou no meio");
   git(["merge", "-q", "--no-ff", "-m", "Merge PR #460", prConcorrente]);
   mergeDePrComum = git(["rev-parse", "HEAD"]);
 
@@ -409,5 +423,63 @@ describe("a guarda recusa ALTO, e não em silêncio, quem apaga fragmento sem se
     const legitimo = commit("release(999.999.999): montada dos fragmentos", BOT);
 
     expect(decisaoPara(legitimo)).toBe("sim");
+  });
+});
+
+describe("a tag nasce no que a nota descreve — issue #348", () => {
+  /**
+   * Na v1.5.3 a tag nasceu no commit do merge do PR de versão. O #346 tinha
+   * entrado na main no meio: as imagens 1.5.3 levaram o código dele, e a nota
+   * não falava dele, porque o fragmento sobrou para a 1.5.4. A forma é a mesma
+   * do repositório sintético lá de cima: `c.md` é o PR do meio.
+   */
+  it("no merge com corrida, a tag nasce na ponta do branch da versão", () => {
+    expect(alvoPara(mergeDaReleaseComCorrida).alvo).toBe(pontaDaRelease);
+  });
+
+  it("e a ponta não leva o PR do meio — nem o código, nem o fragmento", () => {
+    // Controle de que o caso acima mede alguma coisa: o merge leva o PR do meio…
+    expect(() => git(["merge-base", "--is-ancestor", prConcorrente, mergeDaReleaseComCorrida])).not.toThrow();
+    // …e a ponta não.
+    expect(() => git(["merge-base", "--is-ancestor", prConcorrente, pontaDaRelease])).toThrow();
+    const naPonta = git(["ls-tree", "-r", "--name-only", pontaDaRelease, "--", ".changes/"]);
+    expect(naPonta).not.toMatch(/c\.md/);
+  });
+
+  it("sem segundo pai (squash), a tag fica no próprio commit, como antes", () => {
+    git(["checkout", "-q", "main"]);
+    fragmento("z.md");
+    commit("feat: um fragmento");
+    rmSync(join(repo, ".changes/z.md"));
+    writeFileSync(join(repo, "CHANGELOG.md"), "# Changelog\n\n## [6.6.6]\n");
+    const squash = commit("release(6.6.6): montada dos fragmentos (squash)", BOT);
+    expect(alvoPara(squash).alvo).toBe(squash);
+  });
+
+  it("branch da versão atualizado com a main depois do corte: tag no merge, com aviso", () => {
+    // Aqui a ponta já carrega o PR do meio (e o fragmento dele): ela não prova
+    // que é só o que a nota descreve, então a tag volta para o merge, e o
+    // desencontro entre código e nota fica escrito no log em vez de silêncio.
+    git(["checkout", "-q", "main"]);
+    fragmento("w.md");
+    const antes = commit("feat: fragmento para a versão consumir");
+    git(["checkout", "-q", "-b", "release/5.5.5", antes]);
+    rmSync(join(repo, ".changes/w.md"));
+    writeFileSync(join(repo, "CHANGELOG.md"), "# Changelog\n\n## [5.5.5]\n");
+    commit("release(5.5.5): montada dos fragmentos", BOT);
+    git(["checkout", "-q", "main"]);
+    fragmento("y.md");
+    const doMeio = commit("feat: o PR que chegou no meio");
+    git(["checkout", "-q", "release/5.5.5"]);
+    git(["merge", "-q", "--no-ff", "-m", "Merge main into release/5.5.5", doMeio]);
+    const pontaAtualizada = git(["rev-parse", "HEAD"]);
+    git(["checkout", "-q", "main"]);
+    git(["merge", "-q", "--no-ff", "-m", "Merge pull request #1002 from release/5.5.5", pontaAtualizada]);
+    const merge = git(["rev-parse", "HEAD"]);
+
+    const r = alvoPara(merge);
+    expect(r.alvo).toBe(merge);
+    expect(r.saida).toMatch(/::warning::A tag v999\.999\.999 nasce no commit do merge/);
+    expect(r.saida).toMatch(/y\.md/);
   });
 });

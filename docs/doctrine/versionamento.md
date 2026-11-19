@@ -128,6 +128,14 @@ Por isso o `release.yml` tem um relógio: **uma vez por dia**, se houver fragmen
 checks obrigatórios ficam verdes, e o merge dispara a tag, as imagens e a Release — nessa ordem,
 porque a Release é o que o instalador consulta e só pode aparecer depois de as imagens existirem.
 
+A tag nasce na **ponta do branch da versão**, e não no commit do merge (issue #348). Um PR comum
+que entra na `main` enquanto o PR de versão espera fica fora da versão, com código e nota, e vai
+para o corte seguinte. Antes, a tag nascia no merge: a v1.5.3 levou o código do #346, e a nota dele
+só saiu na 1.5.4. Quando a ponta não prova que é só o que a nota descreve (merge por squash, ou
+branch de versão atualizado com a `main`), a tag volta para o merge e o workflow escreve um aviso
+com os fragmentos que ficaram de fora. Para conferir onde uma tag nasceu:
+`git log -1 --format='%h %s' vX.Y.Z` deve mostrar `release(X.Y.Z): …`, e não `Merge pull request`.
+
 - **Segurar UMA versão:** feche o PR de release. O relógio do dia seguinte abre outro.
 - **Parar o corte automático:** a variável de repositório `RELEASE_AUTOMATICA` (só `ligado`
   corta). "Run workflow" continua funcionando com ela desligada, e nesse caminho o PR espera

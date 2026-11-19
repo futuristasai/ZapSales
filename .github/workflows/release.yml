@@ -387,9 +387,43 @@ jobs:
             true
           )
 
+          # ─── ONDE A TAG NASCE (issue #348) ────────────────────────────────
+          #
+          # A tag nascia no próprio commit de merge (HEAD). Na mesma corrida que
+          # a #472 descreve, isso leva para a versão o CÓDIGO do PR que entrou
+          # no meio, mas não a NOTA dele: o fragmento sobra para o próximo corte.
+          # Medido na v1.5.3: o PR de versão #347 foi aberto a partir de
+          # 1aa60027, o #346 entrou na main antes dele, e a tag nasceu no merge
+          # f6e66d64. As imagens 1.5.3 levavam o #346, e a nota não falava dele.
+          # A 1.5.4 anunciou como novidade algo que já tinha saído.
+          #
+          # A ponta do branch da versão (HEAD^2 do merge) é exatamente o que a
+          # nota descreve: a main do momento do corte mais o commit que consome
+          # os fragmentos. Ela já está contida na main, como exige a guarda
+          # `a-tag-veio-da-main` do publish-image.yml. E o código dela é o da main
+          # que já passou pelo CI, mais um commit que só mexe em CHANGELOG e
+          # `.changes/`. O PR do meio fica para a versão seguinte, junto com a nota.
+          #
+          # Só vale quando a ponta prova isso: nenhum fragmento sobrando nela e o
+          # CHANGELOG idêntico ao do merge. Se não provar (merge por squash, sem
+          # segundo pai, ou branch de versão atualizado com a main depois do
+          # corte), a tag fica no merge, como antes, e o aviso diz o que ela leva.
+          alvo="$(git rev-parse HEAD)"
+          origem_do_alvo="o commit do merge"
+          if git rev-parse -q --verify "HEAD^2" >/dev/null; then
+            ponta="$(git rev-parse "HEAD^2")"
+            sobra_na_ponta=$(git ls-tree -r --name-only "${ponta}" -- .changes/ | grep -c '\.md$' || true)
+            if [ "${sobra_na_ponta}" -eq 0 ] && git diff --quiet "${ponta}" HEAD -- CHANGELOG.md; then
+              alvo="${ponta}"
+              origem_do_alvo="a ponta do branch da versão (segundo pai do merge)"
+            fi
+          fi
+          sobrando=$(git ls-tree -r --name-only HEAD -- .changes/ | grep '\.md$' || true)
+
           echo "fragmentos removidos por este commit: ${removidos}"
           echo "quem abriu o PR de origem: ${quem_abriu}"
           echo "fragmentos vivos que exigem ação: ${exigem_acao:-nenhum}"
+          echo "a tag nasce em: ${alvo:0:8} (${origem_do_alvo})"
 
           if git rev-parse -q --verify "refs/tags/v${versao}" >/dev/null; then
             echo "v${versao} já existe — nada a cortar"
@@ -416,21 +450,30 @@ jobs:
             exit 1
           else
             echo "corte de release: ${removidos} fragmento(s) consumido(s), v${versao} ainda não existe"
+            if [ -n "${sobrando}" ] && [ "${alvo}" = "$(git rev-parse HEAD)" ]; then
+              # Não recusa: é o comportamento de antes, e recusar barraria a
+              # versão inteira. Mas o desencontro entre código e nota fica escrito.
+              echo "::warning::A tag v${versao} nasce no commit do merge e leva código de PR cujo fragmento ficou para a próxima versão: ${sobrando//$'\n'/ }"
+            fi
             echo "cortar=sim"       >> "$GITHUB_OUTPUT"
             echo "versao=${versao}" >> "$GITHUB_OUTPUT"
+            echo "alvo=${alvo}"     >> "$GITHUB_OUTPUT"
           fi
 
       - name: Criar e empurrar a tag
         if: steps.pendente.outputs.cortar == 'sim'
         env:
           VERSAO: ${{ steps.pendente.outputs.versao }}
+          # Onde a tag nasce é decisão da guarda (issue #348): a ponta do branch
+          # da versão quando ela prova que é exatamente o que a nota descreve.
+          ALVO: ${{ steps.pendente.outputs.alvo }}
         run: |
           set -euo pipefail
           git config user.name  'zapsales-release[bot]'
           git config user.email '${{ steps.token.outputs.app-slug }}[bot]@users.noreply.github.com'
           # Tag ANOTADA: guarda autor e data, e é o que `git describe
           # --exact-match` do agent.sh espera encontrar na VPS.
-          git tag -a "v${VERSAO}" -m "v${VERSAO}"
+          git tag -a "v${VERSAO}" -m "v${VERSAO}" "${ALVO:?a guarda não disse onde a tag nasce}"
           git push origin "v${VERSAO}"
 
       # A falha desta cadeia é silenciosa por natureza — a tag existe e ninguém
