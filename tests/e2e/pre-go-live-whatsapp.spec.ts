@@ -43,7 +43,14 @@ test("admin configura testes, remove número, confirma abertura e volta a restri
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL(/\/app/);
   await page.goto("/app/connections");
-  await expect(page.getByText("Canal de validação", { exact: true })).toBeVisible();
+  // O nome do canal aparece em DOIS lugares desta tela: no cartão da lista (o que
+  // este caso mede) e — porque o canal nasce parado — no aviso do topo, «WhatsApp
+  // **Canal de validação** está desconectado». O aviso chega por conta própria,
+  // depois da carga: quando chegava antes desta linha, o `getByText` casava os
+  // dois e reprovava por strict mode (run 44561181907, na `main`, em 19/11/2026).
+  // A pergunta é pelo cartão, então ela é feita DENTRO da lista de números.
+  const numerosPorQr = page.getByRole("tabpanel", { name: "Números por QR" });
+  await expect(numerosPorQr.getByText("Canal de validação", { exact: true })).toBeVisible();
   await expect(page.getByText("IA em modo de teste", { exact: true })).toBeVisible();
   const openPanel = () => page.getByRole("button", { name: "Configurar acesso da IA" }).click();
   const input = page.getByLabel("Números autorizados para teste");
