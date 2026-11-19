@@ -47,7 +47,12 @@ import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { describe, expect, it } from "vitest";
 
-import { embrulharANavegacao, METODOS_DE_NAVEGACAO_REVELADOS } from "../e2e/helpers/revelacao-nas-cargas";
+import {
+  embrulharANavegacao,
+  embrulharONavegador,
+  METODOS_DE_NAVEGACAO_REVELADOS,
+  METODOS_QUE_ABREM_PAGINA_POR_FORA,
+} from "../e2e/helpers/revelacao-nas-cargas";
 
 /** O que o dublê registra: a ordem das navegações e das esperas. */
 class PaginaFalsa {
@@ -181,6 +186,162 @@ describe("o test da suíte usa o embrulho provado (issue #884)", () => {
     expect(
       fonte.match(aMao)?.[0] ?? null,
       "embrulhe só por `embrulharANavegacao` (revelacao-nas-cargas.ts) — é ele que este teste prova",
+    ).toBeNull();
+  });
+});
+
+/**
+ * ═══ O TERCEIRO BURACO: A PÁGINA ABERTA POR FORA DAS FIXTURES (19/11/2026) ═══
+ *
+ * As duas correções anteriores cobriram os MÉTODOS de navegação e ligaram o
+ * embrulho pelas fixtures `page` e `context`. A página que a spec ABRE —
+ * `browser.newPage()`, `browser.newContext().newPage()` — não passa por fixture
+ * nenhuma e nascia sem a espera. Medido no run 44525673231:
+ * `menu-por-empresa-e-a-porta-de-volta` falhou no `afterAll`, que abre
+ * `browser.newPage()`, com dois `<h2>Menu lateral</h2>` — um deles fora da
+ * árvore de acessibilidade, a cópia do servidor ainda na caixa do streaming.
+ *
+ * O dublê abaixo imita o que o Playwright faz e que importa aqui: o contexto
+ * avisa `page` a cada página nova, e `newPage` do navegador cria um contexto
+ * por dentro chamando `this.newContext` — por isso a página de `newPage` chega
+ * DUAS vezes a `aoAbrirPagina`, e a idempotência por página é de quem recebe.
+ */
+class ContextoFalso {
+  private ouvintes: Array<(pagina: Page) => void> = [];
+
+  on(evento: "page", ouvinte: (pagina: Page) => void): this {
+    void evento;
+    this.ouvintes.push(ouvinte);
+    return this;
+  }
+
+  async newPage(): Promise<Page> {
+    const pagina = new PaginaFalsa() as unknown as Page;
+    for (const ouvinte of this.ouvintes) ouvinte(pagina);
+    return pagina;
+  }
+}
+
+class NavegadorFalso {
+  contextosCriados = 0;
+
+  async newContext(opcoes?: { javaScriptEnabled?: boolean }): Promise<ContextoFalso> {
+    void opcoes;
+    this.contextosCriados += 1;
+    return new ContextoFalso();
+  }
+
+  // Como o Playwright: `newPage` do navegador passa por `this.newContext`.
+  async newPage(opcoes?: { javaScriptEnabled?: boolean }): Promise<Page> {
+    const contexto = await this.newContext(opcoes);
+    return contexto.newPage();
+  }
+}
+
+/** Um navegador embrulhado pelo embrulho REAL, e as páginas que ele entregou a quem instala a espera. */
+function navegadorEmbrulhado(): { navegador: NavegadorFalso; avisadas: Page[] } {
+  const navegador = new NavegadorFalso();
+  const avisadas: Page[] = [];
+  embrulharONavegador(navegador, (pagina) => avisadas.push(pagina));
+  return { navegador, avisadas };
+}
+
+describe("a página aberta por fora das fixtures também espera a revelação", () => {
+  it("a lista nomeia newContext e newPage — os dois jeitos de o navegador abrir página", () => {
+    expect([...METODOS_QUE_ABREM_PAGINA_POR_FORA].sort()).toEqual(["newContext", "newPage"]);
+  });
+
+  it("browser.newContext().newPage(): a página chega a quem instala a espera", async () => {
+    const { navegador, avisadas } = navegadorEmbrulhado();
+    const contexto = await navegador.newContext();
+    const pagina = await contexto.newPage();
+    expect(avisadas).toContain(pagina);
+  });
+
+  it("toda página do mesmo contexto chega — a segunda aba e a de window.open também", async () => {
+    const { navegador, avisadas } = navegadorEmbrulhado();
+    const contexto = await navegador.newContext();
+    const primeira = await contexto.newPage();
+    const segunda = await contexto.newPage();
+    expect(new Set(avisadas)).toEqual(new Set([primeira, segunda]));
+  });
+
+  it("browser.newPage(): a página chega — é o caso do afterAll que ficou vermelho", async () => {
+    const { navegador, avisadas } = navegadorEmbrulhado();
+    const pagina = await navegador.newPage();
+    expect(avisadas).toContain(pagina);
+  });
+
+  it("javaScriptEnabled: false fica de fora — sem JavaScript a caixa nunca é revelada", async () => {
+    const { navegador, avisadas } = navegadorEmbrulhado();
+    const contexto = await navegador.newContext({ javaScriptEnabled: false });
+    await contexto.newPage();
+    await navegador.newPage({ javaScriptEnabled: false });
+    expect(avisadas).toEqual([]);
+  });
+
+  it("embrulhar duas vezes o mesmo navegador não dobra o aviso — o worker reusa o navegador", async () => {
+    const navegador = new NavegadorFalso();
+    const avisadas: Page[] = [];
+    embrulharONavegador(navegador, (pagina) => avisadas.push(pagina));
+    embrulharONavegador(navegador, (pagina) => avisadas.push(pagina));
+    const contexto = await navegador.newContext();
+    await contexto.newPage();
+    expect(avisadas).toHaveLength(1);
+  });
+
+  it("ponta a ponta com o embrulho de navegação: o goto da página aberta por fora ESPERA", async () => {
+    // As duas metades reais juntas, como `test.ts` as liga: o navegador avisa a
+    // página, e quem recebe instala a espera nela.
+    const navegador = new NavegadorFalso();
+    let esperas = 0;
+    const jaEmbrulhadas = new WeakSet<object>();
+    embrulharONavegador(navegador, (pagina) => {
+      if (jaEmbrulhadas.has(pagina)) return;
+      jaEmbrulhadas.add(pagina);
+      embrulharANavegacao(pagina, async () => {
+        esperas += 1;
+      });
+    });
+
+    const deContexto = await (await navegador.newContext()).newPage();
+    await deContexto.goto("/app/settings/tenant");
+    expect(esperas, "página de browser.newContext().newPage()").toBe(1);
+
+    // `newPage` do navegador avisa a mesma página duas vezes (pelo contexto e
+    // pelo próprio método): a espera continua sendo UMA por navegação.
+    const direta = await navegador.newPage();
+    await direta.goto("/app/settings/tenant");
+    expect(esperas, "página de browser.newPage()").toBe(2);
+  });
+});
+
+/**
+ * E a ligação: `test.ts` tem de embrulhar o NAVEGADOR, por worker. Sem isto os
+ * casos acima provam uma função que ninguém chama.
+ */
+describe("o test da suíte embrulha o navegador", () => {
+  const fonte = readFileSync(join(__dirname, "../e2e/helpers/test.ts"), "utf8");
+
+  it("a fixture `browser` é sobreposta e chama embrulharONavegador com a espera da suíte", () => {
+    expect(fonte).toMatch(/browser:\s*\[\s*async\s*\(\{\s*browser\s*\}/);
+    expect(fonte).toMatch(/embrulharONavegador\(\s*browser\s*,\s*esperarARevelacaoNasCargas\s*\)/);
+    expect(fonte, "o navegador é do worker: embrulhar por teste repetiria o trabalho a cada caso").toMatch(
+      /scope:\s*"worker"/,
+    );
+  });
+
+  it("quem recebe a página é idempotente por página", () => {
+    // `browser.newPage()` avisa a mesma página duas vezes; sem a guarda, o `goto`
+    // dela esperaria a revelação duas vezes — e um embrulho por cima do outro.
+    expect(fonte).toMatch(/if \(comEspera\.has\(page\)\) return;/);
+  });
+
+  it("test.ts não embrulha newContext nem newPage à mão", () => {
+    const aMao = /\.(newContext|newPage)\s*=(?!=)/;
+    expect(
+      fonte.match(aMao)?.[0] ?? null,
+      "embrulhe só por `embrulharONavegador` (revelacao-nas-cargas.ts) — é ele que este teste prova",
     ).toBeNull();
   });
 });
