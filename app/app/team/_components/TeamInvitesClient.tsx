@@ -7,6 +7,7 @@ import { useT } from "@/hooks/i18n/useT";
 import { rotuloDoPapel } from "@/lib/schemas/rotulo-do-papel";
 import { useTagDeIdioma } from "@/hooks/i18n/useLocaleDeData";
 import { useTeamInvites, type TeamInvite } from "@/hooks/team/useTeamInvites";
+import { useTeamMembers } from "@/hooks/team/useTeamMembers";
 import { useResendInvite } from "@/hooks/team/useResendInvite";
 import { useRevokeInvite } from "@/hooks/team/useRevokeInvite";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,17 @@ export function TeamInvitesClient({ canManage }: Props) {
   const t = useT();
   const tagDoIdioma = useTagDeIdioma();
   const { data, isLoading, isError } = useTeamInvites();
+  // A lista de MEMBROS fica logo acima desta, na mesma aba, e chega por outra
+  // requisição. Enquanto ela carrega ocupa uma linha; quando chega vira uma
+  // tabela inteira e empurra tudo o que está abaixo. Se os convites já
+  // estivessem desenhados, o botão «Ações» em que a pessoa acabou de clicar
+  // descia para fora da tela com o menu aberto — e o menu trava a rolagem
+  // (medido no CI em 19/11/2026: `invite-lifecycle` parou 180 s num menu em
+  // `translate(1095px, 725px)`, numa janela de 720 px). Então esta lista espera
+  // a de cima PARAR de carregar — chegar ou falhar, tanto faz: o que importa é a
+  // altura dela não mudar mais. A chave é a mesma de `TeamMembersClient`, então
+  // a leitura sai do cache dele e não custa requisição nenhuma.
+  const membrosAcima = useTeamMembers();
   const resend = useResendInvite();
   const revoke = useRevokeInvite();
 
@@ -71,7 +83,7 @@ export function TeamInvitesClient({ canManage }: Props) {
     else toast.error(t("Não foi possível copiar. Copie da barra do navegador."));
   }
 
-  if (isLoading) {
+  if (isLoading || membrosAcima.isLoading) {
     return <p className="text-sm text-muted-foreground">{t("Carregando…")}</p>;
   }
   if (isError) {
