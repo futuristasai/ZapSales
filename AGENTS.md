@@ -246,7 +246,10 @@ o controlador (`organizations.legal_name`) e o DPO.
 
 - **`supabase/baseline.sql`** — é o que o `kit/instalar.sh` do self-host aplica (na instalação e em toda atualização).
   Toda mudança de schema tem que aparecer aqui **como apêndice idempotente**, senão
-  não chega em quem instalou. Ver doutrina de Migrations em `CLAUDE.md`.
+  não chega em quem instalou. Policy e gatilho entram por `fn_garantir_policy` /
+  `fn_garantir_gatilho` (o `create …` como texto), nunca por `drop … if exists` + `create …`
+  soltos: o par solto derruba e recria o objeto a cada atualização. Ver doutrina de
+  Migrations em `CLAUDE.md` (item 11).
 - **`supabase/migrations/*.sql` já aplicadas** — nunca edite. Corrija com migration nova.
 - **`lib/supabase/admin.ts`** — service role **bypassa RLS**. Boa parte dos handlers de
   `app/api/**` o usa — reconte em vez de citar:

@@ -179,9 +179,26 @@ describe("baseline.sql é re-aplicável", () => {
         // LINHAS.slice(0, i) para CADA policy — quadrático sobre 25 mil linhas,
         // 5 s no normal e 16 s sob carga, contra o limite de 15 s do vitest. Um
         // gate que vermelha por carga da máquina ensina a ignorar vermelho.
+        //
+        // DESDE A 0572 (issue #361) a forma do apêndice é `fn_garantir_policy`: a
+        // linha de cima abre a chamada com o MESMO nome, e o `create policy` é o
+        // texto que ela recebe. A função faz o drop + create numa transação só, e
+        // só quando a definição mudou — a mudança de corpo continua chegando ao
+        // clone, sem derrubar e recriar a policy a cada atualização. O `drop` solto
+        // antes do `create` segue aceito (é a forma antiga, e ainda existe dentro
+        // de função provisionadora de módulo), mas quem cobra que bloco NOVO use a
+        // forma nova é tests/unit/baseline-garante-em-vez-de-recriar.test.ts.
+        // `[^']*` depois do nome: a captura acima corta em espaço, e há policy com
+        // espaço no nome ("propostas: leitura por organizacao").
+        const garantida = new RegExp(
+          `fn_garantir_policy\\('[^']+', '${nome.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[^']*', \\$zps_def\\$$`,
+        ).test(LINHAS[i - 1] ?? "");
         const dropAntes = (linhaDoPrimeiroDrop.get(nome.toLowerCase()) ?? Infinity) < i;
-        if (dropAntes) guardadasNoApendice++;
-        else problemas.push(`apêndice ${i + 1}: "${nome}" sem drop-if-exists — mudança de corpo não chega`);
+        if (garantida || dropAntes) guardadasNoApendice++;
+        else
+          problemas.push(
+            `apêndice ${i + 1}: "${nome}" sem fn_garantir_policy nem drop-if-exists — mudança de corpo não chega`,
+          );
       }
     }
 
