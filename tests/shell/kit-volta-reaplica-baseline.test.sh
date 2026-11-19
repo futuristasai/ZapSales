@@ -128,6 +128,11 @@ igual "um deadlock e depois aplica" \
   "3|copiar_codigo psql:$ATUAL psql:$ATUAL restart-realtime up" "$(volta "$TMP/kit-parou.log" deadlock ok)"
 igual "defeito: uma passada só, e a volta também falhou (código 4)" \
   "4|copiar_codigo psql:$ATUAL up" "$(volta "$TMP/kit-parou.log" defeito)"
+# O caso que o registro acumulado escondia (e que o CI pegou): depois de um
+# deadlock, um defeito de verdade NÃO ganha nova passada só porque o arquivo da
+# volta ainda fala em deadlock. Cada passada é julgada pela própria saída.
+igual "deadlock e depois defeito: para no defeito, código 4" \
+  "4|copiar_codigo psql:$ATUAL psql:$ATUAL up" "$(volta "$TMP/kit-parou.log" deadlock defeito ok)"
 igual "deadlock que insiste: três passadas, código 4" \
   "4|copiar_codigo psql:$ATUAL psql:$ATUAL psql:$ATUAL up" "$(volta "$TMP/kit-parou.log" deadlock deadlock deadlock ok)"
 

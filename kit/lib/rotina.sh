@@ -195,22 +195,30 @@ VOLTA_BASELINE_TENTATIVAS=3
 # passada; defeito, não. A saída do psql vai para um arquivo em $LOGS: o que a
 # implantação imprime vira log público.
 reaplicar_baseline_da_volta() {
-  local reg tentativa=1 codigo
+  local reg desta tentativa=1 codigo passageiro
   reg="$LOGS/${PREFIXO_DO_REGISTRO:-implantar}-$(date -u +%Y%m%dT%H%M%SZ)-$(curto "$ATUAL")-volta-baseline.log"
   msg "  registro da reaplicação (só na VPS): $reg"
+  # A saída de CADA passada vai primeiro para um arquivo só dela. Procurar o
+  # deadlock no registro acumulado repetiria um defeito de verdade só porque a
+  # passada anterior (ou outra volta, no mesmo segundo) tinha sido um deadlock.
+  desta="$(mktemp)"
   while :; do
     codigo=0
     (cd "$RAIZ" && docker compose exec -T db psql -U postgres -h localhost -d postgres -v ON_ERROR_STOP=1 -q) \
-      < "$RAIZ/supabase/baseline.sql" >> "$reg" 2>&1 || codigo=$?
+      < "$RAIZ/supabase/baseline.sql" > "$desta" 2>&1 || codigo=$?
+    passageiro=0
+    grep -q 'deadlock detected' "$desta" && passageiro=1
+    { printf '== passada %s ==\n' "$tentativa"; cat "$desta"; } >> "$reg"
     [ "$codigo" = "0" ] && break
-    if [ "$tentativa" -ge "$VOLTA_BASELINE_TENTATIVAS" ] || ! tail -40 "$reg" | grep -q 'deadlock detected'; then
+    if [ "$tentativa" -ge "$VOLTA_BASELINE_TENTATIVAS" ] || [ "$passageiro" = "0" ]; then
+      rm -f "$desta"
       return 1
     fi
     tentativa=$((tentativa + 1))
     msg "  o banco interrompeu a reaplicação por disputa com o app em uso; de novo (passada $tentativa de $VOLTA_BASELINE_TENTATIVAS)."
-    printf '\n== passada %s ==\n' "$tentativa" >> "$reg"
     sleep "$ESPERA_DA_VOLTA_S"
   done
+  rm -f "$desta"
   (cd "$RAIZ" && docker compose restart realtime) >> "$reg" 2>&1 || return 1
 }
 
