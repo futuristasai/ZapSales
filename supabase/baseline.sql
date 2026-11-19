@@ -20271,45 +20271,89 @@ update public.demanda_conversas dc
 --     autocommit do `update.sh`, ou tudo entra e o gatilho volta, ou nada
 --     entra. Se faltar privilégio para pausar, o backfill segue mesmo assim
 --     (carimbar tarde é melhor que não carimbar) e o notice registra.
+--
+--     ⚠️ O GATILHO SÓ É PAUSADO QUANDO HÁ O QUE CARIMBAR. Este bloco roda em
+--     TODA aplicação do arquivo, e até 19/11/2026 pausava e religava o gatilho
+--     sem perguntar se havia trabalho: dois `alter table public.messages` por
+--     atualização (SHARE ROW EXCLUSIVE, que barra toda escrita na tabela de
+--     mensagens enquanto espera e enquanto dura), com a equipe atendendo. Medido
+--     nas três instalações do projeto: zero mensagem a carimbar em todas — o
+--     bloco não fazia nada além de travar a tabela. Era também o único gatilho
+--     que a segunda aplicação do arquivo ainda regravava (issue #361).
+--
+--     "Há o que carimbar" é, palavra por palavra, o que o UPDATE alcança: a
+--     pergunta abaixo tem o mesmo `where` dele. Com trabalho, o bloco pausa,
+--     carimba e religa como sempre; sem trabalho, não faz nada. (Toda conversa
+--     tem `service_revision`, a coluna é `not null`; então linha alcançada é
+--     linha que muda, e não há um terceiro caso a separar.)
+--
+--     ⚠️ MENSAGEM DE GRUPO FICA DE FORA, na pergunta e no UPDATE. Quem carimba a
+--     entrada é `fn_service_inbound`, e ela sai cedo em conversa de grupo
+--     (`c.is_group or coalesce(c.group_chat_id,'') like '%@g.us'`): mensagem de
+--     grupo NUNCA tem carimbo, por desenho. Este bloco não fazia essa exclusão,
+--     e por isso carimbava, na atualização SEGUINTE, toda mensagem de grupo que
+--     tivesse chegado desde a anterior — um estado que a ingestão não produz —
+--     e pausava o gatilho em toda atualização de quem usa grupos. O predicado é
+--     o mesmo da ingestão e o mesmo que o resíduo, logo abaixo, já usava.
+--     A outra classe que o resíduo nomeia (entrega fora de ordem depois de um
+--     fechamento) NÃO foi excluída aqui: numa instalação antiga ela não se
+--     distingue da mensagem legada de uma conversa fechada depois, que é
+--     exatamente o que este passo existe para carimbar.
+--     Cobrado por tests/invariants/atualizacao-nao-regrava-gatilho-no-lugar.test.ts.
 do $$
-declare v_pausado boolean := false; v_linhas bigint := 0; v_restantes bigint := 0;
+declare v_pausado boolean := false; v_linhas bigint := 0; v_restantes bigint := 0; v_ha_o_que_carimbar boolean := false;
 begin
-  begin
-    if exists (select 1 from pg_trigger
-                where tgrelid = 'public.messages'::regclass
-                  and tgname = 'trg_appointment_inbound'
-                  and not tgisinternal) then
-      execute 'alter table public.messages disable trigger trg_appointment_inbound';
-      v_pausado := true;
+  select exists (
+    select 1
+      from public.messages m
+      join public.conversations c
+        on c.id = m.conversation_id and c.organization_id = m.organization_id
+     where m.direction = 'inbound'
+       and m.service_revision is null
+       and not c.is_group
+       and coalesce(c.group_chat_id, '') not like '%@g.us'
+  ) into v_ha_o_que_carimbar;
+
+  if v_ha_o_que_carimbar then
+    begin
+      if exists (select 1 from pg_trigger
+                  where tgrelid = 'public.messages'::regclass
+                    and tgname = 'trg_appointment_inbound'
+                    and not tgisinternal) then
+        execute 'alter table public.messages disable trigger trg_appointment_inbound';
+        v_pausado := true;
+      end if;
+    exception when others then
+      v_pausado := false;
+      -- `warning` e não `notice`: o dump do baseline abre com
+      -- `set client_min_messages = warning`, então notice NUNCA chega ao operador.
+      raise warning '0222 backfill: nao foi possivel pausar trg_appointment_inbound (%)', sqlerrm;
+    end;
+
+    update public.messages m
+       set service_revision = c.service_revision,
+           demanda_id = c.current_demanda_id,
+           demanda_revision = d.revision
+      from public.conversations c
+      left join public.demandas d
+        on d.id = c.current_demanda_id and d.organization_id = c.organization_id
+     where c.id = m.conversation_id
+       and c.organization_id = m.organization_id
+       and m.direction = 'inbound'
+       and m.service_revision is null
+       and not c.is_group
+       and coalesce(c.group_chat_id, '') not like '%@g.us';
+
+    get diagnostics v_linhas = row_count;
+
+    if v_pausado then
+      execute 'alter table public.messages enable trigger trg_appointment_inbound';
     end if;
-  exception when others then
-    v_pausado := false;
-    -- `warning` e não `notice`: o dump do baseline abre com
-    -- `set client_min_messages = warning`, então notice NUNCA chega ao operador.
-    raise warning '0222 backfill: nao foi possivel pausar trg_appointment_inbound (%)', sqlerrm;
-  end;
-
-  update public.messages m
-     set service_revision = c.service_revision,
-         demanda_id = c.current_demanda_id,
-         demanda_revision = d.revision
-    from public.conversations c
-    left join public.demandas d
-      on d.id = c.current_demanda_id and d.organization_id = c.organization_id
-   where c.id = m.conversation_id
-     and c.organization_id = m.organization_id
-     and m.direction = 'inbound'
-     and m.service_revision is null;
-
-  get diagnostics v_linhas = row_count;
-
-  if v_pausado then
-    execute 'alter table public.messages enable trigger trg_appointment_inbound';
-  end if;
-  -- O operador precisa ver o que a atualização mexeu, e este notice é também
-  -- o controle positivo de que o gatilho foi de fato pausado durante o carimbo.
-  if v_linhas > 0 then
-    raise warning '0222 backfill: % mensagem(ns) carimbada(s) (gatilho de agenda pausado: %)', v_linhas, v_pausado;
+    -- O operador precisa ver o que a atualização mexeu, e este notice é também
+    -- o controle positivo de que o gatilho foi de fato pausado durante o carimbo.
+    if v_linhas > 0 then
+      raise warning '0222 backfill: % mensagem(ns) carimbada(s) (gatilho de agenda pausado: %)', v_linhas, v_pausado;
+    end if;
   end if;
   -- O RESIDUO, e por que ele e a rede de seguranca CERTA.
   --
