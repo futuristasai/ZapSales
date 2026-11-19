@@ -28075,7 +28075,7 @@ grant execute on function public.fn_extensions_revert_install(uuid,uuid,uuid,int
 grant execute on function public.fn_extensions_remove_installation(uuid,uuid,uuid,integer) to service_role;
 grant execute on function public.fn_extensions_installation_counts(uuid) to service_role;
 -- END 0271_extensoes_declarativas
--- ---- travas do modo somente leitura do suporte: a enumeração vira função (migration 0274) ----
+-- ---- travas do modo somente leitura do suporte: a enumeração vira função (migration 0274; corpo da 0571) ----
 --
 -- Só a DEFINIÇÃO mora aqui, antes da varredura de anon (função nova não entra
 -- depois dela — tests/unit/varredura-anon-e-o-ultimo-bloco.test.ts). A CHAMADA é
@@ -28085,30 +28085,89 @@ grant execute on function public.fn_extensions_installation_counts(uuid) to serv
 -- Regra de seleção (a mesma da 0220): tabela comum de `public`, RLS ligada, com
 -- `organization_id` (ou `organizations`, pela `id`). Gravável por `authenticated`
 -- → as três restritivas; só do servidor → nenhuma `support_write_*`.
+--
+-- ⚠️ O CORPO É O DA 0571 (issue #359), e ele está AQUI, no lugar do da 0274, e
+-- não num bloco novo no fim do apêndice. Não é descuido com a regra do
+-- acréscimo: este arquivo chama a função CINCO vezes, e quatro delas vêm antes
+-- do fim — um `create or replace` colado lá embaixo só alcançaria a última, e
+-- as outras quatro seguiriam rodando o corpo antigo a cada atualização.
+--
+-- O corpo antigo derrubava e recriava as três policies em TODA tabela de
+-- organização, numa transação só: ACCESS EXCLUSIVE em quase todo o banco, com o
+-- app em uso. Medido num banco com o schema de uma instalação real (pg17 do
+-- Supabase): 198 tabelas travadas e 336 policies recriadas POR CHAMADA — entre
+-- elas `auth.users`, `auth.sessions` e `storage.objects`, que o `supautils` do
+-- Supabase trava a cada `create/drop policy` do papel `postgres`. Foi a origem
+-- do deadlock que parou o baseline da produção em 19/11/2026 (#355). O corpo
+-- novo lê o catálogo, pula a tabela cujas três travas já estão certas (nome,
+-- restritiva, só `authenticated`, comando e expressão) e percorre em ordem fixa:
+-- no mesmo banco, 0 tabelas travadas e 0 policies recriadas. Trava ausente,
+-- incompleta, permissiva, de outro papel, com outra expressão, ou sobrando em
+-- tabela que virou só do servidor continua sendo refeita ou retirada.
+-- Vigiado por tests/invariants/travas-de-suporte-so-tocam-o-que-mudou.test.ts.
 create or replace function public.fn_aplicar_travas_de_suporte()
 returns void
 language plpgsql
 set search_path = public
 as $f$
-declare r record; v_col text;
+declare r record; v_col text; v_guarda text; v_authenticated oid;
 begin
- for r in select c.oid,c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace
- where n.nspname='public' and c.relkind='r' and c.relrowsecurity
- and (exists(select 1 from pg_attribute a where a.attrelid=c.oid and a.attname='organization_id' and not a.attisdropped) or c.relname='organizations')
+ select oid into v_authenticated from pg_roles where rolname = 'authenticated';
+ for r in
+   select c.oid, c.relname,
+          (has_table_privilege('authenticated', c.oid, 'insert')
+           or has_table_privilege('authenticated', c.oid, 'update')
+           or has_table_privilege('authenticated', c.oid, 'delete')) as gravavel,
+          (select count(*) from pg_policy p
+            where p.polrelid = c.oid
+              and p.polname in ('support_write_insert', 'support_write_update', 'support_write_delete')) as existentes
+     from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity
+      and (exists (select 1 from pg_attribute a
+                    where a.attrelid = c.oid and a.attname = 'organization_id' and not a.attisdropped)
+           or c.relname = 'organizations')
+    order by c.oid
  loop
- v_col:=case when r.relname='organizations' then 'id' else 'organization_id' end;
- if not (has_table_privilege('authenticated',r.oid,'insert') or has_table_privilege('authenticated',r.oid,'update') or has_table_privilege('authenticated',r.oid,'delete')) then
-   execute format('drop policy if exists support_write_insert on public.%I',r.relname);
-   execute format('drop policy if exists support_write_update on public.%I',r.relname);
-   execute format('drop policy if exists support_write_delete on public.%I',r.relname);
-   continue; -- tabela server-only mantém ZERO policies, contrato mais restritivo
- end if;
- execute format('drop policy if exists support_write_insert on public.%I',r.relname);
- execute format('create policy support_write_insert on public.%I as restrictive for insert to authenticated with check (public.fn_support_write_allowed(%I))',r.relname,v_col);
- execute format('drop policy if exists support_write_update on public.%I',r.relname);
- execute format('create policy support_write_update on public.%I as restrictive for update to authenticated using (public.fn_support_write_allowed(%I)) with check (public.fn_support_write_allowed(%I))',r.relname,v_col,v_col);
- execute format('drop policy if exists support_write_delete on public.%I',r.relname);
- execute format('create policy support_write_delete on public.%I as restrictive for delete to authenticated using (public.fn_support_write_allowed(%I))',r.relname,v_col);
+   if not r.gravavel then
+     -- tabela server-only mantém ZERO policies, contrato mais restritivo. Só se
+     -- derruba o que existe: `drop policy` trava a tabela mesmo com `if exists`.
+     if r.existentes > 0 then
+       execute format('drop policy if exists support_write_insert on public.%I', r.relname);
+       execute format('drop policy if exists support_write_update on public.%I', r.relname);
+       execute format('drop policy if exists support_write_delete on public.%I', r.relname);
+     end if;
+     continue;
+   end if;
+
+   v_col := case when r.relname = 'organizations' then 'id' else 'organization_id' end;
+   v_guarda := format('fn_support_write_allowed(%I)', v_col);
+
+   -- As três já estão como este corpo as criaria? Então não há o que fazer, e
+   -- não fazer é o ponto: nenhuma trava de tabela é pedida.
+   if r.existentes = 3 and (
+        select count(*) from pg_policy p
+         where p.polrelid = r.oid
+           and not p.polpermissive
+           and p.polroles = array[v_authenticated]::oid[]
+           and (   (p.polname = 'support_write_insert' and p.polcmd = 'a'
+                    and p.polqual is null
+                    and replace(pg_get_expr(p.polwithcheck, p.polrelid), 'public.', '') = v_guarda)
+                or (p.polname = 'support_write_update' and p.polcmd = 'w'
+                    and replace(pg_get_expr(p.polqual, p.polrelid), 'public.', '') = v_guarda
+                    and replace(pg_get_expr(p.polwithcheck, p.polrelid), 'public.', '') = v_guarda)
+                or (p.polname = 'support_write_delete' and p.polcmd = 'd'
+                    and replace(pg_get_expr(p.polqual, p.polrelid), 'public.', '') = v_guarda
+                    and p.polwithcheck is null))
+      ) = 3 then
+     continue;
+   end if;
+
+   execute format('drop policy if exists support_write_insert on public.%I', r.relname);
+   execute format('create policy support_write_insert on public.%I as restrictive for insert to authenticated with check (public.fn_support_write_allowed(%I))', r.relname, v_col);
+   execute format('drop policy if exists support_write_update on public.%I', r.relname);
+   execute format('create policy support_write_update on public.%I as restrictive for update to authenticated using (public.fn_support_write_allowed(%I)) with check (public.fn_support_write_allowed(%I))', r.relname, v_col, v_col);
+   execute format('drop policy if exists support_write_delete on public.%I', r.relname);
+   execute format('create policy support_write_delete on public.%I as restrictive for delete to authenticated using (public.fn_support_write_allowed(%I))', r.relname, v_col);
  end loop;
 end $f$;
 
