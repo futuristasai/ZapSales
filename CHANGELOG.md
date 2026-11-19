@@ -8,6 +8,38 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.6] — 2026-11-19
+
+### Corrigido
+
+- **Atualização que falha no banco não termina mais como se tivesse dado certo** Ao atualizar, o instalador reaplica a estrutura do banco com o sistema em uso. Se o
+  banco interrompesse esse passo no meio (acontece quando a atualização e uma ação de
+  alguém da equipe disputam a mesma tabela no mesmo instante), o instalador seguia em
+  frente e avisava «Pronto», deixando o banco pela metade. O sintoma era a tela de
+  Conversas mostrando «Erro interno. Tente de novo em instantes» até a atualização seguinte.
+
+  Agora, quando o banco interrompe o passo por essa disputa, o instalador o repete
+  sozinho, até três vezes. Se ainda assim não concluir, a atualização para e avisa a
+  falha, em vez de terminar como se estivesse tudo certo. A restauração de backup ganhou
+  a mesma conferência.
+
+- **Atualizar com a equipe trabalhando não bloqueia mais o banco inteiro por alguns instantes** A cada atualização o sistema reconferia as regras que protegem os dados quando o suporte
+  acessa uma organização em modo somente leitura, e fazia isso do jeito mais pesado:
+  apagava e recriava essas regras em quase todas as tabelas de uma vez, bloqueando cada
+  uma delas (as de login inclusive) enquanto durava. Quem estivesse usando o sistema
+  naquele instante esperava, e num cruzamento de azar a atualização era interrompida no
+  meio. Foi o que deixou a tela de Conversas em erro em 19/11/2026.
+
+  Agora a atualização só mexe na regra que está faltando ou errada. Numa instalação em
+  dia, que é o caso de quase toda atualização, ela confere e não bloqueia nada.
+
+- **Pedido de agendamento que ninguém confirmou volta a liberar o horário** Quando um tipo de agendamento pede confirmação, o pedido do cliente segura o horário
+  até alguém decidir, e depois do prazo (24 horas, por padrão) o sistema deveria cancelar
+  o pedido sozinho e devolver o horário à agenda. Esse cancelamento automático falhava em
+  silêncio: o pedido vencido continuava ocupando o horário para sempre, e o próximo
+  cliente ouvia que não havia vaga. Agora o pedido vencido é cancelado e o horário volta
+  a aparecer como livre.
+
 ## [1.5.5] — 2026-11-19
 
 ### Alterado
@@ -376,7 +408,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...HEAD
+[1.5.6]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/futuristasai/ZapSales/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/futuristasai/ZapSales/compare/v1.5.2...v1.5.3
