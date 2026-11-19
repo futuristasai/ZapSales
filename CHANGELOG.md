@@ -8,6 +8,16 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.5] — 2026-11-19
+
+### Alterado
+
+- **O manual mostra o assistente de primeiros passos como ele é hoje** As imagens da página «Primeiros passos» do manual (link Manual, no menu) eram do
+  desenho antigo do assistente, com seis passos numa barra no topo. Agora todas mostram
+  a tela atual, com a trilha de passos à esquerda e a ajuda de cada passo ao lado, e as
+  legendas descrevem o que aparece: as vantagens de cada forma de conectar o WhatsApp, a
+  sugestão de colunas que o funcionário monta para o seu negócio e a tela final.
+
 ## [1.5.4] — 2026-11-18
 
 ### Corrigido
@@ -366,7 +376,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...HEAD
+[1.5.5]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/futuristasai/ZapSales/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/futuristasai/ZapSales/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/futuristasai/ZapSales/compare/v1.5.1...v1.5.2
