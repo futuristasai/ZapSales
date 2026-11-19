@@ -31,10 +31,15 @@
  */
 import { test as base, type Page } from "@playwright/test";
 
-import { embrulharANavegacao, METODOS_DE_NAVEGACAO_REVELADOS } from "./revelacao-nas-cargas";
+import {
+  embrulharANavegacao,
+  embrulharONavegador,
+  METODOS_DE_NAVEGACAO_REVELADOS,
+  METODOS_QUE_ABREM_PAGINA_POR_FORA,
+} from "./revelacao-nas-cargas";
 
 export * from "@playwright/test";
-export { METODOS_DE_NAVEGACAO_REVELADOS };
+export { METODOS_DE_NAVEGACAO_REVELADOS, METODOS_QUE_ABREM_PAGINA_POR_FORA };
 
 /** Caixa do streaming que ainda não foi revelada. */
 export const CAIXA_PENDENTE = 'div[hidden][id^="S:"]';
@@ -75,7 +80,24 @@ function esperarARevelacaoNasCargas(page: Page): void {
   embrulharANavegacao(page, () => esperarARevelacao(page));
 }
 
-export const test = base.extend({
+export const test = base.extend<object, object>({
+  // ⚠️ A PÁGINA ABERTA POR FORA DAS FIXTURES TAMBÉM ESPERA A REVELAÇÃO.
+  //
+  // `page` e `context`, abaixo, cobrem a página que o teste RECEBE. A que ele
+  // ABRE — `browser.newPage()`, `browser.newContext().newPage()`: o segundo
+  // usuário de um caso, a limpeza de um `afterAll` — não passava por fixture
+  // nenhuma e nascia sem a espera. Foi o vermelho intermitente de
+  // `menu-por-empresa-e-a-porta-de-volta` (dois «Menu lateral» no `afterAll`).
+  // O embrulho é do NAVEGADOR, uma vez por worker; o que ele cobre e por quê
+  // está em `revelacao-nas-cargas.ts`, e a cerca é
+  // `tests/unit/revelacao-cobre-a-navegacao-inteira.test.ts`.
+  browser: [
+    async ({ browser }, usar) => {
+      embrulharONavegador(browser, esperarARevelacaoNasCargas);
+      await usar(browser);
+    },
+    { scope: "worker" },
+  ],
   // Sem JavaScript os reveladores não rodam e a caixa fica por definição.
   context: async ({ context, javaScriptEnabled }, usar) => {
     if (javaScriptEnabled !== false) context.on("page", esperarARevelacaoNasCargas);
