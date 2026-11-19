@@ -8,6 +8,26 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.8] — 2026-11-19
+
+### Corrigido
+
+- **Atualizar não bloqueia mais a tabela de mensagens quando não há nada a ajustar** Toda atualização passava por um ajuste antigo que carimba mensagens recebidas antes de
+  uma mudança no controle de atendimentos. Para fazer isso com segurança ele pausava, por
+  um instante, um mecanismo interno da tabela de mensagens, o que segura a chegada e o
+  envio de mensagens enquanto dura. O ajuste fazia essa pausa em toda atualização, mesmo
+  sem nenhuma mensagem antiga para carimbar, que é o caso de quem já atualizou uma vez.
+
+  Agora a pausa só acontece quando existe mensagem a carimbar. E mensagem de grupo fica de
+  fora desse ajuste, como já ficava quando chega: antes ela era carimbada na atualização
+  seguinte, o que não combinava com o resto do sistema.
+
+- **A lista de convites não pula mais de lugar enquanto a tela de Equipe carrega** Na tela de Equipe, a lista de convites podia aparecer um instante antes da lista de
+  membros, que fica acima dela. Quando os membros chegavam, empurravam os convites para
+  baixo: quem tinha acabado de abrir o menu «Ações» de um convite via o menu sumir da
+  tela. Agora as duas listas aparecem na ordem certa, e os convites só são desenhados
+  depois que a lista de cima terminou de carregar.
+
 ## [1.5.7] — 2026-11-19
 
 ### Corrigido
@@ -431,7 +451,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.7...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.8...HEAD
+[1.5.8]: https://github.com/futuristasai/ZapSales/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...v1.5.5
