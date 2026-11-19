@@ -113,12 +113,16 @@ as $f$
 $f$;
 
 -- O miolo das duas funções de baixo: decide se há o que fazer e, havendo, troca
--- o objeto e anota. Sem `set search_path`: a definição é executada com o caminho
--- de quem chama, exatamente como o `create policy`/`create trigger` solto que
--- ela substitui (o baseline fixa o caminho no começo do arquivo).
+-- o objeto e anota. `search_path = public, extensions` é o caminho que o próprio
+-- baseline fixa para o apêndice inteiro (`set_config('search_path', 'public,
+-- extensions', false)`): o texto recebido é executado com os nomes resolvendo
+-- exatamente como no `create policy`/`create trigger` solto que a chamada
+-- substitui — e do mesmo jeito para quem chamar de fora do baseline (a
+-- provisionadora de um módulo, uma migration), seja qual for o caminho da sessão.
 create or replace function public.fn_garantir_objeto_do_baseline(p_tipo text, p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean)
 returns void
 language plpgsql
+set search_path = public, extensions
 as $f$
 declare
   v_rel      oid := to_regclass(p_tabela);
@@ -195,6 +199,7 @@ end $f$;
 create or replace function public.fn_garantir_policy(p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean default false)
 returns void
 language sql
+set search_path = ''
 as $f$
   select public.fn_garantir_objeto_do_baseline('policy', p_tabela, p_nome, p_definicao, p_so_se_ausente);
 $f$;
@@ -202,6 +207,7 @@ $f$;
 create or replace function public.fn_garantir_gatilho(p_tabela text, p_nome text, p_definicao text, p_so_se_ausente boolean default false)
 returns void
 language sql
+set search_path = ''
 as $f$
   select public.fn_garantir_objeto_do_baseline('trigger', p_tabela, p_nome, p_definicao, p_so_se_ausente);
 $f$;
