@@ -8,6 +8,29 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.5.7] — 2026-11-19
+
+### Corrigido
+
+- **Atualizar não refaz mais centenas de regras do banco que não mudaram** Toda atualização reaplica a estrutura do banco, e até aqui ela apagava e recriava cerca
+  de 230 regras de acesso e 170 gatilhos, mesmo quando nenhum deles tinha mudado. Cada
+  uma dessas trocas bloqueia a tabela por um instante (e as tabelas de login junto), com a
+  equipe usando o sistema.
+
+  Agora a atualização confere cada regra e cada gatilho e só refaz o que realmente mudou.
+  Numa atualização comum, nenhum é refeito. As regras e os gatilhos que ficam no banco são
+  exatamente os mesmos de antes.
+
+  A primeira atualização para esta versão ainda refaz tudo uma vez, para registrar o que
+  está aplicado. Da seguinte em diante, não.
+
+- **Atualização que falha no banco e volta sozinha não deixa mais o banco pela metade** Quando uma atualização falha, o sistema volta sozinho para a versão anterior. Se a falha
+  tinha sido justamente no passo que atualiza a estrutura do banco, o programa voltava, mas
+  o banco ficava entre as duas versões, e telas podiam dar erro até alguém rodar a
+  atualização de novo. Agora, nesse caso, a volta também reaplica a estrutura do banco da
+  versão anterior antes de religar o sistema. Se nem isso der certo, a volta avisa que
+  falhou, em vez de dizer que está tudo de volta.
+
 ## [1.5.6] — 2026-11-19
 
 ### Corrigido
@@ -408,7 +431,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.7...HEAD
+[1.5.7]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/futuristasai/ZapSales/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/futuristasai/ZapSales/compare/v1.5.3...v1.5.4
