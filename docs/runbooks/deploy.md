@@ -160,8 +160,13 @@ chegado ao fim**. Um baseline interrompido no meio deixa o banco entre duas vers
 caminho não serve a nenhuma (ele redefine a mesma função mais de uma vez; em 19/11/2026 um deadlock
 com o app em uso o parou ali, o kit engoliu a falha e a tela de Conversas respondeu "Erro interno"
 por dez horas). Hoje o kit repete sozinho o baseline quando o banco desiste por deadlock e devolve
-qualquer outra falha; se a causa da volta foi o baseline, o conserto é reaplicá-lo — rodar o kit de
-novo, ou só o arquivo: `cd /opt/zapsales && docker compose exec -T db psql -U postgres -h localhost
+qualquer outra falha; e **quando o kit diz que o baseline falhou no meio, a volta reaplica o
+baseline da versão anterior** (issue #360) antes de subir os serviços: o arquivo é idempotente e
+leva cada objeto de volta à definição final daquela versão. O registro dessa reaplicação fica em
+`/var/log/zapsales/*-volta-baseline.log`; se ela também falhar, a volta sai com código 4. A
+reaplicação só acontece nesse caso — numa volta por outro motivo o schema novo está inteiro, e
+aplicar o arquivo antigo por cima dele seria um rebaixamento que ninguém provou. Para aplicar o
+baseline à mão: `cd /opt/zapsales && docker compose exec -T db psql -U postgres -h localhost
 -d postgres -v ON_ERROR_STOP=1 -q < supabase/baseline.sql`. Para saber se uma atualização passada
 parou no meio: `grep -l "ERROR:" /var/log/zapsales/*-kit.log`. Também ficam como a versão nova
 deixou: o bloco do proxy do sistema (igual entre versões), o próprio comando
