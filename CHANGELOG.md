@@ -8,6 +8,16 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.6.1] — 2026-11-20
+
+### Alterado
+
+- **Cadastrar uma API não exige mais a verificação em duas etapas** Na aba **Ferramentas externas › APIs**, a opção «Verificação em duas etapas para mexer nas APIs»
+  saiu, junto com o aviso «Falta a verificação em duas etapas para cadastrar APIs». Basta ter o
+  papel que a organização escolheu (administrador, por padrão) e o recurso ligado para cadastrar,
+  editar e testar uma API. Quem tem a verificação ativa na conta continua usando-a ao entrar, como
+  em qualquer tela. As outras opções de segurança seguem iguais.
+
 ## [1.6.0] — 2026-11-20
 
 ### Adicionado
@@ -483,7 +493,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.6.0...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/futuristasai/ZapSales/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/futuristasai/ZapSales/compare/v1.5.8...v1.6.0
 [1.5.8]: https://github.com/futuristasai/ZapSales/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...v1.5.7
