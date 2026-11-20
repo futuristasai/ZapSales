@@ -294,6 +294,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
         <li><a href="#agente-ferramenta-webhook" data-pagina="agente-ferramenta-webhook">Conectar outros sistemas: o agente consulta outro sistema (webhook)</a></li>
         <li><a href="#agente-aprovacao-de-acoes" data-pagina="agente-aprovacao-de-acoes">Ações que alteram dados, com a sua aprovação</a></li>
         <li><a href="#agente-servidores-mcp" data-pagina="agente-servidores-mcp">Servidores MCP: ferramentas de outros sistemas para o agente</a></li>
+        <li><a href="#agente-api-generica" data-pagina="agente-api-generica">APIs: o agente usa a API de outro sistema</a></li>
         <li><a href="#agente-resposta-em-audio" data-pagina="agente-resposta-em-audio">Resposta em áudio com a sua própria chave de voz</a></li>
         <li><a href="#followups" data-pagina="followups">Follow-ups</a></li>
         <li><a href="#fluxos-de-atendimento" data-pagina="fluxos-de-atendimento">Fluxos de atendimento</a></li>
@@ -4576,6 +4577,140 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   <li>Comece com <strong>poucas ferramentas</strong> e com a aprovação ligada nas que alteram algo.</li>
   <li>Este recurso é novo. O ZapSales avisa quando a conexão falha, mas confira o primeiro uso real em <a href="#auditoria">Quem mexeu em quê</a> (tela “Auditoria”) e nos Alertas. Servidor, ferramenta escolhida e uso ficam registrados, sem credencial, dados enviados nem resposta.</li>
 </ul>
+  </div>
+</article>
+
+<article class="pagina" id="agente-api-generica" data-titulo="APIs: o agente usa a API de outro sistema" data-grupo="ia" data-grupo-titulo="Agente de IA" data-resumo="Conecte a API pronta da sua loja virtual, do seu ERP ou do seu CRM. O recurso vem desligado e nasce no nível mais seguro; cada opção de segurança explica o que faz e o risco de mudar." data-palavras="api apis conectar outros sistemas integração loja virtual e-commerce erp crm chave de acesso token bearer x-api-key segurança das apis nível de segurança fora do recomendado somente consulta endereços permitidos limite de uso pausa automática dados do contato verificação em duas etapas" hidden>
+  <p class="migalha"><a href="#inicio">Manual</a> › Agente de IA › APIs: o agente usa a API de outro sistema</p>
+  <h1>APIs: o agente usa a API de outro sistema</h1>
+  <p class="lede">Conecte a API pronta da sua loja virtual, do seu ERP ou do seu CRM. O recurso vem desligado e nasce no nível mais seguro; cada opção de segurança explica o que faz e o risco de mudar.</p>
+  <dl class="ficha"><dt>Onde fica</dt><dd>Configurar › Agente › Conectar a IA › Conectar outros sistemas (MCP) › aba APIs (clique em Agente na faixa à esquerda; também pela busca Ctrl K)</dd><dt>Quem pode usar</dt><dd>Ligar e mudar a segurança: Administrador. Cadastrar, editar e testar APIs: Administrador (ou Gerente, se a organização liberar). Aprovar pedidos na Central: Administrador (ou Gerente, se a organização liberar). Marcar a API no agente: Administrador.</dd></dl>
+  <div class="conteudo-pagina">
+<h2 id="agente-api-generica--visao-geral">Para que serve</h2>
+<p>Uma <strong>API</strong> é a porta que um sistema abre para outros sistemas. A sua loja virtual, o seu ERP e o seu CRM quase sempre têm uma. Com ela o agente <strong>consulta ou faz algo lá</strong> durante a conversa: vê onde está um pedido, confere o estoque, registra um atendimento.</p>
+<p>A diferença para as outras duas abas da mesma tela:</p>
+<table class="tabela">
+  <thead><tr><th>Aba</th><th>Quando usar</th></tr></thead>
+  <tbody>
+    <tr><td><strong>APIs</strong> (esta página)</td><td>O outro sistema já tem uma API pronta, com documentação. O ZapSales chama essa API do jeito que ela espera.</td></tr>
+    <tr><td><a href="#agente-ferramenta-webhook">Webhooks</a></td><td>Você tem um intermediário (Make, n8n, um programa seu) feito para receber o aviso do ZapSales.</td></tr>
+    <tr><td><a href="#agente-servidores-mcp">Servidores MCP</a></td><td>O outro sistema oferece um servidor MCP, com um “cardápio” de ferramentas pronto para IA.</td></tr>
+  </tbody>
+</table>
+<aside class="nota info"><strong>Você vai precisar da documentação da API.</strong><p>Quem cadastra precisa saber o endereço, a operação e a chave de acesso que o outro sistema fornece. Se você não tem esses dados, peça ao suporte do outro sistema “a documentação da API e uma chave de acesso”.</p></aside>
+<aside class="nota atencao"><strong>O que esta versão não atende.</strong><ul><li>Sistemas que exigem um login que se renova sozinho (OAuth), como Mercado Livre e Bling: aqui a chave é um valor fixo que você cola.</li><li>Copiar dados de um sistema para o outro (importar contatos, catálogo). A API é usada <em>durante a conversa</em>.</li><li>Receber avisos do outro sistema (por exemplo, “entrou um pedido novo”).</li></ul></aside>
+
+<h2 id="agente-api-generica--ligar">Ligar o recurso (uma vez)</h2>
+<p>As APIs vêm <strong>desligadas</strong> em toda organização, e o sistema funciona normalmente sem elas. Clique em <span class="ui">Agente</span> na faixa à esquerda, escolha <span class="ui">Conectar outros sistemas</span> (a tela se chama “Ferramentas externas”) e clique na aba <strong>APIs</strong>.</p>
+<ol class="passos">
+  <li>No cartão <strong>APIs de outros sistemas</strong> (selo <em>Desligado</em>), leia e marque o aceite: <em>“Entendo que, ao ligar, o agente pode enviar aos sistemas que eu cadastrar os dados que ele preencher ao usar uma API, e que o que eles responderem é tratado como informação, nunca como ordem.”</em></li>
+  <li>Clique em <span class="ui">Ligar as APIs</span>. A tela confirma “APIs ligadas.”.</li>
+</ol>
+<p>Se você desligar depois (<span class="ui">Desligar as APIs</span>, com confirmação), <strong>nada é apagado</strong>: as APIs, as chaves e as opções de segurança ficam guardadas. Nenhum agente usa mais nenhuma API, e pedidos que esperam aprovação não são executados até você ligar de novo.</p>
+
+<h2 id="agente-api-generica--seguranca">Segurança das APIs</h2>
+<p>Ao ligar, a segurança nasce na posição mais fechada. No alto da aba, o cartão <strong>Segurança das APIs</strong> mostra um resumo: <em>“Todas as opções estão na posição recomendada.”</em> ou quantas — e quais — estão fora dela.</p>
+
+<h3 id="agente-api-generica--nivel">Nível de segurança</h3>
+<p>É uma escolha só, para você não precisar ajustar item por item:</p>
+<table class="tabela">
+  <thead><tr><th>Nível</th><th>O que muda</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Mais seguro</strong> (recomendado)</td><td>O agente só consulta. Só administrador cadastra e aprova, e mexer nas APIs exige a verificação em duas etapas.</td></tr>
+    <tr><td><strong>Equilibrado</strong></td><td>O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar, e a verificação em duas etapas deixa de ser exigida.</td></tr>
+    <tr><td><strong>Personalizado</strong></td><td>Você ajusta opção por opção.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="agente-api-generica--opcoes">As opções, uma a uma</h3>
+<p>Clique em <span class="ui">Ver e ajustar as opções uma a uma</span>. Cada opção mostra, na própria tela, <strong>o que faz</strong>, um <strong>exemplo</strong>, a <strong>recomendação</strong> e o <strong>risco</strong> de sair dela.</p>
+<table class="tabela">
+  <thead><tr><th>Opção</th><th>Recomendado</th><th>O que faz</th></tr></thead>
+  <tbody>
+    <tr><td>Somente consulta</td><td>Ligado</td><td>Impede o agente de alterar qualquer coisa em outro sistema.</td></tr>
+    <tr><td>Aprovação sempre obrigatória</td><td>Ligado</td><td>Toda ação que altera dados espera uma pessoa aprovar na Central de avisos, e ninguém consegue desligar essa aprovação numa API.</td></tr>
+    <tr><td>Quem pode cadastrar APIs</td><td>Só administrador</td><td>Ou administrador e gerente.</td></tr>
+    <tr><td>Quem pode aprovar</td><td>Só administrador</td><td>Ou administrador e gerente.</td></tr>
+    <tr><td>Verificação em duas etapas para mexer nas APIs</td><td>Ligado</td><td>Só cadastra, edita, testa ou muda a segurança quem entrou com a senha e com o código do aplicativo no celular.</td></tr>
+    <tr><td>Aviso ao administrador</td><td>Ligado</td><td>Abre um aviso na Central a cada API cadastrada, alterada ou apagada, quando a segurança muda e quando o agente altera dados sem aprovação.</td></tr>
+    <tr><td>Dados do contato que podem sair</td><td>Só o que alguma API precisa</td><td>Telefone, nome e e-mail do cliente, um a um. Nenhum sai por padrão.</td></tr>
+    <tr><td>Endereços permitidos</td><td>Os sites dos seus sistemas</td><td>Limita os sites que as APIs podem chamar. Um por linha, como <code>api.loja.example.com</code>; use <code>*.</code> na frente para liberar todos os endereços de um site.</td></tr>
+  </tbody>
+</table>
+<aside class="nota atencao"><strong>Sair da posição recomendada nunca é um clique só.</strong><p>Quando você muda uma opção para uma posição menos segura, a tela mostra o <strong>risco</strong> e a <strong>recomendação</strong> antes de salvar. O botão em destaque é <span class="ui">Manter como está (recomendado)</span>; para seguir, clique em <span class="ui">Mudar mesmo assim</span>. A opção fica com o selo <em>Fora do recomendado</em> enquanto durar, e a mudança fica registrada com o seu nome. Voltar à posição recomendada é direto.</p></aside>
+<aside class="nota info"><strong>Se você entrou só com a senha.</strong><p>Com a opção “Verificação em duas etapas para mexer nas APIs” ligada, quem não tem a verificação ativa na conta vê o aviso <em>“Falta a verificação em duas etapas para cadastrar APIs”</em>, com o atalho para ativá-la em Configurações › Segurança. Um administrador pode desligar essa exigência — a tela explica o risco. <strong>Pausar</strong> uma API é sempre possível, mesmo sem a verificação.</p></aside>
+<p>As opções valem <strong>na hora em que o agente vai usar a API</strong>, e não só no cadastro. Se você ligar “Somente consulta” ou limitar os endereços depois, uma API cadastrada antes deixa de ser usada no mesmo instante, e a lista diz por quê (“O agente não usa esta API agora.”).</p>
+
+<h2 id="agente-api-generica--cadastrar">Cadastrar uma API</h2>
+<p>Clique em <span class="ui">Nova API</span>. O formulário tem quatro partes.</p>
+
+<h3 id="agente-api-generica--parte-1">1. O que esta API faz para o agente</h3>
+<ol class="legenda">
+  <li><strong>Nome.</strong> Por exemplo <em>Consultar pedido na loja</em>.</li>
+  <li><strong>Quando o agente deve usar.</strong> Escreva como instrução para uma pessoa: <em>“Quando o cliente perguntar onde está o pedido dele.”</em> É assim que o agente decide se chama a API.</li>
+</ol>
+
+<h3 id="agente-api-generica--parte-2">2. Como chamar a API</h3>
+<ol class="legenda">
+  <li><strong>Operação.</strong> <code>GET</code> consulta; <code>POST</code>, <code>PUT</code> e <code>PATCH</code> enviam dados; <code>DELETE</code> apaga.</li>
+  <li><strong>Endereço.</strong> Começa com <code>https://</code>. Para usar um campo no endereço, escreva o nome dele entre chaves duplas, <strong>depois do nome do site</strong>: <code>https://api.loja.example.com/pedidos/{{numero}}</code>. O agente preenche o número do pedido, nunca para onde a chamada vai.</li>
+  <li><strong>Como a API confere quem está chamando.</strong> <em>Chave no formato Bearer</em> (o mais comum), <em>chave em um cabeçalho com outro nome</em> (por exemplo <code>X-API-Key</code>), <em>usuário e senha</em> ou <em>não pede chave</em>.</li>
+  <li><strong>Chave de acesso.</strong> A “senha” que o outro sistema deu. Fica guardada cifrada e <strong>nunca é mostrada de novo</strong> (só “chave …xxxx”). Para trocar, abra <span class="ui">Editar</span> e escreva a nova; deixar em branco mantém a que está guardada.</li>
+  <li><strong>O que vai no corpo da chamada</strong> (só em POST, PUT e PATCH). <em>Os campos, do jeito que o agente preencher</em>, ou <em>um modelo que eu escrevo</em>, quando a API exige um formato próprio.</li>
+  <li><strong>Cabeçalhos fixos (avançado).</strong> Só se a documentação pedir, como a versão da API. A chave de acesso não vai aqui.</li>
+</ol>
+<aside class="nota dica"><strong>Crie uma chave só para isto.</strong><p>Se o outro sistema permitir, crie uma chave de acesso exclusiva para o agente, com o mínimo de permissões — por exemplo, só leitura de pedidos. Se algo der errado, você cancela essa chave sem afetar o resto.</p></aside>
+
+<h3 id="agente-api-generica--parte-3">3. Dados que o agente preenche</h3>
+<p>Cada campo é um espaço que o agente completa antes de chamar: <em>número do pedido</em>, <em>nome do produto</em>. Diga o nome do campo, o tipo (texto, número, número inteiro, sim ou não) e o que o agente coloca nele.</p>
+<p>Em cada campo você pode limitar os <strong>valores permitidos</strong>: uma lista de opções para texto (<em>pago, cancelado</em>) ou um mínimo e um máximo para número (<em>quantidade de 1 a 10</em>). O agente não consegue chamar com um valor fora do permitido.</p>
+
+<h3 id="agente-api-generica--parte-4">4. Segurança desta API</h3>
+<p>Tudo já vem na posição recomendada, e cada opção explica o que faz e o risco de mudar.</p>
+<table class="tabela">
+  <thead><tr><th>Opção</th><th>Como vem</th><th>O que faz</th></tr></thead>
+  <tbody>
+    <tr><td>O que a API faz e se pede aprovação</td><td><code>GET</code> é “só consulta”; as outras operações são “altera dados” e pedem aprovação</td><td>Uma API que altera dados espera você aprovar na Central de avisos e nunca é repetida sozinha.</td></tr>
+    <tr><td>Prazo da aprovação</td><td>24 horas</td><td>Sem decisão no prazo, o pedido expira e o agente avisa que a ação não foi feita.</td></tr>
+    <tr><td>Dados do contato que esta API recebe</td><td>Nenhum</td><td>Telefone, nome ou e-mail de quem está na conversa, dentro do que a organização liberou.</td></tr>
+    <tr><td>O que o agente lê da resposta</td><td>A resposta inteira (até 4.000 letras)</td><td>Escolha só as informações de que o agente precisa, uma por linha: <code>status</code>, <code>cliente.nome</code>.</td></tr>
+    <tr><td>Limite de uso</td><td>5 por conversa e 200 no total, a cada 24 horas</td><td>Se o agente passar do limite, a chamada não sai e você recebe um aviso.</td></tr>
+    <tr><td>Pausa automática após falhas</td><td>Após 5 falhas seguidas</td><td>A API é pausada sozinha e você recebe o aviso.</td></tr>
+  </tbody>
+</table>
+<p>Se alguma dessas opções ficar fora do recomendado, ao salvar a tela lista os riscos. O botão em destaque é <span class="ui">Voltar e ajustar (recomendado)</span>; para seguir, clique em <span class="ui">Salvar mesmo assim</span>. A API fica com o selo <em>Fora do recomendado</em> na lista.</p>
+
+<h3 id="agente-api-generica--dados-do-contato">Dados do contato: o sistema preenche, o agente não escolhe</h3>
+<p>Imagine que qualquer pessoa pudesse digitar “qual o status do pedido 4512?” e receber os dados do pedido de um estranho. Para evitar isso, marque <strong>Telefone</strong> em “Dados do contato que esta API recebe” e use <code>{{contato_telefone}}</code> no endereço ou no corpo. O sistema preenche com o telefone de <strong>quem está na conversa</strong> — o agente não consegue trocá-lo pelo de outra pessoa.</p>
+<p>Um dado só pode ser marcado se um administrador o liberou em <em>Segurança das APIs › Dados do contato que podem sair</em>. Pela LGPD, o envio de dados pessoais a outro sistema precisa estar previsto na sua política de privacidade.</p>
+
+<h2 id="agente-api-generica--testar">Testar de verdade</h2>
+<p>Na lista, clique em <span class="ui">Testar de verdade</span>. Preencha os campos com dados de exemplo e clique em <span class="ui">Chamar agora</span>. A tela mostra o que o agente vai ler e o que foi enviado (sem a chave de acesso).</p>
+<aside class="nota perigo"><strong>Testar uma API que altera dados altera de verdade.</strong><p>O teste faz a chamada real ao outro sistema, com os dados de exemplo, sem pedir aprovação — quem clica é você. Use dados que possam ser apagados depois.</p></aside>
+<table class="tabela">
+  <thead><tr><th>Mensagem</th><th>O que verificar</th></tr></thead>
+  <tbody>
+    <tr><td>O outro sistema recusou a credencial (não autorizado).</td><td>A chave de acesso e o jeito de enviá-la (Bearer, outro cabeçalho, usuário e senha).</td></tr>
+    <tr><td>O outro sistema recusou o pedido (erro de endereço, acesso ou dados).</td><td>O endereço, a operação e o formato do corpo.</td></tr>
+    <tr><td>O outro sistema não respondeu a tempo.</td><td>A API precisa responder em até 8 segundos.</td></tr>
+    <tr><td>O endereço respondeu com um redirecionamento, que não é seguido.</td><td>Cadastre o endereço final.</td></tr>
+    <tr><td>Este endereço não pode ser usado: endereços da rede interna, privada ou local são recusados por segurança.</td><td>Use o endereço público da API.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="agente-api-generica--usar-no-agente">Ligar a API em um agente</h2>
+<p>Cadastrar não basta: a API só é usada pelos agentes em que você a marcar. Abra o agente, vá até <strong>Ferramentas externas</strong> e marque a API (ela aparece com o selo <em>API</em>). Publique a nova versão do agente.</p>
+<p>Para parar de uma vez, em todos os agentes, use o interruptor <em>Ativa / Pausada</em> na lista de APIs.</p>
+
+<h2 id="agente-api-generica--avisos">Os avisos que você recebe na Central</h2>
+<table class="tabela">
+  <thead><tr><th>Aviso</th><th>Quando aparece</th></tr></thead>
+  <tbody>
+    <tr><td>O agente quer executar uma ação num sistema externo e espera a sua aprovação</td><td>Uma API que altera dados foi chamada. Confira os dados e aprove ou recuse. Veja <a href="#agente-aprovacao-de-acoes">Aprovação de ações</a>.</td></tr>
+    <tr><td>O agente não conseguiu usar um sistema externo</td><td>A API falhou, atingiu o limite de uso ou foi pausada depois de falhas seguidas.</td></tr>
+    <tr><td>Houve uma mudança nas APIs que o agente usa — confira</td><td>Uma API foi cadastrada, alterada ou apagada; a segurança mudou; ou o agente alterou dados sem aprovação.</td></tr>
+  </tbody>
+</table>
   </div>
 </article>
 
@@ -9513,7 +9648,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota info"><strong>Atualizar pelo terminal continua valendo.</strong><p>O comando da instalação (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>) continua sendo uma forma de atualizar, e é como uma instalação antiga recebe o programa do servidor pela primeira vez. Veja <a href="#instalar-na-vps--atualizar">Instalar o ZapSales numa VPS › Atualizar</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 18 de novembro de 2026 a partir do código na revisão <code>614e9e50</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 20 de novembro de 2026 a partir do código na revisão <code>fe0afc44</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>

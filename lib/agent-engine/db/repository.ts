@@ -87,6 +87,10 @@ export type InboxKind =
   // um humano. O item da Central carrega o pedido (ref_kind='external_tool_request') com os
   // botões de aprovar e recusar; resolve sozinho quando alguém decide ou o prazo vence.
   | 'external_tool_approval'
+  // (migration 0573, issue #372) Aviso ao administrador sobre as APIs que o agente usa:
+  // cadastro criado ou alterado, opção de segurança afrouxada, ação executada sem aprovação.
+  // Sem referência: o destino é a tela das APIs.
+  | 'external_api_notice'
   // (issue #272) Um agente anotou uma regra para a memória da organização. Ela nasce
   // PROPOSTA e não vale até um gestor aprovar; este aviso é o que faz a proposta
   // aparecer. Um aberto por organização; fecha quando a última proposta é decidida.

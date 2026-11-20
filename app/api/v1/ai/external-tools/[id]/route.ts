@@ -86,6 +86,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx): Promise<Response> {
   try {
     const atual = await buscarFerramenta(admin, org.orgId, id);
     if (!atual) return fail("not_found", t("Ferramenta não encontrada."), 404, { requestId });
+    // A API genérica (#372) tem portão próprio (papel escolhido pela organização, segunda etapa,
+    // travas): por esta rota ela não é editada.
+    if (atual.kind === "api") return fail("api_tool_managed_elsewhere", t("Esta ferramenta é uma API: ela é gerenciada em Ferramentas externas › APIs."), 409, { requestId });
     if (atual.mcp) {
       const adm = await requireRole("admin", { requestId, resource: "ai_external_tools" });
       if (!adm.ok) return adm.response;
@@ -156,6 +159,7 @@ export async function DELETE(_req: NextRequest, ctx: Ctx): Promise<Response> {
   try {
     const antes = await buscarFerramenta(admin, org.orgId, id);
     if (!antes) return fail("not_found", t("Ferramenta não encontrada."), 404, { requestId });
+    if (antes.kind === "api") return fail("api_tool_managed_elsewhere", t("Esta ferramenta é uma API: ela é gerenciada em Ferramentas externas › APIs."), 409, { requestId });
     if (antes.mcp) {
       const adm = await requireRole("admin", { requestId, resource: "ai_external_tools" });
       if (!adm.ok) return adm.response;

@@ -50,6 +50,8 @@ export interface PedidoComFerramenta extends PedidoDeExecucao {
   tool_url: string | null;
   /** Presente quando a ferramenta vem de um servidor MCP (#96). */
   tool_mcp: { servidor_id: string; nome_no_servidor: string } | null;
+  /** Presente quando a ferramenta é uma API genérica (#372): a config crua e se há credencial gravada. */
+  tool_api: { config: unknown; tem_credencial: boolean } | null;
 }
 
 function paraPedido(l: LinhaDoPedido, ferramenta: { name: string; slug: string; effect: "consulta" | "altera" }): PedidoDeExecucao {
@@ -89,7 +91,7 @@ export async function buscarPedido(
   const linha = data as unknown as LinhaDoPedido;
   const { data: f, error: erroDaFerramenta } = await admin
     .from("agent_external_tools")
-    .select("name, slug, effect, active, parameters, url, kind, mcp_server_id, mcp_tool_name")
+    .select("name, slug, effect, active, parameters, url, kind, mcp_server_id, mcp_tool_name, api_config, signing_secret_last4")
     .eq("organization_id", organizationId)
     .eq("id", linha.tool_id)
     .maybeSingle();
@@ -105,6 +107,8 @@ export async function buscarPedido(
     kind: string;
     mcp_server_id: string | null;
     mcp_tool_name: string | null;
+    api_config: unknown;
+    signing_secret_last4: string | null;
   };
   return {
     ...paraPedido(linha, ferramenta),
@@ -117,6 +121,10 @@ export async function buscarPedido(
     tool_mcp:
       ferramenta.kind === "mcp" && ferramenta.mcp_server_id && ferramenta.mcp_tool_name
         ? { servidor_id: ferramenta.mcp_server_id, nome_no_servidor: ferramenta.mcp_tool_name }
+        : null,
+    tool_api:
+      ferramenta.kind === "api"
+        ? { config: ferramenta.api_config, tem_credencial: ferramenta.signing_secret_last4 !== null }
         : null,
   };
 }

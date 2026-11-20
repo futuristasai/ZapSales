@@ -23,17 +23,25 @@ import {
   type CriarFerramentaInput,
   type EditarFerramentaInput,
 } from "./esquema";
+import { lerConfigDaApi } from "./api/esquema";
+import { lerSegurancaDasApis, type SegurancaDasApis } from "./api/seguranca";
+import type { ConfigDaApi } from "./api/tipos";
+import { chaveDeAprovacaoEmVigor, travaDaFerramenta, type TravaDaApi } from "./api/travas";
 import { lerConfigDeMcp } from "./mcp/config";
 import { lerCredencialDoServidor } from "./mcp/repositorio";
 import type { EfeitoDaFerramenta, ParametroDaFerramenta, TipoDaFerramenta } from "./tipos";
 import { EFEITOS_DA_FERRAMENTA } from "./tipos";
 
-/** Por que uma ferramenta de servidor MCP não está disponível para os agentes agora. */
-export type MotivoDeIndisponibilidade = "mcp_desligado" | "servidor_desativado";
+/**
+ * Por que uma ferramenta não está disponível para os agentes agora, apesar de ativa. MCP: o recurso
+ * desligado ou o servidor desativado. API (#372): uma trava de segurança da organização, ou a
+ * config gravada ilegível.
+ */
+export type MotivoDeIndisponibilidade = "mcp_desligado" | "servidor_desativado" | TravaDaApi | "config_ilegivel";
 
 export interface FerramentaExterna {
   id: string;
-  /** `webhook` (#94) ou `mcp` (#96, escolhida num servidor MCP). */
+  /** `webhook` (#94), `mcp` (#96, escolhida num servidor MCP) ou `api` (#372, a API pronta de outro sistema). */
   kind: TipoDaFerramenta;
   name: string;
   slug: string;
@@ -51,7 +59,21 @@ export interface FerramentaExterna {
     /** O que o servidor declarou (`readOnlyHint`). Só uma dica. */
     hint_read_only: boolean | null;
   } | null;
-  /** Por que a ferramenta não chega aos agentes agora, apesar de ativa (MCP desligado, servidor desativado). */
+  /** Presente em `kind = 'api'`. Nunca a credencial: só se há uma e os 4 últimos caracteres (`secret_last4`). */
+  api: {
+    config: ConfigDaApi;
+    has_credential: boolean;
+    /** Falhas seguidas das chamadas do agente (a pausa automática conta por aqui). */
+    consecutive_failures: number;
+    /** Quando a ferramenta se pausou sozinha. `null` = nunca, ou alguém a reativou. */
+    auto_paused_at: string | null;
+    /**
+     * A chave «pedir aprovação» que vale DE VERDADE, com a trava «aprovação sempre obrigatória» da
+     * organização aplicada. É por ela que a tela diz «pede aprovação» — e não por `require_approval`.
+     */
+    approval_in_effect: boolean | null;
+  } | null;
+  /** Por que a ferramenta não chega aos agentes agora, apesar de ativa (MCP desligado, servidor desativado, trava das APIs). */
   unavailable_reason: MotivoDeIndisponibilidade | null;
   parameters: ParametroDaFerramenta[];
   effect: EfeitoDaFerramenta;
@@ -70,10 +92,10 @@ export interface FerramentaExterna {
 }
 
 /** Tudo menos a chave cifrada: a coluna `signing_secret_encrypted` nunca é selecionada para a tela. */
-const COLUNAS_PUBLICAS =
-  "id, kind, name, slug, when_to_use, url, parameters, effect, require_approval, approval_ttl_hours, active, signing_secret_last4, mcp_server_id, mcp_tool_name, mcp_hint_read_only, created_at, updated_at";
+export const COLUNAS_PUBLICAS =
+  "id, kind, name, slug, when_to_use, url, parameters, effect, require_approval, approval_ttl_hours, active, signing_secret_last4, mcp_server_id, mcp_tool_name, mcp_hint_read_only, api_config, consecutive_failures, auto_paused_at, created_at, updated_at";
 
-interface LinhaPublica {
+export interface LinhaPublica {
   id: string;
   kind: string;
   name: string;
@@ -89,6 +111,9 @@ interface LinhaPublica {
   mcp_server_id: string | null;
   mcp_tool_name: string | null;
   mcp_hint_read_only: boolean | null;
+  api_config?: unknown;
+  consecutive_failures?: number | null;
+  auto_paused_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -97,9 +122,27 @@ interface LinhaPublica {
 export interface ContextoDoMcp {
   ligado: boolean;
   servidores: ReadonlyMap<string, { name: string; active: boolean }>;
+  /** A segurança das APIs em vigor (#372). Ausente = não lida: vale desligada e na posição mais segura. */
+  seguranca?: SegurancaDasApis;
 }
 
 const SEM_MCP: ContextoDoMcp = { ligado: false, servidores: new Map() };
+
+/** A ferramenta de API como a tela a lê: a config, a trava que a barra agora e a aprovação que vale. */
+function paraApi(l: LinhaPublica, efeito: EfeitoDaFerramenta, seguranca: SegurancaDasApis) {
+  const config = lerConfigDaApi(l.api_config);
+  if (!config) return { api: null, indisponivel: "config_ilegivel" as const };
+  return {
+    api: {
+      config,
+      has_credential: l.signing_secret_last4 !== null,
+      consecutive_failures: l.consecutive_failures ?? 0,
+      auto_paused_at: l.auto_paused_at ?? null,
+      approval_in_effect: chaveDeAprovacaoEmVigor(seguranca, efeito, l.require_approval),
+    },
+    indisponivel: travaDaFerramenta(seguranca, { efeito, urlModelo: l.url ?? "", config }),
+  };
+}
 
 export function paraFerramenta(l: LinhaPublica, mcp: ContextoDoMcp = SEM_MCP): FerramentaExterna {
   // Leitura DEFENSIVA do jsonb: linha escrita por fora da tela com formato estranho
@@ -107,9 +150,13 @@ export function paraFerramenta(l: LinhaPublica, mcp: ContextoDoMcp = SEM_MCP): F
   const parametros = parametrosLidos.safeParse(l.parameters);
   const ehMcp = l.kind === "mcp" && l.mcp_server_id !== null && l.mcp_tool_name !== null;
   const servidor = ehMcp ? mcp.servidores.get(l.mcp_server_id as string) : undefined;
+  const efeito: EfeitoDaFerramenta = (EFEITOS_DA_FERRAMENTA as readonly string[]).includes(l.effect)
+    ? (l.effect as EfeitoDaFerramenta)
+    : "altera";
+  const daApi = !ehMcp && l.kind === "api" ? paraApi(l, efeito, mcp.seguranca ?? lerSegurancaDasApis(null)) : null;
   return {
     id: l.id,
-    kind: ehMcp ? "mcp" : "webhook",
+    kind: ehMcp ? "mcp" : daApi ? "api" : "webhook",
     name: l.name,
     slug: l.slug,
     agent_name: nomeNoAgente(l.slug),
@@ -123,9 +170,18 @@ export function paraFerramenta(l: LinhaPublica, mcp: ContextoDoMcp = SEM_MCP): F
           hint_read_only: l.mcp_hint_read_only,
         }
       : null,
-    unavailable_reason: !ehMcp ? null : !mcp.ligado ? "mcp_desligado" : servidor?.active === false ? "servidor_desativado" : null,
+    api: daApi?.api ?? null,
+    unavailable_reason: daApi
+      ? daApi.indisponivel
+      : !ehMcp
+        ? null
+        : !mcp.ligado
+          ? "mcp_desligado"
+          : servidor?.active === false
+            ? "servidor_desativado"
+            : null,
     parameters: parametros.success ? parametros.data : [],
-    effect: (EFEITOS_DA_FERRAMENTA as readonly string[]).includes(l.effect) ? (l.effect as EfeitoDaFerramenta) : "altera",
+    effect: efeito,
     require_approval: l.require_approval,
     approval_ttl_hours: l.approval_ttl_hours,
     active: l.active,
@@ -149,13 +205,19 @@ async function contextoDoMcp(
   organizationId: string,
   linhas: readonly LinhaPublica[],
 ): Promise<ContextoDoMcp> {
-  if (!linhas.some((l) => l.kind === "mcp")) return SEM_MCP;
+  const temMcp = linhas.some((l) => l.kind === "mcp");
+  if (!temMcp && !linhas.some((l) => l.kind === "api")) return SEM_MCP;
   const [{ data: org, error: erroDaOrg }, { data: servidores, error: erroDosServidores }] = await Promise.all([
     admin.from("organizations").select("settings").eq("id", organizationId).maybeSingle(),
-    admin.from("mcp_servers").select("id, name, active").eq("organization_id", organizationId),
+    temMcp
+      ? admin.from("mcp_servers").select("id, name, active").eq("organization_id", organizationId)
+      : Promise.resolve({ data: [], error: null }),
   ]);
   if (erroDosServidores) throw new Error(`leitura dos servidores MCP falhou: ${erroDosServidores.message}`);
+  const settings = erroDaOrg ? null : ((org as { settings?: unknown } | null)?.settings ?? {});
   return {
+    // Falha de leitura = desligada e na posição mais segura (falha fechada).
+    seguranca: lerSegurancaDasApis(settings),
     // Falha de leitura do interruptor = desligado (falha fechada).
     ligado: !erroDaOrg && lerConfigDeMcp((org as { settings?: unknown } | null)?.settings ?? {}).ligado,
     servidores: new Map(
@@ -365,6 +427,7 @@ export async function lerChaveDaFerramenta(
       return null;
     }
     const linha = data as { signing_secret_encrypted: string | null; mcp_server_id: string | null } | null;
+    // API (#372): a credencial da API mora na mesma coluna cifrada do webhook — cai no caminho abaixo.
     if (linha?.mcp_server_id) return await lerCredencialDoServidor(admin, organizationId, linha.mcp_server_id);
     return linha?.signing_secret_encrypted ? await decryptWebhookSecret(admin, linha.signing_secret_encrypted) : null;
   } catch (err) {

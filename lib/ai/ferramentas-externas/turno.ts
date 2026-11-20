@@ -34,6 +34,7 @@ import type { PoliticaDeDestino } from "@/lib/net/rede-segura";
 import { decidirSePedeAprovacao, fraseDoEstadoParaOAgente, type ModoDoTurnoExterno } from "./aprovacao";
 import { fraseDoMotivo, resultadoParaOAgente, type ResultadoDaChamada } from "./chamar";
 import { esquemaDeEntrada, nomeNoAgente, validarArgumentos } from "./esquema";
+import type { ContatoDaConversa, DestinoApi } from "./api/tipos";
 import { executarFerramentaExterna } from "./executar";
 import type { DestinoMcp } from "./mcp/tipos";
 import type { AberturaDoPedido, PedidoDoTurno } from "./pedidos-tipos";
@@ -50,6 +51,8 @@ export interface FerramentaDoTurno {
   effect: EfeitoDaFerramenta;
   /** Presente = a ferramenta vem de um servidor MCP (issue #96); ausente = webhook. */
   mcp?: DestinoMcp;
+  /** Presente = a ferramenta é uma API genérica (issue #372). */
+  api?: DestinoApi;
   /** `null` = a pessoa nunca mexeu na chave: vale o padrão do efeito. */
   requireApproval: boolean | null;
   /** Horas que um pedido desta ferramenta espera por um humano. */
@@ -98,6 +101,20 @@ export interface DependenciasDoTurnoExterno {
     resultado: ResultadoDaChamada;
   }) => Promise<void>;
   log: { warn: (mensagem: string, campos?: Record<string, unknown>) => void };
+  /**
+   * Só API (issue #372). O limite de uso: conta esta chamada e diz se ela ainda cabe. Nunca lança
+   * (falha de leitura deixa passar: o limite é freio, não invariante). Ausente = sem limite.
+   */
+  contarUso?: (ferramenta: FerramentaDoTurno) => Promise<{ cabe: true } | { cabe: false; limite: "conversa" | "dia" }>;
+  /** Só API. Os dados do contato da conversa em curso, lidos pelo SISTEMA. Nunca lança. */
+  lerContato?: () => Promise<ContatoDaConversa>;
+  /**
+   * Só API. O desfecho de uma chamada, para a pausa automática: a ferramenta que falha seguidas
+   * vezes se desativa sozinha e o dono é avisado. Nunca lança.
+   */
+  registrarDesfecho?: (a: { ferramenta: FerramentaDoTurno; resultado: ResultadoDaChamada }) => Promise<void>;
+  /** Só API. Avisa o administrador de uma ação que ALTERA e saiu sem aprovação. Nunca lança. */
+  avisarExecucaoDireta?: (a: { ferramenta: FerramentaDoTurno; resultado: ResultadoDaChamada }) => Promise<void>;
   /** Só para teste: troca a rede (o receptor do teste está em 127.0.0.1). */
   politica?: PoliticaDeDestino;
   dormir?: (ms: number) => Promise<void>;
@@ -200,6 +217,8 @@ export async function montarFerramentasExternas(
     pedido: PedidoDoTurno | null,
   ): Promise<unknown> {
     const chave = await deps.lerChave(f.id);
+    // Só a ferramenta de API que DECLARA dado do contato o recebe — e quem lê é o sistema.
+    const contato = f.api && f.api.config.dados_contato.length > 0 && deps.lerContato ? await deps.lerContato() : undefined;
     const resultado = await executarFerramentaExterna(
       {
         ferramenta: {
@@ -209,9 +228,11 @@ export async function montarFerramentasExternas(
           ...(f.mcp
             ? { mcp: { cabecalho: f.mcp.cabecalho, temCredencial: f.mcp.temCredencial, nomeNoServidor: f.mcp.nomeNoServidor } }
             : {}),
+          ...(f.api ? { api: f.api } : {}),
         },
         segredo: chave,
         argumentos,
+        ...(contato ? { contato } : {}),
         // O id do pedido é o id de entrega: quem recebe deduplica por ele.
         ...(pedido ? { idDeEntrega: pedido.id } : {}),
       },
@@ -222,6 +243,11 @@ export async function montarFerramentasExternas(
     );
     if (pedido) await deps.concluirPedido({ pedido, ferramenta: f, resultado });
     await deps.auditar({ ferramenta: f, resultado });
+    if (f.api) {
+      await deps.registrarDesfecho?.({ ferramenta: f, resultado });
+      // Chegou aqui com efeito «altera» = saiu SEM aprovação (a chave estava desligada).
+      if (f.effect === "altera") await deps.avisarExecucaoDireta?.({ ferramenta: f, resultado });
+    }
     if (!resultado.ok) {
       await deps.abrirAviso({
         // Ação que altera leva o pedido no título: a Central deduplica por título, e duas falhas
@@ -238,7 +264,9 @@ export async function montarFerramentasExternas(
               "O agente foi orientado a não afirmar ao cliente nada que dependia dessa consulta. " +
               (f.mcp
                 ? "Abra Ferramentas externas › Servidores MCP, confira o servidor e use «Testar conexão» para ver o que ele responde."
-                : "Abra Ferramentas externas, confira o endereço e use «Testar» para ver o que o outro sistema responde."),
+                : f.api
+                  ? "Abra Ferramentas externas › APIs, confira o cadastro e use «Testar de verdade» para ver o que o outro sistema responde."
+                  : "Abra Ferramentas externas, confira o endereço e use «Testar» para ver o que o outro sistema responde."),
       });
     }
     return resultadoParaOAgente(resultado, f.effect);
@@ -281,6 +309,30 @@ export async function montarFerramentasExternas(
                 : "Modo de teste: a consulta ao sistema externo NÃO foi feita, então você não tem o resultado. " +
                   "Não invente o que ela devolveria; diga ao cliente que vai confirmar essa informação.",
           };
+        }
+
+        // O limite de uso da API (issue #372): conta ANTES de qualquer efeito, inclusive de abrir
+        // um pedido — o freio vale também contra encher a Central de pedidos de aprovação.
+        if (f.api && deps.contarUso) {
+          const uso = await deps.contarUso(f);
+          if (!uso.cabe) {
+            await deps.abrirAviso({
+              titulo: `«${f.name}» atingiu o limite de uso`,
+              corpo:
+                `O agente tentou usar «${f.name}» além do limite ${uso.limite === "conversa" ? "por conversa" : "por dia"} ` +
+                "definido no cadastro, e a chamada NÃO foi feita. O agente foi orientado a não afirmar ao cliente nada que " +
+                "dependia dela. Se o limite está baixo para o seu uso, aumente-o em Ferramentas externas › APIs.",
+            });
+            return {
+              ok: false,
+              error: {
+                code: "external_tool_limit_reached",
+                message:
+                  "Esta ferramenta atingiu o limite de uso e NÃO foi chamada. Não tente de novo nesta conversa. Não afirme ao " +
+                  "cliente nada que dependia dela; diga que não conseguiu consultar agora e ofereça chamar um atendente.",
+              },
+            };
+          }
         }
 
         // Consulta que não pede aprovação: o caminho de sempre, sem pedido e sem nada novo.

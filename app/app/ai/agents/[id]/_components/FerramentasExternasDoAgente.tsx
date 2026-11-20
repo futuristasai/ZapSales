@@ -29,6 +29,7 @@ import { apiClient } from "@/lib/api/client";
 import { useT } from "@/hooks/i18n/useT";
 import { cn } from "@/lib/utils";
 import { ArrowSquareOut, HardDrives, Plugs, Plus } from "@/lib/ui/icons";
+import { FRASE_DA_TRAVA } from "@/lib/ai/ferramentas-externas/api/travas";
 import { decidirSePedeAprovacao } from "@/lib/ai/ferramentas-externas/aprovacao";
 import type { FerramentaExterna } from "@/lib/ai/ferramentas-externas/repositorio";
 import { TETO_MAXIMO_POR_AGENTE } from "@/lib/mcp/tools/selecao-por-pacote";
@@ -45,11 +46,12 @@ interface Props {
 /** O que a rota serve — o tipo do repositório, sem puxar o módulo de servidor para o browser. */
 type FerramentaDaLista = Pick<
   FerramentaExterna,
-  "id" | "name" | "agent_name" | "when_to_use" | "url" | "effect" | "require_approval" | "active" | "kind" | "mcp" | "unavailable_reason"
+  "id" | "name" | "agent_name" | "when_to_use" | "url" | "effect" | "require_approval" | "active" | "kind" | "mcp" | "api" | "unavailable_reason"
 >;
 
 const ONDE_CADASTRAR = "/app/ai/external-tools";
 const ONDE_CONECTAR_MCP = "/app/ai/external-tools?aba=mcp";
+const ONDE_CONECTAR_API = "/app/ai/external-tools?aba=apis";
 
 function enderecoCurto(url: string | null): string {
   if (!url) return "";
@@ -157,6 +159,10 @@ export function FerramentasExternasDoAgente({ value, onChange, capacidadesLigada
               <Plus size={16} aria-hidden />
               {t("Cadastrar uma ferramenta externa")}
             </LinkEmOutraAba>
+            <LinkEmOutraAba href={ONDE_CONECTAR_API} variante="outline" testId="conectar-api">
+              <Plugs size={16} aria-hidden />
+              {t("Conectar uma API")}
+            </LinkEmOutraAba>
             <LinkEmOutraAba href={ONDE_CONECTAR_MCP} variante="outline" testId="conectar-servidor-mcp">
               <HardDrives size={16} aria-hidden />
               {t("Conectar um servidor MCP")}
@@ -185,7 +191,8 @@ export function FerramentasExternasDoAgente({ value, onChange, capacidadesLigada
               const naoLiga = !f.active || f.unavailable_reason !== null;
               const pedeAprovacao = decidirSePedeAprovacao({
                 effect: f.effect,
-                requireApproval: f.require_approval,
+                // API (#372): a chave que VALE, com a trava «aprovação sempre obrigatória» da organização.
+                requireApproval: f.api ? f.api.approval_in_effect : f.require_approval,
                 modo: "ao_vivo",
               }).pede;
               const idDaCaixa = `ferramenta-externa-caixa-${f.id}`;
@@ -225,6 +232,11 @@ export function FerramentasExternasDoAgente({ value, onChange, capacidadesLigada
                         {t("Servidor MCP")}
                       </Badge>
                     ) : null}
+                    {f.kind === "api" ? (
+                      <Badge variant="outline" className="border-border/60 text-[11px] text-muted-foreground" data-testid={`ferramenta-api-${f.id}`}>
+                        {t("API")}
+                      </Badge>
+                    ) : null}
                     {!f.active ? (
                       <Badge variant="outline" className="border-warning/40 text-[11px] text-warning-fg">
                         {t("Desativada")}
@@ -242,6 +254,14 @@ export function FerramentasExternasDoAgente({ value, onChange, capacidadesLigada
                   ) : f.unavailable_reason === "servidor_desativado" ? (
                     <p className="col-start-2 text-xs text-info-fg" data-testid={`indisponivel-${f.id}`}>
                       {t("O servidor desta ferramenta está desativado: o agente não a usa até um administrador reativar.")}
+                    </p>
+                  ) : f.unavailable_reason === "config_ilegivel" ? (
+                    <p className="col-start-2 text-xs text-info-fg" data-testid={`indisponivel-${f.id}`}>
+                      {t("O cadastro desta API está ilegível: o agente não a usa até alguém salvar o cadastro de novo em Ferramentas externas › APIs.")}
+                    </p>
+                  ) : f.unavailable_reason !== null ? (
+                    <p className="col-start-2 text-xs text-info-fg" data-testid={`indisponivel-${f.id}`}>
+                      {t("O agente não usa esta API agora.")} {t(FRASE_DA_TRAVA[f.unavailable_reason])}
                     </p>
                   ) : !f.active ? (
                     <p className="col-start-2 text-xs text-info-fg">

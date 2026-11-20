@@ -955,6 +955,63 @@ notificações do servidor não é aberto; as ferramentas de um servidor só mud
 
 ---
 
+## 12f. API genérica como ferramenta do agente (issue #372)
+
+O terceiro tipo de ferramenta externa: a **API pronta de outro sistema** (loja virtual, ERP, CRM), chamada direto,
+com o método, o endereço-modelo, o corpo e a credencial que a própria pessoa cadastra. Entra no mesmo registro
+(`agent_external_tools`, `kind = 'api'`, migration 0573) e herda o seletor do agente, o teto de capacidades, a
+aprovação da #95 e a execução única. O guia de quem cadastra é
+[`docs/integracao/api-generica-do-agente.md`](../integracao/api-generica-do-agente.md); o mapa,
+`docs/architecture/api-generica-do-agente.architecture.json`.
+
+**Recurso opcional, desligado por padrão.** Interruptor e opções em `organizations.settings.api_externa`
+(`lib/ai/ferramentas-externas/api/seguranca.ts` — leitura que nunca lança e falha na posição mais segura). Ligar exige
+o aceite, conferido na rota.
+
+**As 17 opções, explicadas na tela.** Decisão do dono do produto: toda opção de segurança mostra o que faz, um
+exemplo, a posição recomendada e o risco de sair dela; toda opção nasce na posição recomendada; sair dela pede
+confirmação antes de salvar («Manter como está» é o botão em destaque), deixa o selo «Fora do recomendado» e é
+auditado. Os textos têm fonte única em `lib/ai/ferramentas-externas/api/opcoes.ts`, e a cerca
+`tests/unit/api-generica-opcoes-explicadas.test.ts` reprova opção nova sem os cinco textos ou sem espanhol e inglês.
+
+| Onde | Opções |
+|---|---|
+| Organização (9) | ligar · quem cadastra · endereços permitidos · somente consulta · aprovação sempre obrigatória · dados do contato que podem sair · quem aprova · verificação em duas etapas · aviso ao administrador |
+| Cada API (8) | efeito e aprovação · prazo da aprovação · dados do contato da ferramenta · campos da resposta · limite de uso · agentes e pausa · valores permitidos por campo · pausa automática após falhas |
+
+O **nível de segurança** («Mais seguro», «Equilibrado», «Personalizado») aplica várias opções de uma vez e é
+**calculado** dos valores em vigor, nunca guardado.
+
+**Proteções fixas (ninguém desliga).** `https` e nunca a rede interna (rede segura única, no cadastro e a cada
+chamada); redirecionamento não é seguido; o host do endereço nunca é marcador; credencial cifrada
+(`fn_encrypt_oauth`) que nunca volta; a resposta chega ao agente como dado não confiável; ação que altera nunca é
+repetida; auditoria sem credencial, corpo nem resposta.
+
+**As travas valem na execução.** `travaDaFerramenta` é perguntada a cada turno (`carregarFerramentasDoTurno`), na
+aprovação (`decide`) e no teste — e não só no cadastro. A API gravada antes de a trava ser ligada some do turno
+seguinte, e a tela diz por quê (`unavailable_reason`).
+
+**O dado do contato vem do sistema.** `{{contato_telefone}}`, `{{contato_nome}}` e `{{contato_email}}` são
+preenchidos com os dados da conversa em curso, lidos do banco; um campo do agente não pode ter esses nomes, e um
+dado só sai se a organização o liberou e a ferramenta o declara.
+
+**Rotas.** `GET/PUT /api/v1/ai/api-security` (estado e opções; PUT só administrador) ·
+`GET/POST /api/v1/ai/api-tools` · `PATCH/DELETE /api/v1/ai/api-tools/:id` · `POST /api/v1/ai/api-tools/:id/test`. O
+portão (`lib/ai/ferramentas-externas/api/rotas.ts`) confere, nesta ordem, o papel escolhido pela organização, o
+recurso ligado e a segunda etapa; pausar uma API não exige a segunda etapa. As rotas antigas
+(`/api/v1/ai/external-tools/:id`, `…/test`, `…/rotate-secret`) recusam ferramenta `api` com 409
+`api_tool_managed_elsewhere`.
+
+**Auditoria.** `ai.api_security_changed` (opções alteradas e afrouxadas) e, com `kind: "api"`,
+`ai.external_tool_created/updated/deleted/tested/called` e `ai.external_tool_request_*`.
+
+**Central de avisos.** `external_tool_approval` (pedido), `external_tool_failed` (falha, limite de uso atingido,
+pausa automática) e o novo `external_api_notice` (cadastro criado, alterado ou apagado; segurança alterada; ação
+executada sem aprovação).
+
+**Fora desta entrega.** OAuth; credencial em query string; campos que são lista ou objeto; sincronização e
+recebimento de avisos do outro sistema; modelos prontos por sistema.
+
 ## 13. Performance
 
 - Lista paginada (default 25/page) com cursor base64+HMAC (Spec 09)

@@ -38,6 +38,16 @@ export async function POST(_req: NextRequest, ctx: Ctx): Promise<Response> {
     const admin = createAdminClient();
     // Ferramenta de servidor MCP não tem chave de assinatura: a credencial é do SERVIDOR (tela do servidor).
     const atual = await buscarFerramenta(admin, org.orgId, id);
+    // A API genérica (#372) não tem chave de assinatura: a credencial é a do OUTRO sistema, e se
+    // troca na tela das APIs (com o portão dela). Gerar uma chave aqui a sobrescreveria.
+    if (atual?.kind === "api") {
+      return fail(
+        "api_tool_managed_elsewhere",
+        t("Esta ferramenta é uma API: ela é gerenciada em Ferramentas externas › APIs."),
+        409,
+        { requestId },
+      );
+    }
     if (atual?.mcp) {
       return fail(
         "not_applicable",
