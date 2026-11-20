@@ -46,7 +46,6 @@ describe("a segurança das APIs nasce desligada e na posição recomendada", () 
       aprovacao_obrigatoria: true,
       dados_do_contato: [],
       quem_aprova: "admin",
-      exigir_duas_etapas: true,
       avisar_administrador: true,
     });
   });
@@ -65,6 +64,12 @@ describe("a segurança das APIs nasce desligada e na posição recomendada", () 
       expect(lida.ligado).toBe(false);
       expect(opcoesDe(lida)).toEqual(RECOMENDADO);
     }
+  });
+
+  it("o `exigir_duas_etapas` gravado pela v1.6.0 é descartado na leitura", () => {
+    const lida = lerSegurancaDasApis({ api_externa: { ligado: true, aceite: ACEITE, exigir_duas_etapas: true } });
+    expect(lida.ligado).toBe(true);
+    expect(lida).not.toHaveProperty("exigir_duas_etapas");
   });
 
   it("ligar exige o aceite", () => {
@@ -92,8 +97,9 @@ describe("nível de segurança — calculado dos valores, nunca guardado", () =>
     const carimbo = { em: ACEITE.em, por: ACEITE.por };
     const proxima = configDeApiSchema.parse(mesclarSeguranca(ligada(), { nivel: "equilibrado", quem_aprova: "admin" }, carimbo));
     expect(proxima.somente_consulta).toBe(false);
-    expect(proxima.exigir_duas_etapas).toBe(false);
     expect(proxima.quem_aprova).toBe("admin");
+    // Sem a opção ao lado, vale o que o nível diz.
+    expect(configDeApiSchema.parse(mesclarSeguranca(ligada(), { nivel: "equilibrado" }, carimbo)).quem_aprova).toBe("manager");
     // A lista de endereços e os dados do contato são DADO da organização: o nível não toca.
     const comDados = ligada({ dominios_permitidos: ["api.loja.example"], dados_do_contato: ["telefone"] });
     const depois = configDeApiSchema.parse(mesclarSeguranca(comDados, { nivel: "mais_seguro" }, carimbo));

@@ -108,16 +108,6 @@ export const OPCOES_EXPLICADAS: readonly OpcaoExplicada[] = [
     comAlerta: true,
   },
   {
-    id: "exigir_duas_etapas",
-    escopo: "organizacao",
-    nome: "Verificação em duas etapas para mexer nas APIs",
-    oQueFaz: "Só deixa cadastrar, editar, testar ou mudar a segurança das APIs quem entrou com a senha e também com o código do aplicativo no celular.",
-    exemplo: "Com isto ligado, quem descobrir a sua senha não consegue cadastrar uma API nem trocar uma chave, porque não tem o seu celular.",
-    recomendacao: "Recomendamos manter ligado e ativar a verificação em duas etapas na sua conta.",
-    risco: "Com isto desligado, quem roubar a senha de um administrador consegue cadastrar uma API e mandar os dados dos seus clientes para fora.",
-    comAlerta: true,
-  },
-  {
     id: "avisar_administrador",
     escopo: "organizacao",
     nome: "Aviso ao administrador",
@@ -211,8 +201,11 @@ export const OPCOES_EXPLICADAS: readonly OpcaoExplicada[] = [
   },
 ];
 
-/** Quantas opções o produto promete (issue #372). O teste cobra o número: opção não some em silêncio. */
-export const TOTAL_DE_OPCOES = 17;
+/**
+ * Quantas opções o produto promete (issue #372). O teste cobra o número: opção não some em silêncio.
+ * Eram 17; a «verificação em duas etapas para mexer nas APIs» saiu por decisão do dono (20/11/2026).
+ */
+export const TOTAL_DE_OPCOES = 16;
 
 export function opcaoExplicada(id: string): OpcaoExplicada {
   const opcao = OPCOES_EXPLICADAS.find((o) => o.id === id);
@@ -233,13 +226,13 @@ export const NIVEIS_EXPLICADOS: readonly NivelExplicado[] = [
   {
     id: "mais_seguro",
     nome: "Mais seguro",
-    oQueFaz: "O agente só consulta. Só administrador cadastra e aprova, e mexer nas APIs exige a verificação em duas etapas.",
+    oQueFaz: "O agente só consulta, e só administrador cadastra e aprova.",
     exemplo: "Bom para começar: o agente vê o estoque e o andamento do pedido, e nada é alterado em outro sistema.",
   },
   {
     id: "equilibrado",
     nome: "Equilibrado",
-    oQueFaz: "O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar, e a verificação em duas etapas deixa de ser exigida.",
+    oQueFaz: "O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar.",
     exemplo: "Bom quando o agente precisa criar um pedido ou agendar algo no outro sistema, com você conferindo antes.",
   },
   {
@@ -252,4 +245,4 @@ export const NIVEIS_EXPLICADOS: readonly NivelExplicado[] = [
 
 /** A frase do risco de escolher o nível «Equilibrado» de uma vez. */
 export const RISCO_DO_NIVEL_EQUILIBRADO =
-  "No nível «Equilibrado» o agente passa a poder alterar dados em outro sistema (sempre com aprovação), gerentes passam a poder aprovar e a verificação em duas etapas deixa de ser exigida para mexer nas APIs.";
+  "No nível «Equilibrado» o agente passa a poder alterar dados em outro sistema (sempre com aprovação), e gerentes passam a poder aprovar.";

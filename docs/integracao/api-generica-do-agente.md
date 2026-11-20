@@ -115,12 +115,15 @@ tela, deixa o selo «Fora do recomendado» e fica na auditoria (`ai.api_security
 | Aprovação sempre obrigatória | Ligado | Toda ação que altera espera aprovação, qualquer que seja a chave da ferramenta. |
 | Dados do contato que podem sair | Nenhum | Telefone, nome e e-mail, um a um. |
 | Quem pode aprovar | Só administrador | Ou administrador e gerente. Vale para aprovar e para recusar. |
-| Verificação em duas etapas | Ligado | Cadastrar, editar, testar e mudar a segurança exige sessão com a segunda etapa. Pausar uma API não exige. |
 | Aviso ao administrador | Ligado | Aviso na Central a cada mudança de cadastro ou de segurança e a cada ação executada sem aprovação. |
 
 O **nível de segurança** aplica várias de uma vez: «Mais seguro» (a posição recomendada) e
-«Equilibrado» (o agente pode alterar, sempre com aprovação; gerente aprova; sem exigir as duas
-etapas). O nível não é guardado: é calculado dos valores em vigor.
+«Equilibrado» (o agente pode alterar, sempre com aprovação; gerente aprova). O nível não é
+guardado: é calculado dos valores em vigor.
+
+A verificação em duas etapas **não** é exigida para mexer nas APIs (decisão do dono do produto,
+20/11/2026). Quem tem a verificação ativa na conta continua provando-a na sessão, como em
+qualquer tela.
 
 **As travas valem na execução**, não só no cadastro. Uma API gravada antes de a trava ser ligada
 deixa de ser oferecida ao agente no turno seguinte, sem ninguém editá-la, e a tela diz por quê.

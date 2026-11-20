@@ -4063,7 +4063,7 @@ sem mexer no servidor de licenças ou nos contêineres.
 
 Contexto: além do webhook (J52/J53) e do servidor MCP (J54), a organização pode cadastrar a **API pronta** de outro
 sistema (loja virtual, ERP, CRM) — método, endereço-modelo, credencial, corpo — e o agente a chama direto. O recurso vem
-**desligado**; as 17 opções de segurança nascem na posição recomendada e cada uma mostra na tela o que faz, um exemplo,
+**desligado**; as 16 opções de segurança nascem na posição recomendada e cada uma mostra na tela o que faz, um exemplo,
 a recomendação e o risco. Tipo `api` em `agent_external_tools` e a tabela `agent_external_tool_calls` (migration 0573);
 opções em `organizations.settings.api_externa`; regra em `lib/ai/ferramentas-externas/api/`; rotas
 `/api/v1/ai/api-security` e `/api/v1/ai/api-tools`; mapa em `docs/architecture/api-generica-do-agente.architecture.json`;
@@ -4077,7 +4077,7 @@ receptor HTTP real).
 |---|------|-------------|-----------|
 | J56.1 | Instalação NOVA, sem ligar nada | a aba «APIs» diz o que é uma API, que o sistema funciona sem isto e que ligar exige o aceite; nenhuma API é cadastrada nem chamada | **PASS (vitrine local, componentes reais)** — `372-01`; pela tela: spec escrita |
 | J56.2 | Ligar | só administrador; sem aceite a rota recusa; nasce no nível «Mais seguro» com o resumo «todas as opções estão na posição recomendada»; ligado SEM aceite no banco vale desligado | **PASS (unit)** — `api/seguranca.test.ts`; **PASS (vitrine)** — `372-02` |
-| J56.3 | Cada opção explicada | as 17 opções têm o que faz, exemplo, recomendação e risco, em pt, es e en; a tela as desenha por um componente só | **PASS (cerca)** — `tests/unit/api-generica-opcoes-explicadas.test.ts`; **PASS (vitrine)** — `372-02` |
+| J56.3 | Cada opção explicada | as 16 opções têm o que faz, exemplo, recomendação e risco, em pt, es e en; a tela as desenha por um componente só | **PASS (cerca)** — `tests/unit/api-generica-opcoes-explicadas.test.ts`; **PASS (vitrine)** — `372-02` |
 | J56.4 | Sair da posição recomendada | o risco e a recomendação aparecem ANTES de salvar; «Manter como está» (o botão em destaque) não muda nada; «Mudar mesmo assim» grava, deixa o selo «Fora do recomendado» e o resumo conta | **PASS (vitrine, medido)** — `372-03`: fora 0 → mantém 0 → muda 1, nível vira «personalizado» |
 | J56.5 | JSON torto em `settings.api_externa` | nunca afrouxa: vira desligado e recomendado | **PASS (unit)** |
 | J56.6 | Cadastrar: endereço | `https`, sem usuário e senha; o host nunca é marcador; endereço interno recusado antes de gravar | **PASS (unit)** — `api/montagem.test.ts`, `api/chamar.test.ts` (esquema); pela tela: spec escrita |
@@ -4112,3 +4112,6 @@ respondida em memória pelos próprios schemas do produto), com os prints em
 - **O caminho HTTPS real contra a API de um terceiro** (SNI, certificado) não é exercitado por nenhum gate.
 - Os prints mostram um domínio de exemplo anterior (`api.minhaloja…`); o código hoje usa domínios reservados
   (`*.example.com`), por causa da cerca de marca.
+- **2026-11-20, depois da v1.6.0:** a opção «verificação em duas etapas para mexer nas APIs» saiu, por decisão do
+  dono (não quer a verificação obrigatória para cadastrar APIs). O aviso «Falta a verificação em duas etapas para
+  cadastrar APIs» saiu junto. São 16 opções; os prints `372-02` e `372-03` ainda mostram a 17ª.

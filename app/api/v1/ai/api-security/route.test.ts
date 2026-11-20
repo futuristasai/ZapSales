@@ -1,7 +1,7 @@
 /**
  * A segurança das APIs (issue #372): desligada por padrão, restrita a administrador, com guarda
- * de suporte; ligar exige o aceite; a exigência das duas etapas vale para mudar opções (com a
- * saída para quem não tem fator); e toda mudança deixa rastro — auditoria com o que foi
+ * de suporte; ligar exige o aceite; a verificação em duas etapas NÃO é exigida (decisão do dono,
+ * 20/11/2026); e toda mudança deixa rastro — auditoria com o que foi
  * AFROUXADO e aviso ao administrador, inclusive o último, quando o que se desliga é o aviso.
  */
 import { NextRequest } from "next/server";
@@ -17,11 +17,9 @@ const deps = vi.hoisted(() => ({
   ler: vi.fn(),
   gravar: vi.fn(),
   avisar: vi.fn(),
-  aal: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-role", () => ({ requireRole: deps.role }));
-vi.mock("@/lib/auth/server", () => ({ sessionAal: deps.aal }));
 vi.mock("@/lib/impersonate/support", () => ({ requireSupportWrite: deps.support }));
 vi.mock("@/lib/audit", () => ({ audit: deps.audit }));
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: deps.admin }));
@@ -67,7 +65,6 @@ beforeEach(() => {
   deps.support.mockResolvedValue(null);
   deps.role.mockResolvedValue({ ok: true, user: { id: EU, idioma: "pt-BR", email: "dono@exemplo.invalid" }, org: { orgId: ORG } });
   deps.admin.mockReturnValue(admin());
-  deps.aal.mockResolvedValue("aal2");
   deps.ler.mockResolvedValue(DESLIGADA);
   deps.avisar.mockResolvedValue(undefined);
 });
@@ -80,13 +77,6 @@ describe("GET — o estado", () => {
     expect(dados).toMatchObject({ ligado: false, aceite: null, nivel: "mais_seguro", fora_do_recomendado: [] });
     expect(dados.opcoes).toEqual(RECOMENDADO);
     expect(deps.role).toHaveBeenCalledWith("manager", expect.anything());
-  });
-
-  it("diz se ESTA sessão provou a segunda etapa — a tela explica o bloqueio antes do clique", async () => {
-    deps.aal.mockResolvedValue("aal1");
-    expect((await (await GET()).json()).data.sessao_com_duas_etapas).toBe(false);
-    deps.aal.mockResolvedValue("aal2");
-    expect((await (await GET()).json()).data.sessao_com_duas_etapas).toBe(true);
   });
 
   it("falha na leitura é 500, nunca «desligado» inventado", async () => {
@@ -133,31 +123,18 @@ describe("PUT — quem pode e o aceite", () => {
   });
 });
 
-describe("PUT — a exigência das duas etapas", () => {
-  it("com a exigência ligada e a sessão sem a segunda etapa, mudar uma opção é 403 e nada é gravado", async () => {
+describe("PUT — a verificação em duas etapas não é exigida", () => {
+  it("a opção não existe mais: o corpo que a cita é 422", async () => {
     deps.ler.mockResolvedValue(LIGADA);
-    deps.aal.mockResolvedValue("aal1");
-    const res = await PUT(put({ somente_consulta: false }));
-    expect(res.status).toBe(403);
-    expect((await res.json()).error.code).toBe("api_two_step_required");
+    expect((await PUT(put({ exigir_duas_etapas: false }))).status).toBe(422);
     expect(deps.gravar).not.toHaveBeenCalled();
   });
 
-  it("a saída existe: sem a segunda etapa dá para desligar a PRÓPRIA exigência e para ligar/desligar o recurso", async () => {
-    deps.aal.mockResolvedValue("aal1");
-    gravou(LIGADA, { exigir_duas_etapas: false });
-    expect((await PUT(put({ exigir_duas_etapas: false }))).status).toBe(200);
-    gravou(LIGADA, { ligado: false });
-    expect((await PUT(put({ ligado: false }))).status).toBe(200);
-    // O nível «Equilibrado» também sai da exigência na mesma chamada.
-    gravou(LIGADA, { exigir_duas_etapas: false, somente_consulta: false, quem_aprova: "manager" });
-    expect((await PUT(put({ nivel: "equilibrado" }))).status).toBe(200);
-  });
-
-  it("com a exigência DESLIGADA, a sessão sem a segunda etapa muda as opções", async () => {
-    deps.aal.mockResolvedValue("aal1");
-    gravou({ ...LIGADA, exigir_duas_etapas: false }, { somente_consulta: false });
-    expect((await PUT(put({ somente_consulta: false }))).status).toBe(200);
+  it("o estado não fala de segunda etapa nem a lista entre as opções", async () => {
+    deps.ler.mockResolvedValue(LIGADA);
+    const dados = (await (await GET()).json()).data;
+    expect(dados).not.toHaveProperty("sessao_com_duas_etapas");
+    expect(dados.opcoes).not.toHaveProperty("exigir_duas_etapas");
   });
 });
 

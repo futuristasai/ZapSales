@@ -13,10 +13,6 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
  *  - NASCE DESLIGADO e na posição recomendada. A instalação inteira segue útil sem o recurso.
  *  - DESLIGAR NÃO APAGA: as APIs e as credenciais cifradas ficam; somem do atendimento, e pedido
  *    pendente não executa. Ligar de novo devolve tudo.
- *  - DUAS ETAPAS. Com a exigência ligada, mudar as opções pede sessão com a segunda etapa provada.
- *    A exceção é a própria saída: quem não tem fator nenhum pode ligar/desligar o recurso e
- *    DESLIGAR a exigência — senão a opção recomendada trancaria do lado de fora quem ainda não
- *    cadastrou a verificação. Quem TEM fator prova na sessão, sempre (`requireRole`).
  *  - RASTRO. Toda mudança vai à auditoria com os NOMES das opções que mudaram e quais foram
  *    AFROUXADAS; e, com «avisar o administrador» ligado, abre um aviso na Central — inclusive o
  *    último, quando o que se desliga é o próprio aviso.
@@ -26,13 +22,7 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
 import { randomUUID } from "node:crypto";
 import { type NextRequest } from "next/server";
 
-import {
-  FRASE_DAS_DUAS_ETAPAS,
-  RECURSO_DAS_APIS,
-  horaDoAviso,
-  quemFez,
-  sessaoComDuasEtapas,
-} from "@/lib/ai/ferramentas-externas/api/rotas";
+import { RECURSO_DAS_APIS, horaDoAviso, quemFez } from "@/lib/ai/ferramentas-externas/api/rotas";
 import {
   OPCOES_COM_RECOMENDACAO,
   afrouxa,
@@ -71,15 +61,13 @@ async function contar(admin: ReturnType<typeof createAdminClient>, orgId: string
 
 async function estado(admin: ReturnType<typeof createAdminClient>, orgId: string, config: SegurancaDasApis) {
   const opcoes = opcoesDe(config);
-  const [total, duasEtapas] = await Promise.all([contar(admin, orgId), sessaoComDuasEtapas()]);
+  const total = await contar(admin, orgId);
   return {
     ligado: config.ligado,
     aceite: config.aceite,
     opcoes,
     nivel: nivelEmVigor(opcoes),
     fora_do_recomendado: foraDoRecomendado(opcoes),
-    /** ESTA sessão provou a segunda etapa? A tela usa para explicar o bloqueio antes do clique. */
-    sessao_com_duas_etapas: duasEtapas,
     ...total,
   };
 }
@@ -99,11 +87,6 @@ export async function GET(): Promise<Response> {
   }
 }
 
-/** As chaves de opção que o corpo cita (fora interruptor, aceite e nível). */
-function opcoesCitadas(corpo: Record<string, unknown>): string[] {
-  return Object.keys(corpo).filter((chave) => !["ligado", "aceitar", "nivel"].includes(chave));
-}
-
 /** O nome que a pessoa lê de cada opção, para o corpo do aviso ao administrador. */
 const NOME_DA_OPCAO: Record<keyof OpcoesDeSeguranca, string> = {
   quem_cadastra: "Quem pode cadastrar APIs",
@@ -112,7 +95,6 @@ const NOME_DA_OPCAO: Record<keyof OpcoesDeSeguranca, string> = {
   aprovacao_obrigatoria: "Aprovação sempre obrigatória",
   dados_do_contato: "Dados do contato que podem sair",
   quem_aprova: "Quem pode aprovar",
-  exigir_duas_etapas: "Verificação em duas etapas para mexer nas APIs",
   avisar_administrador: "Aviso ao administrador",
 };
 
@@ -154,14 +136,6 @@ export async function PUT(req: NextRequest): Promise<Response> {
         422,
         { requestId, details: { motivo: "sem_aceite" } },
       );
-    }
-
-    // Duas etapas: com a exigência ligada e a sessão sem a segunda etapa, só passa quem está
-    // ligando/desligando o recurso ou SAINDO da exigência nesta mesma chamada.
-    const mexeEmOpcao = opcoesCitadas(mudanca).length > 0 || mudanca.nivel !== undefined;
-    const saiDaExigencia = mudanca.exigir_duas_etapas === false || (mudanca.nivel === "equilibrado" && mudanca.exigir_duas_etapas !== true);
-    if (atual.exigir_duas_etapas && mexeEmOpcao && !saiDaExigencia && !(await sessaoComDuasEtapas())) {
-      return fail("api_two_step_required", t(FRASE_DAS_DUAS_ETAPAS), 403, { requestId });
     }
 
     const gravado = await gravarSegurancaDaOrganizacao({ admin, orgId: org.orgId, actorUserId: user.id, mudanca });

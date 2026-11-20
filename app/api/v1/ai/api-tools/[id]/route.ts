@@ -8,10 +8,8 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
  *   DELETE — apaga, e só se nenhuma versão de agente a cita (histórico imutável); quem já foi
  *            usada se DESATIVA.
  *
- * Quem pode é o que a organização escolheu (administrador, por padrão), com a segunda etapa se
- * exigida. Editar exige o recurso LIGADO; DESATIVAR e APAGAR não — tirar uma API do ar tem de
- * ser possível com o recurso desligado. E PAUSAR (`{ ativa: false }`) não exige a segunda etapa:
- * é o freio de emergência de quem tem o papel.
+ * Quem pode é o que a organização escolheu (administrador, por padrão). Editar exige o recurso
+ * LIGADO; DESATIVAR e APAGAR não — tirar uma API do ar tem de ser possível com o recurso desligado.
  *
  * As travas da organização valem aqui como no cadastro, sobre o estado que a edição PRODUZ.
  * A organização vem da sessão. Id de outra organização, ou de ferramenta que não é API, é 404.
@@ -55,7 +53,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx): Promise<Response> {
   // Só desligar (`{ ativa: false }`) passa com o recurso desligado.
   const soDesativa = parsed.success && Object.keys(parsed.data).length === 1 && parsed.data.ativa === false;
 
-  const portao = await portaoDeCadastro(requestId, { exigirLigado: !soDesativa, exigirDuasEtapas: !soDesativa });
+  const portao = await portaoDeCadastro(requestId, { exigirLigado: !soDesativa });
   if (!portao.ok) return portao.response;
   const { user, org, seguranca, admin, t } = portao;
 
