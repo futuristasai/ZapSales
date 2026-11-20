@@ -8,6 +8,38 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 
 ## [Não lançado]
 
+## [1.6.0] — 2026-11-20
+
+### Adicionado
+
+- **O agente pode usar a API pronta de outro sistema, com opções de segurança que você escolhe** Em **Agente de IA › Ferramentas externas** há uma aba nova, **APIs**. Nela você cadastra a
+  API de outro sistema — a sua loja virtual, o seu ERP, o seu CRM — informando o endereço, a
+  operação e a chave de acesso que esse sistema fornece. O agente passa a consultar ou a
+  fazer algo lá durante a conversa, sem precisar de um intermediário como Make ou n8n.
+
+  O recurso vem **desligado**. Ao ligar, a segurança nasce no nível **«Mais seguro»**: o
+  agente só consulta, só administrador cadastra e nada é alterado em outro sistema. São 17
+  opções, e cada uma mostra na tela o que faz, um exemplo, a posição recomendada e o risco
+  de sair dela. Sair da posição recomendada pede uma confirmação e deixa a opção marcada
+  como «Fora do recomendado».
+
+  O que você pode configurar:
+
+  - **Na organização:** quem cadastra APIs, quais sites podem ser chamados, se o agente só
+    consulta, se toda alteração exige aprovação, quais dados do cliente podem ser enviados,
+    quem aprova, se mexer nas APIs exige a verificação em duas etapas e se o administrador
+    é avisado a cada mudança.
+  - **Em cada API:** se ela consulta ou altera dados, se pede aprovação e por quanto tempo,
+    quais dados do cliente recebe, o que o agente lê da resposta, o limite de uso por
+    conversa e por dia, os valores permitidos em cada campo e a pausa automática quando a
+    API falha várias vezes seguidas.
+
+  A chave de acesso é guardada cifrada e nunca é mostrada de novo. O telefone, o nome e o
+  e-mail do cliente, quando liberados, são preenchidos pelo sistema com os dados de quem
+  está na conversa — o agente não escolhe. Nesta versão a API precisa aceitar uma chave
+  fixa; sistemas que exigem um login que se renova sozinho (como Mercado Livre e Bling)
+  ainda não são atendidos.
+
 ## [1.5.8] — 2026-11-19
 
 ### Corrigido
@@ -451,7 +483,8 @@ Se você roda o ZapSales numa VPS, **leia a seção da versão para a qual está
 - **A trava de licença passa a valer nas instalações novas.** Se uma compra é reembolsada ou sofre chargeback, o servidor de licenças bloqueia a licença e a instalação **ativada** com ela deixa de operar. Os dados continuam preservados, e login, exportação dos próprios dados e a tela de Licença seguem liberados. Instalação que nunca foi ativada funciona como uso não comercial. Quem quiser que a trava só observe roda `sudo kit/licenca-modo.sh sombra`.
 - **A licença do ZapSales é a PolyForm Noncommercial, com licença comercial para uso em empresa** (antes era MIT). Veja `LICENSING.md`.
 
-[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.5.8...HEAD
+[Não lançado]: https://github.com/futuristasai/ZapSales/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/futuristasai/ZapSales/compare/v1.5.8...v1.6.0
 [1.5.8]: https://github.com/futuristasai/ZapSales/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/futuristasai/ZapSales/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/futuristasai/ZapSales/compare/v1.5.5...v1.5.6
