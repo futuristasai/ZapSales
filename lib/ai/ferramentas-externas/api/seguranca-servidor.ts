@@ -7,7 +7,9 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { nomeDoContato } from "@/lib/contacts/rotulo-do-contato";
 import { logger } from "@/lib/logger";
+import type { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   configDeApiSchema,
@@ -36,7 +38,8 @@ export type ResultadoDeGravarSeguranca =
  * avisar é de quem chama (a rota), que recebe o antes e o depois.
  */
 export async function gravarSegurancaDaOrganizacao(p: {
-  admin: SupabaseClient;
+  /** O cliente ADMIN, provado pelo tipo: com o de sessão a RLS casaria zero linhas e devolveria sucesso. */
+  admin: ReturnType<typeof createAdminClient>;
   orgId: string;
   actorUserId: string;
   mudanca: MudancaDeSeguranca;
@@ -139,7 +142,7 @@ export async function lerContatoDaConversaPelaApi(
       is_anonymized: boolean;
     } | null;
     if (!l || l.is_anonymized) return {};
-    return { telefone: l.phone_number, nome: l.name?.trim() || l.display_name?.trim() || null, email: l.email };
+    return { telefone: l.phone_number, nome: nomeDoContato(l), email: l.email };
   } catch (err) {
     logger.warn("[ferramentas-externas] os dados do contato não foram lidos — a chamada segue sem eles", {
       organization_id: orgId,

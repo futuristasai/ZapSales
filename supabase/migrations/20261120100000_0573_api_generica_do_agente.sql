@@ -151,6 +151,8 @@ alter table public.agent_inbox_items
     'followup_sem_agente',
     'canal_mudo_sem_numero',
     'proposal_expired_notice',
+    'proposal_acceptance_rate_drop',
+    'proposal_promised_not_created',
     'proposta_travada',
     'proposta_pronta_para_revisao',
     'org_reativada',

@@ -4058,3 +4058,57 @@ no tema escuro foi conferido pelos valores dos tokens, não medido pela tela.
 A saúde com credencial recusada (WAHA ou Redis de pé com chave errada) e a licença
 bloqueada/vencida só estão provadas no unit: o e2e não tem como produzir esses estados
 sem mexer no servidor de licenças ou nos contêineres.
+
+## J56 — O agente usa a API pronta de outro sistema, com segurança que a organização escolhe `[P1]` (2026-11-20, issue #372)
+
+Contexto: além do webhook (J52/J53) e do servidor MCP (J54), a organização pode cadastrar a **API pronta** de outro
+sistema (loja virtual, ERP, CRM) — método, endereço-modelo, credencial, corpo — e o agente a chama direto. O recurso vem
+**desligado**; as 17 opções de segurança nascem na posição recomendada e cada uma mostra na tela o que faz, um exemplo,
+a recomendação e o risco. Tipo `api` em `agent_external_tools` e a tabela `agent_external_tool_calls` (migration 0573);
+opções em `organizations.settings.api_externa`; regra em `lib/ai/ferramentas-externas/api/`; rotas
+`/api/v1/ai/api-security` e `/api/v1/ai/api-tools`; mapa em `docs/architecture/api-generica-do-agente.architecture.json`;
+guia em `docs/integracao/api-generica-do-agente.md`; manual em `docs/manual/conteudo/ia/agente-api-generica.html`.
+
+Spec pela tela: `tests/e2e/api-generica-pela-tela.spec.ts` (**escrita; roda no CI do PR** — a organização nunca alcança
+127.0.0.1, então ela usa um IPv4 público que não responde; a chamada de verdade é provada nos testes abaixo, contra um
+receptor HTTP real).
+
+| # | Caso | Expectativa | Resultado |
+|---|------|-------------|-----------|
+| J56.1 | Instalação NOVA, sem ligar nada | a aba «APIs» diz o que é uma API, que o sistema funciona sem isto e que ligar exige o aceite; nenhuma API é cadastrada nem chamada | **PASS (vitrine local, componentes reais)** — `372-01`; pela tela: spec escrita |
+| J56.2 | Ligar | só administrador; sem aceite a rota recusa; nasce no nível «Mais seguro» com o resumo «todas as opções estão na posição recomendada»; ligado SEM aceite no banco vale desligado | **PASS (unit)** — `api/seguranca.test.ts`; **PASS (vitrine)** — `372-02` |
+| J56.3 | Cada opção explicada | as 17 opções têm o que faz, exemplo, recomendação e risco, em pt, es e en; a tela as desenha por um componente só | **PASS (cerca)** — `tests/unit/api-generica-opcoes-explicadas.test.ts`; **PASS (vitrine)** — `372-02` |
+| J56.4 | Sair da posição recomendada | o risco e a recomendação aparecem ANTES de salvar; «Manter como está» (o botão em destaque) não muda nada; «Mudar mesmo assim» grava, deixa o selo «Fora do recomendado» e o resumo conta | **PASS (vitrine, medido)** — `372-03`: fora 0 → mantém 0 → muda 1, nível vira «personalizado» |
+| J56.5 | JSON torto em `settings.api_externa` | nunca afrouxa: vira desligado e recomendado | **PASS (unit)** |
+| J56.6 | Cadastrar: endereço | `https`, sem usuário e senha; o host nunca é marcador; endereço interno recusado antes de gravar | **PASS (unit)** — `api/montagem.test.ts`, `api/chamar.test.ts` (esquema); pela tela: spec escrita |
+| J56.7 | Cadastrar: credencial | cifrada no banco; a resposta e a tela só mostram os 4 últimos; o resumo do teste não a contém | **PASS (unit, receptor real)**; **PASS (invariante, PGlite)** — a credencial cifrada chega no cabeçalho cadastrado |
+| J56.8 | Travas no cadastro | «somente consulta» recusa a que altera; lista de endereços recusa host fora dela; dado do contato não liberado não entra; com «aprovação sempre obrigatória» não se cadastra ação sem aprovação | **PASS (unit)** — `api/seguranca.test.ts`; pela tela: spec escrita |
+| J56.9 | Travas na EXECUÇÃO | a organização muda a segurança e a MESMA API, sem ninguém editá-la, some do turno — e volta quando a trava sai | **PASS (invariante, PGlite)** — `tests/invariants/api-generica-no-turno.test.ts` (5 casos) |
+| J56.10 | O agente chama a consulta | sai com o método, o caminho e a credencial cadastrados; campo opcional vazio sai do endereço; o agente recebe só os campos escolhidos, como dado não confiável; auditoria `kind: api` sem credencial nem valores | **PASS (unit, receptor real)**; **PASS (invariante, PGlite)** |
+| J56.11 | Dado do contato | o telefone é o de quem está na conversa, lido do banco; o que o modelo tentar preencher com esse nome é recusado; contato anonimizado não envia nada | **PASS (unit)**; **PASS (invariante, PGlite)** |
+| J56.12 | Um valor não muda o destino nem o corpo | `..` no caminho não monta; barra e arroba entram codificadas; no corpo, um valor não fecha a aspa nem acrescenta campo | **PASS (unit)** — `api/montagem.test.ts` |
+| J56.13 | Ação que altera | com «aprovação sempre obrigatória», vira pedido pendente mesmo com a chave da ferramenta desligada; sem a trava e sem a chave, sai uma vez e o administrador é avisado | **PASS (invariante, PGlite)** |
+| J56.14 | Falhas | consulta repete uma vez em 5xx; ação que altera nunca repete e fica incerta; 401/403 é «credencial recusada» (falha certa); redirecionamento não é seguido | **PASS (unit, receptor real)** |
+| J56.15 | Limite de uso | por conversa e por dia (24 h corridas); a chamada que passa não sai, o agente é orientado e a Central ganha um aviso | **PASS (invariante, PGlite)** |
+| J56.16 | Pausa automática | desativa na N-ésima falha seguida, uma vez; sucesso zera; a API pausada some do turno seguinte, com aviso | **PASS (invariante, PGlite)** |
+| J56.17 | Isolamento entre organizações | a ferramenta, a contagem de uso e o contato de uma organização não são alcançados pelo id de outra; `agent_external_tool_calls` é só do servidor (RLS ligada, zero policies) | **PASS (invariante, PGlite)** |
+| J56.18 | Baseline: instalação do zero e atualização | a 0573 aplica nas duas passadas e também sobre um banco que JÁ tem uma API gravada; as constraints recusam `api` sem config, `webhook` com config e kind desconhecido | **PASS (PGlite: instalação, reaplicação e atualização com dados)**; CI: pendente do PR |
+| J56.19 | Celular (390 px) | a aba e o formulário sem rolagem horizontal | **PASS (vitrine, medido)** — `scrollWidth` 380 = `clientWidth` 380; diálogo 369 = 369 (`372-08`) |
+
+**Medido neste PR (2026-11-20, máquina de desenvolvimento, sem Docker):** os testes de `lib/ai/ferramentas-externas`
+(14 arquivos, antigos e novos, com receptor HTTP real) verdes; o invariante novo em PGlite — 15 casos, verdes; a
+migration provada em PGlite nas três passadas (instalação, reaplicação, atualização com uma API já gravada); as cercas
+de tradução (espanhol e inglês), de marca, de baseline × migrations, de escrita em `organizations`, de rótulo do contato
+e de mapas, verdes; a tela exercitada numa **vitrine local temporária** (os componentes reais da aba, com a rede
+respondida em memória pelos próprios schemas do produto), com os prints em
+`docs/testing/evidencias/372-api-generica/`.
+
+**O que NÃO foi provado ainda (e por quê):**
+- **Prova pela tela em ambiente fresco estilo VPS:** esta máquina não tem Docker. A vitrine local prova a TELA, não o
+  servidor por trás dela. O caminho é o CI do PR (e2e `api-generica-pela-tela`) e, depois do merge, a prova em produção
+  — **a fazer**.
+- **O turno completo do agente com um modelo de verdade** chamando a API: o que se mede é `montarFerramentasExternas`
+  com as dependências reais do motor e um receptor HTTP real; a conversa inteira exige canal e credencial de IA reais.
+- **O caminho HTTPS real contra a API de um terceiro** (SNI, certificado) não é exercitado por nenhum gate.
+- Os prints mostram um domínio de exemplo anterior (`api.minhaloja…`); o código hoje usa domínios reservados
+  (`*.example.com`), por causa da cerca de marca.

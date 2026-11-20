@@ -62,7 +62,7 @@ export const OPCOES_EXPLICADAS: readonly OpcaoExplicada[] = [
     escopo: "organizacao",
     nome: "Endereços permitidos",
     oQueFaz: "Limita os sites que as APIs podem chamar. Com a lista vazia, vale qualquer endereço público da internet.",
-    exemplo: "Com «api.minhaloja.com.br» na lista, ninguém consegue cadastrar uma API que mande dados para outro site.",
+    exemplo: "Com «api.loja.example.com» na lista, ninguém consegue cadastrar uma API que mande dados para outro site.",
     recomendacao: "Recomendamos listar os sites dos sistemas que você usa.",
     risco: "Com a lista vazia, uma API pode ser cadastrada para qualquer site da internet — inclusive por engano ou por alguém que entrou na conta de outra pessoa.",
     comAlerta: false,

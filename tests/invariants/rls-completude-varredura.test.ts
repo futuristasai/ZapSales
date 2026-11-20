@@ -298,6 +298,17 @@ const PROVA_PROPRIA: readonly Excecao[] = [
       "sistema externo e os dados que preencheu (0552, #95), que só o servidor lê.",
   },
   {
+    tabela: "agent_external_tool_calls",
+    razao:
+      "tests/invariants/api-generica-no-turno.test.ts — mesmo desenho da linha de " +
+      "`agent_external_tool_requests`: privilégio NENHUM para anon e authenticated, RLS " +
+      "ligada, zero policies, `organization_id` NOT NULL com FK em cascata, e o isolamento " +
+      "entre duas organizações medido (a contagem só grava para a ferramenta da organização " +
+      "do turno; o filtro da organização é a cerca do service role). Guarda uma linha por " +
+      "chamada que o agente tentou a uma API (0573, #372) — só ponteiros e a hora —, para os " +
+      "limites de uso, que só o servidor lê.",
+  },
+  {
     tabela: "ad_conversion_dispatches",
     razao:
       "tests/invariants/credencial-de-anuncios-e-server-side.test.ts — mesmo " +

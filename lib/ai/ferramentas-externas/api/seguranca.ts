@@ -35,7 +35,7 @@ export const LIMITES_DA_SEGURANCA = {
 } as const;
 
 /**
- * Um endereço permitido: `api.loja.com.br` (só ele) ou `*.loja.com.br` (qualquer subdomínio).
+ * Um endereço permitido: `api.loja.example.com` (só ele) ou `*.loja.example.com` (qualquer subdomínio).
  * Sem esquema, sem caminho, sem porta: o que se libera é o SITE.
  */
 const DOMINIO = /^(\*\.)?([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;

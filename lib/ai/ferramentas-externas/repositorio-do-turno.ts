@@ -11,6 +11,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { Queryable } from "@/lib/agent-engine/queue/queue";
+import { nomeDoContato } from "@/lib/contacts/rotulo-do-contato";
 import { logger } from "@/lib/logger";
 
 import { lerConfigDaApi } from "./api/esquema";
@@ -245,8 +246,11 @@ export async function contarUsoDaFerramenta(
     );
     const { rows } = await db.query<{ na_conversa: string; no_dia: string }>(
       `with nova as (
+         -- Só conta para a ferramenta DESTA organização: a linha nunca liga a organização de um
+         -- turno à ferramenta de outra, nem com um id alheio na mão.
          insert into agent_external_tool_calls (organization_id, tool_id, conversation_id)
-         values ($1, $2, $3::uuid)
+         select $1, $2, $3::uuid
+          where exists (select 1 from agent_external_tools t where t.organization_id = $1 and t.id = $2)
          returning id
        )
        select
@@ -333,8 +337,8 @@ export async function lerContatoDaConversa(
 ): Promise<ContatoDaConversa> {
   if (!conversationId) return {};
   try {
-    const { rows } = await db.query<{ phone_number: string | null; nome: string | null; email: string | null }>(
-      `select c.phone_number, coalesce(nullif(c.name, ''), nullif(c.display_name, '')) as nome, c.email
+    const { rows } = await db.query<{ phone_number: string | null; name: string | null; display_name: string | null; email: string | null }>(
+      `select c.phone_number, c.name, c.display_name, c.email
          from conversations cv
          join contacts c on c.organization_id = cv.organization_id and c.id = cv.contact_id
         where cv.organization_id = $1 and cv.id = $2 and not c.is_anonymized and not cv.is_group`,
@@ -342,7 +346,8 @@ export async function lerContatoDaConversa(
     );
     const linha = rows[0];
     if (!linha) return {};
-    return { telefone: linha.phone_number, nome: linha.nome, email: linha.email };
+    // O nome é o de `nomeDoContato` — a mesma regra da tela, que descarta identificador técnico.
+    return { telefone: linha.phone_number, nome: nomeDoContato(linha), email: linha.email };
   } catch (err) {
     logger.warn("[ferramentas-externas] os dados do contato não foram lidos — a chamada segue sem eles", {
       organization_id: organizationId,

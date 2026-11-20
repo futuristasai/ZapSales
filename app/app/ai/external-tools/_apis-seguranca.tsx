@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 import { showApiError } from "@/components/feedback/ApiErrorToast";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,7 +132,7 @@ export function PainelDeSeguranca({
       .filter((d) => d !== "");
     const invalido = linhas.find((d) => !dominioValido(d));
     if (invalido) {
-      setErroDosDominios(`${t("Este endereço não é válido:")} ${invalido}. ${t("Escreva só o nome do site, como api.minhaloja.com.br.")}`);
+      setErroDosDominios(`${t("Este endereço não é válido:")} ${invalido}. ${t("Escreva só o nome do site, como api.loja.example.com.")}`);
       return;
     }
     setErroDosDominios(null);
@@ -347,7 +347,7 @@ export function PainelDeSeguranca({
                     value={dominios}
                     onChange={(e) => setDominios(e.target.value)}
                     rows={3}
-                    placeholder={"api.minhaloja.com.br\n*.meuerp.com.br"}
+                    placeholder={t("api.loja.example.com\n*.erp.example.com")}
                     aria-label={t("Endereços permitidos, um por linha")}
                     className="font-mono text-xs"
                     data-testid="controle-dominios_permitidos"
@@ -390,9 +390,13 @@ export function PainelDeSeguranca({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="manter-recomendado">{t("Manter como está (recomendado)")}</AlertDialogCancel>
+            {/* O destaque é de quem MANTÉM: o caminho fácil de clicar é o seguro. */}
+            <AlertDialogCancel data-testid="manter-recomendado" className={buttonVariants({ variant: "primary" })}>
+              {t("Manter como está (recomendado)")}
+            </AlertDialogCancel>
             <AlertDialogAction
               data-testid="mudar-mesmo-assim"
+              className={buttonVariants({ variant: "outline" })}
               disabled={salvando}
               onClick={(e) => {
                 e.preventDefault();

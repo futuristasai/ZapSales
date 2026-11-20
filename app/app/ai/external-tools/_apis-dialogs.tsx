@@ -16,7 +16,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { showApiError } from "@/components/feedback/ApiErrorToast";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -437,7 +437,7 @@ function Formulario({ editando, opcoes, onFechar, onSalvo }: FormularioProps) {
               value={url}
               maxLength={LIMITES_DA_FERRAMENTA.url.max}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://api.minhaloja.com.br/pedidos/{{numero}}"
+              placeholder="https://api.loja.example.com/pedidos/{{numero}}"
               className="font-mono text-xs"
               data-testid="api-url"
             />
@@ -1022,9 +1022,13 @@ function Formulario({ editando, opcoes, onFechar, onSalvo }: FormularioProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="voltar-e-ajustar">{t("Voltar e ajustar (recomendado)")}</AlertDialogCancel>
+            {/* O destaque é de quem VOLTA: o caminho fácil de clicar é o seguro. */}
+            <AlertDialogCancel data-testid="voltar-e-ajustar" className={buttonVariants({ variant: "primary" })}>
+              {t("Voltar e ajustar (recomendado)")}
+            </AlertDialogCancel>
             <AlertDialogAction
               data-testid="salvar-mesmo-assim"
+              className={buttonVariants({ variant: "outline" })}
               disabled={salvando}
               onClick={(e) => {
                 e.preventDefault();

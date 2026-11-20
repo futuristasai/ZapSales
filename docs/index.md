@@ -91,6 +91,7 @@ Detalham schema SQL e payloads exatos. **Consulte antes de modelar qualquer cois
 | [`specs/modulo-instalado-onda-2.md`](specs/modulo-instalado-onda-2.md) | Módulo instalado — onda 2 da ADR-0002 |
 | [`specs/pre-go-live-whatsapp.md`](specs/pre-go-live-whatsapp.md) | Modo de teste do WhatsApp por canal: lista de telefones, abertura ao público e compatibilidade com autorização por origem |
 | [`specs/promessas-com-evidencias-consultadas.md`](specs/promessas-com-evidencias-consultadas.md) | Promessas e evidências comerciais consultadas no turno do agente |
+| [`integracao/api-generica-do-agente.md`](integracao/api-generica-do-agente.md) | API genérica como ferramenta do agente, do lado de quem cadastra: endereço-modelo, credencial, corpo, dados do contato, o que o agente lê e as opções de segurança da organização e de cada API |
 | [`integracao/webhooks-de-saida.md`](integracao/webhooks-de-saida.md) | Webhook de saída do lado de quem recebe: cabeçalhos, assinatura com carimbo de tempo, id de entrega, exemplos em Node e Python |
 | [`specs/RECONCILIATION-LOG.md`](specs/RECONCILIATION-LOG.md) | Log de reconciliação entre specs |
 
