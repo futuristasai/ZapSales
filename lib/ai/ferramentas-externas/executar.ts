@@ -5,23 +5,29 @@
  * `decide`) e o botão «Testar de verdade» (rota `test`). Os três pedem a MESMA coisa — «chame
  * esta ferramenta com estes dados e me diga o que aconteceu» — e não podem divergir sobre
  * COMO: um webhook sai assinado pela rede segura (`chamar.ts`); uma ferramenta de servidor MCP
- * sai pelo cliente MCP (`mcp/cliente.ts`), também pela rede segura. Os dois devolvem o mesmo
- * `ResultadoDaChamada`, então o resto (pedido, auditoria, Central, o que o modelo lê) é um só.
+ * sai pelo cliente MCP (`mcp/cliente.ts`), também pela rede segura; uma ferramenta de API (#372)
+ * sai com o método, o endereço e a credencial que a pessoa cadastrou (`api/chamar.ts`). Os três
+ * devolvem o mesmo `ResultadoDaChamada`, então o resto (pedido, auditoria, Central, o que o modelo
+ * lê) é um só.
  *
  * Nunca lança.
  */
 import { chamarFerramentaExterna, type DependenciasDaChamada, type ResultadoDaChamada } from "./chamar";
+import { chamarApi } from "./api/chamar";
+import type { ContatoDaConversa, DestinoApi } from "./api/tipos";
 import { chamarFerramentaDoServidor } from "./mcp/cliente";
 import type { DestinoMcp } from "./mcp/tipos";
 import type { EfeitoDaFerramenta } from "./tipos";
 
 export interface FerramentaExecutavel {
   slug: string;
-  /** Webhook: o endereço da ferramenta. MCP: o endereço do SERVIDOR. */
+  /** Webhook: o endereço da ferramenta. MCP: o endereço do SERVIDOR. API: o endereço-modelo, com os marcadores. */
   url: string;
   efeito: EfeitoDaFerramenta;
   /** Presente = a ferramenta vem de um servidor MCP. */
   mcp?: Pick<DestinoMcp, "cabecalho" | "temCredencial" | "nomeNoServidor">;
+  /** Presente = a ferramenta é uma API genérica (#372). */
+  api?: DestinoApi;
 }
 
 export interface EntradaDaExecucao {
@@ -29,9 +35,12 @@ export interface EntradaDaExecucao {
   /**
    * Webhook: a chave de assinatura (sem ela a chamada não sai). MCP: a credencial do servidor
    * (`null` é válido SE o servidor não tem credencial; havendo credencial e não a tendo lido, a
-   * chamada não sai — falha fechada, sem tentar «sem autenticação»).
+   * chamada não sai — falha fechada, sem tentar «sem autenticação»). API: a credencial da API,
+   * com a mesma regra do MCP.
    */
   segredo: string | null;
+  /** Só API: os dados do contato da conversa em curso, lidos pelo sistema (nunca pelo modelo). */
+  contato?: ContatoDaConversa;
   /** O que o agente preencheu, JÁ validado contra o esquema da ferramenta. */
   argumentos: Record<string, unknown>;
   /** O id do pedido aprovado: quem recebe deduplica por ele. */
@@ -43,6 +52,20 @@ export async function executarFerramentaExterna(
   deps: DependenciasDaChamada = {},
 ): Promise<ResultadoDaChamada> {
   const f = entrada.ferramenta;
+  if (f.api) {
+    return chamarApi(
+      {
+        urlModelo: f.url,
+        efeito: f.efeito,
+        api: f.api,
+        credencial: entrada.segredo,
+        argumentos: entrada.argumentos,
+        ...(entrada.contato ? { contato: entrada.contato } : {}),
+        ...(entrada.idDeEntrega ? { idDeEntrega: entrada.idDeEntrega } : {}),
+      },
+      deps,
+    );
+  }
   if (!f.mcp) {
     return chamarFerramentaExterna(
       {

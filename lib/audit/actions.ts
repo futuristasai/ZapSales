@@ -1065,6 +1065,12 @@ export const AUDIT_ACTIONS = [
   "ai.mcp_server_deleted",
   "ai.mcp_server_tested",
   "ai.mcp_tools_selected",
+  // API genérica (#372, 0573, Ferramentas externas › APIs): as opções de segurança da organização
+  // mudaram (interruptor, nível, travas, quem cadastra e quem aprova, dados do contato, endereços
+  // permitidos). O metadata diz QUAIS opções mudaram e quais foram AFROUXADAS — é o rastro de quem
+  // tirou uma proteção. O cadastro, o teste e a execução reaproveitam `ai.external_tool_*`, com
+  // `kind: "api"`; nunca a credencial, o corpo enviado nem o que o outro sistema respondeu.
+  "ai.api_security_changed",
 
   // A assinatura do emissor (#2066, PR #2079): quem ligou ou desligou o nome de
   // quem fala nas mensagens ao cliente, e com que nome a IA passou a assinar.

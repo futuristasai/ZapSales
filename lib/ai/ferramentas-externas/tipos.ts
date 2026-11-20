@@ -23,10 +23,11 @@ export type EfeitoDaFerramenta = (typeof EFEITOS_DA_FERRAMENTA)[number];
 /**
  * De onde a ferramenta vem (issue #96). `webhook` = o endereço que a pessoa cadastrou e o sistema
  * assina (#94). `mcp` = uma ferramenta que um servidor MCP de terceiros oferece e o administrador
- * escolheu. Igual ao CHECK de `agent_external_tools.kind` (vigiado por
+ * escolheu. `api` = a API pronta de outro sistema, com método, endereço e credencial que a pessoa
+ * cadastrou (issue #372). Igual ao CHECK de `agent_external_tools.kind` (vigiado por
  * `tests/invariants/vocabulario-banco-x-typescript.test.ts`).
  */
-export const TIPOS_DA_FERRAMENTA = ["webhook", "mcp"] as const;
+export const TIPOS_DA_FERRAMENTA = ["webhook", "mcp", "api"] as const;
 export type TipoDaFerramenta = (typeof TIPOS_DA_FERRAMENTA)[number];
 
 /** Os tipos de dado que o agente pode ser mandado a preencher. */
@@ -50,6 +51,14 @@ export interface ParametroDaFerramenta {
   tipo: TipoDeParametro;
   descricao: string;
   obrigatorio: boolean;
+  /**
+   * Valores permitidos (issue #372). `opcoes` fecha um campo de texto numa lista («pago»,
+   * «cancelado»); `minimo`/`maximo` cercam um número (quantidade de 1 a 10). O agente só chama
+   * com valor dentro do permitido — a conferência é a mesma de sempre (`validarArgumentos`).
+   */
+  opcoes?: string[];
+  minimo?: number;
+  maximo?: number;
 }
 
 export const LIMITES_DA_FERRAMENTA = {
@@ -61,6 +70,8 @@ export const LIMITES_DA_FERRAMENTA = {
   descricaoDoParametro: { min: 3, max: 200 },
   /** Texto que o agente preenche num parâmetro `texto`. */
   textoPreenchido: { max: 500 },
+  /** Valores permitidos de um campo de texto (issue #372). */
+  opcoesDoParametro: { max: 20, tamanho: 60 },
 } as const;
 
 /**
@@ -95,6 +106,10 @@ export const MOTIVOS_DE_FALHA = [
   "credencial_recusada",
   "protocolo_invalido",
   "ferramenta_com_erro",
+  // API genérica (issue #372): os dados preenchidos não montam um pedido válido; as opções de
+  // segurança da organização barraram a chamada. Nos dois casos NADA saiu.
+  "pedido_invalido",
+  "bloqueada_pela_seguranca",
 ] as const;
 export type MotivoDeFalha = (typeof MOTIVOS_DE_FALHA)[number];
 
@@ -109,6 +124,8 @@ export const MOTIVOS_DE_FALHA_CERTA: ReadonlySet<MotivoDeFalha> = new Set<Motivo
   "segredo_indisponivel",
   "recusada_pelo_outro_sistema",
   "credencial_recusada",
+  "pedido_invalido",
+  "bloqueada_pela_seguranca",
 ]);
 
 /** A frase, sem jargão, do que aconteceu. Quem lê é o dono do negócio. */
@@ -124,9 +141,13 @@ export const FRASE_DA_FALHA: Record<MotivoDeFalha, string> = {
   recusada_pelo_outro_sistema: "O outro sistema recusou o pedido (erro de endereço, acesso ou dados).",
   rede: "Não foi possível alcançar o outro sistema.",
   credencial_recusada:
-    "O servidor recusou a credencial (não autorizado). Confira ou troque a credencial na tela do servidor MCP.",
+    "O outro sistema recusou a credencial (não autorizado). Confira ou troque a credencial no cadastro, em Ferramentas externas.",
   protocolo_invalido: "O endereço respondeu, mas não é um servidor MCP que o sistema consiga usar.",
   ferramenta_com_erro: "A ferramenta do servidor MCP respondeu com erro.",
+  pedido_invalido:
+    "Não foi possível montar a chamada com os dados preenchidos: um campo do endereço ficou vazio ou com valor inválido.",
+  bloqueada_pela_seguranca:
+    "A chamada foi barrada pelas opções de segurança das APIs desta organização. Nada foi enviado.",
 };
 
 /** O prefixo do nome que o agente enxerga. Separa a ferramenta externa das do catálogo. */

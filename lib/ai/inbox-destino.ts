@@ -135,6 +135,13 @@ export const POLITICAS_DE_AVISO = {
     orientacao: "Confira os dados e aprove para executar a ação, ou recuse para cancelá-la. Sem decisão no prazo, o pedido expira e o agente é avisado.",
     geral: { papel: "manager", href: "/app/ai/external-tools", rotulo: "Abrir ferramentas externas" },
   },
+  // O aviso ao administrador sobre as APIs (#372): nasce sem referência (o título diz qual API ou
+  // qual opção), e o destino é a aba das APIs, onde ficam o cadastro e a segurança.
+  external_api_notice: {
+    refs: [],
+    orientacao: "Confira se a mudança foi feita por alguém da equipe e se as opções de segurança estão como você quer.",
+    geral: { papel: "admin", href: "/app/ai/external-tools?aba=apis", rotulo: "Abrir as APIs" },
+  },
   // A proposta de regra do agente (#272): sem referência a uma linha — o aviso é um por
   // organização enquanto houver pendência —, então o destino é a tela onde se decide.
   regra_proposta_pelo_agente: {

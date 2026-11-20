@@ -118,7 +118,7 @@ export function motivoDoErro(err: unknown): { motivo: MotivoDeFalha; repetivel: 
   return { motivo: "rede", repetivel: true };
 }
 
-function motivoDoStatus(status: number): { motivo: MotivoDeFalha; repetivel: boolean } {
+export function motivoDoStatus(status: number): { motivo: MotivoDeFalha; repetivel: boolean } {
   if (status >= 300 && status < 400) return { motivo: "redirecionamento", repetivel: false };
   if (status === 408 || status === 429 || status >= 500) return { motivo: "erro_do_outro_sistema", repetivel: true };
   if (status >= 400) return { motivo: "recusada_pelo_outro_sistema", repetivel: false };

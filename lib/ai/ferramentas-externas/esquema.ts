@@ -59,6 +59,25 @@ const nomeDoCampo = z
   .max(LIMITES_DA_FERRAMENTA.nomeDoParametro.max)
   .regex(/^[a-z][a-z0-9_]*$/, "Use só letras minúsculas sem acento, números e _ (ex.: codigo_produto).");
 
+/** Os valores permitidos de um campo (issue #372): lista fechada para texto, faixa para número. */
+const valoresPermitidos = {
+  opcoes: z
+    .array(z.string().trim().min(1).max(LIMITES_DA_FERRAMENTA.opcoesDoParametro.tamanho))
+    .min(1)
+    .max(LIMITES_DA_FERRAMENTA.opcoesDoParametro.max)
+    .optional(),
+  minimo: z.number().finite().optional(),
+  maximo: z.number().finite().optional(),
+};
+
+/** A lista só faz sentido em texto, a faixa só em número, e o mínimo não passa do máximo. */
+function valoresCoerentes(p: { tipo: string; opcoes?: string[]; minimo?: number; maximo?: number }): boolean {
+  if (p.opcoes !== undefined && p.tipo !== "texto") return false;
+  if ((p.minimo !== undefined || p.maximo !== undefined) && p.tipo !== "numero" && p.tipo !== "inteiro") return false;
+  if (p.minimo !== undefined && p.maximo !== undefined && p.minimo > p.maximo) return false;
+  return true;
+}
+
 export const parametroSchema = z
   .object({
     nome: nomeDoCampo,
@@ -69,8 +88,10 @@ export const parametroSchema = z
       .min(LIMITES_DA_FERRAMENTA.descricaoDoParametro.min)
       .max(LIMITES_DA_FERRAMENTA.descricaoDoParametro.max),
     obrigatorio: z.boolean().default(true),
+    ...valoresPermitidos,
   })
-  .strict();
+  .strict()
+  .refine(valoresCoerentes, { message: "Os valores permitidos não combinam com o tipo do campo." });
 
 /**
  * A leitura DEFENSIVA do jsonb `parameters`: quem lê do banco usa esta (cadastro e motor).
@@ -89,6 +110,7 @@ const parametroLidoSchema = z
       .min(LIMITES_DA_FERRAMENTA.descricaoDoParametro.min)
       .max(LIMITES_DA_FERRAMENTA.descricaoDoParametro.max),
     obrigatorio: z.boolean().default(true),
+    ...valoresPermitidos,
   })
   .strict();
 export const parametrosLidos = z.array(parametroLidoSchema);
@@ -166,17 +188,27 @@ export const editarFerramentaSchema = z
   .refine((corpo) => Object.keys(corpo).length > 0, { message: "Nada para alterar." });
 export type EditarFerramentaInput = z.infer<typeof editarFerramentaSchema>;
 
+function naFaixa(numero: z.ZodNumber, p: ParametroDaFerramenta): z.ZodNumber {
+  let campo = numero;
+  if (p.minimo !== undefined) campo = campo.min(p.minimo);
+  if (p.maximo !== undefined) campo = campo.max(p.maximo);
+  return campo;
+}
+
 function campoDoModelo(p: ParametroDaFerramenta): z.ZodType {
   let campo: z.ZodType;
   switch (p.tipo) {
     case "texto":
-      campo = z.string().max(LIMITES_DA_FERRAMENTA.textoPreenchido.max);
+      campo =
+        p.opcoes && p.opcoes.length > 0
+          ? z.enum(p.opcoes as [string, ...string[]])
+          : z.string().max(LIMITES_DA_FERRAMENTA.textoPreenchido.max);
       break;
     case "numero":
-      campo = z.number().finite();
+      campo = naFaixa(z.number().finite(), p);
       break;
     case "inteiro":
-      campo = z.number().int();
+      campo = naFaixa(z.number().int(), p);
       break;
     case "booleano":
       campo = z.boolean();
@@ -213,12 +245,25 @@ export function validarArgumentos(
     const declarado = parametros.find((p) => p.nome === campo);
     const ausente = issue.code === "invalid_type" && (issue as { input?: unknown }).input === undefined;
     if (ausente) return `falta o campo "${campo}"`;
-    return `o campo "${campo}" precisa ser ${declarado ? descricaoDoTipo(declarado.tipo) : "válido"}`;
+    return `o campo "${campo}" precisa ser ${declarado ? descricaoDoValor(declarado) : "válido"}`;
   });
   return {
     ok: false,
     mensagem: `Não chamei o sistema externo: ${[...new Set(problemas)].join("; ")}. Preencha os campos conforme a definição da ferramenta e tente de novo.`,
   };
+}
+
+/** O que o campo aceita, com a lista ou a faixa de valores permitidos quando houver. */
+function descricaoDoValor(p: ParametroDaFerramenta): string {
+  if (p.tipo === "texto" && p.opcoes && p.opcoes.length > 0) {
+    return `um destes valores: ${p.opcoes.map((o) => `"${o}"`).join(", ")}`;
+  }
+  const base = descricaoDoTipo(p.tipo);
+  if (p.tipo !== "numero" && p.tipo !== "inteiro") return base;
+  if (p.minimo !== undefined && p.maximo !== undefined) return `${base} entre ${p.minimo} e ${p.maximo}`;
+  if (p.minimo !== undefined) return `${base} a partir de ${p.minimo}`;
+  if (p.maximo !== undefined) return `${base} de até ${p.maximo}`;
+  return base;
 }
 
 function descricaoDoTipo(tipo: ParametroDaFerramenta["tipo"]): string {

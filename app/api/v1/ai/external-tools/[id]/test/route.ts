@@ -73,6 +73,8 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
   try {
     const ferramenta = await buscarFerramenta(admin, org.orgId, id);
     if (!ferramenta) return fail("not_found", t("Ferramenta não encontrada."), 404, { requestId });
+    // A API genérica (#372) é testada pela rota dela, que confere o portão e as travas de segurança.
+    if (ferramenta.kind === "api") return fail("api_tool_managed_elsewhere", t("Esta ferramenta é uma API: ela é gerenciada em Ferramentas externas › APIs."), 409, { requestId });
 
     // Os dados de exemplo passam pela MESMA conferência do que o agente preenche.
     const validado = validarArgumentos(ferramenta.parameters, parsed.data.arguments);

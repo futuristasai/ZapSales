@@ -28,6 +28,10 @@ import { randomUUID } from "node:crypto";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
+import { lerConfigDaApi } from "@/lib/ai/ferramentas-externas/api/esquema";
+import { lerContatoDaConversaPelaApi, lerSegurancaDaOrganizacao } from "@/lib/ai/ferramentas-externas/api/seguranca-servidor";
+import type { ContatoDaConversa } from "@/lib/ai/ferramentas-externas/api/tipos";
+import { FRASE_DA_TRAVA, travaDaFerramenta } from "@/lib/ai/ferramentas-externas/api/travas";
 import { resumoDosDados } from "@/lib/ai/ferramentas-externas/aprovacao";
 import { fraseDoMotivo, type ResultadoDaChamada } from "@/lib/ai/ferramentas-externas/chamar";
 import { parametrosLidos, validarArgumentos } from "@/lib/ai/ferramentas-externas/esquema";
@@ -110,6 +114,17 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
       });
     }
 
+    // API genérica (#372): quem decide é o papel que a organização escolheu («quem pode aprovar»).
+    // Vale para aprovar E para recusar: recusar também é decidir pelo cliente que espera.
+    if (pedido.tool_api) {
+      const seguranca = await lerSegurancaDaOrganizacao(admin, org.orgId);
+      // Leitura falhou = a posição mais segura: só administrador.
+      if (!seguranca || seguranca.quem_aprova === "admin") {
+        const adm = await requireRole("admin", { requestId, resource: "ai_external_tool_requests" });
+        if (!adm.ok) return adm.response;
+      }
+    }
+
     const resumo = resumoDosDados(pedido.arguments);
     const base = {
       actorUserId: user.id,
@@ -122,7 +137,7 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
       tool_id: pedido.tool_id,
       tool_slug: pedido.tool_slug,
       effect: pedido.effect,
-      kind: pedido.tool_mcp ? ("mcp" as const) : ("webhook" as const),
+      kind: pedido.tool_mcp ? ("mcp" as const) : pedido.tool_api ? ("api" as const) : ("webhook" as const),
       ...(pedido.tool_mcp ? { mcp_server_id: pedido.tool_mcp.servidor_id, mcp_tool: pedido.tool_mcp.nome_no_servidor } : {}),
     };
 
@@ -173,7 +188,42 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
     // ANTES de reivindicar — o pedido segue pendente e pode ser aprovado depois (ou recusado), em vez de
     // fechar como falha por uma porta que estava fechada de propósito.
     let alvo: { ferramenta: FerramentaExecutavel; segredo: string | null };
-    if (pedido.tool_mcp) {
+    // Só API: os dados do contato da conversa do pedido, lidos pelo sistema AGORA (nunca guardados no pedido).
+    let contato: ContatoDaConversa | undefined;
+    if (pedido.tool_api) {
+      // As travas da organização valem AGORA, na execução — não só quando o agente abriu o pedido.
+      // Conferidas ANTES de reivindicar: o pedido segue pendente e pode ser aprovado depois (ou recusado).
+      const config = lerConfigDaApi(pedido.tool_api.config);
+      if (!config) {
+        return fail(
+          "request_arguments_outdated",
+          t("O cadastro desta API está ilegível. Abra «Editar» em Ferramentas externas › APIs e salve de novo, ou recuse o pedido."),
+          422,
+          { requestId },
+        );
+      }
+      const seguranca = await lerSegurancaDaOrganizacao(admin, org.orgId);
+      const trava = seguranca
+        ? travaDaFerramenta(seguranca, { efeito: pedido.effect, urlModelo: pedido.tool_url ?? "", config })
+        : ("recurso_desligado" as const);
+      if (trava) {
+        return fail("api_blocked_by_security", `${t(FRASE_DA_TRAVA[trava])} ${t("Ajuste a segurança das APIs para aprovar, ou recuse o pedido.")}`, 409, {
+          requestId,
+          details: { trava },
+        });
+      }
+      if (config.dados_contato.length > 0) contato = await lerContatoDaConversaPelaApi(admin, org.orgId, pedido.conversation_id);
+      alvo = {
+        ferramenta: {
+          slug: pedido.tool_slug,
+          url: pedido.tool_url ?? "",
+          efeito: pedido.effect,
+          api: { config, temCredencial: pedido.tool_api.tem_credencial },
+        },
+        // A credencial é lida depois de reivindicar, como a chave do webhook.
+        segredo: null,
+      };
+    } else if (pedido.tool_mcp) {
       const config = await lerConfigDeMcpDaOrganizacao(admin, org.orgId);
       if (!config?.ligado) {
         return fail(
@@ -230,6 +280,7 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
         segredo,
         argumentos: validado.valor,
         idDeEntrega: id,
+        ...(contato ? { contato } : {}),
       });
     } catch (err) {
       logger.error("[ferramentas-externas] a execução do pedido lançou — fechando como falha incerta", {

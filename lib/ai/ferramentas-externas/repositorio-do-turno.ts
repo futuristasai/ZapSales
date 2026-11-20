@@ -13,6 +13,10 @@ import { randomUUID } from "node:crypto";
 import type { Queryable } from "@/lib/agent-engine/queue/queue";
 import { logger } from "@/lib/logger";
 
+import { lerConfigDaApi } from "./api/esquema";
+import { lerSegurancaDasApis, type SegurancaDasApis } from "./api/seguranca";
+import { JANELA_DO_LIMITE_HORAS, type ContatoDaConversa } from "./api/tipos";
+import { chaveDeAprovacaoEmVigor, travaDaFerramenta } from "./api/travas";
 import { resumoDosDados, resumoEmTexto, tituloDoAviso } from "./aprovacao";
 import type { ResultadoDaChamada } from "./chamar";
 import { parametrosLidos } from "./esquema";
@@ -36,6 +40,8 @@ interface LinhaDoTurno {
   kind: string;
   mcp_server_id: string | null;
   mcp_tool_name: string | null;
+  api_config: unknown;
+  tem_segredo: boolean;
   server_url: string | null;
   server_auth_header: string | null;
   server_has_credential: boolean | null;
@@ -47,6 +53,12 @@ interface LinhaDoTurno {
  * A ferramenta de servidor MCP (issue #96) só entra com TRÊS coisas ligadas: ela, o servidor dela
  * e o interruptor da organização (`settings.mcp_externo`, desligado por padrão e falha desligado).
  * Desligar qualquer um tira a ferramenta do turno — sem apagar nada.
+ *
+ * A ferramenta de API (issue #372) só entra se NENHUMA trava de segurança da organização a barra
+ * (`travaDaFerramenta`): recurso ligado, «somente consulta», lista de endereços permitidos e dados
+ * do contato liberados. As travas valem AQUI, a cada turno, e não só no cadastro: ligar uma trava
+ * tira do atendimento a ferramenta gravada antes dela. E a chave «pedir aprovação» que o turno lê
+ * já é a que vale de verdade (`chaveDeAprovacaoEmVigor`).
  */
 export async function carregarFerramentasDoTurno(
   db: Queryable,
@@ -55,7 +67,8 @@ export async function carregarFerramentasDoTurno(
 ): Promise<FerramentaDoTurno[]> {
   const { rows } = await db.query<LinhaDoTurno>(
     `select t.id, t.slug, t.name, t.when_to_use, t.url, t.parameters, t.effect, t.require_approval,
-            t.approval_ttl_hours, t.kind, t.mcp_server_id, t.mcp_tool_name,
+            t.approval_ttl_hours, t.kind, t.mcp_server_id, t.mcp_tool_name, t.api_config,
+            (t.signing_secret_encrypted is not null) as tem_segredo,
             s.url as server_url, s.auth_header as server_auth_header,
             (s.credential_encrypted is not null) as server_has_credential
        from agent_external_tools t
@@ -63,17 +76,20 @@ export async function carregarFerramentasDoTurno(
       where t.organization_id = $1
         and t.id = any($2::uuid[])
         and t.active
-        and (t.kind = 'webhook' or s.id is not null)
+        and (t.kind in ('webhook', 'api') or s.id is not null)
       order by t.name`,
     [organizationId, [...ids]],
   );
 
   let mcpLigado = false;
-  if (rows.some((r) => r.kind === "mcp")) {
+  // Ilegível ou não lida = desligada e na posição mais segura (falha fechada).
+  let seguranca: SegurancaDasApis = lerSegurancaDasApis(null);
+  if (rows.some((r) => r.kind === "mcp" || r.kind === "api")) {
     const { rows: org } = await db.query<{ settings: unknown }>("select settings from organizations where id = $1", [
       organizationId,
     ]);
     mcpLigado = lerConfigDeMcp(org[0]?.settings ?? {}).ligado;
+    seguranca = lerSegurancaDasApis(org[0]?.settings ?? {});
   }
 
   const ferramentas: FerramentaDoTurno[] = [];
@@ -105,6 +121,19 @@ export async function carregarFerramentasDoTurno(
       continue;
     }
     if (!r.url) continue;
+    if (r.kind === "api") {
+      const config = lerConfigDaApi(r.api_config);
+      // Config ilegível = ferramenta fora do turno: nunca um pedido montado pela metade.
+      if (!config) continue;
+      if (travaDaFerramenta(seguranca, { efeito: base.effect, urlModelo: r.url, config }) !== null) continue;
+      ferramentas.push({
+        ...base,
+        requireApproval: chaveDeAprovacaoEmVigor(seguranca, base.effect, base.requireApproval),
+        url: r.url,
+        api: { config, temCredencial: r.tem_segredo === true },
+      });
+      continue;
+    }
     ferramentas.push({ ...base, url: r.url });
   }
   return ferramentas;
@@ -168,7 +197,7 @@ export async function abrirAvisoDeFalha(
  * motivo, tentativas e duração. Nunca a chave, o corpo enviado nem a resposta.
  */
 export function metadadosDaChamada(
-  ferramenta: Pick<FerramentaDoTurno, "id" | "slug" | "effect" | "mcp">,
+  ferramenta: Pick<FerramentaDoTurno, "id" | "slug" | "effect" | "mcp" | "api">,
   resultado: ResultadoDaChamada,
   contexto: { agentId: string | null; jobId: string | null },
 ): Record<string, unknown> {
@@ -176,7 +205,7 @@ export function metadadosDaChamada(
     tool_id: ferramenta.id,
     tool_slug: ferramenta.slug,
     effect: ferramenta.effect,
-    kind: ferramenta.mcp ? "mcp" : "webhook",
+    kind: ferramenta.mcp ? "mcp" : ferramenta.api ? "api" : "webhook",
     ...(ferramenta.mcp ? { mcp_server_id: ferramenta.mcp.servidorId, mcp_tool: ferramenta.mcp.nomeNoServidor } : {}),
     agent_id: contexto.agentId,
     job_id: contexto.jobId,
@@ -186,6 +215,171 @@ export function metadadosDaChamada(
     duration_ms: resultado.duracaoMs,
     ...(resultado.ok ? { truncated: resultado.truncado } : { reason: resultado.motivo }),
   };
+}
+
+// ─── API genérica: limite de uso, pausa automática, dado do contato e aviso (issue #372) ──
+
+/**
+ * Conta esta chamada e diz se ela cabe nos limites da ferramenta (por conversa e por dia, janela
+ * corrida de 24 h). A linha é gravada ANTES de conferir, numa só ida ao banco, então duas chamadas
+ * simultâneas se enxergam. As linhas velhas saem aqui mesmo: a tabela não cresce sem dono.
+ *
+ * Nunca lança, e falha de banco deixa passar: o limite é freio de custo e de abuso, não a barreira
+ * de segurança (essa é a aprovação e as travas).
+ */
+export async function contarUsoDaFerramenta(
+  db: Queryable,
+  organizationId: string,
+  entrada: {
+    ferramentaId: string;
+    conversationId: string | null;
+    limitePorConversa: number | null;
+    limitePorDia: number | null;
+  },
+): Promise<{ cabe: true } | { cabe: false; limite: "conversa" | "dia" }> {
+  try {
+    await db.query(
+      `delete from agent_external_tool_calls
+        where organization_id = $1 and tool_id = $2 and created_at < now() - interval '2 days'`,
+      [organizationId, entrada.ferramentaId],
+    );
+    const { rows } = await db.query<{ na_conversa: string; no_dia: string }>(
+      `with nova as (
+         insert into agent_external_tool_calls (organization_id, tool_id, conversation_id)
+         values ($1, $2, $3::uuid)
+         returning id
+       )
+       select
+         (select count(*) from agent_external_tool_calls c
+           where c.organization_id = $1 and c.tool_id = $2
+             and c.conversation_id is not distinct from $3::uuid
+             and c.created_at > now() - make_interval(hours => ${JANELA_DO_LIMITE_HORAS})) + (select count(*) from nova) as na_conversa,
+         (select count(*) from agent_external_tool_calls c
+           where c.organization_id = $1 and c.tool_id = $2
+             and c.created_at > now() - make_interval(hours => ${JANELA_DO_LIMITE_HORAS})) + (select count(*) from nova) as no_dia`,
+      [organizationId, entrada.ferramentaId, entrada.conversationId],
+    );
+    const naConversa = Number(rows[0]?.na_conversa ?? 0);
+    const noDia = Number(rows[0]?.no_dia ?? 0);
+    if (entrada.limitePorConversa !== null && naConversa > entrada.limitePorConversa) return { cabe: false, limite: "conversa" };
+    if (entrada.limitePorDia !== null && noDia > entrada.limitePorDia) return { cabe: false, limite: "dia" };
+    return { cabe: true };
+  } catch (err) {
+    logger.warn("[ferramentas-externas] o limite de uso não pôde ser conferido — a chamada segue", {
+      organization_id: organizationId,
+      error: (err instanceof Error ? err.message : String(err)).slice(0, 120),
+    });
+    return { cabe: true };
+  }
+}
+
+/**
+ * A pausa automática: sucesso zera a contagem; falha soma um e, ao chegar ao teto da ferramenta,
+ * a DESATIVA (com o carimbo de que foi sozinha). Devolve `true` só para a chamada que pausou —
+ * é ela que abre o aviso. O UPDATE é um só e condicional: duas falhas simultâneas não pausam
+ * duas vezes. Nunca lança.
+ */
+export async function registrarDesfechoDaFerramenta(
+  db: Queryable,
+  organizationId: string,
+  entrada: { ferramentaId: string; ok: boolean; pausaAposFalhas: number | null },
+): Promise<boolean> {
+  try {
+    if (entrada.ok) {
+      await db.query(
+        `update agent_external_tools set consecutive_failures = 0
+          where organization_id = $1 and id = $2 and consecutive_failures <> 0`,
+        [organizationId, entrada.ferramentaId],
+      );
+      return false;
+    }
+    const { rows } = await db.query<{ pausou: boolean }>(
+      // `antes` trava a linha e guarda o estado de antes: «pausou» é só de quem a encontrou ativa
+      // e a deixou desativada.
+      `with antes as (
+         select active from agent_external_tools
+          where organization_id = $1 and id = $2
+            for update
+       ), depois as (
+         update agent_external_tools t
+            set consecutive_failures = t.consecutive_failures + 1,
+                active = case when $3::int is not null and t.consecutive_failures + 1 >= $3::int then false else t.active end,
+                auto_paused_at = case when $3::int is not null and t.consecutive_failures + 1 >= $3::int and t.active
+                                      then now() else t.auto_paused_at end
+          where t.organization_id = $1 and t.id = $2
+          returning t.active
+       )
+       select (antes.active and not depois.active) as pausou from antes, depois`,
+      [organizationId, entrada.ferramentaId, entrada.pausaAposFalhas],
+    );
+    return rows[0]?.pausou === true;
+  } catch (err) {
+    logger.warn("[ferramentas-externas] o desfecho da chamada não foi contado", {
+      organization_id: organizationId,
+      error: (err instanceof Error ? err.message : String(err)).slice(0, 120),
+    });
+    return false;
+  }
+}
+
+/**
+ * Os dados do contato da conversa em curso, lidos pelo SISTEMA — a organização vem da linha do
+ * job e a conversa, do turno. Contato anonimizado (LGPD) não tem o que enviar. Nunca lança.
+ */
+export async function lerContatoDaConversa(
+  db: Queryable,
+  organizationId: string,
+  conversationId: string | null,
+): Promise<ContatoDaConversa> {
+  if (!conversationId) return {};
+  try {
+    const { rows } = await db.query<{ phone_number: string | null; nome: string | null; email: string | null }>(
+      `select c.phone_number, coalesce(nullif(c.name, ''), nullif(c.display_name, '')) as nome, c.email
+         from conversations cv
+         join contacts c on c.organization_id = cv.organization_id and c.id = cv.contact_id
+        where cv.organization_id = $1 and cv.id = $2 and not c.is_anonymized and not cv.is_group`,
+      [organizationId, conversationId],
+    );
+    const linha = rows[0];
+    if (!linha) return {};
+    return { telefone: linha.phone_number, nome: linha.nome, email: linha.email };
+  } catch (err) {
+    logger.warn("[ferramentas-externas] os dados do contato não foram lidos — a chamada segue sem eles", {
+      organization_id: organizationId,
+      error: (err instanceof Error ? err.message : String(err)).slice(0, 120),
+    });
+    return {};
+  }
+}
+
+/**
+ * O aviso ao administrador (`external_api_notice`) — UM aberto por título. Só é gravado se a
+ * organização mantém a opção «avisar o administrador» ligada, e quem lê a opção é esta função,
+ * na hora: desligá-la cala os avisos seguintes sem ninguém reiniciar nada. Nunca lança.
+ */
+export async function abrirAvisoAoAdministrador(
+  db: Queryable,
+  organizationId: string,
+  aviso: { titulo: string; corpo: string },
+): Promise<void> {
+  try {
+    await db.query(
+      `insert into agent_inbox_items (organization_id, kind, severity, title, body)
+       select $1, 'external_api_notice', 'info', $2, $3
+        where coalesce((select (o.settings -> 'api_externa' ->> 'avisar_administrador')::boolean
+                          from organizations o where o.id = $1), true)
+          and not exists (
+            select 1 from agent_inbox_items
+             where organization_id = $1 and kind = 'external_api_notice' and title = $2 and status = 'open'
+          )`,
+      [organizationId, aviso.titulo, aviso.corpo],
+    );
+  } catch (err) {
+    logger.warn("[ferramentas-externas] o aviso ao administrador não foi gravado", {
+      organization_id: organizationId,
+      error: (err instanceof Error ? err.message : String(err)).slice(0, 120),
+    });
+  }
 }
 
 // ─── O pedido de execução (issue #95) ────────────────────────────────────────
@@ -489,6 +683,41 @@ export function dependenciasDoMotor(args: {
         jobId: args.jobId,
       }),
     concluirPedido: (c) => concluirPedidoNoBanco(db, organizationId, c),
+    contarUso: (f) =>
+      f.api
+        ? contarUsoDaFerramenta(db, organizationId, {
+            ferramentaId: f.id,
+            conversationId: args.conversationId ?? null,
+            limitePorConversa: f.api.config.limite_por_conversa,
+            limitePorDia: f.api.config.limite_por_dia,
+          })
+        : Promise.resolve({ cabe: true as const }),
+    lerContato: () => lerContatoDaConversa(db, organizationId, args.conversationId ?? null),
+    registrarDesfecho: async ({ ferramenta, resultado }) => {
+      if (!ferramenta.api) return;
+      const pausou = await registrarDesfechoDaFerramenta(db, organizationId, {
+        ferramentaId: ferramenta.id,
+        ok: resultado.ok,
+        pausaAposFalhas: ferramenta.api.config.pausa_apos_falhas,
+      });
+      if (!pausou) return;
+      await abrirAvisoDeFalha(db, organizationId, {
+        titulo: `«${ferramenta.name}» foi pausada depois de falhas seguidas`,
+        corpo:
+          `A API «${ferramenta.name}» falhou ${ferramenta.api.config.pausa_apos_falhas} vezes seguidas e foi pausada sozinha: ` +
+          "o agente deixou de usá-la, para não seguir tentando um sistema que não responde. Abra Ferramentas externas › APIs, " +
+          "use «Testar de verdade» para ver o que o outro sistema responde e ative-a de novo quando estiver funcionando.",
+      });
+    },
+    avisarExecucaoDireta: ({ ferramenta, resultado }) =>
+      abrirAvisoAoAdministrador(db, organizationId, {
+        titulo: `O agente executou «${ferramenta.name}» sem aprovação`,
+        corpo:
+          `A API «${ferramenta.name}» altera dados em outro sistema e está com «pedir aprovação» desligada: o agente a ` +
+          `executou sozinho durante um atendimento${resultado.ok ? "" : ", e a chamada não foi concluída"}. Para que cada ação ` +
+          "espere a sua aprovação, ligue «pedir aprovação» na ferramenta ou a trava «aprovação sempre obrigatória» em " +
+          "Ferramentas externas › APIs › Segurança.",
+      }),
     auditar: async ({ ferramenta, resultado }) => {
       // O motor fala com o banco pelo `pg`, e a auditoria vai pelo mesmo caminho (uma linha
       // em `api_audit_log`). Fire-and-forget por contrato: falha de escrita avisa no log e
