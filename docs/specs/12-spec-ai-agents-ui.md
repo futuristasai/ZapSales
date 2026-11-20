@@ -968,7 +968,7 @@ aprovação da #95 e a execução única. O guia de quem cadastra é
 (`lib/ai/ferramentas-externas/api/seguranca.ts` — leitura que nunca lança e falha na posição mais segura). Ligar exige
 o aceite, conferido na rota.
 
-**As 17 opções, explicadas na tela.** Decisão do dono do produto: toda opção de segurança mostra o que faz, um
+**As 16 opções, explicadas na tela.** Decisão do dono do produto: toda opção de segurança mostra o que faz, um
 exemplo, a posição recomendada e o risco de sair dela; toda opção nasce na posição recomendada; sair dela pede
 confirmação antes de salvar («Manter como está» é o botão em destaque), deixa o selo «Fora do recomendado» e é
 auditado. Os textos têm fonte única em `lib/ai/ferramentas-externas/api/opcoes.ts`, e a cerca
@@ -976,11 +976,16 @@ auditado. Os textos têm fonte única em `lib/ai/ferramentas-externas/api/opcoes
 
 | Onde | Opções |
 |---|---|
-| Organização (9) | ligar · quem cadastra · endereços permitidos · somente consulta · aprovação sempre obrigatória · dados do contato que podem sair · quem aprova · verificação em duas etapas · aviso ao administrador |
+| Organização (8) | ligar · quem cadastra · endereços permitidos · somente consulta · aprovação sempre obrigatória · dados do contato que podem sair · quem aprova · aviso ao administrador |
 | Cada API (8) | efeito e aprovação · prazo da aprovação · dados do contato da ferramenta · campos da resposta · limite de uso · agentes e pausa · valores permitidos por campo · pausa automática após falhas |
 
 O **nível de segurança** («Mais seguro», «Equilibrado», «Personalizado») aplica várias opções de uma vez e é
 **calculado** dos valores em vigor, nunca guardado.
+
+**A verificação em duas etapas não é opção.** A v1.6.0 tinha a 17ª opção, «verificação em duas etapas para mexer
+nas APIs», ligada por padrão; o dono do produto a retirou em 20/11/2026 (não quer a verificação obrigatória para
+cadastrar APIs). Quem tem o fator cadastrado continua provando-o, como em qualquer rota (`requireRole`). O valor
+`exigir_duas_etapas` gravado por aquela versão é descartado na leitura.
 
 **Proteções fixas (ninguém desliga).** `https` e nunca a rede interna (rede segura única, no cadastro e a cada
 chamada); redirecionamento não é seguido; o host do endereço nunca é marcador; credencial cifrada

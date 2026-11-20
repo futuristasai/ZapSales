@@ -292,24 +292,6 @@ export function PainelDeSeguranca({
                 </select>
               </OpcaoDeSeguranca>
 
-              <OpcaoDeSeguranca id="exigir_duas_etapas" fora={fora.has("exigir_duas_etapas")}>
-                <label className="flex items-center gap-2 text-sm">
-                  <Switch
-                    checked={opcoes.exigir_duas_etapas}
-                    disabled={salvando}
-                    onCheckedChange={(v) => mudar("exigir_duas_etapas", v)}
-                    aria-label={t("Verificação em duas etapas para mexer nas APIs")}
-                    data-testid="controle-exigir_duas_etapas"
-                  />
-                  {opcoes.exigir_duas_etapas ? t("Ligado") : t("Desligado")}
-                </label>
-                {opcoes.exigir_duas_etapas && !estado.sessao_com_duas_etapas ? (
-                  <p className="mt-1 max-w-[68ch] text-xs text-warning-fg" data-testid="aviso-sessao-sem-duas-etapas">
-                    {t("Você entrou só com a senha: enquanto esta opção estiver ligada, você não consegue cadastrar nem alterar APIs.")}
-                  </p>
-                ) : null}
-              </OpcaoDeSeguranca>
-
               <OpcaoDeSeguranca id="avisar_administrador" fora={fora.has("avisar_administrador")}>
                 <label className="flex items-center gap-2 text-sm">
                   <Switch

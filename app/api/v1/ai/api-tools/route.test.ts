@@ -15,14 +15,12 @@ const deps = vi.hoisted(() => ({
   admin: vi.fn(),
   ler: vi.fn(),
   avisar: vi.fn(),
-  aal: vi.fn(),
   criar: vi.fn(),
   listar: vi.fn(),
   destino: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-role", () => ({ requireRole: deps.role }));
-vi.mock("@/lib/auth/server", () => ({ sessionAal: deps.aal }));
 vi.mock("@/lib/impersonate/support", () => ({ requireSupportWrite: deps.support }));
 vi.mock("@/lib/audit", () => ({ audit: deps.audit }));
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: deps.admin }));
@@ -72,7 +70,6 @@ beforeEach(() => {
   deps.support.mockResolvedValue(null);
   deps.role.mockResolvedValue(comoAdmin);
   deps.admin.mockReturnValue({});
-  deps.aal.mockResolvedValue("aal2");
   deps.ler.mockResolvedValue(LIGADA);
   deps.avisar.mockResolvedValue(undefined);
   deps.destino.mockResolvedValue(null);
@@ -120,14 +117,9 @@ describe("POST — o portão", () => {
     expect(deps.criar).not.toHaveBeenCalled();
   });
 
-  it("exigência das duas etapas: sessão só com a senha é 403; com a exigência desligada, passa", async () => {
-    deps.aal.mockResolvedValue("aal1");
-    const res = await POST(post(CONSULTA));
-    expect(res.status).toBe(403);
-    expect((await res.json()).error.code).toBe("api_two_step_required");
-    expect(deps.criar).not.toHaveBeenCalled();
-
-    deps.ler.mockResolvedValue({ ...LIGADA, exigir_duas_etapas: false });
+  it("a verificação em duas etapas NÃO é exigida: cadastra mesmo com uma config antiga que a pedia", async () => {
+    // A v1.6.0 gravava `exigir_duas_etapas: true`; a leitura descarta o campo, e o portão não o pergunta.
+    deps.ler.mockResolvedValue({ ...LIGADA, exigir_duas_etapas: true } as SegurancaDasApis);
     expect((await POST(post(CONSULTA))).status).toBe(201);
   });
 

@@ -16302,6 +16302,9 @@ export const DICIONARIO: Traducoes = {
   "Cliente diz «fechei com outra empresa» → o agente encerra o negócio como perdido, com esse motivo.": { es: "El cliente dice «cerré con otra empresa» → el agente cierra el negocio como perdido, con ese motivo." },
   "Uma cliente parou de responder há 20 dias → o agente sugere retomar o contato, e uma pessoa aprova antes de qualquer envio.": { es: "Una clienta dejó de responder hace 20 días → el agente sugiere retomar el contacto, y una persona aprueba antes de cualquier envío." },
   // ─── API GENÉRICA COMO FERRAMENTA DO AGENTE (issue #372) ───
+  "O agente só consulta, e só administrador cadastra e aprova.": { es: "El agente solo consulta, y solo el administrador registra y aprueba." },
+  "O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar.": { es: "El agente también puede modificar datos, pero cada cambio espera la aprobación de una persona. Los gerentes pueden aprobar." },
+  "No nível «Equilibrado» o agente passa a poder alterar dados em outro sistema (sempre com aprovação), e gerentes passam a poder aprovar.": { es: "En el nivel «Equilibrado» el agente pasa a poder modificar datos en otro sistema (siempre con aprobación), y los gerentes pasan a poder aprobar." },
   "Não consegui ler a segurança das APIs.": { es: "No pude leer la seguridad de las API." },
   "Confira as opções de segurança: algum valor está fora do permitido.": { es: "Revisa las opciones de seguridad: algún valor no está permitido." },
   "Para ligar, confirme que concorda que o agente envie dados da conversa aos sistemas que você cadastrar.": { es: "Para activar, confirma que aceptas que el agente envíe datos de la conversación a los sistemas que registres." },

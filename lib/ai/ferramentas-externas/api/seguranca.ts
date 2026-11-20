@@ -19,6 +19,14 @@
  * a auditoria registra. O «nível de segurança» NÃO é guardado: é calculado dos valores
  * (DIRC — calcular), então ele nunca diverge do que está em vigor.
  *
+ * ═══ A VERIFICAÇÃO EM DUAS ETAPAS NÃO É OPÇÃO DAQUI ═══
+ *
+ * A primeira versão (v1.6.0) tinha a opção «verificação em duas etapas para mexer nas APIs», ligada
+ * por padrão. O dono do produto a retirou em 20/11/2026: não quer a verificação obrigatória para
+ * cadastrar APIs. Quem TEM o fator cadastrado continua provando-o na sessão, como em qualquer rota
+ * (`requireRole` → `mfaEmDivida`). O valor `exigir_duas_etapas` gravado por aquela versão é
+ * descartado na leitura (o schema não é estrito) e some na próxima gravação.
+ *
  * Client-safe: zod é o único import de execução, e a tela usa o mesmo schema.
  */
 import { z } from "zod";
@@ -77,8 +85,6 @@ const opcoesSchema = z.object({
   dados_do_contato: dadosDoContatoSchema.default([]),
   /** Quem aprova na Central o que uma ferramenta de API quer executar. */
   quem_aprova: z.enum(PAPEIS_DA_API).default("admin"),
-  /** Cadastrar, editar, testar e mexer nesta tela exige sessão com a segunda etapa provada. */
-  exigir_duas_etapas: z.boolean().default(true),
   /** Abre aviso na Central a cada mudança de cadastro ou de segurança e a cada ação executada sem aprovação. */
   avisar_administrador: z.boolean().default(true),
 });
@@ -105,7 +111,6 @@ export const RECOMENDADO: OpcoesDeSeguranca = {
   aprovacao_obrigatoria: true,
   dados_do_contato: [],
   quem_aprova: "admin",
-  exigir_duas_etapas: true,
   avisar_administrador: true,
 };
 
@@ -127,18 +132,17 @@ export type NivelDeSeguranca = (typeof NIVEIS_DE_SEGURANCA)[number];
 /** As opções que um nível decide. A lista de endereços e os dados do contato são DADO da organização, não nível. */
 type OpcoesDoNivel = Pick<
   OpcoesDeSeguranca,
-  "quem_cadastra" | "somente_consulta" | "aprovacao_obrigatoria" | "quem_aprova" | "exigir_duas_etapas" | "avisar_administrador"
+  "quem_cadastra" | "somente_consulta" | "aprovacao_obrigatoria" | "quem_aprova" | "avisar_administrador"
 >;
 
 export const VALORES_DO_NIVEL: Record<Exclude<NivelDeSeguranca, "personalizado">, OpcoesDoNivel> = {
-  // Só consulta, tudo com administrador e com a segunda etapa. É a posição recomendada.
+  // Só consulta, tudo com administrador. É a posição recomendada.
   mais_seguro: {
     quem_cadastra: "admin",
     somente_consulta: true,
     aprovacao_obrigatoria: true,
     quem_aprova: "admin",
-    exigir_duas_etapas: true,
-    avisar_administrador: true,
+      avisar_administrador: true,
   },
   // O agente pode alterar dados lá, mas NUNCA sem um humano aprovar; gerente aprova.
   equilibrado: {
@@ -146,7 +150,6 @@ export const VALORES_DO_NIVEL: Record<Exclude<NivelDeSeguranca, "personalizado">
     somente_consulta: false,
     aprovacao_obrigatoria: true,
     quem_aprova: "manager",
-    exigir_duas_etapas: false,
     avisar_administrador: true,
   },
 };
@@ -169,7 +172,6 @@ export const OPCOES_COM_RECOMENDACAO = [
   "somente_consulta",
   "aprovacao_obrigatoria",
   "quem_aprova",
-  "exigir_duas_etapas",
   "avisar_administrador",
 ] as const satisfies ReadonlyArray<keyof OpcoesDeSeguranca>;
 export type OpcaoComRecomendacao = (typeof OPCOES_COM_RECOMENDACAO)[number];
@@ -202,7 +204,6 @@ export const mudancaDeSegurancaSchema = z
     aprovacao_obrigatoria: z.boolean().optional(),
     dados_do_contato: z.array(z.enum(DADOS_DO_CONTATO)).optional(),
     quem_aprova: z.enum(PAPEIS_DA_API).optional(),
-    exigir_duas_etapas: z.boolean().optional(),
     avisar_administrador: z.boolean().optional(),
   })
   .strict()
@@ -237,7 +238,6 @@ export function opcoesDe(config: SegurancaDasApis): OpcoesDeSeguranca {
     aprovacao_obrigatoria: config.aprovacao_obrigatoria,
     dados_do_contato: config.dados_do_contato,
     quem_aprova: config.quem_aprova,
-    exigir_duas_etapas: config.exigir_duas_etapas,
     avisar_administrador: config.avisar_administrador,
   };
 }

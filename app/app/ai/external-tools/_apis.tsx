@@ -12,7 +12,6 @@
  *
  * Com o recurso desligado a aba explica o que é e como ligar; a instalação segue útil sem ele.
  */
-import Link from "next/link";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -51,7 +50,6 @@ export interface EstadoDasApis {
   opcoes: OpcoesDeSeguranca;
   nivel: NivelDeSeguranca;
   fora_do_recomendado: string[];
-  sessao_com_duas_etapas: boolean;
   apis: number;
   apis_ativas: number;
 }
@@ -60,8 +58,6 @@ export const CHAVE_DO_ESTADO_DAS_APIS = ["ai", "api-security"] as const;
 /** Filha da chave do seletor do agente: invalidar a PAI atualiza a lista de lá também. */
 const CHAVE_DAS_APIS = ["ai", "external-tools", "api"] as const;
 const CHAVE_PAI_DAS_FERRAMENTAS = ["ai", "external-tools"] as const;
-
-const ONDE_ATIVAR_AS_DUAS_ETAPAS = "/app/settings/security";
 
 function host(url: string | null): string {
   if (!url) return "";
@@ -229,29 +225,11 @@ export function ApisClient({ souAdmin }: { souAdmin: boolean }) {
 
   // ── Ligado ──────────────────────────────────────────────────────────────────
   const podeCadastrar = souAdmin || dados.opcoes.quem_cadastra === "manager";
-  const faltaASegundaEtapa = dados.opcoes.exigir_duas_etapas && !dados.sessao_com_duas_etapas;
   const lista = apis.data ?? [];
 
   return (
     <div className="space-y-5" data-testid="apis-ligado">
       <PainelDeSeguranca estado={dados} souAdmin={souAdmin} onMudou={recarregar} />
-
-      {faltaASegundaEtapa && podeCadastrar ? (
-        <Card className="space-y-2 border-warning/40 p-4" role="status" data-testid="apis-falta-duas-etapas">
-          <h3 className="text-sm font-medium">{t("Falta a verificação em duas etapas para cadastrar APIs")}</h3>
-          <p className="max-w-[68ch] text-sm text-muted-foreground">
-            {t(
-              "Esta organização só deixa cadastrar, editar e testar APIs quem entrou com a senha e com o código do aplicativo no celular. Ative a verificação na sua conta e entre de novo.",
-            )}{" "}
-            {souAdmin
-              ? t("Se preferir não usar a verificação, desligue a opção «Verificação em duas etapas para mexer nas APIs» acima — a tela explica o risco.")
-              : t("Se a equipe preferir não usar a verificação, um administrador pode desligar essa exigência.")}
-          </p>
-          <Link href={ONDE_ATIVAR_AS_DUAS_ETAPAS} className="text-sm font-medium text-accent underline" data-testid="apis-ativar-duas-etapas">
-            {t("Ativar a verificação em duas etapas")}
-          </Link>
-        </Card>
-      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
@@ -260,7 +238,6 @@ export function ApisClient({ souAdmin }: { souAdmin: boolean }) {
         {podeCadastrar ? (
           <Button
             data-testid="nova-api"
-            disabled={faltaASegundaEtapa}
             onClick={() => setFormulario({ aberto: true, editando: null })}
           >
             <Plus className="mr-2 h-4 w-4" aria-hidden />
@@ -353,8 +330,6 @@ export function ApisClient({ souAdmin }: { souAdmin: boolean }) {
                       <label className="flex items-center gap-2 text-sm">
                         <Switch
                           checked={f.active}
-                          // Pausar é sempre possível; ativar de novo passa pelo portão inteiro.
-                          disabled={faltaASegundaEtapa && !f.active}
                           onCheckedChange={(v) => void alternarAtiva(f, v)}
                           aria-label={f.active ? t("Pausar") : t("Ativar")}
                           data-testid={`api-ativar-${f.id}`}
@@ -365,19 +340,18 @@ export function ApisClient({ souAdmin }: { souAdmin: boolean }) {
                   </div>
                   {podeCadastrar ? (
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="secondary" disabled={faltaASegundaEtapa} data-testid={`api-testar-${f.id}`} onClick={() => setTestando(f)}>
+                      <Button size="sm" variant="secondary" data-testid={`api-testar-${f.id}`} onClick={() => setTestando(f)}>
                         {t("Testar de verdade")}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={faltaASegundaEtapa}
-                        data-testid={`api-editar-${f.id}`}
+                                    data-testid={`api-editar-${f.id}`}
                         onClick={() => setFormulario({ aberto: true, editando: f })}
                       >
                         {t("Editar")}
                       </Button>
-                      <Button size="sm" variant="ghost" disabled={faltaASegundaEtapa} data-testid={`api-apagar-${f.id}`} onClick={() => setApagando(f)}>
+                      <Button size="sm" variant="ghost" data-testid={`api-apagar-${f.id}`} onClick={() => setApagando(f)}>
                         {t("Apagar")}
                       </Button>
                     </div>

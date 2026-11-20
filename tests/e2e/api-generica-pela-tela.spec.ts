@@ -73,7 +73,6 @@ type SegurancaGravada = {
   aceite: { por: string } | null;
   somente_consulta: boolean;
   aprovacao_obrigatoria: boolean;
-  exigir_duas_etapas: boolean;
   quem_cadastra: string;
 };
 
@@ -138,7 +137,7 @@ test.describe("API genérica pela tela", () => {
       await expect(somenteConsulta).toContainText("Exemplo:");
       await expect(somenteConsulta).toContainText("Recomendação:");
       await expect(page.getByTestId("selo-recomendado-somente_consulta")).toBeVisible();
-      for (const id of ["aprovacao_obrigatoria", "quem_cadastra", "quem_aprova", "exigir_duas_etapas", "avisar_administrador", "dados_do_contato", "dominios_permitidos"]) {
+      for (const id of ["aprovacao_obrigatoria", "quem_cadastra", "quem_aprova", "avisar_administrador", "dados_do_contato", "dominios_permitidos"]) {
         await expect(page.getByTestId(`opcao-${id}`)).toBeVisible();
       }
       await captura(page, "api-03-opcoes-explicadas");

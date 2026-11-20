@@ -11464,5 +11464,8 @@
   "Houve uma mudança nas APIs que o agente usa — confira": "There was a change to the APIs the agent uses — check it",
   "Confira se a mudança foi feita por alguém da equipe e se as opções de segurança estão como você quer.": "Check whether the change was made by someone on the team and whether the security options are the way you want them.",
   "Abrir as APIs": "Open APIs",
-  "api.loja.example.com\n*.erp.example.com": "api.loja.example.com\n*.erp.example.com"
+  "api.loja.example.com\n*.erp.example.com": "api.loja.example.com\n*.erp.example.com",
+  "O agente só consulta, e só administrador cadastra e aprova.": "The agent only views data, and only an administrator registers and approves.",
+  "O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar.": "The agent can also change data, but every change waits for a person to approve it. Managers can approve.",
+  "No nível «Equilibrado» o agente passa a poder alterar dados em outro sistema (sempre com aprovação), e gerentes passam a poder aprovar.": "At the “Balanced” level the agent can change data in another system (always with approval), and managers can approve."
 }

@@ -23,7 +23,7 @@ import { temTraducao } from "@/lib/i18n/dicionario";
  * recomendado nunca é um clique só. Uma regra dessas apodrece no dia em que alguém acrescenta a
  * 18ª opção com um interruptor e um rótulo. Esta cerca é o que impede:
  *
- *   1. o catálogo tem as 17 opções prometidas, cada uma com os cinco textos preenchidos;
+ *   1. o catálogo tem as 16 opções prometidas, cada uma com os cinco textos preenchidos;
  *   2. toda opção que tem posição recomendada no schema (`OPCOES_COM_RECOMENDACAO`) está no
  *      catálogo marcada `comAlerta` — é o que liga a confirmação de risco e o selo;
  *   3. todo texto do catálogo existe em espanhol e em inglês (a tela cai no português em
@@ -44,7 +44,9 @@ describe("o catálogo das opções de segurança das APIs", () => {
   it(`tem as ${TOTAL_DE_OPCOES} opções prometidas, sem id repetido`, () => {
     expect(OPCOES_EXPLICADAS).toHaveLength(TOTAL_DE_OPCOES);
     expect(new Set(OPCOES_EXPLICADAS.map((o) => o.id)).size).toBe(TOTAL_DE_OPCOES);
-    expect(OPCOES_EXPLICADAS.filter((o) => o.escopo === "organizacao")).toHaveLength(9);
+    expect(OPCOES_EXPLICADAS.filter((o) => o.escopo === "organizacao")).toHaveLength(8);
+    // A verificação em duas etapas saiu por decisão do dono (20/11/2026) e não volta sem decisão nova.
+    expect(OPCOES_EXPLICADAS.map((o) => o.id)).not.toContain("exigir_duas_etapas");
     expect(OPCOES_EXPLICADAS.filter((o) => o.escopo === "ferramenta")).toHaveLength(8);
   });
 

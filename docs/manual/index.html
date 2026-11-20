@@ -4580,7 +4580,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
   </div>
 </article>
 
-<article class="pagina" id="agente-api-generica" data-titulo="APIs: o agente usa a API de outro sistema" data-grupo="ia" data-grupo-titulo="Agente de IA" data-resumo="Conecte a API pronta da sua loja virtual, do seu ERP ou do seu CRM. O recurso vem desligado e nasce no nível mais seguro; cada opção de segurança explica o que faz e o risco de mudar." data-palavras="api apis conectar outros sistemas integração loja virtual e-commerce erp crm chave de acesso token bearer x-api-key segurança das apis nível de segurança fora do recomendado somente consulta endereços permitidos limite de uso pausa automática dados do contato verificação em duas etapas" hidden>
+<article class="pagina" id="agente-api-generica" data-titulo="APIs: o agente usa a API de outro sistema" data-grupo="ia" data-grupo-titulo="Agente de IA" data-resumo="Conecte a API pronta da sua loja virtual, do seu ERP ou do seu CRM. O recurso vem desligado e nasce no nível mais seguro; cada opção de segurança explica o que faz e o risco de mudar." data-palavras="api apis conectar outros sistemas integração loja virtual e-commerce erp crm chave de acesso token bearer x-api-key segurança das apis nível de segurança fora do recomendado somente consulta endereços permitidos limite de uso pausa automática dados do contato" hidden>
   <p class="migalha"><a href="#inicio">Manual</a> › Agente de IA › APIs: o agente usa a API de outro sistema</p>
   <h1>APIs: o agente usa a API de outro sistema</h1>
   <p class="lede">Conecte a API pronta da sua loja virtual, do seu ERP ou do seu CRM. O recurso vem desligado e nasce no nível mais seguro; cada opção de segurança explica o que faz e o risco de mudar.</p>
@@ -4616,8 +4616,8 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <table class="tabela">
   <thead><tr><th>Nível</th><th>O que muda</th></tr></thead>
   <tbody>
-    <tr><td><strong>Mais seguro</strong> (recomendado)</td><td>O agente só consulta. Só administrador cadastra e aprova, e mexer nas APIs exige a verificação em duas etapas.</td></tr>
-    <tr><td><strong>Equilibrado</strong></td><td>O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar, e a verificação em duas etapas deixa de ser exigida.</td></tr>
+    <tr><td><strong>Mais seguro</strong> (recomendado)</td><td>O agente só consulta, e só administrador cadastra e aprova.</td></tr>
+    <tr><td><strong>Equilibrado</strong></td><td>O agente também pode alterar dados, mas toda alteração espera uma pessoa aprovar. Gerentes podem aprovar.</td></tr>
     <tr><td><strong>Personalizado</strong></td><td>Você ajusta opção por opção.</td></tr>
   </tbody>
 </table>
@@ -4631,14 +4631,12 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
     <tr><td>Aprovação sempre obrigatória</td><td>Ligado</td><td>Toda ação que altera dados espera uma pessoa aprovar na Central de avisos, e ninguém consegue desligar essa aprovação numa API.</td></tr>
     <tr><td>Quem pode cadastrar APIs</td><td>Só administrador</td><td>Ou administrador e gerente.</td></tr>
     <tr><td>Quem pode aprovar</td><td>Só administrador</td><td>Ou administrador e gerente.</td></tr>
-    <tr><td>Verificação em duas etapas para mexer nas APIs</td><td>Ligado</td><td>Só cadastra, edita, testa ou muda a segurança quem entrou com a senha e com o código do aplicativo no celular.</td></tr>
     <tr><td>Aviso ao administrador</td><td>Ligado</td><td>Abre um aviso na Central a cada API cadastrada, alterada ou apagada, quando a segurança muda e quando o agente altera dados sem aprovação.</td></tr>
     <tr><td>Dados do contato que podem sair</td><td>Só o que alguma API precisa</td><td>Telefone, nome e e-mail do cliente, um a um. Nenhum sai por padrão.</td></tr>
     <tr><td>Endereços permitidos</td><td>Os sites dos seus sistemas</td><td>Limita os sites que as APIs podem chamar. Um por linha, como <code>api.loja.example.com</code>; use <code>*.</code> na frente para liberar todos os endereços de um site.</td></tr>
   </tbody>
 </table>
 <aside class="nota atencao"><strong>Sair da posição recomendada nunca é um clique só.</strong><p>Quando você muda uma opção para uma posição menos segura, a tela mostra o <strong>risco</strong> e a <strong>recomendação</strong> antes de salvar. O botão em destaque é <span class="ui">Manter como está (recomendado)</span>; para seguir, clique em <span class="ui">Mudar mesmo assim</span>. A opção fica com o selo <em>Fora do recomendado</em> enquanto durar, e a mudança fica registrada com o seu nome. Voltar à posição recomendada é direto.</p></aside>
-<aside class="nota info"><strong>Se você entrou só com a senha.</strong><p>Com a opção “Verificação em duas etapas para mexer nas APIs” ligada, quem não tem a verificação ativa na conta vê o aviso <em>“Falta a verificação em duas etapas para cadastrar APIs”</em>, com o atalho para ativá-la em Configurações › Segurança. Um administrador pode desligar essa exigência — a tela explica o risco. <strong>Pausar</strong> uma API é sempre possível, mesmo sem a verificação.</p></aside>
 <p>As opções valem <strong>na hora em que o agente vai usar a API</strong>, e não só no cadastro. Se você ligar “Somente consulta” ou limitar os endereços depois, uma API cadastrada antes deixa de ser usada no mesmo instante, e a lista diz por quê (“O agente não usa esta API agora.”).</p>
 
 <h2 id="agente-api-generica--cadastrar">Cadastrar uma API</h2>
@@ -9648,7 +9646,7 @@ table.tabela{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:.9
 <aside class="nota info"><strong>Atualizar pelo terminal continua valendo.</strong><p>O comando da instalação (<code>curl -fsSL https://zapinstalador.futuristas.app/obter.sh | sudo bash</code>) continua sendo uma forma de atualizar, e é como uma instalação antiga recebe o programa do servidor pela primeira vez. Veja <a href="#instalar-na-vps--atualizar">Instalar o ZapSales numa VPS › Atualizar</a>.</p></aside>
   </div>
 </article>
-    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 20 de novembro de 2026 a partir do código na revisão <code>fe0afc44</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
+    <footer class="rodape"><div class="rodape-marca"><svg class="simbolo" viewBox="0 0 216 216" aria-hidden="true"><use href="#lg-simbolo"/></svg><strong>ZapSales</strong><span>by</span><svg class="fut" viewBox="0 0 654 115" role="img" aria-label="Futuristas"><use href="#lg-futuristas" width="654" height="115"/></svg></div>Manual do ZapSales · gerado em 20 de novembro de 2026 a partir do código na revisão <code>ce8c9906</code>. Os prints vêm de uma organização de demonstração, com dados fictícios.</footer>
   </main>
   <aside class="nesta-pagina" id="toc-local" aria-label="Nesta página"></aside>
 </div>
