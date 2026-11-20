@@ -26,7 +26,13 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
 import { randomUUID } from "node:crypto";
 import { type NextRequest } from "next/server";
 
-import { FRASE_DAS_DUAS_ETAPAS, RECURSO_DAS_APIS, sessaoComDuasEtapas } from "@/lib/ai/ferramentas-externas/api/rotas";
+import {
+  FRASE_DAS_DUAS_ETAPAS,
+  RECURSO_DAS_APIS,
+  horaDoAviso,
+  quemFez,
+  sessaoComDuasEtapas,
+} from "@/lib/ai/ferramentas-externas/api/rotas";
 import {
   OPCOES_COM_RECOMENDACAO,
   afrouxa,
@@ -202,10 +208,20 @@ export async function PUT(req: NextRequest): Promise<Response> {
       if (afrouxadas.length > 0) {
         partes.push(`Saíram da posição recomendada: ${afrouxadas.map((c) => NOME_DA_OPCAO[c]).join(", ")}.`);
       }
+      // O título diz O QUE mudou: um aviso por mudança, e o que tira uma proteção nunca fica
+      // escondido atrás de outro com o mesmo título.
+      const oQueMudou =
+        afrouxadas.length > 0
+          ? `fora do recomendado: ${afrouxadas.map((c) => NOME_DA_OPCAO[c]).join(", ")}`
+          : mudaram.length > 0
+            ? mudaram.map((c) => NOME_DA_OPCAO[c]).join(", ")
+            : depois.ligado
+              ? "APIs ligadas"
+              : "APIs desligadas";
       // `antes.avisar_administrador`: desligar o aviso ainda gera o último aviso.
       await avisarAdministrador(admin, org.orgId, antes.avisar_administrador || depois.avisar_administrador, {
-        titulo: `A segurança das APIs foi alterada (${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC)`,
-        corpo: `${partes.join(" ")} Quem alterou: ${user.email ?? user.id}.`,
+        titulo: `A segurança das APIs foi alterada — ${oQueMudou.slice(0, 110)} (${horaDoAviso()})`,
+        corpo: `${partes.join(" ")} Quem alterou: ${quemFez(user)}.`,
       });
     }
 

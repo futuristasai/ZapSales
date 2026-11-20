@@ -28,7 +28,7 @@ cifradas e as opções ficam guardadas; as APIs somem do atendimento e pedido pe
 | Nome e «quando usar» | O que o agente lê para decidir se chama a API. Escreva como instrução para uma pessoa. |
 | Operação | `GET`, `POST`, `PUT`, `PATCH` ou `DELETE`. |
 | Endereço | `https`, sem usuário e senha. Os campos entram como `{{campo}}`, **só depois do nome do site**: `https://api.loja.example.com/pedidos/{{numero}}?detalhe={{detalhe}}`. |
-| Credencial | `Authorization: Bearer <chave>`, um cabeçalho próprio (`X-API-Key: <chave>`), usuário e senha (Basic) ou nenhuma. Sempre em cabeçalho; credencial em query string não é aceita. |
+| Credencial | `Authorization: Bearer <chave>`, um cabeçalho próprio (`X-API-Key: <chave>`, ou `Authorization` com um valor seu, como `Token abc`), usuário e senha (Basic) ou nenhuma. Sempre em cabeçalho; credencial em query string não é aceita. |
 | Cabeçalhos fixos | Até 5, sem segredo (`Accept-Version: 2024-01`). `Authorization`, `Host`, `Cookie`, `Content-Type` e os do protocolo são recusados. |
 | Corpo | Só em `POST`, `PUT` e `PATCH`. «Os campos» manda um objeto JSON com cada campo; «um modelo» manda o JSON que você escrever. |
 | Dados que o agente preenche | Até 10 campos: texto, número, número inteiro ou sim/não, com descrição. |

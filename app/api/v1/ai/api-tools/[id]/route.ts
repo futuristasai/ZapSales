@@ -21,7 +21,7 @@ import { type NextRequest } from "next/server";
 
 import { editarApiSchema } from "@/lib/ai/ferramentas-externas/api/esquema";
 import { camposAlteradosDaApi, editarApi } from "@/lib/ai/ferramentas-externas/api/repositorio";
-import { portaoDeCadastro } from "@/lib/ai/ferramentas-externas/api/rotas";
+import { horaDoAviso, portaoDeCadastro, quemFez } from "@/lib/ai/ferramentas-externas/api/rotas";
 import { avisarAdministrador } from "@/lib/ai/ferramentas-externas/api/seguranca-servidor";
 import { FRASE_DA_TRAVA, travaDaFerramenta } from "@/lib/ai/ferramentas-externas/api/travas";
 import type { ConfigDaApi } from "@/lib/ai/ferramentas-externas/api/tipos";
@@ -146,10 +146,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx): Promise<Response> {
     // Ligar e desligar pelo interruptor da lista não vira aviso: é rotina, e encheria a Central.
     if (campos.some((c) => c !== "ativa")) {
       await avisarAdministrador(admin, org.orgId, seguranca.avisar_administrador, {
-        titulo: `A API «${f.name}» foi alterada (${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC)`,
+        titulo: `A API «${f.name}» foi alterada${patch.credencial !== undefined ? " e a chave foi trocada" : ""} (${horaDoAviso()})`,
         corpo:
           `O cadastro da API «${f.name}» foi alterado${patch.credencial !== undefined ? ", e a credencial foi trocada" : ""}. ` +
-          `Quem alterou: ${user.email ?? user.id}.`,
+          `Quem alterou: ${quemFez(user)}.`,
       });
     }
     return ok(f, { requestId });
@@ -193,7 +193,7 @@ export async function DELETE(_req: NextRequest, ctx: Ctx): Promise<Response> {
     });
     await avisarAdministrador(admin, org.orgId, seguranca.avisar_administrador, {
       titulo: `A API «${antes.name}» foi apagada`,
-      corpo: `A API «${antes.name}» foi apagada, com a credencial dela. Quem apagou: ${user.email ?? user.id}.`,
+      corpo: `A API «${antes.name}» foi apagada, com a credencial dela. Quem apagou: ${quemFez(user)}.`,
     });
     return ok({ id, deleted: true }, { requestId });
   } catch {

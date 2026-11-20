@@ -323,6 +323,16 @@ describe("o cadastro — o esquema da rota", () => {
     ).toBe(true);
   });
 
+  it("o cabeçalho da credencial pode ser Authorization (valor próprio), mas não outro reservado; a credencial não tem quebra de linha", () => {
+    const com = (cabecalho: string, credencial = "Token abc") =>
+      criarApiSchema.safeParse({ ...minimo, config: { metodo: "GET", credencial: { tipo: "cabecalho", cabecalho } }, credencial }).success;
+    expect(com("Authorization")).toBe(true);
+    expect(com("X-API-Key")).toBe(true);
+    expect(com("Host")).toBe(false);
+    expect(com("Cookie")).toBe(false);
+    expect(com("X-API-Key", "abc\r\nX-Outro: 1")).toBe(false);
+  });
+
   it("cabeçalho reservado, com quebra de linha ou com marcador não entra", () => {
     const com = (cabecalhos: unknown) => criarApiSchema.safeParse({ ...minimo, config: { metodo: "GET", cabecalhos } }).success;
     expect(com([{ nome: "Accept-Version", valor: "2024-01" }])).toBe(true);

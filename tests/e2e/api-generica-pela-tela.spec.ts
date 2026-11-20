@@ -268,9 +268,11 @@ test.describe("API genérica pela tela", () => {
         .select("title, body")
         .eq("organization_id", c.org_id)
         .eq("kind", "external_api_notice")
-        .like("title", "A segurança das APIs foi alterada%");
-      expect((avisosDaSeguranca ?? []).length).toBeGreaterThan(0);
-      expect(JSON.stringify(avisosDaSeguranca)).toContain("Somente consulta");
+        .like("title", "A segurança das APIs foi alterada — fora do recomendado: Somente consulta%");
+      // Ligar e afrouxar aconteceram no mesmo minuto: o aviso de quem tirou a proteção tem título
+      // próprio e NÃO foi engolido pelo de «APIs ligadas».
+      expect((avisosDaSeguranca ?? []).length).toBe(1);
+      expect(JSON.stringify(avisosDaSeguranca)).toContain("Saíram da posição recomendada: Somente consulta");
 
       // 11 · Agora dá para marcar «altera dados»; salvar SEM aprovação pede outra confirmação de risco.
       await page.getByTestId(`api-editar-${api.id}`).click();
@@ -313,6 +315,7 @@ test.describe("API genérica pela tela", () => {
       await expect(teste).toBeHidden({ timeout: 15_000 });
 
       // 13 · A trava vale na EXECUÇÃO: limitar os endereços tira do agente a API gravada antes da lista.
+      await abrirOpcoes(page);
       await page.getByTestId("controle-dominios_permitidos").fill("api.outro-sistema.example.com");
       await page.getByTestId("salvar-dominios").click();
       await expect(page.getByTestId(`api-trava-${api.id}`)).toContainText("não está na lista de endereços permitidos", { timeout: 30_000 });

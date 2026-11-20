@@ -57,10 +57,22 @@ const cabecalhosSchema = z
     message: "Dois cabeçalhos têm o mesmo nome.",
   });
 
+/**
+ * O cabeçalho que leva a credencial. `Authorization` é aceito AQUI (e só aqui): há API que o quer
+ * com um valor próprio (`Token abc`), sem «Bearer». Os demais reservados continuam recusados.
+ */
+const cabecalhoDaCredencialSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(LIMITES_DA_API.nomeDoCabecalho.max)
+  .regex(NOME_DE_CABECALHO, "Use só letras, números e hífen no nome do cabeçalho.")
+  .refine((nome) => nome.toLowerCase() === "authorization" || !CABECALHOS_RESERVADOS.has(nome.toLowerCase()), "Este cabeçalho é reservado.");
+
 const credencialSchema = z
   .object({
     tipo: z.enum(TIPOS_DE_CREDENCIAL),
-    cabecalho: nomeDeCabecalhoSchema.nullable().default(null),
+    cabecalho: cabecalhoDaCredencialSchema.nullable().default(null),
     usuario: z.string().trim().min(1).max(LIMITES_DA_API.usuario.max).nullable().default(null),
   })
   .strict()
@@ -135,7 +147,12 @@ export const enderecoDaApiSchema = z
     message: "Informe um endereço completo que comece com https://, sem usuário e senha, e com os campos só depois do nome do site.",
   });
 
-const credencialEmClaro = z.string().min(LIMITES_DA_API.credencial.min).max(LIMITES_DA_API.credencial.max);
+/** Sem caractere de controle: uma quebra de linha na credencial viraria outro cabeçalho na chamada. */
+const credencialEmClaro = z
+  .string()
+  .min(LIMITES_DA_API.credencial.min)
+  .max(LIMITES_DA_API.credencial.max)
+  .refine((valor) => !/[\u0000-\u001f\u007f]/.test(valor), "A credencial não pode ter quebra de linha.");
 
 const camposDoCadastro = {
   nome: z.string().trim().min(LIMITES_DA_FERRAMENTA.nome.min).max(LIMITES_DA_FERRAMENTA.nome.max),

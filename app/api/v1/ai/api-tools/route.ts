@@ -28,7 +28,7 @@ import { z } from "zod";
 
 import { criarApiSchema } from "@/lib/ai/ferramentas-externas/api/esquema";
 import { criarApi, efeitoPadraoDoMetodo } from "@/lib/ai/ferramentas-externas/api/repositorio";
-import { RECURSO_DAS_APIS, portaoDeCadastro } from "@/lib/ai/ferramentas-externas/api/rotas";
+import { RECURSO_DAS_APIS, portaoDeCadastro, quemFez } from "@/lib/ai/ferramentas-externas/api/rotas";
 import { avisarAdministrador } from "@/lib/ai/ferramentas-externas/api/seguranca-servidor";
 import { FRASE_DA_TRAVA, travaDaFerramenta } from "@/lib/ai/ferramentas-externas/api/travas";
 import type { ConfigDaApi } from "@/lib/ai/ferramentas-externas/api/tipos";
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       titulo: `A API «${f.name}» foi cadastrada`,
       corpo:
         `Uma API nova foi cadastrada para o agente: «${f.name}» (${config.metodo}, ${efeito === "altera" ? "altera dados" : "só consulta"}). ` +
-        `Ela só é usada pelos agentes em que alguém a marcar. Quem cadastrou: ${user.email ?? user.id}.`,
+        `Ela só é usada pelos agentes em que alguém a marcar. Quem cadastrou: ${quemFez(user)}.`,
     });
     return f;
   }

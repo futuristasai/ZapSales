@@ -40,6 +40,22 @@ export type PortaoDasApis =
     }
   | { ok: false; response: NextResponse<ApiError> };
 
+/** Como o aviso ao administrador nomeia quem fez a mudança: o nome, e só na falta dele o e-mail. */
+export function quemFez(user: Pick<AuthUser, "id" | "email" | "full_name">): string {
+  return user.full_name?.trim() || user.email || user.id;
+}
+
+/**
+ * A hora que entra no TÍTULO de um aviso ao administrador, até o segundo.
+ *
+ * A Central guarda um aviso aberto por título. Com a hora só até o minuto, duas mudanças seguidas
+ * tinham o mesmo título e a segunda era engolida — e a segunda é justamente a que importa quando
+ * alguém liga o recurso e, no mesmo minuto, tira uma proteção (achado do e2e da #372).
+ */
+export function horaDoAviso(agora: Date = new Date()): string {
+  return `${agora.toISOString().slice(0, 19).replace("T", " ")} UTC`;
+}
+
 /** A sessão provou a segunda etapa? */
 export async function sessaoComDuasEtapas(): Promise<boolean> {
   return (await sessionAal()) === "aal2";
